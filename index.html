@@ -6,10 +6,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="The Chain">
+<meta name="apple-mobile-web-app-title" content="The Chain — Resistance Training">
 <meta name="theme-color" content="#0a0a0a">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230a0a0a'/><text y='68' x='50' text-anchor='middle' font-size='38' font-family='serif' fill='%23c0392b'>TC</text></svg>">
-<title>The Chain</title>
+<title>The Chain — Resistance Training</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -213,7 +213,8 @@ canvas#weightChart{width:100%!important;display:block;}
 <div id="userScreen">
   <div class="user-screen">
     <div class="user-logo">THE <span>CHAIN</span></div>
-    <div class="user-tagline">Mentzer 3.0 · High Intensity</div>
+    <div class="user-tagline">Resistance Training · High Intensity</div>
+    <div style="font-family:var(--mono);font-size:.5rem;color:#2a2a2a;letter-spacing:.1em;text-transform:uppercase;margin-top:4px;">Inspired by classic High Intensity Training principles</div>
     <div class="user-label">Who's training?</div>
     <div class="user-grid">
       <button class="user-btn" onclick="selectUser('niklas')"><span class="user-initial">N</span><span class="user-name">Niklas</span></button>
@@ -282,7 +283,7 @@ function buildEffectiveChain(passOrder, restSlots){
   let restIdx = 1;
   for(const pos of sortedSlots){
     const clampedPos = Math.max(0, Math.min(pos, result.length));
-    result.splice(clampedPos, 0, {id:'V'+(restIdx>1?restIdx:''), name:'Rest Day'+(restIdx>1?' '+restIdx:''), rest:true, exercises:[], restSlotPos:pos});
+    result.splice(clampedPos, 0, {id:'V'+(restIdx>1?restIdx:''), name:'Rest Day', rest:true, exercises:[], restSlotPos:pos});
     restIdx++;
   }
   // Assign display letters A-Z to workout passes
@@ -369,16 +370,18 @@ function selectUser(userId){
     }catch(e){console.warn('localStorage parse error',e);}
   }
 
-  // Ask unit preference if not set yet
-  if(!state.unit || (!raw)){
-    document.getElementById('userScreen').style.display='none';
-    document.getElementById('appShell').style.display='block';
+  // Show unit picker only if user has never set it (first time ever for this user)
+  const unitAlreadySet = raw && state.unit;
+  document.getElementById('userScreen').style.display='none';
+  document.getElementById('appShell').style.display='block';
+
+  if(!unitAlreadySet){
     showUnitDialog(userId);
+    // Don't return — still kick off background sync
+    syncFromCloud(userId);
     return;
   }
 
-  document.getElementById('userScreen').style.display='none';
-  document.getElementById('appShell').style.display='block';
   renderChain();
   syncFromCloud(userId);
 }
@@ -386,10 +389,11 @@ function selectUser(userId){
 function showUnitDialog(userId){
   const el=document.getElementById('view-chain');
   el.innerHTML=`
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:32px 20px;gap:16px;">
-      <div style="font-family:var(--display);font-size:2rem;letter-spacing:.08em;color:var(--white)">WEIGHT UNIT</div>
-      <div style="font-family:var(--mono);font-size:.6rem;color:var(--gray-light);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px">Which unit do you use?</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:280px;">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:65vh;padding:32px 20px;gap:14px;max-width:400px;margin:0 auto;">
+      <div style="font-family:var(--display);font-size:2.2rem;letter-spacing:.08em;color:var(--white)">WEIGHT UNIT</div>
+      <div style="font-family:var(--mono);font-size:.58rem;color:var(--gray-light);letter-spacing:.1em;text-transform:uppercase;">Choose once for ${USERS[userId]?.name||userId}</div>
+      <div style="font-family:var(--mono);font-size:.54rem;color:#555;text-align:center;line-height:1.8;margin-bottom:8px;">This is set per profile. To change later,<br>go to <span style='color:var(--gold)'>Data → Weight Unit</span>.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:280px;margin-bottom:8px;">
         <button class="user-btn" onclick="setUnit('kg','${userId}')">
           <span class="user-initial">KG</span>
           <span class="user-name">Kilograms</span>
@@ -399,6 +403,7 @@ function showUnitDialog(userId){
           <span class="user-name">Pounds</span>
         </button>
       </div>
+      <div style="font-family:var(--mono);font-size:.46rem;color:#2a2a2a;text-align:center;max-width:260px;">Europe / most of the world uses KG.<br>US / UK often uses LBS.</div>
     </div>`;
 }
 
@@ -406,7 +411,7 @@ function setUnit(unit, userId){
   state.unit=unit;
   save();
   renderChain();
-  syncFromCloud(userId||currentUser.id);
+  // syncFromCloud already called in selectUser — no double call needed
 }
 
 async function syncFromCloud(userId){
@@ -545,7 +550,7 @@ function renderChain(){
       const extras=draft?draft.extras:[];
 
       pass.exercises.forEach(ex=>{
-        const isSaved=!isDone&&!!savedExs[ex.id]&&!savedExs[ex.id].skipped;
+        const isSaved=!isDone&&!!savedExs[ex.id]&&!savedExs[ex.id].skipped&&!savedExs[ex.id].editing;
         const isSkipped=!isDone&&savedExs[ex.id]?.skipped===true;
         const isBW=!!ex.bw;
         // Improvement 6: exercise overrides (rename main exercises)
@@ -623,7 +628,7 @@ function renderChain(){
             if(isBW){
               const snapKg = savedSet?.bwSnap || (todayWkg||0);
               const snapDisp = toDisplay(snapKg)||'?';
-              html+=`<div class="set-row bw-set"><span class="set-num${warmup?' warmup-label':''}">${warmup?'W'+(si):'W'}</span><div><div class="bw-snap">BW ${snapDisp}${unitL}</div><input class="set-input${wCls}" type="number" id="bw-${ex.id}-${si}" placeholder="0" value="${savedSet?.extra!=null?toDisplay(savedSet.extra):''}" min="-50" step="${unitL==='lbs'?'1':'1.25'}" ${dis}><div class="set-unit">+${unitL}</div></div><div><input class="set-input${wCls}" type="number" id="r-${ex.id}-${si}" placeholder="${prev?.reps||'—'}" value="${savedSet?.reps||''}" min="1" max="50" ${dis}><div class="set-unit">reps</div></div><div><input class="set-input${wCls} forced" type="number" id="f-${ex.id}-${si}" placeholder="0" value="${savedSet?.forced||''}" min="0" max="20" ${dis}><div class="set-unit forced-unit">+f</div></div>${!isDone&&!isSaved&&isExtra?`<button class="set-delete" onclick="removeExtraSet('${ex.id}',${si-1},'${passId}')">✕</button>`:'<div></div>'}</div>`;
+              html+=`<div class="set-row bw-set"><span class="set-num${warmup?' warmup-label':''}">${warmup?'W'+(si):'W'}</span><div><input class="set-input${wCls}" type="number" id="bw-${ex.id}-${si}" placeholder="0" value="${savedSet?.extra!=null?toDisplay(savedSet.extra):''}" min="-50" step="${unitL==='lbs'?'1':'1.25'}" ${dis}><div class="set-unit">+${unitL} (BW:${snapDisp})</div></div><div><input class="set-input${wCls}" type="number" id="r-${ex.id}-${si}" placeholder="${prev?.reps||'—'}" value="${savedSet?.reps||''}" min="1" max="50" ${dis}><div class="set-unit">reps</div></div><div><input class="set-input${wCls} forced" type="number" id="f-${ex.id}-${si}" placeholder="0" value="${savedSet?.forced||''}" min="0" max="20" ${dis}><div class="set-unit forced-unit">+f</div></div>${!isDone&&!isSaved&&isExtra?`<button class="set-delete" onclick="removeExtraSet('${ex.id}',${si-1},'${passId}')">✕</button>`:'<div></div>'}</div>`;
             }else{
               // Work set (si=0) or extra
               const isWorkSet = si===0 || (isExtra && !warmup);
@@ -643,7 +648,38 @@ function renderChain(){
       });
 
       // Extras
-      extras.forEach((ex,i)=>{html+=`<div class="ex-block${ex.saved?' saved':''}"><div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${ex.name} <span class="ex-tag" style="color:#446;border-color:#223">Extra</span></div></div><div class="ex-action-col"><div class="ex-mini-btns">${ex.saved?`<span class="ex-saved-badge">✓</span><button class="ex-mini-btn" onclick="unsaveExtra('${passId}',${i})">Edit</button>`:`<button class="ex-mini-btn save-btn" onclick="saveExtra('${passId}',${i})">Save</button><button class="ex-mini-btn" onclick="removeExtra('${passId}',${i})">Remove</button>`}</div></div></div><div class="sets-table"><div class="set-row normal-set"><span class="set-num">S1</span><div><input class="set-input" type="number" id="ew-${passId}-${i}" placeholder="—" min="0" step="${state.unit==='lbs'?'5':'2.5'}" value="${ex.weight!=null?toDisplay(ex.weight):''}" ${ex.saved?'disabled':''}><div class="set-unit">${unitLabel()}</div></div><div><input class="set-input" type="number" id="er-${passId}-${i}" placeholder="—" min="1" max="50" value="${ex.reps||''}" ${ex.saved?'disabled':''}><div class="set-unit">reps</div></div><div><input class="set-input forced" type="number" id="ef-${passId}-${i}" placeholder="0" min="0" max="20" value="${ex.forced||''}" ${ex.saved?'disabled':''}><div class="set-unit forced-unit">+f</div></div><div></div></div></div></div>`;});
+      extras.forEach((ex,i)=>{
+      const exSaved=ex.saved&&!ex.editing;
+      const dis=exSaved?'disabled':'';
+      const unitL=unitLabel();
+      if(!ex.sets||ex.sets.length===0){ex.sets=[{warmup:true,weight:null,reps:null,forced:null},{warmup:true,weight:null,reps:null,forced:null},{warmup:false,weight:null,reps:null,forced:null}];}
+      const exSets=ex.sets;
+      html+=`<div class="ex-block${exSaved?' saved':''}">
+        <div class="ex-header-row">
+          <div class="ex-label-col"><div class="ex-name">${ex.name} <span class="ex-tag" style="color:#446;border-color:#223">Extra</span></div></div>
+          <div class="ex-action-col"><div class="ex-mini-btns">
+            ${exSaved?`<span class="ex-saved-badge">✓</span><button class="ex-mini-btn" onclick="unsaveExtra('${passId}',${i})">Edit</button>`:`<button class="ex-mini-btn save-btn" onclick="saveExtra('${passId}',${i})">Save</button><button class="ex-mini-btn" onclick="removeExtra('${passId}',${i})">Remove</button>`}
+          </div></div>
+        </div>
+        <div class="sets-table">`;
+      exSets.forEach((s,si)=>{
+        const wCls=s.warmup?' warmup':'';
+        const workIdx=exSets.slice(0,si).filter(x=>!x.warmup).length;
+        const lbl=s.warmup?('W'+(exSets.slice(0,si).filter(x=>x.warmup).length+1)):('S'+(workIdx+1));
+        html+=`<div class="set-row normal-set">
+          <span class="set-num${s.warmup?' warmup-label':''}">${lbl}</span>
+          <div><input class="set-input${wCls}" type="number" id="exw-${passId}-${i}-${si}" placeholder="—" min="0" step="${unitL==='lbs'?'5':'2.5'}" value="${s.weight!=null?toDisplay(s.weight):''}" ${dis}><div class="set-unit">${unitL}</div></div>
+          <div><input class="set-input${wCls}" type="number" id="exr-${passId}-${i}-${si}" placeholder="—" min="1" max="50" value="${s.reps||''}" ${dis}><div class="set-unit">reps</div></div>
+          <div><input class="set-input${wCls} forced" type="number" id="exf-${passId}-${i}-${si}" placeholder="0" min="0" max="20" value="${s.forced||''}" ${dis}><div class="set-unit forced-unit">+f</div></div>
+          ${!exSaved&&exSets.length>1?`<button class="set-delete" onclick="removeExtraExSet('${passId}',${i},${si})">✕</button>`:'<div></div>'}
+        </div>`;
+      });
+      if(!exSaved){
+        html+=`<button class="add-set-btn" onclick="addExtraExSet('${passId}',${i},false)">+ Work Set</button>`;
+        html+=`<button class="add-set-btn" style="border-color:#1a1400;color:#3a2a00" onclick="addExtraExSet('${passId}',${i},true)">+ Warm-up</button>`;
+      }
+      html+=`</div></div>`;
+    });
 
       if(!isDone){html+=`<div class="add-ex-row"><button class="add-ex-btn" id="addbtn-${passId}" onclick="showAddEx('${passId}')"><span style="font-size:.85rem">+</span> Add exercise</button><div class="add-ex-form" id="addform-${passId}" style="display:none"><input class="add-ex-input" type="text" id="addinput-${passId}" placeholder="Ab Wheel, Dragon Flag..." list="exlist"><button class="add-ex-confirm" onclick="confirmAddEx('${passId}')">+</button></div></div><datalist id="exlist">${ALL_EXERCISES.map(e=>`<option value="${e}">`).join('')}</datalist>`;}
 
@@ -667,25 +703,32 @@ function buildReorderUI(effectiveChain){
   const passOrder = state.passOrder || DEFAULT_PASS_ORDER;
   const restSlots = state.restSlots || DEFAULT_REST_SLOTS;
 
-  let html=`<div id="reorder-panel" style="display:none;border:1px solid #2a2a2a;margin:0 11px 8px;padding:12px;">
+  let html=`<div id="reorder-panel" style="display:none;border:1px solid #2a2a2a;margin:0 11px 8px;padding:12px;max-width:560px;margin-left:auto;margin-right:auto;">
     <div style="font-family:var(--mono);font-size:.52rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Edit Chain Order</div>
-    <div style="font-family:var(--mono);font-size:.5rem;color:#444;margin-bottom:8px;">Drag to reorder workout passes. Rest days slot automatically.</div>
+    <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);margin-bottom:10px;line-height:1.7;">On desktop: drag & drop. On mobile: <strong style='color:var(--white)'>hold & drag</strong> each pass to reorder.</div>
     <div id="reorder-list" style="margin-bottom:12px;">`;
 
   passOrder.forEach((pid,i)=>{
     const pass = BASE_PASSES.find(p=>p.id===pid);
     if(!pass)return;
     const letter = 'ABCDEF'[i]||pid;
-    html+=`<div class="reorder-item" data-id="${pid}" draggable="true" ondragstart="dragStart(event,'${pid}')" ondragover="dragOver(event)" ondrop="dropPass(event,'${pid}')" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #2a2a2a;margin-bottom:4px;cursor:grab;background:#111;">
-      <span style="font-family:var(--display);font-size:1.2rem;color:var(--red);min-width:18px;">${letter}</span>
-      <span style="font-family:var(--sans);font-size:.78rem;flex:1;">${pass.name}</span>
-      <span style="color:#333;font-size:.9rem;">☰</span>
+    html+=`<div class="reorder-item" data-id="${pid}" draggable="true"
+      ondragstart="dragStart(event,'${pid}')"
+      ondragover="dragOver(event)"
+      ondrop="dropPass(event,'${pid}')"
+      ontouchstart="touchStart(event,'${pid}')"
+      ontouchmove="touchMove(event)"
+      ontouchend="touchEnd(event,'${pid}')"
+      style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #3a3a3a;margin-bottom:6px;cursor:grab;background:#1a1a1a;touch-action:none;-webkit-user-select:none;user-select:none;">
+      <span style="font-family:var(--display);font-size:1.3rem;color:var(--red);min-width:20px;">${letter}</span>
+      <span style="font-family:var(--sans);font-size:.82rem;flex:1;color:var(--white);">${pass.name}</span>
+      <span style="color:var(--gray-light);font-size:1.1rem;letter-spacing:2px;">⠿</span>
     </div>`;
   });
 
   html+=`</div>
     <div style="font-family:var(--mono);font-size:.52rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;margin-top:4px;">Rest Day Positions</div>
-    <div style="font-family:var(--mono);font-size:.48rem;color:#444;margin-bottom:8px;">After which pass do you want rest days?</div>
+    <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);margin-bottom:10px;">Add a rest day after any session:</div>
     <div id="rest-slot-list" style="margin-bottom:12px;">`;
 
   // Show current rest slots and allow adding/removing
@@ -695,9 +738,9 @@ function buildReorderUI(effectiveChain){
     const passAtPos = BASE_PASSES.find(p=>p.id===passOrder[pos-1]);
     const label = passAtPos ? `After ${passAtPos.name}` : `After position ${pos}`;
     const isActive = restSlots.includes(pos);
-    html+=`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1a1a;">
-      <span style="font-family:var(--mono);font-size:.56rem;flex:1;color:${isActive?'var(--white)':'#444'}">${label}</span>
-      <button onclick="toggleRestSlot(${pos})" style="background:none;border:1px solid ${isActive?'var(--red)':'#2a2a2a'};color:${isActive?'var(--red)':'#333'};font-family:var(--mono);font-size:.44rem;letter-spacing:.06em;padding:3px 8px;cursor:pointer;text-transform:uppercase;">${isActive?'Remove':'Add Rest'}</button>
+    html+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #1a1a1a;">
+      <span style="font-family:var(--mono);font-size:.58rem;flex:1;color:${isActive?'var(--white)':'var(--gray-light)'}">${label}</span>
+      <button onclick="toggleRestSlot(${pos})" style="background:${isActive?'#2a0a0a':'#111'};border:1px solid ${isActive?'var(--red)':'#555'};color:${isActive?'var(--red)':'var(--gray-light)'};font-family:var(--mono);font-size:.48rem;letter-spacing:.06em;padding:5px 10px;cursor:pointer;text-transform:uppercase;">${isActive?'✕ Remove':'+ Rest'}</button>
     </div>`;
   }
 
@@ -716,10 +759,67 @@ function showReorderUI(){
   if(panel) panel.style.display = panel.style.display==='none' ? 'block' : 'none';
 }
 
-// Drag and drop for reordering
+// Drag and drop for reordering (desktop + mobile touch)
 let draggedId = null;
+let touchDragId = null;
+let touchDragEl = null;
+let touchClone = null;
+
 function dragStart(e, id){ draggedId=id; e.dataTransfer.effectAllowed='move'; }
 function dragOver(e){ e.preventDefault(); e.dataTransfer.dropEffect='move'; }
+
+// Touch drag support for mobile
+function touchStart(e, id){
+  touchDragId = id;
+  touchDragEl = e.currentTarget;
+  touchDragEl.style.opacity = '0.5';
+  // Don't preventDefault here — let it fall through, longpress activates drag
+  e.stopPropagation();
+}
+function touchMove(e){
+  if(!touchDragId) return;
+  e.preventDefault(); // now prevent scroll
+  const touch = e.touches[0];
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  const target = el?.closest('.reorder-item');
+  if(target && target.dataset.id && target.dataset.id !== touchDragId){
+    // highlight drop target
+    document.querySelectorAll('.reorder-item').forEach(i=>i.style.borderColor='#3a3a3a');
+    target.style.borderColor = 'var(--red)';
+  }
+}
+function touchEnd(e, id){
+  if(!touchDragId){ return; }
+  const touch = e.changedTouches[0];
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  const target = el?.closest('.reorder-item');
+  if(touchDragEl) touchDragEl.style.opacity = '1';
+  document.querySelectorAll('.reorder-item').forEach(i=>i.style.borderColor='#3a3a3a');
+  if(target && target.dataset.id && target.dataset.id !== touchDragId){
+    const fromId = touchDragId;
+    const toId = target.dataset.id;
+    const order = [...(state.passOrder||DEFAULT_PASS_ORDER)];
+    const fromIdx = order.indexOf(fromId);
+    const toIdx = order.indexOf(toId);
+    if(fromIdx>=0 && toIdx>=0){
+      order.splice(fromIdx,1);
+      order.splice(toIdx,0,fromId);
+      state.passOrder = order;
+      const effectiveChain = getEffectiveChain();
+      const panel = document.getElementById('reorder-panel');
+      if(panel){
+        const newContent = buildReorderUI(effectiveChain);
+        const tmp = document.createElement('div');
+        tmp.innerHTML = newContent;
+        const newPanel = tmp.querySelector('#reorder-panel');
+        if(newPanel){ newPanel.style.display='block'; panel.replaceWith(newPanel); }
+      }
+    }
+  }
+  touchDragId = null;
+  touchDragEl = null;
+}
+
 function dropPass(e, targetId){
   e.preventDefault();
   if(!draggedId||draggedId===targetId)return;
@@ -829,9 +929,24 @@ function saveExercise(passId,exId){
   }
   const displayName = state.exerciseOverrides?.[exId] || state.draft.swaps[exId] || ex.name;
   state.draft.savedExercises[exId]={id:exId,name:displayName,sets,bw:isBW};
+  delete state.draft.savedExercises[exId].editing;
   save();showToast('Saved ✓');rerenderPass(passId);
 }
-function unsaveExercise(passId,exId){ensureDraft(passId);delete state.draft.savedExercises[exId];save();rerenderPass(passId);}
+function unsaveExercise(passId,exId){
+  ensureDraft(passId);
+  const saved=state.draft.savedExercises[exId];
+  if(saved){
+    // Restore extraSets structure from saved sets so inputs re-populate
+    if(saved.sets&&saved.sets.length>1){
+      state.draft.extraSets[exId]=saved.sets.slice(1).map(s=>({warmup:!!s.warmup}));
+    }
+    // Mark as editing — render will show filled-in inputs instead of disabled
+    state.draft.savedExercises[exId]={...saved,editing:true};
+  }else{
+    delete state.draft.savedExercises[exId];
+  }
+  save();rerenderPass(passId);
+}
 function skipExercise(passId,exId){
   ensureDraft(passId);
   const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);const ex=pass.exercises.find(e=>e.id===exId);
@@ -842,19 +957,30 @@ function skipExercise(passId,exId){
 function unskipExercise(passId,exId){ensureDraft(passId);delete state.draft.savedExercises[exId];save();rerenderPass(passId);}
 function saveExtra(passId,idx){
   ensureDraft(passId);
-  const wDisp=parseFloat(document.getElementById('ew-'+passId+'-'+idx)?.value)||null;
-  const wKg = wDisp!=null?toKg(wDisp):null;
-  const r=parseInt(document.getElementById('er-'+passId+'-'+idx)?.value)||null;
-  const f=parseInt(document.getElementById('ef-'+passId+'-'+idx)?.value)||null;
-  state.draft.extras[idx]={...state.draft.extras[idx],saved:true,weight:wKg,reps:r,forced:f};
+  const ex=state.draft.extras[idx];
+  if(!ex.sets||ex.sets.length===0)ex.sets=[{warmup:true},{warmup:true},{warmup:false}];
+  ex.sets=ex.sets.map((s,si)=>{
+    const wDisp=parseFloat(document.getElementById('exw-'+passId+'-'+idx+'-'+si)?.value)||null;
+    const r=parseInt(document.getElementById('exr-'+passId+'-'+idx+'-'+si)?.value)||null;
+    const f=parseInt(document.getElementById('exf-'+passId+'-'+idx+'-'+si)?.value)||null;
+    return {...s,weight:wDisp!=null?toKg(wDisp):null,reps:r,forced:f};
+  });
+  state.draft.extras[idx]={...ex,saved:true,editing:false};
   save();showToast('Saved ✓');rerenderPass(passId);
 }
-function unsaveExtra(passId,idx){ensureDraft(passId);state.draft.extras[idx].saved=false;save();rerenderPass(passId);}
+function unsaveExtra(passId,idx){ensureDraft(passId);state.draft.extras[idx]={...state.draft.extras[idx],saved:false,editing:true};save();rerenderPass(passId);}
 function finishPass(passId){
   const draft=state.draft;if(!draft||draft.passId!==passId)return;
   const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);const exercises=[];
   pass.exercises.forEach(ex=>{const d=draft.savedExercises[ex.id];if(d)exercises.push(d);});
-  draft.extras.forEach((ex,i)=>{if(ex.saved)exercises.push({id:'extra_'+i,name:ex.name,sets:[{weight:ex.weight,reps:ex.reps,forced:ex.forced}],extra:true});});
+  draft.extras.forEach((ex,i)=>{
+    if(ex.saved){
+      const sets=ex.sets&&ex.sets.length>0
+        ?ex.sets.map(s=>({weight:s.weight,reps:s.reps,forced:s.forced,warmup:s.warmup}))
+        :[{weight:ex.weight,reps:ex.reps,forced:ex.forced}];
+      exercises.push({id:'extra_'+i,name:ex.name,sets,extra:true});
+    }
+  });
   const today=new Date().toLocaleDateString('en-GB',{month:'short',day:'numeric'});
   curCycle().done[passId]={date:today,exercises};
   state.log.push({passId,passName:pass.name,timestamp:Date.now(),exercises});
@@ -888,6 +1014,19 @@ function doSwap(exId,val,passId){if(!val)return;const wrap=document.getElementBy
 function showAddEx(passId){document.getElementById('addbtn-'+passId).style.display='none';document.getElementById('addform-'+passId).style.display='flex';setTimeout(()=>document.getElementById('addinput-'+passId)?.focus(),50);}
 function confirmAddEx(passId){const inp=document.getElementById('addinput-'+passId);const name=inp?.value.trim();if(!name)return;ensureDraft(passId);state.draft.extras.push({name,saved:false});save();rerenderPass(passId);}
 function removeExtra(passId,idx){ensureDraft(passId);state.draft.extras.splice(idx,1);save();rerenderPass(passId);}
+function addExtraExSet(passId,idx,warmup){
+  ensureDraft(passId);
+  const ex=state.draft.extras[idx];
+  if(!ex.sets||ex.sets.length===0)ex.sets=[{warmup:true},{warmup:true},{warmup:false}];
+  ex.sets.push({warmup:!!warmup,weight:null,reps:null,forced:null});
+  save();rerenderPass(passId);
+}
+function removeExtraExSet(passId,idx,si){
+  ensureDraft(passId);
+  const ex=state.draft.extras[idx];
+  if(ex.sets&&ex.sets.length>1)ex.sets.splice(si,1);
+  save();rerenderPass(passId);
+}
 
 // ── PASS MANAGEMENT ───────────────────────────────────────────
 function doneRest(passId){const today=new Date().toLocaleDateString('en-GB',{month:'short',day:'numeric'});curCycle().done[passId]={date:today,exercises:[]};save();showToast('Rest logged ✓');renderChain();}
