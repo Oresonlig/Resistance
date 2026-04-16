@@ -107,6 +107,18 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .ex-mini-btn.save-btn{border-color:#1a3a1a;color:#3a7a3a;}
 .ex-mini-btn.save-btn:hover{border-color:var(--green-bright);color:var(--green-bright);}
 .ex-saved-badge{font-family:var(--mono);font-size:.44rem;color:var(--green-bright);letter-spacing:.08em;}
+.ex-btn-done{background:#0d2a0d;border:1px solid var(--green-bright);color:var(--green-bright);font-family:var(--mono);font-size:.52rem;font-weight:500;letter-spacing:.05em;padding:5px 10px;cursor:pointer;text-transform:uppercase;transition:all .15s;white-space:nowrap;}
+.ex-btn-done:hover{background:#1a4a1a;}
+.ex-btn-skip{background:none;border:1px solid #5a3a00;color:#b87a00;font-family:var(--mono);font-size:.44rem;letter-spacing:.05em;padding:3px 7px;cursor:pointer;text-transform:uppercase;transition:all .15s;white-space:nowrap;}
+.ex-btn-skip:hover{border-color:#c08800;color:#c08800;}
+.ex-btn-edit{background:none;border:1px solid #2a2a2a;color:#555;font-family:var(--mono);font-size:.44rem;letter-spacing:.05em;padding:3px 7px;cursor:pointer;text-transform:uppercase;transition:all .15s;white-space:nowrap;}
+.ex-btn-edit:hover{border-color:#666;color:#888;}
+.ex-edit-dropdown{position:relative;display:inline-block;}
+.ex-edit-menu{display:none;position:absolute;right:0;top:100%;background:#1a1a1a;border:1px solid #333;z-index:50;min-width:90px;margin-top:2px;}
+.ex-edit-menu.open{display:block;}
+.ex-edit-menu button{display:block;width:100%;background:none;border:none;border-bottom:1px solid #222;color:#888;font-family:var(--mono);font-size:.44rem;letter-spacing:.05em;text-transform:uppercase;padding:6px 10px;cursor:pointer;text-align:left;transition:color .15s;}
+.ex-edit-menu button:last-child{border-bottom:none;}
+.ex-edit-menu button:hover{color:var(--white);background:#252525;}
 .sets-table{margin-top:6px;width:100%;}
 .set-row{display:grid;align-items:center;gap:4px;margin-bottom:4px;}
 .set-row.normal-set{grid-template-columns:28px 1fr 1fr 1fr 18px;}
@@ -317,7 +329,7 @@ function getCycleDoneKeys(){
 }
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{}};
 state.cycles=[newCycle()];
 
 function newCycle(){
@@ -373,6 +385,7 @@ function selectUser(userId){
         if(!state.restSlots)state.restSlots=null;
         if(!state.unit)state.unit='kg';
         if(!state.exerciseOverrides)state.exerciseOverrides={};
+        if(!state.passNameOverrides)state.passNameOverrides={};
       }
     }catch(e){console.warn('localStorage parse error',e);}
   }
@@ -389,6 +402,13 @@ function selectUser(userId){
     return;
   }
 
+  // Restore any pass name overrides into BASE_PASSES
+  if(state.passNameOverrides){
+    Object.entries(state.passNameOverrides).forEach(([pid,name])=>{
+      const bp=BASE_PASSES.find(p=>p.id===pid);
+      if(bp) bp.name=name;
+    });
+  }
   renderChain();
   syncFromCloud(userId);
 }
@@ -439,6 +459,7 @@ async function syncFromCloud(userId){
         if(!state.restSlots)state.restSlots=null;
         if(!state.unit)state.unit='kg';
         if(!state.exerciseOverrides)state.exerciseOverrides={};
+        if(!state.passNameOverrides)state.passNameOverrides={};
         localStorage.setItem(lsKey(userId),JSON.stringify(state));
         renderChain();
       }
@@ -535,7 +556,7 @@ function renderChain(){
     const hasDraft=state.draft&&state.draft.passId===passId;
     const inProgress=hasDraft&&Object.keys(state.draft.savedExercises).length>0;
     const completedData=isDone?cycle.done[passId]:null;
-    const displayLetter = pass.displayLetter || passId;
+    const displayLetter = pass.rest ? 'V' : (pass.displayLetter || passId);
 
     let cls='pass-card';
     if(isDone)cls+=' done';else if(inProgress)cls+=' in-progress';else if(isNext)cls+=' next-up';
@@ -591,17 +612,26 @@ function renderChain(){
         if(!isDone&&!isSkipped){
           html+=`<div class="ex-mini-btns">`;
           if(isSaved){
-            html+=`<span class="ex-saved-badge">✓</span><button class="ex-mini-btn" onclick="unsaveExercise('${passId}','${ex.id}')">Edit</button>`;
+            html+=`<span class="ex-saved-badge">✓ Done</span>
+              <button class="ex-btn-edit" onclick="unsaveExercise('${passId}','${ex.id}')">Edit ▾</button>`;
           }else{
-            html+=`<button class="ex-mini-btn save-btn" onclick="saveExercise('${passId}','${ex.id}')">Save</button>`;
-            html+=`<button class="ex-mini-btn" onclick="skipExercise('${passId}','${ex.id}')">Skip</button>`;
-            html+=`<button class="ex-mini-btn" onclick="toggleSwap('${ex.id}','${passId}','temp')">Temp</button>`;
-            html+=`<button class="ex-mini-btn" onclick="toggleSwap('${ex.id}','${passId}','perm')">Perm</button>`;
-            html+=`<button class="ex-mini-btn" onclick="toggleRename('${ex.id}')">Rename</button>`;
+            html+=`<button class="ex-btn-done" onclick="saveExercise('${passId}','${ex.id}')">Done</button>`;
+            html+=`<button class="ex-btn-skip" onclick="skipExercise('${passId}','${ex.id}')">Skip</button>`;
+            html+=`<div class="ex-edit-dropdown" id="editdd-${ex.id}">
+              <button class="ex-btn-edit" onclick="toggleEditMenu('${ex.id}')">Edit ▾</button>
+              <div class="ex-edit-menu" id="editmenu-${ex.id}">
+                <button onclick="toggleSwap('${ex.id}','${passId}','temp');closeEditMenu('${ex.id}')">Swap (session)</button>
+                <button onclick="toggleSwap('${ex.id}','${passId}','perm');closeEditMenu('${ex.id}')">Swap (always)</button>
+                <button onclick="toggleRename('${ex.id}');closeEditMenu('${ex.id}')">Rename</button>
+              </div>
+            </div>`;
           }
           html+=`</div>`;
         }else if(!isDone&&isSkipped){
-          html+=`<div class="ex-mini-btns"><button class="ex-mini-btn" onclick="unskipExercise('${passId}','${ex.id}')">↩</button></div>`;
+          html+=`<div class="ex-mini-btns">
+            <span style="font-family:var(--mono);font-size:.44rem;color:#5a3a00;">Skipped</span>
+            <button class="ex-btn-edit" onclick="unskipExercise('${passId}','${ex.id}')">↩ Undo</button>
+          </div>`;
         }
         html+=`</div></div>`;
 
@@ -620,76 +650,83 @@ function renderChain(){
         }
 
         if(!isSkipped){
-          // Default extra sets: ramp/bw = no warmups; normal = 2 warmups
-          const defaultWarmups = (ex.ramp || ex.bw) ? [] : [{warmup:true},{warmup:true}];
-          const effectiveExtraSets = draftExtraSets[ex.id] !== undefined ? draftExtraSets[ex.id] : defaultWarmups;
-          // Build a flat ordered list: warmups first, then work sets
-          // si=0 is always the first item (work set for ramp/bw, or work set after warmups for normal)
-          // Structure: extraSets contains all sets after si=0
-          // si=0 = primary work set; extra sets can be warmup or work
-          const allSets=[{warmup:false,primary:true},...effectiveExtraSets.map(s=>({...s,primary:false}))];
-          // Sort: warmups first, then work — but respect saved order when editing
-          // Count groups for headers
-          const warmupSets=allSets.filter(s=>s.warmup);
-          const workSets=allSets.filter(s=>!s.warmup);
-          // Assign counters
-          let wNum=0,sNum=0;
-          const unitL=unitLabel();
-          const placeholderW = prev ? toDisplay(prev.weight)||'—' : '—';
+          // ── SET RENDERING ─────────────────────────────────────────
+          // Model: extraSets array stores all sets (including work + warmup)
+          // Each: {warmup:bool}. Default depends on exercise type.
+          // Ramp: 3 work sets (no warmup — ramping IS the warmup)
+          // BW (dead hang etc): 1 work set, no default warmup
+          // Normal: 2 warmup + 1 work
+          const defaultSets = ex.ramp
+            ? [{warmup:false},{warmup:false},{warmup:false}]
+            : ex.bw
+              ? [{warmup:false}]
+              : [{warmup:true},{warmup:true},{warmup:false}];
+          const rawSets = draftExtraSets[ex.id] !== undefined
+            ? draftExtraSets[ex.id]
+            : defaultSets;
+          // Sort: warmups first, work sets after — stable sort preserving relative order
+          const warmupList = rawSets.map((s,i)=>({...s,origIdx:i})).filter(s=>s.warmup);
+          const workList   = rawSets.map((s,i)=>({...s,origIdx:i})).filter(s=>!s.warmup);
+          const sortedSets = [...warmupList, ...workList];
+          const unitL = unitLabel();
+          const placeholderW = prev ? (toDisplay(prev.weight)||'—') : '—';
           html+=`<div class="sets-table">`;
-          // Render warmup group first (if any)
-          if(warmupSets.length>0&&!ex.ramp){
+          // Group headers
+          if(warmupList.length>0){
             html+=`<div class="sets-group-label warmup-group">Warm-up</div>`;
           }
-          // Render work group header
-          // We'll render all sets in order but insert group headers
-          let shownWarmupHeader=warmupSets.length===0||ex.ramp;
-          let shownWorkHeader=false;
-          let warmupCount=0, workCount=0;
-          for(let si=0;si<allSets.length;si++){
-            const setMeta=allSets[si];
-            const warmup=setMeta.warmup;
-            const origIdx=setMeta.primary?0:effectiveExtraSets.indexOf(effectiveExtraSets.find((_,ii)=>{
-              let cnt=setMeta.primary?-1:0;
-              for(let j=0;j<effectiveExtraSets.length;j++){if(effectiveExtraSets[j]===setMeta&&cnt++===0)return true;}
-              return false;
-            }));
-            // Use si directly for DOM IDs (matches how inputs are read)
-            const savedSet=savedData?.sets?.[si]||null;
-            const dis=(isDone||isSaved)?'disabled':'';
-            const wCls=warmup?' warmup':' work-set';
-            // Group header injection
-            if(!warmup&&!shownWorkHeader){
-              if(warmupSets.length>0&&!ex.ramp){
-                html+=`<div class="sets-group-label work-group">Work</div>`;
-              } else if(ex.ramp){
-                html+=`<div class="sets-group-label work-group" style="margin-top:2px;border-top:none;">Sets</div>`;
+          let warmupCount=0, workCount=0, shownWorkHeader=false;
+          for(let si=0; si<sortedSets.length; si++){
+            const setMeta = sortedSets[si];
+            const warmup  = setMeta.warmup;
+            const origIdx = setMeta.origIdx; // stable index for DOM IDs & delete
+            // Inject Work header before first work set
+            if(!warmup && !shownWorkHeader){
+              if(ex.ramp){
+                html+=`<div class="sets-group-label work-group" style="border-top:none;margin-top:2px;">Sets</div>`;
               } else {
-                html+=`<div class="sets-group-label work-group" style="border-top:none;">Work</div>`;
+                html+=`<div class="sets-group-label work-group">Work</div>`;
               }
               shownWorkHeader=true;
             }
-            // Labels
-            const lbl=warmup?('W'+(++warmupCount)):('S'+(++workCount));
-            const isRemovable=!setMeta.primary&&!isDone&&!isSaved;
-            // Find the index in extraSets for delete
-            let extraIdx=-1;
-            if(!setMeta.primary){
-              // Count how many extras before this one
-              let cnt=-1;
-              for(let j=0;j<effectiveExtraSets.length;j++){
-                cnt++;
-                // match by position in allSets
-                if(allSets[j+1]===setMeta){extraIdx=j;break;}
-              }
-              if(extraIdx<0) extraIdx=si-1;
-            }
+            const lbl   = warmup ? ('W'+(++warmupCount)) : ('S'+(++workCount));
+            const wCls  = warmup ? ' warmup' : ' work-set';
+            // savedData uses origIdx to read the correct saved set
+            const savedSet = savedData?.sets?.[origIdx] || null;
+            const dis   = (isDone||isSaved) ? 'disabled' : '';
+            const canDel = !isDone && !isSaved && rawSets.length > 1;
             if(isBW){
-              const snapKg=savedSet?.bwSnap||(todayWkg||0);
-              const snapDisp=toDisplay(snapKg)||'?';
-              html+=`<div class="set-row bw-set"><span class="set-num${warmup?' warmup-label':''}">${lbl}</span><div><input class="set-input${wCls}" type="number" id="bw-${ex.id}-${si}" placeholder="0" value="${savedSet?.extra!=null?toDisplay(savedSet.extra):''}" min="-50" step="${unitL==='lbs'?'1':'1.25'}" ${dis}><div class="set-unit">+${unitL} (BW:${snapDisp})</div></div><div><input class="set-input${wCls}" type="number" id="r-${ex.id}-${si}" placeholder="${prev?.reps||'—'}" value="${savedSet?.reps||''}" min="1" max="50" ${dis}><div class="set-unit">reps</div></div><div><input class="set-input${wCls} forced" type="number" id="f-${ex.id}-${si}" placeholder="0" value="${savedSet?.forced||''}" min="0" max="20" ${dis}><div class="set-unit forced-unit">+f</div></div>${isRemovable?`<button class="set-delete" onclick="removeExtraSet('${ex.id}',${si-1},'${passId}')">✕</button>`:'<div></div>'}</div>`;
-            }else{
-              html+=`<div class="set-row normal-set"><span class="set-num${warmup?' warmup-label':''}">${lbl}</span><div><input class="set-input${wCls}" type="number" id="w-${ex.id}-${si}" placeholder="${placeholderW}" value="${savedSet?.weight!=null?toDisplay(savedSet.weight):''}" min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis}><div class="set-unit">${unitL}</div></div><div><input class="set-input${wCls}" type="number" id="r-${ex.id}-${si}" placeholder="${prev?.reps||'—'}" value="${savedSet?.reps||''}" min="1" max="50" ${dis}><div class="set-unit">reps</div></div><div><input class="set-input${wCls} forced" type="number" id="f-${ex.id}-${si}" placeholder="0" value="${savedSet?.forced||''}" min="0" max="20" ${dis}><div class="set-unit forced-unit">+f</div></div>${isRemovable?`<button class="set-delete" onclick="removeExtraSet('${ex.id}',${si-1},'${passId}')">✕</button>`:'<div></div>'}</div>`;
+              const snapKg   = savedSet?.bwSnap || (todayWkg||0);
+              const snapDisp = toDisplay(snapKg)||'?';
+              html+=`<div class="set-row bw-set">
+                <span class="set-num${warmup?' warmup-label':''}">${lbl}</span>
+                <div><input class="set-input${wCls}" type="number" id="bw-${ex.id}-${origIdx}" placeholder="0"
+                  value="${savedSet?.extra!=null?toDisplay(savedSet.extra):''}"
+                  min="-50" step="${unitL==='lbs'?'1':'1.25'}" ${dis}>
+                  <div class="set-unit">+${unitL} (BW:${snapDisp})</div></div>
+                <div><input class="set-input${wCls}" type="number" id="r-${ex.id}-${origIdx}"
+                  placeholder="${prev?.reps||'—'}" value="${savedSet?.reps||''}" min="1" max="50" ${dis}>
+                  <div class="set-unit">reps</div></div>
+                <div><input class="set-input${wCls} forced" type="number" id="f-${ex.id}-${origIdx}"
+                  placeholder="0" value="${savedSet?.forced||''}" min="0" max="20" ${dis}>
+                  <div class="set-unit forced-unit">+f</div></div>
+                ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}',${origIdx},'${passId}')">✕</button>`:'<div></div>'}
+              </div>`;
+            } else {
+              html+=`<div class="set-row normal-set">
+                <span class="set-num${warmup?' warmup-label':''}">${lbl}</span>
+                <div><input class="set-input${wCls}" type="number" id="w-${ex.id}-${origIdx}"
+                  placeholder="${placeholderW}" value="${savedSet?.weight!=null?toDisplay(savedSet.weight):''}"
+                  min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis}>
+                  <div class="set-unit">${unitL}</div></div>
+                <div><input class="set-input${wCls}" type="number" id="r-${ex.id}-${origIdx}"
+                  placeholder="${prev?.reps||'—'}" value="${savedSet?.reps||''}" min="1" max="50" ${dis}>
+                  <div class="set-unit">reps</div></div>
+                <div><input class="set-input${wCls} forced" type="number" id="f-${ex.id}-${origIdx}"
+                  placeholder="0" value="${savedSet?.forced||''}" min="0" max="20" ${dis}>
+                  <div class="set-unit forced-unit">+f</div></div>
+                ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}',${origIdx},'${passId}')">✕</button>`:'<div></div>'}
+              </div>`;
             }
           }
           if(!isDone&&!isSaved){
@@ -807,10 +844,20 @@ function buildReorderUI(effectiveChain){
     const p=BASE_PASSES.find(x=>x.id===pid);
     if(!p)return;
     const letter='ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i]||pid;
-    html+=`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1a1a;">
-      <span style="font-family:var(--display);font-size:1rem;color:var(--red);min-width:18px;">${letter}</span>
-      <span style="font-family:var(--mono);font-size:.56rem;flex:1;color:var(--white);">${p.name}</span>
-      ${passOrder.length>1?`<button onclick="removePassFromChain('${pid}')" style="background:none;border:1px solid #3a1a1a;color:#5a2a2a;font-family:var(--mono);font-size:.44rem;padding:3px 8px;cursor:pointer;text-transform:uppercase;">Remove</button>`:''}
+    const customName = state.passNameOverrides?.[pid] || p.name;
+    html+=`<div style="margin-bottom:4px;">
+      <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1a1a;">
+        <span style="font-family:var(--display);font-size:1rem;color:var(--red);min-width:18px;">${letter}</span>
+        <span style="font-family:var(--mono);font-size:.56rem;flex:1;color:var(--white);">${customName}</span>
+        <button onclick="togglePassRename('${pid}')" style="background:none;border:1px solid #2a2a2a;color:var(--gray-light);font-family:var(--mono);font-size:.44rem;padding:3px 7px;cursor:pointer;text-transform:uppercase;">Rename</button>
+        ${passOrder.length>1?`<button onclick="removePassFromChain('${pid}')" style="background:none;border:1px solid #3a1a1a;color:#5a2a2a;font-family:var(--mono);font-size:.44rem;padding:3px 8px;cursor:pointer;text-transform:uppercase;">Remove</button>`:''}
+      </div>
+      <div id="passrenamewrap-${pid}" style="display:none;padding:6px 0 4px;">
+        <div style="display:flex;gap:4px;">
+          <input class="add-ex-input" id="passrenameinput-${pid}" type="text" placeholder="${customName}" value="${customName}" style="flex:1;font-size:.6rem;padding:4px 6px;">
+          <button class="add-ex-confirm" onclick="doPassRename('${pid}')">✓</button>
+        </div>
+      </div>
     </div>`;
   });
   // Show available passes to add
@@ -846,6 +893,11 @@ const PASS_TEMPLATES=[
   {id:'G',name:'Arms',exercises:[{id:'G1',name:'Barbell Curl',detail:'1 set failure'},{id:'G2',name:'Hammer Curl',detail:'1 set failure'},{id:'G3',name:'Tricep Pushdowns',detail:'1 set failure'},{id:'G4',name:'Overhead Tricep Extension',detail:'1 set failure'}]},
   {id:'H',name:'Full Body',exercises:[{id:'H1',name:'Deadlift',detail:'Ramping',ramp:true},{id:'H2',name:'Military Press',detail:'1 set failure'},{id:'H3',name:'Pull-ups / Chins',detail:'1 set failure',bw:true},{id:'H4',name:'Dips',detail:'1 set failure'}]},
   {id:'I',name:'Cardio / Conditioning',exercises:[{id:'I1',name:'Bike Cardio',detail:'20 min steady state'},{id:'I2',name:'Farmers Walk',detail:'3 sets'},{id:'I3',name:'Sled Push',detail:'3 sets'}]},
+  {id:'J',name:'Glutes + Hamstrings',exercises:[{id:'J1',name:'Romanian Deadlift',detail:'Ramping → 1 set failure',ramp:true},{id:'J2',name:'Hip Thrust',detail:'1 set failure'},{id:'J3',name:'Lying Leg Curl',detail:'1 set failure'},{id:'J4',name:'Nordic Curl',detail:'1 set failure'}]},
+  {id:'K',name:'Core + Abs',exercises:[{id:'K1',name:'Ab Wheel',detail:'1 set failure'},{id:'K2',name:'Hanging Leg Raise',detail:'1 set failure'},{id:'K3',name:'Cable Crunch',detail:'1 set failure'},{id:'K4',name:'Dead Bug',detail:'2 sets'}]},
+  {id:'L',name:'Upper Body Push',exercises:[{id:'L1',name:'Military Press',detail:'Ramping → 1 set failure',ramp:true},{id:'L2',name:'DB Shoulder Press',detail:'1 set failure'},{id:'L3',name:'Lateral Raises',detail:'1 set failure'},{id:'L4',name:'Tricep Pushdowns',detail:'1 set failure'}]},
+  {id:'M',name:'Upper Body Pull',exercises:[{id:'M1',name:'Pull-ups / Chins',detail:'1 set failure',bw:true},{id:'M2',name:'Seated Cable Row',detail:'1 set failure'},{id:'M3',name:'Face Pulls',detail:'1 set failure'},{id:'M4',name:'Barbell Curl',detail:'1 set failure'}]},
+  {id:'N',name:'Custom Pass',exercises:[{id:'N1',name:'Exercise 1',detail:'1 set failure'},{id:'N2',name:'Exercise 2',detail:'1 set failure'},{id:'N3',name:'Exercise 3',detail:'1 set failure'},{id:'N4',name:'Exercise 4',detail:'1 set failure'}]},
 ];
 
 function getAvailablePassTemplates(){
@@ -854,6 +906,31 @@ function getAvailablePassTemplates(){
   return PASS_TEMPLATES.filter(t=>!used.includes(t.id));
 }
 
+function togglePassRename(pid){
+  const w=document.getElementById('passrenamewrap-'+pid);
+  if(w) w.style.display=w.style.display==='none'?'block':'none';
+}
+function doPassRename(pid){
+  const inp=document.getElementById('passrenameinput-'+pid);
+  const val=inp?.value.trim();
+  if(!val)return;
+  if(!state.passNameOverrides)state.passNameOverrides={};
+  state.passNameOverrides[pid]=val;
+  // Update the BASE_PASSES name for rendering
+  const bp=BASE_PASSES.find(p=>p.id===pid);
+  if(bp) bp.name=val;
+  save();
+  showToast('Pass renamed ✓');
+  const panel=document.getElementById('reorder-panel');
+  if(panel){
+    const ec=getEffectiveChain();
+    const nc=buildReorderUI(ec);
+    const tmp=document.createElement('div');
+    tmp.innerHTML=nc;
+    const np=tmp.querySelector('#reorder-panel');
+    if(np){np.style.display='block';panel.replaceWith(np);}
+  }
+}
 function addPassToChain(templateId){
   const tmpl=PASS_TEMPLATES.find(t=>t.id===templateId);
   if(!tmpl)return;
@@ -1018,6 +1095,25 @@ function saveReorder(){
 }
 
 // ── EXERCISE RENAME (Improvement 6) ──────────────────────────
+function toggleEditMenu(exId){
+  const menu=document.getElementById('editmenu-'+exId);
+  if(menu){
+    const isOpen=menu.classList.contains('open');
+    // Close all open menus first
+    document.querySelectorAll('.ex-edit-menu.open').forEach(m=>m.classList.remove('open'));
+    if(!isOpen) menu.classList.add('open');
+  }
+}
+function closeEditMenu(exId){
+  const menu=document.getElementById('editmenu-'+exId);
+  if(menu) menu.classList.remove('open');
+}
+// Close menus on outside click
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.ex-edit-dropdown')){
+    document.querySelectorAll('.ex-edit-menu.open').forEach(m=>m.classList.remove('open'));
+  }
+});
 function toggleRename(exId){
   const wrap = document.getElementById('renamewrap-'+exId);
   if(wrap) wrap.style.display = wrap.style.display==='none' ? 'block' : 'none';
@@ -1053,27 +1149,25 @@ function saveExercise(passId,exId){
   const ex = pass.exercises.find(e=>e.id===exId);
   const isBW=!!ex.bw;
   const todayWkg=getTodayWeight();
-  // Use effective extra sets (default 2 warmups if no draft)
-  if(!state.draft.extraSets[exId]){
-    state.draft.extraSets[exId]=[{warmup:true},{warmup:true}];
-  }
-  const extraSets=state.draft.extraSets[exId];
-  const sets=[];
-  for(let si=0;si<1+extraSets.length;si++){
-    const warmup=si>0&&extraSets[si-1]?.warmup;
-    const forced=parseInt(document.getElementById('f-'+exId+'-'+si)?.value)||null;
+  // Ensure extraSets initialized with correct defaults
+  ensureExtraSets(exId, passId);
+  const rawSets = state.draft.extraSets[exId];
+  // Read values using origIdx (the DOM IDs use origIdx)
+  const sets = rawSets.map((s, origIdx) => {
+    const warmup = s.warmup;
+    const forced = parseInt(document.getElementById('f-'+exId+'-'+origIdx)?.value)||null;
     if(isBW){
-      const extraDisp=parseFloat(document.getElementById('bw-'+exId+'-'+si)?.value);
+      const extraDisp = parseFloat(document.getElementById('bw-'+exId+'-'+origIdx)?.value);
       const extraKg = isNaN(extraDisp)?0:toKg(extraDisp);
-      const reps=parseInt(document.getElementById('r-'+exId+'-'+si)?.value)||null;
-      sets.push({extra:extraKg,bwSnap:todayWkg||0,reps,forced,warmup});
+      const reps = parseInt(document.getElementById('r-'+exId+'-'+origIdx)?.value)||null;
+      return {extra:extraKg, bwSnap:todayWkg||0, reps, forced, warmup};
     }else{
-      const weightDisp=parseFloat(document.getElementById('w-'+exId+'-'+si)?.value)||null;
-      const weightKg = weightDisp!=null?toKg(weightDisp):null;
-      const reps=parseInt(document.getElementById('r-'+exId+'-'+si)?.value)||null;
-      sets.push({weight:weightKg,reps,forced,warmup});
+      const weightDisp = parseFloat(document.getElementById('w-'+exId+'-'+origIdx)?.value)||null;
+      const weightKg = weightDisp!=null ? toKg(weightDisp) : null;
+      const reps = parseInt(document.getElementById('r-'+exId+'-'+origIdx)?.value)||null;
+      return {weight:weightKg, reps, forced, warmup};
     }
-  }
+  });
   const displayName = state.exerciseOverrides?.[exId] || state.draft.swaps[exId] || ex.name;
   state.draft.savedExercises[exId]={id:exId,name:displayName,sets,bw:isBW};
   delete state.draft.savedExercises[exId].editing;
@@ -1083,9 +1177,9 @@ function unsaveExercise(passId,exId){
   ensureDraft(passId);
   const saved=state.draft.savedExercises[exId];
   if(saved){
-    // Restore extraSets structure from saved sets so inputs re-populate
-    if(saved.sets&&saved.sets.length>1){
-      state.draft.extraSets[exId]=saved.sets.slice(1).map(s=>({warmup:!!s.warmup}));
+    // Restore extraSets from all saved sets (new model: all sets in one array)
+    if(saved.sets&&saved.sets.length>0){
+      state.draft.extraSets[exId]=saved.sets.map(s=>({warmup:!!s.warmup}));
     }
     // Mark as editing — render will show filled-in inputs instead of disabled
     state.draft.savedExercises[exId]={...saved,editing:true};
@@ -1136,22 +1230,34 @@ function finishPass(passId){
 }
 
 // ── SET MANAGEMENT ────────────────────────────────────────────
-function addWorkSet(exId,passId){
+function getDefaultSets(ex){
+  if(ex.ramp) return [{warmup:false},{warmup:false},{warmup:false}];
+  if(ex.bw)   return [{warmup:false}];
+  return [{warmup:true},{warmup:true},{warmup:false}];
+}
+function ensureExtraSets(exId, passId){
   ensureDraft(passId);
-  if(!state.draft.extraSets[exId])state.draft.extraSets[exId]=[{warmup:true},{warmup:true}];
+  if(state.draft.extraSets[exId]===undefined){
+    const chain=getEffectiveChain();
+    const pass=chain.find(p=>p.id===passId);
+    const ex=pass?.exercises.find(e=>e.id===exId);
+    state.draft.extraSets[exId] = ex ? getDefaultSets(ex) : [{warmup:false}];
+  }
+}
+function addWorkSet(exId,passId){
+  ensureExtraSets(exId,passId);
   state.draft.extraSets[exId].push({warmup:false});
   save();rerenderPass(passId);
 }
 function addWarmupSet(exId,passId){
-  ensureDraft(passId);
-  if(!state.draft.extraSets[exId])state.draft.extraSets[exId]=[{warmup:true},{warmup:true}];
+  ensureExtraSets(exId,passId);
   state.draft.extraSets[exId].push({warmup:true});
   save();rerenderPass(passId);
 }
 function removeExtraSet(exId,idx,passId){
-  ensureDraft(passId);
-  if(!state.draft.extraSets[exId])state.draft.extraSets[exId]=[{warmup:true},{warmup:true}];
-  state.draft.extraSets[exId].splice(idx,1);
+  ensureExtraSets(exId,passId);
+  if(state.draft.extraSets[exId].length>1)
+    state.draft.extraSets[exId].splice(idx,1);
   save();rerenderPass(passId);
 }
 
