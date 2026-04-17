@@ -137,8 +137,6 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .sets-group-label.work-group{color:#2a3a2a;border-top-color:#2a2a2a;margin-top:6px;}
 .set-input.work-set{border-color:#1a2a1a;}
 .set-unit.forced-unit{color:#5a3a5a;}
-.set-unit.time-unit{color:#3a5a5a;}
-.set-input.timed{border-color:#1a2a3a;color:#7ab;}
 .set-delete{background:none;border:none;color:#252525;font-size:.7rem;cursor:pointer;padding:0 2px;transition:color .15s;line-height:1;}
 .set-delete:hover{color:var(--red);}
 .bw-snap{font-family:var(--mono);font-size:.5rem;color:#3a3a3a;text-align:center;padding:1px 0 2px;}
@@ -204,16 +202,6 @@ canvas#weightChart{width:100%!important;display:block;}
 .data-btn:hover{border-color:#555;color:var(--white);}
 .data-btn.danger:hover{border-color:var(--red);color:var(--red);}
 .empty-state{text-align:center;padding:44px 16px;font-family:var(--mono);font-size:.6rem;color:#2a2a2a;text-transform:uppercase;letter-spacing:.1em;line-height:2.2;}
-.rest-timer{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(120px);
-background:#0d1a0d;border:1px solid var(--green-bright);color:var(--green-bright);
-font-family:var(--display);font-size:2rem;letter-spacing:.1em;padding:10px 24px;
-transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:998;pointer-events:all;
-display:flex;align-items:center;gap:12px;white-space:nowrap;}
-.rest-timer.show{transform:translateX(-50%) translateY(0);}
-.rest-timer.warning{border-color:var(--gold);color:var(--gold);}
-.rest-timer.done{border-color:var(--red);color:var(--red);}
-.timer-btn{background:none;border:1px solid currentColor;color:inherit;font-family:var(--mono);
-font-size:.5rem;letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;cursor:pointer;}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--red);color:var(--white);font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:8px 16px;transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:999;pointer-events:none;white-space:nowrap;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 @media(min-width:600px){
@@ -274,13 +262,6 @@ font-size:.5rem;letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;cu
   <div id="view-data" class="view"></div>
 </div>
 <div class="toast" id="toast"></div>
-<div class="rest-timer" id="restTimer">
-  <span id="timerDisplay">2:00</span>
-  <div style="display:flex;flex-direction:column;gap:3px;">
-    <button class="timer-btn" onclick="stopTimer()">✕</button>
-    <button class="timer-btn" onclick="addTimerTime(30)">+30s</button>
-  </div>
-</div>
 <script>
 const SB_URL='https://qjmjqideqrgozexudaqr.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbWpxaWRlcXJnb3pleHVkYXFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwOTIwODQsImV4cCI6MjA5MTY2ODA4NH0.byRwDswpbfMWDoln4n7Opp0ntrNis_du4EnLVMFuIp8';
@@ -299,7 +280,7 @@ const DEFAULT_REST_SLOTS=[6]; // after F by default
 
 const BASE_PASSES=[
   {id:'A',name:'Chest + Tri',exercises:[{id:'A1',name:'Flat BB',detail:'Ramping → 1 set failure',ramp:true},{id:'A2',name:'Incline Smith or Incline DB',detail:'1 set failure'},{id:'A3',name:'Pec Deck / Cable Flyes',detail:'Full ROM - Deep stretch · 1 set failure'},{id:'A4',name:'Tri-finisher (Pushdowns/Overhead)',detail:'1 set failure'}]},
-  {id:'B',name:'Back Heavy + Biceps',exercises:[{id:'B1',name:'Dead Hang',detail:'Supinated or neutral · 1 set failure',bw:true,timed:true},{id:'B2',name:'Deadlift',detail:'Ramping'},{id:'B3',name:'Unilateral Cable Row (Janicki)',detail:'1 set failure'},{id:'B4',name:'Lat Prayers',detail:'1 set failure'}]},
+  {id:'B',name:'Back Heavy + Biceps',exercises:[{id:'B1',name:'Dead Hang',detail:'Supinated or neutral · 1 set failure',bw:true},{id:'B2',name:'Deadlift',detail:'Ramping'},{id:'B3',name:'Unilateral Cable Row (Janicki)',detail:'1 set failure'},{id:'B4',name:'Lat Prayers',detail:'1 set failure'}]},
   {id:'C',name:'Legs + Calfs',exercises:[{id:'C1',name:'Zercher Squat',detail:'Ramping → 1 set failure',ramp:true},{id:'C2',name:'Lying Leg Curl',detail:'1 set failure'},{id:'C3',name:'Leg Extension',detail:'1 set failure'},{id:'C4',name:'Calfs (standing + seated)',detail:'2 sets'}]},
   {id:'D',name:'Shoulders + Traps',exercises:[{id:'D1',name:'Military Press',detail:'Ramping → 1 set failure',ramp:true},{id:'D2',name:'Lateral Raises DB/Cable',detail:'1 set failure'},{id:'D3',name:'Helms Rear Delt Row / Face Pulls',detail:'1 set failure'},{id:'D4',name:'Cable Rotator Cuff',detail:'1 set'}]},
   {id:'E',name:'Chest pt. 2',exercises:[{id:'E1',name:'Flat DB',detail:'Ramping → 1 set failure',ramp:true},{id:'E2',name:'Decline Smith / DB',detail:'1 set failure'},{id:'E3',name:'Pec Deck / Cable Flyes',detail:'1 set failure'},{id:'E4',name:'Tri-finisher (Pushdowns)',detail:'1 set failure'}]},
@@ -348,7 +329,7 @@ function getCycleDoneKeys(){
 }
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{}};
 state.cycles=[newCycle()];
 
 function newCycle(){
@@ -428,7 +409,6 @@ function selectUser(userId){
       if(bp) bp.name=name;
     });
   }
-  requestNotificationPermission();
   renderChain();
   syncFromCloud(userId);
 }
@@ -601,7 +581,6 @@ function renderChain(){
         const isSaved=!isDone&&!!savedExs[ex.id]&&!savedExs[ex.id].skipped&&!savedExs[ex.id].editing;
         const isSkipped=!isDone&&savedExs[ex.id]?.skipped===true;
         const isBW=!!ex.bw;
-        const isTimed=!!ex.timed;
         // Improvement 6: exercise overrides (rename main exercises)
         const globalOverride = state.exerciseOverrides && state.exerciseOverrides[ex.id];
         const sessionSwap = draftSwaps[ex.id];
@@ -617,26 +596,13 @@ function renderChain(){
             // lazy-init default warmups in draft
           }
         }
-        const prev=getBest(ex.id,isBW,isTimed);
+        const prev=getBest(ex.id,isBW);
         const savedData=isDone?completedData?.exercises?.find(e=>e.id===ex.id):savedExs[ex.id];
 
         let tags='';if(ex.ramp)tags+=`<span class="ex-tag ramp">Ramp</span>`;if(ex.singles)tags+=`<span class="ex-tag singles">Singles</span>`;if(isBW)tags+=`<span class="ex-tag bw">BW+</span>`;
-        const lastSession=getLastSession(ex.id,isBW,isTimed);
         let prevText='';
-        if(lastSession){
-          const lastWorkSets=lastSession.sets;
-          const lastStr=lastWorkSets.map(s=>{
-            if(isTimed) return `${s.secs||'?'}s${s.forced?` +${s.forced}f`:''}`;
-            if(isBW) return `BW+${toDisplay(s.extra)||0}${unitLabel()} ×${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}`;
-            return `${toDisplay(s.weight)||'—'}${unitLabel()} ×${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}`;
-          }).join(' · ');
-          const daysAgo=Math.floor((Date.now()-lastSession.timestamp)/86400000);
-          const whenStr=daysAgo===0?'today':daysAgo===1?'yesterday':`${daysAgo}d ago`;
-          prevText=`<div class="ex-prev">Last (${whenStr}): <span>${lastStr}</span></div>`;
-        } else if(prev){
-          // Fall back to all-time best if no session history
-          if(isTimed){prevText=`<div class="ex-prev">Best: <span>${prev.secs||'?'}sec</span></div>`;}
-          else if(isBW){prevText=`<div class="ex-prev">Best: <span>BW+${toDisplay(prev.extra)||0}${unitLabel()} × ${prev.reps||'?'}r</span></div>`;}
+        if(prev){
+          if(isBW){const disp=toDisplay(prev.bwSnap||0);prevText=`<div class="ex-prev">Best: <span>BW+${toDisplay(prev.extra)||0}${unitLabel()} × ${prev.reps||'?'}r</span></div>`;}
           else{prevText=`<div class="ex-prev">Best: <span>${toDisplay(prev.weight)}${unitLabel()} × ${prev.reps||'?'}r</span></div>`;}
         }
 
@@ -727,8 +693,6 @@ function renderChain(){
             const wCls  = warmup ? ' warmup' : ' work-set';
             // savedData uses origIdx to read the correct saved set
             const savedSet = savedData?.sets?.[origIdx] || null;
-            // Use input buffer values if available (preserves unsaved inputs when adding sets)
-            const bufVal = (!savedSet && state.draft?.inputBuffer?.[ex.id]?.[origIdx]) || null;
             const dis   = (isDone||isSaved) ? 'disabled' : '';
             const canDel = !isDone && !isSaved && rawSets.length > 1;
             if(isBW){
@@ -737,14 +701,14 @@ function renderChain(){
               html+=`<div class="set-row bw-set">
                 <span class="set-num${warmup?' warmup-label':''}">${lbl}</span>
                 <div><input class="set-input${wCls}" type="number" id="bw-${ex.id}-${origIdx}" placeholder="0"
-                  value="${savedSet?.extra!=null?toDisplay(savedSet.extra):bufVal?.extra!=null?toDisplay(bufVal.extra):''}"
+                  value="${savedSet?.extra!=null?toDisplay(savedSet.extra):''}"
                   min="-50" step="${unitL==='lbs'?'1':'1.25'}" ${dis}>
                   <div class="set-unit">+${unitL} (BW:${snapDisp})</div></div>
-                <div><input class="${'set-input'+wCls+(isTimed?' timed':'')}" type="number" id="r-${ex.id}-${origIdx}"
-                  placeholder="${isTimed?(prev?.secs||'—'):(prev?.reps||'—')}" value="${isTimed?(savedSet?.secs||''):(savedSet?.reps||'')}" min="1" ${isTimed?'max="3600"':'max="50"'} ${dis}>
-                  <div class="set-unit${isTimed?' time-unit':''}">${isTimed?'sec':'reps'}</div></div>
+                <div><input class="set-input${wCls}" type="number" id="r-${ex.id}-${origIdx}"
+                  placeholder="${prev?.reps||'—'}" value="${savedSet?.reps||''}" min="1" max="50" ${dis}>
+                  <div class="set-unit">reps</div></div>
                 <div><input class="set-input${wCls} forced" type="number" id="f-${ex.id}-${origIdx}"
-                  placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||''}" min="0" max="20" ${dis}>
+                  placeholder="0" value="${savedSet?.forced||''}" min="0" max="20" ${dis}>
                   <div class="set-unit forced-unit">+f</div></div>
                 ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}',${origIdx},'${passId}')">✕</button>`:'<div></div>'}
               </div>`;
@@ -752,14 +716,14 @@ function renderChain(){
               html+=`<div class="set-row normal-set">
                 <span class="set-num${warmup?' warmup-label':''}">${lbl}</span>
                 <div><input class="set-input${wCls}" type="number" id="w-${ex.id}-${origIdx}"
-                  placeholder="${placeholderW}" value="${savedSet?.weight!=null?toDisplay(savedSet.weight):bufVal?.weight!=null?toDisplay(bufVal.weight):''}"
+                  placeholder="${placeholderW}" value="${savedSet?.weight!=null?toDisplay(savedSet.weight):''}"
                   min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis}>
                   <div class="set-unit">${unitL}</div></div>
-                <div><input class="${'set-input'+wCls+(isTimed?' timed':'')}" type="number" id="r-${ex.id}-${origIdx}"
-                  placeholder="${isTimed?(prev?.secs||'—'):(prev?.reps||'—')}" value="${isTimed?(savedSet?.secs||''):(savedSet?.reps||'')}" min="1" ${isTimed?'max="3600"':'max="50"'} ${dis}>
-                  <div class="set-unit${isTimed?' time-unit':''}">${isTimed?'sec':'reps'}</div></div>
+                <div><input class="set-input${wCls}" type="number" id="r-${ex.id}-${origIdx}"
+                  placeholder="${prev?.reps||'—'}" value="${savedSet?.reps||''}" min="1" max="50" ${dis}>
+                  <div class="set-unit">reps</div></div>
                 <div><input class="set-input${wCls} forced" type="number" id="f-${ex.id}-${origIdx}"
-                  placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||''}" min="0" max="20" ${dis}>
+                  placeholder="0" value="${savedSet?.forced||''}" min="0" max="20" ${dis}>
                   <div class="set-unit forced-unit">+f</div></div>
                 ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}',${origIdx},'${passId}')">✕</button>`:'<div></div>'}
               </div>`;
@@ -767,9 +731,7 @@ function renderChain(){
           }
           if(!isDone&&!isSaved){
             html+=`<button class="add-set-btn" onclick="addWorkSet('${ex.id}','${passId}')">+ Work Set</button>`;
-            if(!ex.ramp){
-              html+=`<button class="add-set-btn" style="border-color:#1a1400;color:#3a2a00" onclick="addWarmupSet('${ex.id}','${passId}')">+ Warm-up</button>`;
-            }
+            html+=`<button class="add-set-btn" style="border-color:#1a1400;color:#3a2a00" onclick="addWarmupSet('${ex.id}','${passId}')">+ Warm-up</button>`;
           }
           html+=`</div>`;
         }
@@ -1186,7 +1148,6 @@ function saveExercise(passId,exId){
   const pass = chain.find(p=>p.id===passId);
   const ex = pass.exercises.find(e=>e.id===exId);
   const isBW=!!ex.bw;
-  const isTimed=!!ex.timed;
   const todayWkg=getTodayWeight();
   // Ensure extraSets initialized with correct defaults
   ensureExtraSets(exId, passId);
@@ -1198,21 +1159,19 @@ function saveExercise(passId,exId){
     if(isBW){
       const extraDisp = parseFloat(document.getElementById('bw-'+exId+'-'+origIdx)?.value);
       const extraKg = isNaN(extraDisp)?0:toKg(extraDisp);
-      const repsOrSecs = parseInt(document.getElementById('r-'+exId+'-'+origIdx)?.value)||null;
-      return isTimed ? {extra:extraKg, bwSnap:todayWkg||0, secs:repsOrSecs, forced, warmup}
-                     : {extra:extraKg, bwSnap:todayWkg||0, reps:repsOrSecs, forced, warmup};
+      const reps = parseInt(document.getElementById('r-'+exId+'-'+origIdx)?.value)||null;
+      return {extra:extraKg, bwSnap:todayWkg||0, reps, forced, warmup};
     }else{
       const weightDisp = parseFloat(document.getElementById('w-'+exId+'-'+origIdx)?.value)||null;
       const weightKg = weightDisp!=null ? toKg(weightDisp) : null;
-      const repsOrSecs = parseInt(document.getElementById('r-'+exId+'-'+origIdx)?.value)||null;
-      return isTimed ? {weight:weightKg, secs:repsOrSecs, forced, warmup}
-                     : {weight:weightKg, reps:repsOrSecs, forced, warmup};
+      const reps = parseInt(document.getElementById('r-'+exId+'-'+origIdx)?.value)||null;
+      return {weight:weightKg, reps, forced, warmup};
     }
   });
   const displayName = state.exerciseOverrides?.[exId] || state.draft.swaps[exId] || ex.name;
   state.draft.savedExercises[exId]={id:exId,name:displayName,sets,bw:isBW};
   delete state.draft.savedExercises[exId].editing;
-  save();showToast('Saved ✓');startRestTimer();rerenderPass(passId);
+  save();showToast('Saved ✓');rerenderPass(passId);
 }
 function unsaveExercise(passId,exId){
   ensureDraft(passId);
@@ -1278,49 +1237,20 @@ function getDefaultSets(ex){
 }
 function ensureExtraSets(exId, passId){
   ensureDraft(passId);
-  const chain=getEffectiveChain();
-  const pass=chain.find(p=>p.id===passId);
-  const ex=pass?.exercises.find(e=>e.id===exId);
   if(state.draft.extraSets[exId]===undefined){
+    const chain=getEffectiveChain();
+    const pass=chain.find(p=>p.id===passId);
+    const ex=pass?.exercises.find(e=>e.id===exId);
     state.draft.extraSets[exId] = ex ? getDefaultSets(ex) : [{warmup:false}];
   }
-  // Ramp exercises must never have warmup sets — strip any
-  if(ex?.ramp && state.draft.extraSets[exId].some(s=>s.warmup)){
-    state.draft.extraSets[exId] = state.draft.extraSets[exId]
-      .filter(s=>!s.warmup);
-    if(state.draft.extraSets[exId].length===0)
-      state.draft.extraSets[exId]=[{warmup:false},{warmup:false}]; // keep min 2
-  }
-}
-function captureInputsToSetsBuffer(exId,passId){
-  // Read current unsaved input values and stash them in draft
-  ensureExtraSets(exId,passId);
-  const chain=getEffectiveChain();
-  const pass=chain.find(p=>p.id===passId);
-  const ex=pass?.exercises.find(e=>e.id===exId);
-  const isBW=!!ex?.bw;
-  const rawSets=state.draft.extraSets[exId];
-  if(!state.draft.inputBuffer)state.draft.inputBuffer={};
-  state.draft.inputBuffer[exId]=rawSets.map((_,origIdx)=>{
-    const forced=parseInt(document.getElementById('f-'+exId+'-'+origIdx)?.value)||null;
-    if(isBW){
-      const extra=parseFloat(document.getElementById('bw-'+exId+'-'+origIdx)?.value);
-      const reps=parseInt(document.getElementById('r-'+exId+'-'+origIdx)?.value)||null;
-      return {extra:isNaN(extra)?null:extra, reps, forced};
-    }else{
-      const weight=parseFloat(document.getElementById('w-'+exId+'-'+origIdx)?.value)||null;
-      const reps=parseInt(document.getElementById('r-'+exId+'-'+origIdx)?.value)||null;
-      return {weight, reps, forced};
-    }
-  });
 }
 function addWorkSet(exId,passId){
-  captureInputsToSetsBuffer(exId,passId);
+  ensureExtraSets(exId,passId);
   state.draft.extraSets[exId].push({warmup:false});
   save();rerenderPass(passId);
 }
 function addWarmupSet(exId,passId){
-  captureInputsToSetsBuffer(exId,passId);
+  ensureExtraSets(exId,passId);
   state.draft.extraSets[exId].push({warmup:true});
   save();rerenderPass(passId);
 }
@@ -1365,37 +1295,7 @@ function rerenderPass(passId){renderChain();setTimeout(()=>{const c=document.get
 function toggleCard(id){document.getElementById('card-'+id)?.classList.toggle('open');}
 
 // ── PR / BEST ─────────────────────────────────────────────────
-function getBest(exId,isBW,isTimed){
-  let best=null;
-  for(const entry of state.log){
-    const ex=entry.exercises?.find(e=>e.id===exId);
-    if(!ex||ex.skipped)continue;
-    for(const s of(ex.sets||[])){
-      if(s.warmup)continue; // only look at work sets for PR
-      if(isTimed){
-        if(!best||(s.secs||0)>(best.secs||0))best={...s};
-      }else if(isBW){
-        const t=(s.extra||0)+(s.bwSnap||0);
-        if(!best||t>((best.extra||0)+(best.bwSnap||0)))best={...s};
-      }else{
-        if(s.weight&&(!best||s.weight>best.weight||(s.weight===best.weight&&(s.reps||0)>(best.reps||0))))best={...s};
-      }
-    }
-  }
-  return best;
-}
-function getLastSession(exId, isBW, isTimed){
-  // Find the most recent log entry with this exercise
-  for(let i=state.log.length-1; i>=0; i--){
-    const entry=state.log[i];
-    const ex=entry.exercises?.find(e=>e.id===exId);
-    if(!ex||ex.skipped)continue;
-    // Return last work sets only
-    const workSets=(ex.sets||[]).filter(s=>!s.warmup);
-    if(workSets.length>0) return {sets:workSets, passName:entry.passName, timestamp:entry.timestamp};
-  }
-  return null;
-}
+function getBest(exId,isBW){let best=null;for(const entry of state.log){const ex=entry.exercises?.find(e=>e.id===exId);if(!ex||ex.skipped)continue;for(const s of(ex.sets||[])){if(isBW){const t=(s.extra||0)+(s.bwSnap||0);if(!best||t>((best.extra||0)+(best.bwSnap||0)))best={...s};}else{if(s.weight&&(!best||s.weight>best.weight||(s.weight===best.weight&&(s.reps||0)>(best.reps||0))))best={...s};}}}return best;}
 function getAllPRs(){const prs={};const defs=BASE_PASSES.flatMap(p=>p.exercises).map(e=>({id:e.id,name:e.name,bw:!!e.bw}));for(const entry of state.log){for(const ex of(entry.exercises||[])){if(ex.skipped||ex.extra)continue;const def=defs.find(d=>d.id===ex.id);const isBW=def?.bw;for(const s of(ex.sets||[])){if(isBW){const t=(s.extra||0)+(s.bwSnap||0);const cur=prs[ex.id];if(!cur||t>((cur.extra||0)+(cur.bwSnap||0)))prs[ex.id]={name:ex.name,extra:s.extra||0,bwSnap:s.bwSnap||0,reps:s.reps,bw:true};}else{if(!s.weight)continue;const cur=prs[ex.id];if(!cur||s.weight>cur.weight||(s.weight===cur.weight&&(s.reps||0)>(cur.reps||0)))prs[ex.id]={name:ex.name,weight:s.weight,reps:s.reps,bw:false};}}}}return Object.values(prs);}
 
 // ── PROGRESS ──────────────────────────────────────────────────
@@ -1447,10 +1347,6 @@ function renderData(){
   const unitBtn=(u)=>`<button onclick="state.unit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.unit===u?'var(--red)':'none'};border:1px solid ${state.unit===u?'var(--red)':'#2a2a2a'};color:${state.unit===u?'var(--white)':'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u.toUpperCase()}</button>`;
   el.innerHTML=`<div class="section-title">Data</div>
   <div style="font-family:var(--mono);font-size:.58rem;color:#444;margin-bottom:18px">Supabase · ${currentUser?.name} · ${size} KB · ${state.log.length} sessions</div>
-  <div class="section-sub">Rest Timer</div>
-  <div style="font-family:var(--mono);font-size:.54rem;color:var(--gray-light);margin-bottom:8px;">Default rest between sets</div>
-  <div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;">${[60,90,120,180,240,300].map(s=>`<button onclick="state.timerDefault=${s};save();renderData();" style="background:${timerDefault===s?'var(--red)':'none'};border:1px solid ${timerDefault===s?'var(--red)':'#2a2a2a'};color:${timerDefault===s?'var(--white)':'#666'};font-family:var(--mono);font-size:.5rem;padding:6px 10px;cursor:pointer;">${s<60?s+'s':Math.floor(s/60)+(s%60?':'+String(s%60).padStart(2,'0'):'')+' min'}</button>`).join('')}</div>
-  <div style="font-family:var(--mono);font-size:.48rem;color:#333;margin-bottom:18px;">Tap Done on any exercise to start the timer. Supports push notifications on mobile.</div>
   <div class="section-sub">Weight Unit</div>
   <div style="font-family:var(--mono);font-size:.54rem;color:var(--gray-light);margin-bottom:8px;">Currently: <strong style="color:var(--white)">${(state.unit||'kg').toUpperCase()}</strong></div>
   <div style="display:flex;gap:6px;margin-bottom:18px">${unitBtn('kg')}${unitBtn('lbs')}</div>
@@ -1464,56 +1360,6 @@ function renderData(){
 function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`thechain-${currentUser?.id}-${todayStr()}.json`;a.click();showToast('Export done!');}
 function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.cycles||!d.log)throw new Error('Invalid file');state=d;if(!state.unit)state.unit='kg';if(!state.exerciseOverrides)state.exerciseOverrides={};save();showToast('Data imported!');renderChain();}catch{showToast('Error: invalid file');}};reader.readAsText(file);}
 function resetAll(){if(!confirm('Reset ALL data for '+currentUser?.name+'? Cannot be undone.'))return;state={cycles:[newCycle()],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:state.passOrder,restSlots:state.restSlots,unit:state.unit||'kg',exerciseOverrides:{}};save();showToast('Data reset');renderChain();}
-
-// ── REST TIMER ────────────────────────────────────────────────
-let timerInterval=null;
-let timerSeconds=0;
-let timerDefault=120; // 2 minutes default
-
-function startRestTimer(secs){
-  const dur=secs||(state.timerDefault||120);
-  timerSeconds=dur;
-  const el=document.getElementById('restTimer');
-  const disp=document.getElementById('timerDisplay');
-  if(!el||!disp)return;
-  if(timerInterval)clearInterval(timerInterval);
-  el.className='rest-timer show';
-  updateTimerDisplay();
-  timerInterval=setInterval(()=>{
-    timerSeconds--;
-    updateTimerDisplay();
-    if(timerSeconds<=10) el.className='rest-timer show warning';
-    if(timerSeconds<=0){
-      clearInterval(timerInterval);
-      el.className='rest-timer show done';
-      // Try push notification
-      if('Notification' in window && Notification.permission==='granted'){
-        new Notification('The Chain',{body:'Rest over — next set!',icon:'/favicon.ico'});
-      }
-      if(navigator.vibrate) navigator.vibrate([200,100,200]);
-      setTimeout(()=>stopTimer(),3000);
-    }
-  },1000);
-}
-function updateTimerDisplay(){
-  const disp=document.getElementById('timerDisplay');
-  if(!disp)return;
-  const m=Math.floor(Math.abs(timerSeconds)/60);
-  const s=Math.abs(timerSeconds)%60;
-  disp.textContent=(timerSeconds<0?'-':'')+(m>0?m+':':'')+(s<10&&m>0?'0':'')+s+(m===0?'s':'');
-}
-function addTimerTime(secs){timerSeconds+=secs;updateTimerDisplay();}
-function stopTimer(){
-  if(timerInterval)clearInterval(timerInterval);
-  timerInterval=null;
-  const el=document.getElementById('restTimer');
-  if(el)el.className='rest-timer';
-}
-function requestNotificationPermission(){
-  if('Notification' in window && Notification.permission==='default'){
-    Notification.requestPermission();
-  }
-}
 
 // ── UTILS ─────────────────────────────────────────────────────
 function fmtDate(ts){return new Date(ts).toLocaleDateString('en-GB',{weekday:'short',month:'short',day:'numeric'});}
