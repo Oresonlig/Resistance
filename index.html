@@ -106,16 +106,15 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .ex-header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;}
 .ex-label-col{flex:1;min-width:0;}
 .ex-name{font-size:.82rem;font-weight:500;}
-.ex-tag{display:inline-block;font-family:var(--mono);font-size:.44rem;letter-spacing:.09em;text-transform:uppercase;padding:1px 5px;border:1px solid #333;color:#555;margin-left:4px;vertical-align:middle;}
-.ex-tag.ramp{border-color:#3a2a00;color:var(--gold);}
-.ex-tag.singles{border-color:#2a1a1a;color:#c07060;}
-.ex-tag.bw{border-color:#1a2a1a;color:#5a9a5a;}
-.ex-detail{font-family:var(--mono);font-size:.51rem;color:#999;margin-top:2px;}
-.ex-prev{font-family:var(--mono);font-size:.46rem;color:#555;margin-top:3px;line-height:1.6;}
+.ex-tag{display:inline-block;font-family:var(--mono);font-size:.46rem;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;border:1px solid #333;color:#555;margin-left:5px;vertical-align:middle;border-radius:2px;}
+.ex-tag.ramp{border-color:#6a4a00;background:#1a1000;color:#d4a030;}
+.ex-tag.singles{border-color:#4a2a2a;background:#140a0a;color:#c07060;}
+.ex-tag.bw{border-color:#1a3a1a;background:#0a140a;color:#5aaa5a;}
+.ex-detail{font-family:var(--mono);font-size:.58rem;color:#aaa;margin-top:3px;line-height:1.5;}
+.ex-prev{font-family:var(--mono);font-size:.48rem;color:#555;margin-top:3px;line-height:1.5;}
 .ex-prev span{color:#777;}
-.ex-prev .last-val{color:#7a9a7a;font-style:italic;}
-.ex-prev .pr-val{color:#8a6a00;}
-.ex-note-banner{font-family:var(--mono);font-size:.48rem;color:#5a4a00;background:#1a1400;border-left:2px solid #5a3a00;padding:4px 8px;margin:3px 0;line-height:1.5;cursor:pointer;}
+.ex-prev .last-val{color:#6a8a6a;font-style:italic;}
+.ex-note-banner{font-family:var(--mono);font-size:.54rem;color:#8a7000;background:#1a1400;border-left:2px solid #8a5a00;padding:5px 9px;margin:4px 0;line-height:1.5;cursor:pointer;}
 .ex-note-banner:hover{border-left-color:var(--gold);}
 .ex-note-wrap{margin:4px 0;}
 .ex-note-input{width:100%;background:#111;border:1px solid #3a3000;color:var(--white);font-family:var(--mono);font-size:.56rem;padding:6px 8px;resize:vertical;min-height:48px;line-height:1.6;}
@@ -644,31 +643,25 @@ function renderChain(){
             // lazy-init default warmups in draft
           }
         }
-        const prev=getBest(ex.id,isBW,isTimed);
+        const prev=null; // PR shown in Progress tab only — not in chain view
         const savedData=isDone?completedData?.exercises?.find(e=>e.id===ex.id):savedExs[ex.id];
 
         let tags='';if(ex.ramp)tags+=`<span class="ex-tag ramp">Ramp</span>`;if(ex.singles)tags+=`<span class="ex-tag singles">Singles</span>`;if(isBW)tags+=`<span class="ex-tag bw">BW+</span>`;
         const lastSession=getLastSession(ex.id,isBW,isTimed);
         let prevText='';
-        let lastLine='',prLine='';
         if(lastSession){
-          const lastStr=lastSession.sets.map(s=>{
-            if(isTimed)return `${s.secs||'?'}s`;
-            if(isBW)return `BW+${toDisplay(s.extra)||0}${unitLabel()} ×${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}`;
-            return `${toDisplay(s.weight)||'—'}${unitLabel()} ×${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}`;
-          }).join(' · ');
+          // Show only the last work set (most recent, highest index)
+          const workSets=lastSession.sets.filter(s=>!s.warmup);
+          const lastSet=workSets[workSets.length-1]||lastSession.sets[lastSession.sets.length-1];
+          let lastStr='';
+          if(lastSet){
+            if(isTimed) lastStr=`${lastSet.secs||'?'}s`;
+            else if(isBW) lastStr=`BW+${toDisplay(lastSet.extra)||0}${unitLabel()} ×${lastSet.reps||'?'}r${lastSet.forced?` +${lastSet.forced}f`:''}`;
+            else lastStr=`${toDisplay(lastSet.weight)||'—'}${unitLabel()} ×${lastSet.reps||'?'}r${lastSet.forced?` +${lastSet.forced}f`:''}`;
+          }
           const daysAgo=Math.floor((Date.now()-lastSession.timestamp)/86400000);
           const whenStr=daysAgo===0?'today':daysAgo===1?'1d ago':`${daysAgo}d ago`;
-          lastLine=`<span class="last-val">Last (${whenStr}): ${lastStr}</span>`;
-        }
-        if(prev){
-          if(isTimed)prLine=`<span class="pr-val">PR: ${prev.secs||'?'}s</span>`;
-          else if(isBW)prLine=`<span class="pr-val">PR: BW+${toDisplay(prev.extra)||0}${unitLabel()} ×${prev.reps||'?'}r</span>`;
-          else prLine=`<span class="pr-val">PR: ${toDisplay(prev.weight)}${unitLabel()} ×${prev.reps||'?'}r</span>`;
-        }
-        if(lastLine||prLine){
-          const sep=(lastLine&&prLine)?' &nbsp; ':'';
-          prevText=`<div class="ex-prev">${lastLine}${sep}${prLine}</div>`;
+          prevText=`<div class="ex-prev"><span class="last-val">Last (${whenStr}): ${lastStr}</span></div>`;
         }
 
         const existingNote = state.exerciseNotes?.[ex.id]||'';
