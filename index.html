@@ -1227,8 +1227,8 @@ function showEditAddRemove(){
   }
 
   html+=`<div class="edit-save-bar">
-    <button class="btn-primary" onclick="saveReorder();renderChain();">Save & Close</button>
-    <button class="btn-ghost" onclick="showEditPage()">Back</button>
+    <button class="btn-primary" onclick="saveReorder();showEditPage();">Save</button>
+    <button class="btn-ghost" onclick="showEditPage()">Cancel</button>
   </div></div>`;
   document.getElementById('view-chain').innerHTML=html;
 }
