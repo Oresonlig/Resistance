@@ -52,11 +52,12 @@ header{border-bottom:1px solid #1e1e1e;padding:11px 14px;display:flex;align-item
 .header-user{font-family:var(--mono);font-size:.58rem;color:#aaa;letter-spacing:.1em;text-transform:uppercase;}
 .header-user strong{color:var(--white);}
 .header-sync{font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;}
-nav{display:flex;border-bottom:1px solid #1e1e1e;}
-nav button{flex:1;background:none;border:none;border-right:1px solid #2a2a2a;color:#aaa;font-family:var(--mono);font-size:.52rem;letter-spacing:.07em;text-transform:uppercase;padding:10px 2px;cursor:pointer;transition:all .15s;}
+nav{display:flex;border-top:1px solid #2a2a2a;position:fixed;bottom:0;left:0;right:0;background:var(--black);z-index:100;padding-bottom:env(safe-area-inset-bottom,0);}
+nav button{flex:1;background:none;border:none;border-right:1px solid #1e1e1e;color:#aaa;font-family:var(--mono);font-size:.52rem;letter-spacing:.07em;text-transform:uppercase;padding:12px 2px 10px;cursor:pointer;transition:all .15s;}
 nav button:last-child{border-right:none;}
-nav button.active{color:var(--white);background:#111;border-bottom:2px solid var(--red);}
+nav button.active{color:var(--white);background:#0d0d0d;border-top:2px solid var(--red);margin-top:-1px;}
 nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
+
 .view{display:none;}
 .view.active{display:block;}
 
@@ -77,7 +78,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .chain-intro-sub{font-family:var(--mono);font-size:.52rem;color:#aaa;letter-spacing:.07em;margin-top:3px;}
 .chain-bar{height:3px;background:#1a1a1a;}
 .chain-fill{height:100%;background:var(--red);transition:width .4s;}
-.chain-list{padding:10px 11px 80px;}
+.chain-list{padding:10px 11px 90px;}
 .pass-card{border:1px solid #2c2c2c;margin-bottom:8px;position:relative;overflow:hidden;}
 .pass-card.next-up{border-color:var(--red);}
 .pass-card.next-up::before{content:'NEXT';position:absolute;top:0;right:0;background:var(--red);color:var(--white);font-family:var(--mono);font-size:.44rem;letter-spacing:.12em;padding:2px 7px;}
@@ -197,9 +198,24 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .btn-ghost:hover{border-color:#444;color:#777;}
 .draft-notice{font-family:var(--mono);font-size:.5rem;color:#4a7a4a;text-align:center;padding:5px;border:1px solid #2a4a2a;margin-top:7px;}
 .cycle-done{padding:44px 20px;text-align:center;}
+.ob-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:65vh;padding:24px 20px 100px;max-width:440px;margin:0 auto;gap:0;}
+.ob-step{font-family:var(--mono);font-size:.48rem;color:#555;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
+.ob-title{font-family:var(--display);font-size:2rem;letter-spacing:.06em;color:var(--white);margin-bottom:4px;text-align:center;}
+.ob-sub{font-family:var(--mono);font-size:.54rem;color:#888;text-align:center;line-height:1.7;margin-bottom:24px;}
+.ob-options{display:grid;gap:8px;width:100%;margin-bottom:8px;}
+.ob-options.cols2{grid-template-columns:1fr 1fr;}
+.ob-options.cols3{grid-template-columns:1fr 1fr 1fr;}
+.ob-option{background:none;border:1px solid #333;color:var(--white);font-family:var(--display);font-size:1.1rem;letter-spacing:.06em;padding:16px 10px;cursor:pointer;transition:all .2s;position:relative;}
+.ob-option:hover{border-color:var(--red);}
+.ob-option.selected{border-color:var(--red);background:#1a0000;}
+.ob-option .ob-opt-label{display:block;font-family:var(--mono);font-size:.46rem;color:#888;margin-top:4px;font-weight:400;letter-spacing:.04em;text-transform:none;}
+.ob-option .ob-checkmark{position:absolute;top:6px;right:8px;color:var(--red);font-size:.7rem;display:none;}
+.ob-option.selected .ob-checkmark{display:block;}
+.ob-note{font-family:var(--mono);font-size:.46rem;color:#444;text-align:center;line-height:1.7;margin-top:8px;}
+.ob-next{width:100%;margin-top:16px;}
 
 /* EDIT FLOW */
-.edit-page{padding:16px 14px 80px;max-width:560px;margin:0 auto;}
+.edit-page{padding:16px 14px 90px;max-width:560px;margin:0 auto;}
 .edit-back{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.52rem;color:#888;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;padding:4px 0 16px;transition:color .15s;}
 .edit-back:hover{color:var(--white);}
 .edit-title{font-family:var(--display);font-size:2rem;letter-spacing:.06em;margin-bottom:6px;}
@@ -217,7 +233,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .edit-save-bar{display:flex;gap:8px;margin-top:20px;}
 .cycle-done-title{font-family:var(--display);font-size:2.6rem;color:var(--red);letter-spacing:.06em;margin-bottom:8px;}
 .cycle-done-sub{font-family:var(--mono);font-size:.62rem;color:var(--gray-light);letter-spacing:.08em;margin-bottom:28px;line-height:1.8;}
-#view-progress,#view-weight,#view-data{padding:14px 12px 60px;max-width:640px;margin:0 auto;}
+#view-progress,#view-weight,#view-data{padding:14px 12px 90px;max-width:640px;margin:0 auto;}
 .section-title{font-family:var(--display);font-size:1.85rem;letter-spacing:.06em;margin-bottom:14px;}
 .section-sub{font-family:var(--mono);font-size:.54rem;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;margin-top:20px;}
 .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:18px;}
@@ -267,21 +283,40 @@ canvas#weightChart{width:100%!important;display:block;}
   #view-chain .chain-list{padding-left:0;padding-right:0;}
   #view-progress,#view-weight,#view-data{max-width:560px;}
   #reorder-panel{max-width:560px!important;margin-left:auto!important;margin-right:auto!important;}
-  .sets-group-label{font-size:.45rem;}
+  .sets-group-label{font-size:.48rem;}
   .user-grid{max-width:360px;gap:12px;}
   .user-btn{padding:28px 16px;}
   .user-logo{font-size:4rem;}
-  nav button{font-size:.62rem;padding:12px 4px;}
+  /* Bottom nav on desktop — cap width, center */
+  nav{max-width:600px;left:50%;right:auto;transform:translateX(-50%);width:100%;border:1px solid #2a2a2a;border-bottom:none;}
+  nav button{font-size:.6rem;padding:13px 4px;}
   header{padding:14px 24px;}
   .pass-top{padding:13px 16px;}
   .pass-body{padding:0 16px 14px;}
   .set-input{font-size:.82rem;padding:7px 6px;}
   .weight-banner{padding:10px 0;}
+  /* Edit cards — 3 columns on desktop */
+  .edit-cards{grid-template-columns:1fr 1fr 1fr;}
+  .edit-card{padding:28px 20px;}
+  .edit-card-icon{font-size:2.4rem;}
+  .edit-card-title{font-size:1.6rem;}
+  /* Larger pass cards on desktop */
+  .pass-letter{font-size:2.4rem;}
+  .pass-name{font-size:1.15rem;}
 }
 @media(max-width:400px){
   .stats-grid{grid-template-columns:1fr 1fr;}
   .pr-grid{grid-template-columns:1fr;}
   .user-grid{grid-template-columns:1fr 1fr;}
+  .ex-mini-btns{gap:2px;}
+  .ex-btn-done,.ex-btn-skip,.ex-btn-edit{font-size:.42rem;padding:4px 7px;}
+  .pass-letter{font-size:1.7rem;}
+}
+@media(max-width:360px){
+  .set-row.normal-set,.set-row.bw-set,.set-row.uni-set{gap:2px;}
+  .set-input{font-size:.68rem;padding:4px 3px;}
+  .set-unit{font-size:.38rem;}
+  .set-num{font-size:.38rem;}
 }
 
 </style>
@@ -390,7 +425,7 @@ function getCycleDoneKeys(){
 }
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false};
 state.cycles=[newCycle()];
 
 function newCycle(){
@@ -454,19 +489,22 @@ function selectUser(userId){
         if(!state.exerciseNotes)state.exerciseNotes={};
         if(state.timerEnabled===undefined)state.timerEnabled=false;
         if(state.timerEnabled===undefined)state.timerEnabled=false;
+        if(state.onboardingDone===undefined){
+          // Existing user with data — mark as done, skip onboarding
+          state.onboardingDone = !!(state.cycles && state.cycles.length > 0);
+        }
       }
     }catch(e){console.warn('localStorage parse error',e);}
   }
 
-  // Show unit picker only if user has never set it (first time ever for this user)
-  const unitAlreadySet = raw && state.unit;
   document.getElementById('userScreen').style.display='none';
   document.getElementById('appShell').style.display='block';
 
-  if(!unitAlreadySet){
-    showUnitDialog(userId);
-    // Don't return — still kick off background sync
-    syncFromCloud(userId);
+  // First time for this user — run onboarding
+  const needsOnboarding = !raw || !state.onboardingDone;
+  if(needsOnboarding){
+    syncFromCloud(userId); // background, don't block
+    showOnboarding(userId, 1, {});
     return;
   }
 
@@ -612,7 +650,7 @@ function renderChain(){
     return;
   }
 
-  let html=`<div class="weight-banner"><span class="weight-banner-label">Morning Weight</span><div style="display:flex;align-items:center;gap:4px"><input class="weight-input" type="number" id="morningWeight" placeholder="${state.unit==='lbs'?'165.0':'75.0'}" step="${state.unit==='lbs'?'0.5':'0.1'}" min="${state.unit==='lbs'?'44':'20'}" max="${state.unit==='lbs'?'660':'300'}" value="${todayW||''}"><span class="weight-unit">${unitLabel()}</span></div><span id="weightBannerToday" class="weight-today">${todayW?todayW+' '+unitLabel()+' today':''}</span><button class="weight-log-btn" onclick="logWeight()">Log</button></div><div class="chain-intro"><div><div class="chain-intro-title">The Chain</div><div class="chain-intro-sub">${donePasses}/${totalPasses} sessions done · Round ${state.cycles.length}</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--mono);font-size:.52rem;color:var(--gray-mid)">${pct}%</span><button style="background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.44rem;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='#444';this.style.color='#888'" onclick="showEditPage()">Edit Chain</button></div></div><div class="chain-bar"><div class="chain-fill" style="width:${pct}%"></div></div>`;
+  let html=`<div class="weight-banner"><span class="weight-banner-label">Morning Weight</span><div style="display:flex;align-items:center;gap:4px"><input class="weight-input" type="number" id="morningWeight" placeholder="${state.unit==='lbs'?'165.0':'75.0'}" step="${state.unit==='lbs'?'0.5':'0.1'}" min="${state.unit==='lbs'?'44':'20'}" max="${state.unit==='lbs'?'660':'300'}" value="${todayW||''}"><span class="weight-unit">${unitLabel()}</span></div><span id="weightBannerToday" class="weight-today">${todayW?todayW+' '+unitLabel()+' today':''}</span><button class="weight-log-btn" onclick="logWeight()">Log</button></div><div class="chain-intro"><div><div class="chain-intro-title">The Chain</div><div class="chain-intro-sub">${donePasses}/${totalPasses} sessions done · Round ${state.cycles.length}</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--mono);font-size:.52rem;color:var(--gray-mid)">${pct}%</span><button style="background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.7rem;padding:3px 9px;cursor:pointer;transition:all .15s;line-height:1;" title="Configure chain" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='#444';this.style.color='#888'" onclick="showEditPage()">⚙</button></div></div><div class="chain-bar"><div class="chain-fill" style="width:${pct}%"></div></div>`;
 
 
   html += `<div class="chain-list">`;
@@ -1090,13 +1128,221 @@ function removePassFromChain(passId){
   showToast('Pass removed ✓');
 }
 
+
+// ── CHAIN GENERATOR ───────────────────────────────────────────
+// Generates a passOrder + restSlots based on onboarding answers
+
+function generateChain(numPasses, focus, restCount){
+  // Templates by focus and count
+  const UPPER_PASSES = ['A','D','E','F']; // Chest+Tri, Shoulders, Chest pt.2, Back pt.2
+  const LOWER_PASSES = ['C'];             // Legs
+  const BACK_PASSES  = ['B','F'];         // Back Heavy, Back pt.2
+  const PUSH_PASSES  = ['A','D','E'];     // Chest+Tri, Shoulders, Chest pt.2
+  const PULL_PASSES  = ['B','F'];         // Back Heavy, Back pt.2
+
+  let order = [];
+
+  if(focus === 'upper'){
+    // Upper body emphasis — lots of push/pull, one leg day
+    const pools = [
+      ['A','B','D'],           // 3: Chest, Back, Shoulders
+      ['A','B','D','F'],       // 4: + Back pt.2
+      ['A','B','C','D','F'],   // 5: + Legs
+      ['A','B','C','D','E','F'],// 6: full chain
+      ['A','B','C','D','E','F'], // 7: same, more rest
+    ];
+    order = pools[Math.min(numPasses,7)-3] || pools[3];
+  } else if(focus === 'lower'){
+    // Lower body emphasis — two leg days, push/pull coverage
+    const pools = [
+      ['C','A','B'],           // 3: Legs, Chest+Tri, Back
+      ['C','A','B','D'],       // 4: + Shoulders
+      ['C','A','B','D','F'],   // 5: + Back pt.2
+      ['C','A','B','C','D','F'],// 6: double legs
+      ['C','A','B','C','D','E','F'], // 7
+    ];
+    // Replace duplicate C with custom leg variation
+    order = pools[Math.min(numPasses,7)-3] || pools[3];
+    // Avoid true duplicates — use different leg exercises via rename
+    order = [...new Set(order)]; // dedupe
+    while(order.length < numPasses && order.length < 6) order.push(['A','B','D','E','F'].find(p=>!order.includes(p)));
+  } else {
+    // Full body / balanced — alternate push/pull/legs
+    const pools = [
+      ['A','B','C'],           // 3: Push, Pull, Legs
+      ['A','B','C','D'],       // 4: + Shoulders
+      ['A','B','C','D','F'],   // 5: + Back pt.2
+      ['A','B','C','D','E','F'],// 6: full chain
+      ['A','B','C','D','E','F'], // 7
+    ];
+    order = pools[Math.min(numPasses,7)-3] || pools[3];
+  }
+
+  // Trim/pad to exact numPasses
+  order = order.slice(0, numPasses);
+
+  // Rest slots: place after last pass (and after middle if restCount > 1)
+  let restSlots = [order.length]; // always after last pass
+  if(restCount >= 2) restSlots.push(Math.floor(order.length / 2));
+  if(restCount >= 3) restSlots.push(Math.floor(order.length * 3/4));
+  restSlots = [...new Set(restSlots)].sort((a,b)=>a-b);
+
+  return { passOrder: order, restSlots };
+}
+
+// ── ONBOARDING WIZARD ─────────────────────────────────────────
+// answers = { unit, numPasses, focus, restCount, timerEnabled }
+
+function showOnboarding(userId, step, answers){
+  const el = document.getElementById('view-chain');
+  const name = USERS[userId]?.name || userId;
+
+  if(step === 1){
+    el.innerHTML=`<div class="ob-wrap">
+      <div class="ob-step">Step 1 of 3</div>
+      <div class="ob-title">Weight Unit</div>
+      <div class="ob-sub">Choose once for ${name}.<br>You can change this later in Data.</div>
+      <div class="ob-options cols2">
+        <button class="ob-option${answers.unit==='kg'?' selected':''}" onclick="obSelect(this);obNext('${userId}',1,{...${JSON.stringify(answers)},unit:'kg'})">
+          KG <span class="ob-checkmark">✓</span>
+          <span class="ob-opt-label">Kilograms · Europe & most of the world</span>
+        </button>
+        <button class="ob-option${answers.unit==='lbs'?' selected':''}" onclick="obSelect(this);obNext('${userId}',1,{...${JSON.stringify(answers)},unit:'lbs'})">
+          LBS <span class="ob-checkmark">✓</span>
+          <span class="ob-opt-label">Pounds · US & UK</span>
+        </button>
+      </div>
+    </div>`;
+  }
+  else if(step === 2){
+    const counts=[3,4,5,6,7];
+    el.innerHTML=`<div class="ob-wrap">
+      <div class="ob-step">Step 2 of 3</div>
+      <div class="ob-title">Your Chain</div>
+      <div class="ob-sub">How many training sessions per cycle?</div>
+      <div class="ob-options cols3" style="margin-bottom:20px;">
+        ${counts.slice(0,3).map(n=>`<button class="ob-option${answers.numPasses===n?' selected':''}" onclick="obPickNum(this,'${userId}',${n},${JSON.stringify(answers)})">
+          ${n} <span class="ob-checkmark">✓</span>
+          <span class="ob-opt-label">${n===3?'Minimal':n===4?'Moderate':n===5?'Balanced':''}</span>
+        </button>`).join('')}
+      </div>
+      <div class="ob-options cols2" style="margin-bottom:20px;">
+        ${counts.slice(3).map(n=>`<button class="ob-option${answers.numPasses===n?' selected':''}" onclick="obPickNum(this,'${userId}',${n},${JSON.stringify(answers)})">
+          ${n} <span class="ob-checkmark">✓</span>
+          <span class="ob-opt-label">${n===6?'Full Chain (default)':'High Volume'}</span>
+        </button>`).join('')}
+      </div>
+      <div class="ob-sub" style="margin-bottom:12px;">Training focus?</div>
+      <div class="ob-options cols3">
+        <button class="ob-option${answers.focus==='full'?' selected':''}" onclick="obSelect(this);obSetFocus('${userId}','full',${JSON.stringify(answers)})">
+          Full Body <span class="ob-checkmark">✓</span>
+          <span class="ob-opt-label">Balanced push/pull/legs</span>
+        </button>
+        <button class="ob-option${answers.focus==='upper'?' selected':''}" onclick="obSelect(this);obSetFocus('${userId}','upper',${JSON.stringify(answers)})">
+          Upper <span class="ob-checkmark">✓</span>
+          <span class="ob-opt-label">More push & pull emphasis</span>
+        </button>
+        <button class="ob-option${answers.focus==='lower'?' selected':''}" onclick="obSelect(this);obSetFocus('${userId}','lower',${JSON.stringify(answers)})">
+          Lower <span class="ob-checkmark">✓</span>
+          <span class="ob-opt-label">More leg & glute emphasis</span>
+        </button>
+      </div>
+      ${answers.numPasses && answers.focus ? `<button class="btn-primary ob-next" onclick="showOnboarding('${userId}',3,${JSON.stringify(answers)})">Next →</button>` : ''}
+    </div>`;
+  }
+  else if(step === 3){
+    el.innerHTML=`<div class="ob-wrap">
+      <div class="ob-step">Step 3 of 3</div>
+      <div class="ob-title">Rest & Recovery</div>
+      <div class="ob-sub">Rest days per cycle?</div>
+      <div class="ob-options cols3" style="margin-bottom:20px;">
+        ${[1,2,3].map(n=>`<button class="ob-option${answers.restCount===n?' selected':''}" onclick="obSelect(this);obSetRest('${userId}',${n},${JSON.stringify(answers)})">
+          ${n} <span class="ob-checkmark">✓</span>
+          <span class="ob-opt-label">${n===1?'Standard':n===2?'Extra recovery':'Lots of rest'}</span>
+        </button>`).join('')}
+      </div>
+      <div class="ob-sub" style="margin-bottom:12px;">Rest timer between sets?</div>
+      <div class="ob-options cols2" style="margin-bottom:4px;">
+        <button class="ob-option${answers.timerEnabled===true?' selected':''}" onclick="obSelect(this);obSetTimer('${userId}',true,${JSON.stringify(answers)})">
+          Yes <span class="ob-checkmark">✓</span>
+          <span class="ob-opt-label">Countdown after Done</span>
+        </button>
+        <button class="ob-option${answers.timerEnabled===false?' selected':''}" onclick="obSelect(this);obSetTimer('${userId}',false,${JSON.stringify(answers)})">
+          No <span class="ob-checkmark">✓</span>
+          <span class="ob-opt-label">I'll track rest myself</span>
+        </button>
+      </div>
+      <div class="ob-note">You can change all of this later in Data.</div>
+      ${answers.restCount!==undefined && answers.timerEnabled!==undefined ? `<button class="btn-primary ob-next" onclick="finishOnboarding('${userId}',${JSON.stringify(answers)})">Start Training →</button>` : ''}
+    </div>`;
+  }
+}
+
+function obSelect(btn){
+  // Visual feedback — don't change state, parent function handles that
+  btn.closest('.ob-options')?.querySelectorAll('.ob-option').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function obNext(userId, step, answers){
+  // Called after unit selection — go to step 2
+  setTimeout(()=>showOnboarding(userId, 2, answers), 180);
+}
+function obPickNum(btn, userId, n, answers){
+  obSelect(btn);
+  const newAnswers = {...answers, numPasses:n};
+  // Re-render step 2 with updated selection
+  setTimeout(()=>showOnboarding(userId, 2, newAnswers), 50);
+}
+function obSetFocus(userId, focus, answers){
+  setTimeout(()=>showOnboarding(userId, 2, {...answers, focus}), 50);
+}
+function obSetRest(userId, n, answers){
+  setTimeout(()=>showOnboarding(userId, 3, {...answers, restCount:n}), 50);
+}
+function obSetTimer(userId, enabled, answers){
+  setTimeout(()=>showOnboarding(userId, 3, {...answers, timerEnabled:enabled}), 50);
+}
+
+function finishOnboarding(userId, answers){
+  // Apply all settings
+  state.unit = answers.unit || 'kg';
+  state.timerEnabled = !!answers.timerEnabled;
+  state.timerDefault = 120;
+  state.onboardingDone = true;
+
+  // Generate chain
+  const numPasses = answers.numPasses || 6;
+  const focus = answers.focus || 'full';
+  const restCount = answers.restCount || 1;
+  const generated = generateChain(numPasses, focus, restCount);
+  state.passOrder = generated.passOrder;
+  state.restSlots = generated.restSlots;
+
+  // Ensure all BASE_PASSES for generated order are available
+  generated.passOrder.forEach(pid=>{
+    if(!BASE_PASSES.find(p=>p.id===pid)){
+      const tmpl = PASS_TEMPLATES.find(t=>t.id===pid);
+      if(tmpl) BASE_PASSES.push(tmpl);
+    }
+  });
+
+  // Reset to fresh cycle with new chain
+  state.cycles = [newCycle()];
+
+  save();
+  requestNotificationPermission();
+  renderChain();
+}
+
 // ── EDIT FLOW ─────────────────────────────────────────────────
 function showEditPage(){
   const el=document.getElementById('view-chain');
   el.innerHTML=`
     <div class="edit-page">
-      <div class="edit-back" onclick="renderChain()">← Back to The Chain</div>
-      <div class="edit-title">Edit Chain</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div class="edit-title" style="margin-bottom:0;">Edit Chain</div>
+        <button class="btn-primary" style="padding:8px 20px;font-size:.8rem;" onclick="saveReorder();renderChain();">Done</button>
+      </div>
       <div class="edit-sub">Configure your training cycle</div>
       <div class="edit-cards">
         <div class="edit-card" onclick="showEditRest()">
