@@ -1191,11 +1191,17 @@ function generateChain(numPasses, focus, restCount){
 }
 
 // ── ONBOARDING WIZARD ─────────────────────────────────────────
-// answers = { unit, numPasses, focus, restCount, timerEnabled }
+// Uses global obState to avoid JSON-in-HTML-attribute issues
+
+let obUserId = '';
+let obAnswers = {};
 
 function showOnboarding(userId, step, answers){
+  obUserId = userId;
+  if(answers) obAnswers = answers;
   const el = document.getElementById('view-chain');
   const name = USERS[userId]?.name || userId;
+  const a = obAnswers;
 
   if(step === 1){
     el.innerHTML=`<div class="ob-wrap">
@@ -1203,122 +1209,119 @@ function showOnboarding(userId, step, answers){
       <div class="ob-title">Weight Unit</div>
       <div class="ob-sub">Choose once for ${name}.<br>You can change this later in Data.</div>
       <div class="ob-options cols2">
-        <button class="ob-option${answers.unit==='kg'?' selected':''}" onclick="obSelect(this);obNext('${userId}',1,{...${JSON.stringify(answers)},unit:'kg'})">
+        <button class="ob-option${a.unit==='kg'?' selected':''}" onclick="obPickUnit('kg')">
           KG <span class="ob-checkmark">✓</span>
-          <span class="ob-opt-label">Kilograms · Europe & most of the world</span>
+          <span class="ob-opt-label">Kilograms · Europe &amp; most of the world</span>
         </button>
-        <button class="ob-option${answers.unit==='lbs'?' selected':''}" onclick="obSelect(this);obNext('${userId}',1,{...${JSON.stringify(answers)},unit:'lbs'})">
+        <button class="ob-option${a.unit==='lbs'?' selected':''}" onclick="obPickUnit('lbs')">
           LBS <span class="ob-checkmark">✓</span>
-          <span class="ob-opt-label">Pounds · US & UK</span>
+          <span class="ob-opt-label">Pounds · US &amp; UK</span>
         </button>
       </div>
     </div>`;
   }
   else if(step === 2){
-    const counts=[3,4,5,6,7];
     el.innerHTML=`<div class="ob-wrap">
       <div class="ob-step">Step 2 of 3</div>
       <div class="ob-title">Your Chain</div>
       <div class="ob-sub">How many training sessions per cycle?</div>
       <div class="ob-options cols3" style="margin-bottom:20px;">
-        ${counts.slice(0,3).map(n=>`<button class="ob-option${answers.numPasses===n?' selected':''}" onclick="obPickNum(this,'${userId}',${n},${JSON.stringify(answers)})">
+        ${[3,4,5].map(n=>`<button class="ob-option${a.numPasses===n?' selected':''}" onclick="obPickNum(${n})">
           ${n} <span class="ob-checkmark">✓</span>
-          <span class="ob-opt-label">${n===3?'Minimal':n===4?'Moderate':n===5?'Balanced':''}</span>
+          <span class="ob-opt-label">${n===3?'Minimal':n===4?'Moderate':'Balanced'}</span>
         </button>`).join('')}
       </div>
       <div class="ob-options cols2" style="margin-bottom:20px;">
-        ${counts.slice(3).map(n=>`<button class="ob-option${answers.numPasses===n?' selected':''}" onclick="obPickNum(this,'${userId}',${n},${JSON.stringify(answers)})">
+        ${[6,7].map(n=>`<button class="ob-option${a.numPasses===n?' selected':''}" onclick="obPickNum(${n})">
           ${n} <span class="ob-checkmark">✓</span>
-          <span class="ob-opt-label">${n===6?'Full Chain (default)':'High Volume'}</span>
+          <span class="ob-opt-label">${n===6?'Full Chain':'High Volume'}</span>
         </button>`).join('')}
       </div>
       <div class="ob-sub" style="margin-bottom:12px;">Training focus?</div>
       <div class="ob-options cols3">
-        <button class="ob-option${answers.focus==='full'?' selected':''}" onclick="obSelect(this);obSetFocus('${userId}','full',${JSON.stringify(answers)})">
+        <button class="ob-option${a.focus==='full'?' selected':''}" onclick="obPickFocus('full')">
           Full Body <span class="ob-checkmark">✓</span>
           <span class="ob-opt-label">Balanced push/pull/legs</span>
         </button>
-        <button class="ob-option${answers.focus==='upper'?' selected':''}" onclick="obSelect(this);obSetFocus('${userId}','upper',${JSON.stringify(answers)})">
+        <button class="ob-option${a.focus==='upper'?' selected':''}" onclick="obPickFocus('upper')">
           Upper <span class="ob-checkmark">✓</span>
-          <span class="ob-opt-label">More push & pull emphasis</span>
+          <span class="ob-opt-label">More push &amp; pull</span>
         </button>
-        <button class="ob-option${answers.focus==='lower'?' selected':''}" onclick="obSelect(this);obSetFocus('${userId}','lower',${JSON.stringify(answers)})">
+        <button class="ob-option${a.focus==='lower'?' selected':''}" onclick="obPickFocus('lower')">
           Lower <span class="ob-checkmark">✓</span>
-          <span class="ob-opt-label">More leg & glute emphasis</span>
+          <span class="ob-opt-label">More leg emphasis</span>
         </button>
       </div>
-      ${answers.numPasses && answers.focus ? `<button class="btn-primary ob-next" onclick="showOnboarding('${userId}',3,${JSON.stringify(answers)})">Next →</button>` : ''}
+      ${a.numPasses && a.focus ? '<button class="btn-primary ob-next" onclick="showOnboarding(obUserId,3)">Next →</button>' : ''}
     </div>`;
   }
   else if(step === 3){
     el.innerHTML=`<div class="ob-wrap">
       <div class="ob-step">Step 3 of 3</div>
-      <div class="ob-title">Rest & Recovery</div>
+      <div class="ob-title">Rest &amp; Recovery</div>
       <div class="ob-sub">Rest days per cycle?</div>
       <div class="ob-options cols3" style="margin-bottom:20px;">
-        ${[1,2,3].map(n=>`<button class="ob-option${answers.restCount===n?' selected':''}" onclick="obSelect(this);obSetRest('${userId}',${n},${JSON.stringify(answers)})">
+        ${[1,2,3].map(n=>`<button class="ob-option${a.restCount===n?' selected':''}" onclick="obPickRest(${n})">
           ${n} <span class="ob-checkmark">✓</span>
           <span class="ob-opt-label">${n===1?'Standard':n===2?'Extra recovery':'Lots of rest'}</span>
         </button>`).join('')}
       </div>
       <div class="ob-sub" style="margin-bottom:12px;">Rest timer between sets?</div>
       <div class="ob-options cols2" style="margin-bottom:4px;">
-        <button class="ob-option${answers.timerEnabled===true?' selected':''}" onclick="obSelect(this);obSetTimer('${userId}',true,${JSON.stringify(answers)})">
+        <button class="ob-option${a.timerEnabled===true?' selected':''}" onclick="obPickTimer(true)">
           Yes <span class="ob-checkmark">✓</span>
           <span class="ob-opt-label">Countdown after Done</span>
         </button>
-        <button class="ob-option${answers.timerEnabled===false?' selected':''}" onclick="obSelect(this);obSetTimer('${userId}',false,${JSON.stringify(answers)})">
+        <button class="ob-option${a.timerEnabled===false?' selected':''}" onclick="obPickTimer(false)">
           No <span class="ob-checkmark">✓</span>
           <span class="ob-opt-label">I'll track rest myself</span>
         </button>
       </div>
       <div class="ob-note">You can change all of this later in Data.</div>
-      ${answers.restCount!==undefined && answers.timerEnabled!==undefined ? `<button class="btn-primary ob-next" onclick="finishOnboarding('${userId}',${JSON.stringify(answers)})">Start Training →</button>` : ''}
+      ${a.restCount!==undefined && a.timerEnabled!==undefined ? '<button class="btn-primary ob-next" onclick="finishOnboarding()">Start Training →</button>' : ''}
     </div>`;
   }
 }
 
-function obSelect(btn){
-  // Visual feedback — don't change state, parent function handles that
+function obHighlight(btn){
   btn.closest('.ob-options')?.querySelectorAll('.ob-option').forEach(b=>b.classList.remove('selected'));
   btn.classList.add('selected');
 }
-function obNext(userId, step, answers){
-  // Called after unit selection — go to step 2
-  setTimeout(()=>showOnboarding(userId, 2, answers), 180);
+function obPickUnit(unit){
+  obAnswers.unit = unit;
+  setTimeout(()=>showOnboarding(obUserId, 2), 180);
 }
-function obPickNum(btn, userId, n, answers){
-  obSelect(btn);
-  const newAnswers = {...answers, numPasses:n};
-  // Re-render step 2 with updated selection
-  setTimeout(()=>showOnboarding(userId, 2, newAnswers), 50);
+function obPickNum(n){
+  obAnswers.numPasses = n;
+  setTimeout(()=>showOnboarding(obUserId, 2), 60);
 }
-function obSetFocus(userId, focus, answers){
-  setTimeout(()=>showOnboarding(userId, 2, {...answers, focus}), 50);
+function obPickFocus(focus){
+  obAnswers.focus = focus;
+  setTimeout(()=>showOnboarding(obUserId, 2), 60);
 }
-function obSetRest(userId, n, answers){
-  setTimeout(()=>showOnboarding(userId, 3, {...answers, restCount:n}), 50);
+function obPickRest(n){
+  obAnswers.restCount = n;
+  setTimeout(()=>showOnboarding(obUserId, 3), 60);
 }
-function obSetTimer(userId, enabled, answers){
-  setTimeout(()=>showOnboarding(userId, 3, {...answers, timerEnabled:enabled}), 50);
+function obPickTimer(enabled){
+  obAnswers.timerEnabled = enabled;
+  setTimeout(()=>showOnboarding(obUserId, 3), 60);
 }
 
-function finishOnboarding(userId, answers){
-  // Apply all settings
-  state.unit = answers.unit || 'kg';
-  state.timerEnabled = !!answers.timerEnabled;
+function finishOnboarding(){
+  const a = obAnswers;
+  state.unit = a.unit || 'kg';
+  state.timerEnabled = !!a.timerEnabled;
   state.timerDefault = 120;
   state.onboardingDone = true;
 
-  // Generate chain
-  const numPasses = answers.numPasses || 6;
-  const focus = answers.focus || 'full';
-  const restCount = answers.restCount || 1;
+  const numPasses = a.numPasses || 6;
+  const focus = a.focus || 'full';
+  const restCount = a.restCount || 1;
   const generated = generateChain(numPasses, focus, restCount);
   state.passOrder = generated.passOrder;
   state.restSlots = generated.restSlots;
 
-  // Ensure all BASE_PASSES for generated order are available
   generated.passOrder.forEach(pid=>{
     if(!BASE_PASSES.find(p=>p.id===pid)){
       const tmpl = PASS_TEMPLATES.find(t=>t.id===pid);
@@ -1326,9 +1329,7 @@ function finishOnboarding(userId, answers){
     }
   });
 
-  // Reset to fresh cycle with new chain
   state.cycles = [newCycle()];
-
   save();
   requestNotificationPermission();
   renderChain();
