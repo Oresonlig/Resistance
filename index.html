@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#0a0a0a">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230a0a0a'/><text y='68' x='50' text-anchor='middle' font-size='38' font-family='serif' fill='%23c0392b'>TC</text></svg>">
 <title>The Chain — Resistance Training</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&family=Orbitron:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Space+Grotesk:wght@300;400;700&family=Crimson+Pro:ital,wght@0,300;1,300&family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 
 :root{
@@ -323,82 +323,560 @@ canvas#weightChart{width:100%!important;display:block;}
 /* ── THEMES ──────────────────────────────────────────────────── */
 /* Default: Iron (current dark red) — no extra class needed */
 
-/* 1. NIGHT CITY — cyberpunk homage, neon yellow on deep dark */
+/* ─────────────────────────────────────────────────────────────
+   1. NIGHT CITY — Cyberpunk homage
+   Font: Orbitron (techy, angular), Space Grotesk (body)
+   Palette: Deep navy-black, acid yellow, magenta accents
+───────────────────────────────────────────────────────────── */
 body.theme-nightcity{
-  --black:#080810;--white:#f0f0ff;--red:#f7e000;
-  --gold:#ff6b35;--green-bright:#00ffaa;
-  --gray-mid:#3a3a5a;--gray-light:#8888bb;
+  --black:#06060f;--white:#f0f0ff;--red:#ffe600;
+  --gold:#ff2d78;--green-bright:#00ffe5;
+  --gray-mid:#1a1a3a;--gray-light:#8888cc;
+  --display:'Orbitron',sans-serif;
+  --sans:'Space Grotesk',sans-serif;
+  --mono:'DM Mono',monospace;
+  background:var(--black);
+}
+body.theme-nightcity header{
+  background:#06060f;
+  border-bottom:1px solid #ffe600;
+  box-shadow:0 0 20px rgba(255,230,0,.15);
+}
+body.theme-nightcity .logo span{color:var(--red);}
+body.theme-nightcity nav{border-top:1px solid #ffe600;background:#06060f;}
+body.theme-nightcity nav button.active{border-top-color:var(--red);color:var(--red);}
+body.theme-nightcity .pass-card.next-up{border-color:var(--red);box-shadow:0 0 12px rgba(255,230,0,.2);}
+body.theme-nightcity .pass-card.next-up::before{background:var(--red);color:#06060f;}
+body.theme-nightcity .pass-letter{color:var(--red);}
+body.theme-nightcity .chain-fill{background:linear-gradient(90deg,var(--red),var(--gold));}
+body.theme-nightcity .btn-primary{background:var(--red);color:#06060f;font-family:var(--display);}
+body.theme-nightcity .btn-primary:hover{background:#ffd000;}
+body.theme-nightcity .ex-btn-done{background:#1a1a00;border-color:var(--red);color:var(--red);font-family:var(--display);}
+body.theme-nightcity .ex-btn-skip{border-color:var(--gold);color:var(--gold);}
+body.theme-nightcity .set-input{border-color:#1a1a3a;background:#0a0a1a;}
+body.theme-nightcity .set-input:focus{border-color:var(--red);box-shadow:0 0 8px rgba(255,230,0,.3);}
+body.theme-nightcity .pass-card{border-color:#1a1a3a;}
+body.theme-nightcity .user-screen{background:radial-gradient(ellipse at center,#0a0a2a 0%,#06060f 70%);}
+body.theme-nightcity .user-logo{text-shadow:0 0 30px rgba(255,230,0,.5);}
+body.theme-nightcity .user-btn{border-color:#1a1a3a;}
+body.theme-nightcity .user-btn:hover{border-color:var(--red);box-shadow:0 0 15px rgba(255,230,0,.2);}
+body.theme-nightcity .sync-dot.ok{background:var(--green-bright);}
+body.theme-nightcity .weight-banner{background:#08080e;}
+body.theme-nightcity .ex-tag.ramp{background:#1a1000;border-color:#aa8800;color:#ffe600;}
+
+/* ─────────────────────────────────────────────────────────────
+   2. RENAISSANCE — Old world elegance
+   Font: Playfair Display (editorial, serif), Crimson Pro (body)
+   Palette: Aged parchment, deep burgundy, gold leaf
+───────────────────────────────────────────────────────────── */
+body.theme-renaissance{
+  --black:#1a0f08;--white:#f5e6c8;--red:#8b1a2a;
+  --gold:#c8960c;--green-bright:#4a7a3a;
+  --gray-mid:#3a2818;--gray-light:#9a8060;
+  --display:'Playfair Display',serif;
+  --sans:'Crimson Pro',serif;
   --mono:'DM Mono',monospace;
 }
-body.theme-nightcity .logo span,
-body.theme-nightcity .pass-letter,
-body.theme-nightcity .chain-fill,
-body.theme-nightcity .btn-primary,
-body.theme-nightcity .pass-card.next-up,
-body.theme-nightcity nav button.active{border-bottom-color:var(--red);}
-body.theme-nightcity .user-logo span{color:var(--red);}
-body.theme-nightcity header{border-bottom-color:#1a1a2e;}
-body.theme-nightcity nav{border-top-color:#1a1a2e;}
-body.theme-nightcity .pass-card.next-up::before{background:var(--red);color:#080810;}
-body.theme-nightcity .ex-btn-done{background:#1a1a00;border-color:var(--red);color:var(--red);}
-body.theme-nightcity .sync-dot.ok{background:var(--green-bright);}
-
-/* 2. FOREST — deep green, earthy, focused */
-body.theme-forest{
-  --black:#0a0f0a;--white:#e8f0e8;--red:#4a9a4a;
-  --gold:#a0c040;--green-bright:#70dd70;
-  --gray-mid:#2a4a2a;--gray-light:#7a9a7a;
+body.theme-renaissance body{
+  background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c8960c' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
-body.theme-forest .user-logo span{color:var(--red);}
-body.theme-forest .ex-btn-done{background:#0a1a0a;border-color:var(--red);color:var(--red);}
-body.theme-forest .btn-primary{background:var(--red);}
-body.theme-forest .btn-primary:hover{background:#3a7a3a;}
+body.theme-renaissance header{background:#1a0f08;border-bottom:1px solid #c8960c;}
+body.theme-renaissance .logo{font-family:'Playfair Display',serif;font-style:italic;letter-spacing:.05em;}
+body.theme-renaissance .logo span{color:var(--red);}
+body.theme-renaissance nav{border-top:2px solid #c8960c;background:#1a0f08;}
+body.theme-renaissance nav button.active{border-top-color:var(--red);color:var(--white);}
+body.theme-renaissance .pass-card.next-up{border-color:#c8960c;border-width:2px;}
+body.theme-renaissance .pass-card.next-up::before{background:var(--red);font-family:'Crimson Pro',serif;letter-spacing:.15em;}
+body.theme-renaissance .pass-letter{font-family:'Playfair Display',serif;color:var(--red);font-style:italic;}
+body.theme-renaissance .pass-name{font-family:'Playfair Display',serif;letter-spacing:.02em;}
+body.theme-renaissance .chain-fill{background:linear-gradient(90deg,#8b1a2a,#c8960c);}
+body.theme-renaissance .btn-primary{background:var(--red);font-family:'Playfair Display',serif;letter-spacing:.08em;}
+body.theme-renaissance .ex-btn-done{background:#1a0808;border-color:#4a7a3a;color:#4a7a3a;font-family:'Playfair Display',serif;font-size:.5rem;}
+body.theme-renaissance .section-title,.renaissance .chain-intro-title{font-family:'Playfair Display',serif;}
+body.theme-renaissance .set-input{background:#150c06;border-color:#3a2818;}
+body.theme-renaissance .user-screen{background:radial-gradient(ellipse at top,#2a1a0a 0%,#1a0f08 60%);}
+body.theme-renaissance .weight-banner{background:#150c06;}
+body.theme-renaissance .pass-card{border-color:#2a1a0a;}
 
-/* 3. ARCTIC — stark white on near-black, ice blue accents */
+/* ─────────────────────────────────────────────────────────────
+   3. ARCTIC TERMINAL — Cold precision
+   Font: Rajdhani (military/tech), DM Mono
+   Palette: Near-black with electric cyan, white text, clinical
+───────────────────────────────────────────────────────────── */
 body.theme-arctic{
-  --black:#08080e;--white:#e8f4ff;--red:#4488ff;
-  --gold:#44ccff;--green-bright:#44ffcc;
-  --gray-mid:#1a2a3a;--gray-light:#7090aa;
+  --black:#020c10;--white:#d8f4ff;--red:#00c8ff;
+  --gold:#00ffcc;--green-bright:#00ffcc;
+  --gray-mid:#0a2030;--gray-light:#4a8aa0;
+  --display:'Rajdhani',sans-serif;
+  --sans:'Rajdhani',sans-serif;
+  --mono:'DM Mono',monospace;
 }
-body.theme-arctic .user-logo span{color:var(--red);}
-body.theme-arctic .pass-card.next-up::before{background:var(--red);}
-body.theme-arctic .ex-btn-done{background:#0a0a1a;border-color:var(--red);color:var(--red);}
-body.theme-arctic .btn-primary{background:var(--red);}
-body.theme-arctic .btn-primary:hover{background:#2266cc;}
-body.theme-arctic .chain-fill{background:var(--red);}
-body.theme-arctic .ex-tag.ramp{border-color:#2255aa;color:#6699ff;}
+body.theme-arctic header{background:#020c10;border-bottom:1px solid #00c8ff;box-shadow:0 0 15px rgba(0,200,255,.1);}
+body.theme-arctic .logo{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.2em;}
+body.theme-arctic .logo span{color:var(--red);}
+body.theme-arctic nav{border-top:1px solid #00c8ff;background:#020c10;}
+body.theme-arctic nav button{font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:.12em;}
+body.theme-arctic nav button.active{border-top-color:var(--red);color:var(--red);}
+body.theme-arctic .pass-card{border-color:#0a2030;}
+body.theme-arctic .pass-card.next-up{border-color:var(--red);box-shadow:0 0 10px rgba(0,200,255,.15);}
+body.theme-arctic .pass-card.next-up::before{background:var(--red);color:#020c10;font-family:'Rajdhani',sans-serif;letter-spacing:.15em;}
+body.theme-arctic .pass-letter{font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--red);}
+body.theme-arctic .pass-name{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.1em;}
+body.theme-arctic .chain-fill{background:linear-gradient(90deg,#00c8ff,#00ffcc);}
+body.theme-arctic .chain-bar{background:#0a2030;}
+body.theme-arctic .btn-primary{background:var(--red);color:#020c10;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.15em;}
+body.theme-arctic .btn-primary:hover{background:#00a8dd;}
+body.theme-arctic .ex-btn-done{background:#001820;border-color:var(--red);color:var(--red);font-family:'Rajdhani',sans-serif;font-weight:600;}
+body.theme-arctic .set-input{background:#010810;border-color:#0a2030;}
+body.theme-arctic .set-input:focus{border-color:var(--red);box-shadow:0 0 6px rgba(0,200,255,.2);}
+body.theme-arctic .user-screen{background:radial-gradient(ellipse at center,#0a1a2a 0%,#020c10 70%);}
+body.theme-arctic .user-btn{border-color:#0a2030;}
+body.theme-arctic .user-btn:hover{border-color:var(--red);box-shadow:0 0 12px rgba(0,200,255,.15);}
+body.theme-arctic .weight-banner{background:#010810;}
+body.theme-arctic .section-title{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.1em;}
 
-/* 4. EMBER — deep warm amber, like iron in a forge */
+/* ─────────────────────────────────────────────────────────────
+   4. EMBER — Industrial forge
+   Font: Rajdhani (heavy), Space Grotesk (body)
+   Palette: Charcoal black, molten orange, deep red
+   Texture: Subtle noise / grit
+───────────────────────────────────────────────────────────── */
 body.theme-ember{
-  --black:#0e0800;--white:#fff0d8;--red:#ff8c00;
-  --gold:#ffcc44;--green-bright:#88cc44;
-  --gray-mid:#3a2800;--gray-light:#aa8855;
+  --black:#0c0600;--white:#ffe8cc;--red:#ff6a00;
+  --gold:#ffcc00;--green-bright:#a0cc40;
+  --gray-mid:#2a1800;--gray-light:#aa7040;
+  --display:'Rajdhani',sans-serif;
+  --sans:'Space Grotesk',sans-serif;
+  --mono:'DM Mono',monospace;
 }
-body.theme-ember .user-logo span{color:var(--red);}
-body.theme-ember .pass-card.next-up::before{background:var(--red);}
-body.theme-ember .ex-btn-done{background:#1a0e00;border-color:var(--green-bright);color:var(--green-bright);}
-body.theme-ember .btn-primary{background:var(--red);}
-body.theme-ember .btn-primary:hover{background:#cc7000;}
-body.theme-ember .chain-fill{background:var(--red);}
-body.theme-ember .set-input.work-set{border-color:#3a2000;}
+body.theme-ember header{
+  background:#0c0600;
+  border-bottom:2px solid #ff6a00;
+  box-shadow:0 2px 20px rgba(255,106,0,.2);
+}
+body.theme-ember .logo{font-family:'Rajdhani',sans-serif;font-weight:900;letter-spacing:.15em;}
+body.theme-ember .logo span{color:var(--red);}
+body.theme-ember nav{border-top:2px solid #2a1800;background:#0c0600;}
+body.theme-ember nav button.active{border-top-color:var(--red);color:var(--red);}
+body.theme-ember .pass-card{border-color:#2a1800;}
+body.theme-ember .pass-card.next-up{border-color:var(--red);box-shadow:0 0 15px rgba(255,106,0,.25);}
+body.theme-ember .pass-card.next-up::before{background:var(--red);color:#0c0600;}
+body.theme-ember .pass-letter{font-family:'Rajdhani',sans-serif;font-weight:900;color:var(--red);}
+body.theme-ember .pass-name{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.08em;}
+body.theme-ember .chain-fill{background:linear-gradient(90deg,#cc3300,#ff6a00,#ffcc00);}
+body.theme-ember .chain-bar{background:#1a0c00;}
+body.theme-ember .btn-primary{background:var(--red);color:#0c0600;font-family:'Rajdhani',sans-serif;font-weight:700;}
+body.theme-ember .btn-primary:hover{background:#e05500;}
+body.theme-ember .ex-btn-done{background:#1a0e00;border-color:#a0cc40;color:#a0cc40;}
+body.theme-ember .set-input{background:#080400;border-color:#2a1800;}
+body.theme-ember .set-input:focus{border-color:var(--red);box-shadow:0 0 8px rgba(255,106,0,.3);}
+body.theme-ember .set-input.work-set{border-color:#3a1800;}
+body.theme-ember .user-screen{background:radial-gradient(ellipse at bottom,#2a1000 0%,#0c0600 60%);}
+body.theme-ember .user-logo{text-shadow:0 0 40px rgba(255,106,0,.4);}
+body.theme-ember .weight-banner{background:#080400;}
+body.theme-ember .ex-tag.ramp{border-color:#aa4400;background:#1a0800;color:#ff8844;}
 
-/* 5. VOID — ultra minimal, almost no color, monochrome */
+/* ─────────────────────────────────────────────────────────────
+   5. VOID — Luxury minimal
+   Font: Playfair Display (headings, italic), DM Mono (everything)
+   Palette: True black, pure white, single platinum accent
+   Philosophy: Less is everything
+───────────────────────────────────────────────────────────── */
 body.theme-void{
-  --black:#050505;--white:#dddddd;--red:#ffffff;
+  --black:#000000;--white:#ffffff;--red:#ffffff;
   --gold:#aaaaaa;--green-bright:#cccccc;
-  --gray-mid:#222222;--gray-light:#666666;
+  --gray-mid:#111111;--gray-light:#666666;
+  --display:'Playfair Display',serif;
+  --sans:'DM Mono',monospace;
+  --mono:'DM Mono',monospace;
 }
+body.theme-void header{background:#000;border-bottom:1px solid #222;}
+body.theme-void .logo{font-family:'Playfair Display',serif;font-style:italic;letter-spacing:.03em;}
+body.theme-void .logo span{color:#888;}
+body.theme-void nav{border-top:1px solid #222;background:#000;}
+body.theme-void nav button{color:#444;}
+body.theme-void nav button.active{border-top-color:#fff;color:#fff;}
+body.theme-void .pass-card{border-color:#111;}
+body.theme-void .pass-card.next-up{border-color:#444;border-width:1px;}
+body.theme-void .pass-card.next-up::before{background:#fff;color:#000;font-family:'DM Mono',monospace;font-size:.4rem;}
+body.theme-void .pass-letter{font-family:'Playfair Display',serif;font-style:italic;color:#888;font-size:2.2rem;}
+body.theme-void .pass-name{font-family:'Playfair Display',serif;font-weight:700;letter-spacing:.01em;}
+body.theme-void .chain-fill{background:#fff;}
+body.theme-void .chain-bar{background:#111;}
+body.theme-void .btn-primary{background:#fff;color:#000;font-family:'Playfair Display',serif;font-style:italic;}
+body.theme-void .btn-primary:hover{background:#ddd;}
+body.theme-void .ex-btn-done{background:none;border-color:#fff;color:#fff;}
+body.theme-void .ex-btn-skip{border-color:#444;color:#666;}
+body.theme-void .set-input{background:#050505;border-color:#1a1a1a;}
+body.theme-void .set-input:focus{border-color:#fff;}
+body.theme-void .user-screen{background:#000;}
+body.theme-void .user-logo{font-family:'Playfair Display',serif;font-style:italic;letter-spacing:.05em;}
 body.theme-void .user-logo span{color:#888;}
-body.theme-void .pass-card.next-up{border-color:#888;}
-body.theme-void .pass-card.next-up::before{background:#888;color:#050505;}
-body.theme-void .ex-btn-done{background:#111;border-color:#888;color:#ddd;}
-body.theme-void .btn-primary{background:#333;color:#ddd;}
-body.theme-void .btn-primary:hover{background:#444;}
-body.theme-void .chain-fill{background:#555;}
-body.theme-void .pass-letter{color:#888;}
-body.theme-void nav button.active{border-top-color:#888;}
+body.theme-void .user-btn{border-color:#1a1a1a;}
+body.theme-void .user-btn:hover{border-color:#fff;}
+body.theme-void .user-btn .user-initial{color:#fff;}
+body.theme-void .weight-banner{background:#050505;}
+body.theme-void .ex-tag{border-color:#222;color:#444;}
+body.theme-void .pass-card.done{opacity:.4;}
+body.theme-void .section-title{font-family:'Playfair Display',serif;font-style:italic;}
+body.theme-void .sync-dot.ok{background:#888;}
 
-/* 6. IRON (default) — no class needed, matches :root */
+
+
+/* ─────────────────────────────────────────────────────────────
+   NANOSUIT — Adaptive tactical armor
+   Hexagonal geometry · Carbon + cyan · Morphing edges
+───────────────────────────────────────────────────────────── */
+body.theme-nanosuit{
+  --black:#050810;--white:#e0faff;--red:#00d4ff;
+  --gold:#00fff0;--green-bright:#50ff88;
+  --gray-mid:#102030;--gray-light:#5a8899;
+  --display:'Orbitron',sans-serif;
+  --sans:'Space Grotesk',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  background:#050810;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'%3E%3Cg fill='none' stroke='%2300d4ff' stroke-width='0.5' stroke-opacity='0.08'%3E%3Cpath d='M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100'/%3E%3Cpath d='M28 0L28 34L0 50L0 84L28 100L56 84L56 50L28 34'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(ellipse at top,#0a1828 0%,#050810 60%);
+}
+
+/* Scanning grid overlay — subtle horizontal lines */
+body.theme-nanosuit::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+  background-image:linear-gradient(0deg,rgba(0,212,255,0.015) 50%,transparent 50%);
+  background-size:100% 3px;
+}
+
+body.theme-nanosuit header{
+  background:rgba(5,8,16,0.85);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid #00d4ff;
+  box-shadow:0 0 24px rgba(0,212,255,0.15),inset 0 -1px 0 rgba(0,255,240,0.3);
+}
+body.theme-nanosuit .logo{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  letter-spacing:.25em;
+  text-shadow:0 0 10px rgba(0,212,255,0.5);
+}
+body.theme-nanosuit .logo span{
+  color:var(--red);
+  text-shadow:0 0 15px rgba(0,212,255,0.8);
+}
+body.theme-nanosuit .header-user strong{color:var(--red);}
+
+/* Sync dot — heartbeat pulse */
+body.theme-nanosuit .sync-dot.ok{
+  background:var(--green-bright);
+  box-shadow:0 0 6px var(--green-bright);
+  animation:nano-heartbeat 1.6s ease-in-out infinite;
+}
+@keyframes nano-heartbeat{
+  0%,100%{transform:scale(1);opacity:1;}
+  15%{transform:scale(1.4);opacity:.7;}
+  30%{transform:scale(1);opacity:1;}
+  45%{transform:scale(1.25);opacity:.8;}
+}
+
+/* Bottom nav — angular cut corners */
+body.theme-nanosuit nav{
+  border-top:1px solid #00d4ff;
+  background:rgba(5,8,16,0.92);
+  backdrop-filter:blur(10px);
+}
+body.theme-nanosuit nav button{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.15em;
+  color:#4a7a99;
+}
+body.theme-nanosuit nav button.active{
+  color:var(--red);
+  border-top-color:var(--red);
+  background:linear-gradient(180deg,rgba(0,212,255,0.12) 0%,transparent 60%);
+  text-shadow:0 0 8px rgba(0,212,255,0.6);
+}
+
+/* PASS CARDS — angled clipped corners (not full hex, still readable) */
+body.theme-nanosuit .pass-card{
+  border:none;
+  background:linear-gradient(135deg,#0a1420 0%,#050810 100%);
+  clip-path:polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px);
+  position:relative;
+  margin-bottom:10px;
+}
+body.theme-nanosuit .pass-card::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent 0,transparent 40%,rgba(0,212,255,0.04) 50%,transparent 60%);
+  pointer-events:none;
+}
+body.theme-nanosuit .pass-card.next-up{
+  background:linear-gradient(135deg,#0a2030 0%,#051020 100%);
+  animation:nano-morph 3.2s ease-in-out infinite;
+}
+@keyframes nano-morph{
+  0%,100%{box-shadow:0 0 0 1px var(--red),0 0 15px rgba(0,212,255,0.25);}
+  50%{box-shadow:0 0 0 1px var(--gold),0 0 28px rgba(0,255,240,0.45),inset 0 0 20px rgba(0,212,255,0.08);}
+}
+body.theme-nanosuit .pass-card.next-up::before{
+  background:var(--red);
+  color:#050810;
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  letter-spacing:.2em;
+  clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,8px 100%);
+  padding:3px 14px 3px 10px;
+}
+body.theme-nanosuit .pass-card.in-progress{
+  background:linear-gradient(135deg,#0a2020 0%,#051010 100%);
+}
+body.theme-nanosuit .pass-card.in-progress::before{
+  background:var(--green-bright);color:#050810;
+  clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,8px 100%);
+}
+body.theme-nanosuit .pass-card.done{opacity:.35;}
+body.theme-nanosuit .pass-card.open{
+  animation:nano-activate .4s ease-out;
+}
+@keyframes nano-activate{
+  0%{box-shadow:0 0 0 0 rgba(0,212,255,0.8);}
+  100%{box-shadow:0 0 0 1px rgba(0,212,255,0.3),0 0 20px rgba(0,212,255,0.2);}
+}
+
+body.theme-nanosuit .pass-letter{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  color:var(--red);
+  text-shadow:0 0 12px rgba(0,212,255,0.6);
+  font-size:2.1rem;
+}
+body.theme-nanosuit .pass-name{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+body.theme-nanosuit .pass-preview{
+  font-family:'JetBrains Mono',monospace;
+  color:#4a7a99;
+}
+
+/* Chain progress bar */
+body.theme-nanosuit .chain-bar{background:#0a1828;height:4px;}
+body.theme-nanosuit .chain-fill{
+  background:linear-gradient(90deg,#00d4ff 0%,#00fff0 50%,#50ff88 100%);
+  box-shadow:0 0 12px rgba(0,212,255,0.5);
+}
+
+/* Primary button — tactical HUD */
+body.theme-nanosuit .btn-primary{
+  background:linear-gradient(135deg,#00d4ff 0%,#0099cc 100%);
+  color:#050810;
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  letter-spacing:.18em;
+  clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);
+  text-shadow:0 1px 0 rgba(255,255,255,0.3);
+}
+body.theme-nanosuit .btn-primary:hover{
+  background:linear-gradient(135deg,#00fff0 0%,#00d4ff 100%);
+  box-shadow:0 0 18px rgba(0,255,240,0.4);
+}
+
+/* Exercise done button — armor lock indicator */
+body.theme-nanosuit .ex-btn-done{
+  background:linear-gradient(180deg,#0a2040 0%,#051020 100%);
+  border:1px solid var(--red);
+  color:var(--red);
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.1em;
+  box-shadow:inset 0 0 8px rgba(0,212,255,0.15);
+}
+body.theme-nanosuit .ex-btn-done:hover{
+  background:linear-gradient(180deg,#0a3050 0%,#081530 100%);
+  box-shadow:inset 0 0 12px rgba(0,212,255,0.3),0 0 10px rgba(0,212,255,0.3);
+}
+body.theme-nanosuit .ex-btn-skip{border-color:#554400;color:#aa8800;}
+body.theme-nanosuit .ex-btn-edit{border-color:#2a3a4a;color:#5a8899;}
+body.theme-nanosuit .ex-saved-badge{
+  color:var(--green-bright);
+  text-shadow:0 0 6px rgba(80,255,136,0.5);
+}
+
+/* Set inputs — HUD display */
+body.theme-nanosuit .set-input{
+  background:#030610;
+  border:1px solid #102030;
+  color:var(--red);
+  font-family:'JetBrains Mono',monospace;
+  font-weight:500;
+}
+body.theme-nanosuit .set-input:focus{
+  border-color:var(--red);
+  box-shadow:0 0 8px rgba(0,212,255,0.35),inset 0 0 4px rgba(0,212,255,0.1);
+  outline:none;
+}
+body.theme-nanosuit .set-input.work-set{border-color:#1a3040;}
+body.theme-nanosuit .set-input.warmup{border-color:#0a1520;color:#2a4a5a;}
+body.theme-nanosuit .set-unit{color:#4a7a99;font-family:'JetBrains Mono',monospace;font-weight:500;}
+body.theme-nanosuit .set-num{color:#5a8899;font-family:'Orbitron',sans-serif;font-weight:700;}
+body.theme-nanosuit .sets-group-label{
+  color:var(--red);
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.12em;
+  border-top:1px solid #1a3040;
+}
+body.theme-nanosuit .sets-group-label.warmup-group{color:#4a7a99;}
+body.theme-nanosuit .sets-group-label.work-group{color:var(--red);}
+
+/* Exercise tags */
+body.theme-nanosuit .ex-tag{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.12em;
+  clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%);
+}
+body.theme-nanosuit .ex-tag.ramp{background:#1a2a00;border-color:#88aa00;color:#ccff00;}
+body.theme-nanosuit .ex-tag.bw{background:#002a1a;border-color:#00aa66;color:#50ff88;}
+body.theme-nanosuit .ex-tag.uni{background:#2a1500;border-color:#cc8800;color:#ffaa44;}
+
+/* Exercise name & detail */
+body.theme-nanosuit .ex-name{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.04em;
+}
+body.theme-nanosuit .ex-detail{
+  font-family:'JetBrains Mono',monospace;
+  color:#5a8899;
+}
+body.theme-nanosuit .ex-prev .last-val{color:#00b8a0;}
+body.theme-nanosuit .ex-prev .pr-val{color:#00d4ff;text-shadow:0 0 4px rgba(0,212,255,0.3);}
+
+/* User screen */
+body.theme-nanosuit .user-screen{
+  background:radial-gradient(ellipse at center,#0a1828 0%,#050810 70%);
+  position:relative;
+}
+body.theme-nanosuit .user-logo{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  letter-spacing:.15em;
+  text-shadow:0 0 25px rgba(0,212,255,0.6),0 0 50px rgba(0,212,255,0.3);
+}
+body.theme-nanosuit .user-logo span{color:var(--red);}
+body.theme-nanosuit .user-tagline{color:#4a7a99;font-family:'JetBrains Mono',monospace;}
+body.theme-nanosuit .user-btn{
+  background:linear-gradient(135deg,#0a1828 0%,#050810 100%);
+  border:1px solid #1a3040;
+  clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
+  transition:all .3s ease;
+}
+body.theme-nanosuit .user-btn:hover{
+  border-color:var(--red);
+  box-shadow:0 0 20px rgba(0,212,255,0.3),inset 0 0 20px rgba(0,212,255,0.05);
+  transform:translateY(-2px);
+}
+body.theme-nanosuit .user-btn .user-initial{
+  color:var(--red);
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  text-shadow:0 0 12px rgba(0,212,255,0.5);
+}
+body.theme-nanosuit .user-btn .user-name{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.08em;
+  color:var(--white);
+}
+
+/* Weight banner — sensor readout */
+body.theme-nanosuit .weight-banner{
+  background:#050810;
+  border-bottom:1px solid rgba(0,212,255,0.2);
+}
+body.theme-nanosuit .weight-banner-label{color:#4a7a99;font-family:'Orbitron',sans-serif;}
+body.theme-nanosuit .weight-input{
+  background:#030610;
+  border:1px solid #1a3040;
+  color:var(--red);
+  font-family:'JetBrains Mono',monospace;
+  font-weight:700;
+}
+body.theme-nanosuit .weight-input:focus{border-color:var(--red);box-shadow:0 0 6px rgba(0,212,255,0.3);}
+body.theme-nanosuit .weight-log-btn{
+  border-color:#1a3040;
+  color:#5a8899;
+  font-family:'Orbitron',sans-serif;
+  font-weight:600;
+  letter-spacing:.08em;
+}
+body.theme-nanosuit .weight-log-btn:hover{border-color:var(--red);color:var(--red);}
+body.theme-nanosuit .weight-today{color:var(--red);font-family:'JetBrains Mono',monospace;}
+
+/* Section titles */
+body.theme-nanosuit .section-title,
+body.theme-nanosuit .chain-intro-title{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  letter-spacing:.1em;
+  text-shadow:0 0 10px rgba(0,212,255,0.2);
+}
+body.theme-nanosuit .section-sub,
+body.theme-nanosuit .chain-intro-sub{
+  color:#4a7a99;
+  font-family:'Orbitron',sans-serif;
+  font-weight:600;
+  letter-spacing:.15em;
+}
+
+/* Stat boxes — readouts */
+body.theme-nanosuit .stat-box{
+  background:linear-gradient(135deg,#0a1420 0%,#050810 100%);
+  border:1px solid #1a3040;
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+}
+body.theme-nanosuit .stat-num{
+  color:var(--red);
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  text-shadow:0 0 10px rgba(0,212,255,0.4);
+}
+body.theme-nanosuit .stat-desc{color:#4a7a99;font-family:'JetBrains Mono',monospace;}
+
+/* PR cards */
+body.theme-nanosuit .pr-card{
+  background:linear-gradient(135deg,#0a1420 0%,#050810 100%);
+  border:1px solid #1a3040;
+  clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
+}
+body.theme-nanosuit .pr-card::before{
+  background:var(--red);
+  color:#050810;
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+}
+body.theme-nanosuit .pr-value{
+  color:var(--red);
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+}
+
+/* History */
+body.theme-nanosuit .hist-entry{
+  background:linear-gradient(135deg,#0a1420 0%,#050810 100%);
+  border:1px solid #1a3040;
+}
+body.theme-nanosuit .hist-date{font-family:'Orbitron',sans-serif;font-weight:700;}
+body.theme-nanosuit .hist-pass{color:var(--red);font-family:'Orbitron',sans-serif;font-weight:600;}
+
+/* Scrollbar */
+body.theme-nanosuit::-webkit-scrollbar{width:6px;}
+body.theme-nanosuit::-webkit-scrollbar-track{background:#050810;}
+body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid #00d4ff;}
+
 </style>
 </head>
 <body>
@@ -498,13 +976,7 @@ function getEffectiveChain(){
   return buildEffectiveChain(po, rs);
 }
 
-// Get all cycle done keys based on current chain
-function getCycleDoneKeys(){
-  const chain = getEffectiveChain();
-  return chain.map(p => p.id);
-}
-
-let currentUser=null;
+// Get all cycle done keys based on current chainlet currentUser=null;
 let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0};
 state.cycles=[newCycle()];
 
@@ -603,28 +1075,6 @@ function selectUser(userId){
   renderChain();
   syncFromCloud(userId);
 }
-
-function showUnitDialog(userId){
-  const el=document.getElementById('view-chain');
-  el.innerHTML=`
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:65vh;padding:32px 20px;gap:14px;max-width:400px;margin:0 auto;">
-      <div style="font-family:var(--display);font-size:2.2rem;letter-spacing:.08em;color:var(--white)">WEIGHT UNIT</div>
-      <div style="font-family:var(--mono);font-size:.58rem;color:var(--gray-light);letter-spacing:.1em;text-transform:uppercase;">Choose once for ${USERS[userId]?.name||userId}</div>
-      <div style="font-family:var(--mono);font-size:.54rem;color:#555;text-align:center;line-height:1.8;margin-bottom:8px;">This is set per profile. To change later,<br>go to <span style='color:var(--gold)'>Data → Weight Unit</span>.</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:280px;margin-bottom:8px;">
-        <button class="user-btn" onclick="setUnit('kg','${userId}')">
-          <span class="user-initial">KG</span>
-          <span class="user-name">Kilograms</span>
-        </button>
-        <button class="user-btn" onclick="setUnit('lbs','${userId}')">
-          <span class="user-initial">LB</span>
-          <span class="user-name">Pounds</span>
-        </button>
-      </div>
-      <div style="font-family:var(--mono);font-size:.46rem;color:#2a2a2a;text-align:center;max-width:260px;">Europe / most of the world uses KG.<br>US / UK often uses LBS.</div>
-    </div>`;
-}
-
 function setUnit(unit, userId){
   state.unit=unit;
   save();
@@ -659,6 +1109,7 @@ async function syncFromCloud(userId){
         if(!state.updatedAt)state.updatedAt=0;
         if(!state.theme)state.theme='iron';
         localStorage.setItem(lsKey(userId),JSON.stringify(state));
+        applyTheme(state.theme||'iron');
         renderChain();
       }
     }
@@ -1149,13 +1600,6 @@ const PASS_TEMPLATES=[
   {id:'M',name:'Upper Body Pull',exercises:[{id:'M1',name:'Pull-ups / Chins',detail:'1 set failure',bw:true},{id:'M2',name:'Seated Cable Row',detail:'1 set failure'},{id:'M3',name:'Face Pulls',detail:'1 set failure'},{id:'M4',name:'Barbell Curl',detail:'1 set failure'}]},
   {id:'N',name:'Custom Pass',exercises:[{id:'N1',name:'Exercise 1',detail:'1 set failure'},{id:'N2',name:'Exercise 2',detail:'1 set failure'},{id:'N3',name:'Exercise 3',detail:'1 set failure'},{id:'N4',name:'Exercise 4',detail:'1 set failure'}]},
 ];
-
-function getAvailablePassTemplates(){
-  const used=state.passOrder||DEFAULT_PASS_ORDER;
-  // Also include any custom passes user added
-  return PASS_TEMPLATES.filter(t=>!used.includes(t.id));
-}
-
 function togglePassRename(pid){
   const w=document.getElementById('passrenamewrap-'+pid);
   if(w) w.style.display=w.style.display==='none'?'block':'none';
@@ -1382,11 +1826,6 @@ function showOnboarding(userId, step, answers){
     </div>`;
   }
 }
-
-function obHighlight(btn){
-  btn.closest('.ob-options')?.querySelectorAll('.ob-option').forEach(b=>b.classList.remove('selected'));
-  btn.classList.add('selected');
-}
 function obPickUnit(unit){
   obAnswers.unit = unit;
   setTimeout(()=>showOnboarding(obUserId, 2), 180);
@@ -1580,12 +2019,6 @@ function showEditAddRemove(){
   </div></div>`;
   document.getElementById('view-chain').innerHTML=html;
 }
-
-function showReorderUI(){
-  const panel = document.getElementById('reorder-panel');
-  if(panel) panel.style.display = panel.style.display==='none' ? 'block' : 'none';
-}
-
 // Drag and drop for reordering (desktop + mobile touch)
 let draggedId = null;
 let touchDragId = null;
@@ -1793,40 +2226,6 @@ function toggleExTag(exId, passId, tagKey){
     if(w) w.style.display='block';
   },20);
 }
-
-function toggleTagEditor(exId){
-  const wrap=document.getElementById('tagwrap-'+exId);
-  if(wrap) wrap.style.display=wrap.style.display==='none'?'block':'none';
-}
-
-function toggleExTag(exId, passId, tag){
-  if(!state.exerciseTagOverrides)state.exerciseTagOverrides={};
-  // Get current effective tags (override or original)
-  const chain=getEffectiveChain();
-  const pass=chain.find(p=>p.id===passId);
-  const ex=pass?.exercises.find(e=>e.id===exId);
-  if(!ex)return;
-  // Start from current override or original exercise tags
-  const cur = state.exerciseTagOverrides[exId]
-    ? {...state.exerciseTagOverrides[exId]}
-    : {ramp:!!ex.ramp, bw:!!ex.bw, uni:!!ex.uni, timed:!!ex.timed, singles:!!ex.singles};
-  cur[tag] = !cur[tag];
-  state.exerciseTagOverrides[exId] = cur;
-  // Clear extraSets so set structure regenerates with new tags
-  if(state.draft && state.draft.extraSets && state.draft.extraSets[exId]){
-    delete state.draft.extraSets[exId];
-  }
-  save();
-  // Rerender without losing the tag editor open state
-  renderChain();
-  setTimeout(()=>{
-    const c=document.getElementById('card-'+passId);
-    if(c)c.classList.add('open');
-    const tw=document.getElementById('tagwrap-'+exId);
-    if(tw)tw.style.display='block';
-  },15);
-}
-
 function toggleNote(exId){
   const wrap=document.getElementById('notewrap-'+exId);
   if(wrap){
@@ -2183,21 +2582,22 @@ function deleteWeight(date){state.weightLog=state.weightLog.filter(e=>e.date!==d
 
 // ── THEMES ────────────────────────────────────────────────────
 const THEMES = [
-  {id:'iron',    name:'Iron',       desc:'Original · Dark red · Classic',  class:''},
-  {id:'nightcity',name:'Night City',desc:'Cyberpunk homage · Neon yellow · Electric', class:'theme-nightcity'},
-  {id:'forest',  name:'Forest',     desc:'Deep green · Earthy · Focused',  class:'theme-forest'},
-  {id:'arctic',  name:'Arctic',     desc:'Ice blue · Stark contrast · Clean', class:'theme-arctic'},
-  {id:'ember',   name:'Ember',      desc:'Warm amber · Forge steel · Intense', class:'theme-ember'},
-  {id:'void',    name:'Void',       desc:'Monochrome · Ultra minimal · Pure', class:'theme-void'},
+  {id:'iron',          name:'Iron',          desc:'Dark red on black · Bebas Neue · The original',        class:''},
+  {id:'nanosuit',      name:'Nanosuit',      desc:'Hexagonal · Morphing cyan · Adaptive armor',           class:'theme-nanosuit'},
+  {id:'nightcity',     name:'Night City',    desc:'Acid yellow + magenta · Orbitron · Cyberpunk homage',  class:'theme-nightcity'},
+  {id:'renaissance',   name:'Renaissance',   desc:'Burgundy + gold leaf · Playfair Display · Old world',  class:'theme-renaissance'},
+  {id:'arctic',        name:'Arctic Terminal',desc:'Electric cyan · Rajdhani · Cold precision',           class:'theme-arctic'},
+  {id:'ember',         name:'Ember',         desc:'Molten orange · Rajdhani · Industrial forge',          class:'theme-ember'},
+  {id:'void',          name:'Void',          desc:'Pure black & white · Playfair italic · Luxury minimal',class:'theme-void'},
 ];
 
 function applyTheme(themeId){
   const theme = THEMES.find(t=>t.id===themeId) || THEMES[0];
-  // Remove all theme classes
   THEMES.forEach(t=>{ if(t.class) document.body.classList.remove(t.class); });
-  // Apply new
   if(theme.class) document.body.classList.add(theme.class);
   state.theme = themeId;
+  // Theme is user-specific — save immediately
+  if(currentUser) save();
 }
 
 function initTheme(){
@@ -2226,7 +2626,7 @@ function renderData(){
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;">
     ${THEMES.map(t=>{
       const active = (state.theme||'iron')===t.id;
-      return `<button onclick="applyTheme('${t.id}');save();renderData();"
+      return `<button onclick="applyTheme('${t.id}');renderData();"
         style="background:${active?'#1a0000':'none'};border:1px solid ${active?'var(--red)':'#333'};
         color:${active?'var(--white)':'#888'};padding:10px 8px;cursor:pointer;text-align:left;
         font-family:var(--mono);font-size:.48rem;letter-spacing:.04em;transition:all .2s;position:relative;">
@@ -2333,18 +2733,26 @@ document.addEventListener('visibilitychange',()=>{
 });
 window.addEventListener('beforeunload',()=>{
   if(currentUser){
-    // Use sendBeacon for reliability on page close
+    // fetch with keepalive survives page close AND sends Supabase auth headers
+    // (sendBeacon can't set custom headers, so Supabase rejected it silently)
     const payload=JSON.stringify({
       id:currentUser.id,
       data:state,
       updated_at:new Date().toISOString()
     });
-    navigator.sendBeacon&&navigator.sendBeacon(
-      SB_URL+'/rest/v1/app_state',
-      new Blob([payload],{type:'application/json'})
-    );
-    // Also try regular fetch (may not complete but worth trying)
-    pushState();
+    try{
+      fetch(SB_URL+'/rest/v1/app_state',{
+        method:'POST',
+        headers:{
+          'apikey':SB_KEY,
+          'Authorization':'Bearer '+SB_KEY,
+          'Content-Type':'application/json',
+          'Prefer':'resolution=merge-duplicates'
+        },
+        body:payload,
+        keepalive:true
+      }).catch(()=>{});
+    }catch(e){/* best-effort */}
   }
 });
 
