@@ -468,9 +468,10 @@ body.theme-nightcity .pass-card{
 
 /* Circuit trace — subtle glowing line on left edge */
 body.theme-nightcity .pass-card::before{
-  content:'';position:absolute;left:0;top:8px;bottom:8px;width:2px;
+  content:'';position:absolute;left:0;top:8px;bottom:8px;width:1px;
   background:linear-gradient(180deg,transparent 0%,rgba(255,230,0,0.4) 20%,rgba(255,45,120,0.4) 50%,rgba(0,255,240,0.4) 80%,transparent 100%);
-  box-shadow:0 0 8px rgba(255,230,0,0.5);
+  /* Glow points outward (negative x) so it doesn't bleed onto text */
+  box-shadow:-1px 0 4px rgba(255,230,0,0.4);
 }
 
 /* NEXT-UP — pulsing magenta with glitch border */
@@ -509,8 +510,9 @@ body.theme-nightcity .pass-card.next-up::after{
 }
 body.theme-nightcity .pass-card.next-up::before{
   background:linear-gradient(180deg,transparent 0%,#ffe600 30%,#ff2d78 70%,transparent 100%);
-  width:3px;
-  box-shadow:0 0 12px #ffe600,0 0 24px #ff2d78;
+  width:2px;
+  /* Glow points outward (negative x) so it doesn't bleed onto text */
+  box-shadow:-2px 0 6px #ffe600,-4px 0 12px rgba(255,45,120,0.5);
 }
 
 /* IN-PROGRESS — cyan accent */
@@ -1445,7 +1447,7 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
     <div class="logo" onclick="switchUser()">THE <span>CHAIN</span></div>
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v1.6.0 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v1.6.1 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -1524,14 +1526,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '1.6.0';
+const APP_VERSION = '1.6.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'1.6.0'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'1.6.1'};
 state.cycles=[newCycle()];
 
 
