@@ -463,7 +463,7 @@ body.theme-nightcity .pass-card{
   margin-bottom:14px;
   /* asymmetric notch — bottom-right corner cut deeper than top-left */
   clip-path:polygon(0 0,calc(100% - 24px) 0,100% 24px,100% calc(100% - 8px),calc(100% - 60px) 100%,8px 100%,0 calc(100% - 8px),0 8px);
-  box-shadow:inset 0 0 0 1px rgba(255,45,120,0.15),inset 0 0 20px rgba(0,255,240,0.03);
+  box-shadow:0 1px 0 rgba(255,45,120,0.1);
 }
 
 /* Circuit trace — subtle glowing line on left edge */
@@ -482,15 +482,11 @@ body.theme-nightcity .pass-card.next-up{
 @keyframes nightcity-pulse{
   0%,100%{
     box-shadow:
-      inset 0 0 0 2px var(--red),
-      inset 0 0 30px rgba(255,230,0,0.12),
       0 0 24px rgba(255,230,0,0.3),
       0 0 48px rgba(255,45,120,0.15);
   }
   50%{
     box-shadow:
-      inset 0 0 0 2px var(--gold),
-      inset 0 0 40px rgba(255,45,120,0.2),
       0 0 36px rgba(255,45,120,0.5),
       0 0 64px rgba(0,255,240,0.2);
   }
@@ -518,7 +514,7 @@ body.theme-nightcity .pass-card.next-up::before{
 /* IN-PROGRESS — cyan accent */
 body.theme-nightcity .pass-card.in-progress{
   background:linear-gradient(135deg,rgba(8,30,40,0.7) 0%,rgba(5,15,25,0.85) 100%);
-  box-shadow:inset 0 0 0 1px var(--green-bright),0 0 20px rgba(0,255,240,0.2);
+  box-shadow:0 0 20px rgba(0,255,240,0.2);
 }
 body.theme-nightcity .pass-card.done{opacity:.4;filter:saturate(0.6);}
 
@@ -1447,7 +1443,7 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
     <div class="logo" onclick="switchUser()">THE <span>CHAIN</span></div>
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v1.6.1 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v1.6.2 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -1526,14 +1522,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '1.6.1';
+const APP_VERSION = '1.6.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'1.6.1'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'1.6.2'};
 state.cycles=[newCycle()];
 
 
