@@ -902,7 +902,7 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
     <div class="logo" onclick="switchUser()">THE <span>CHAIN</span></div>
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
-      <div class="header-sync">Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v1.4.0 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -936,11 +936,11 @@ const DEFAULT_PASS_ORDER=['A','B','C','D','E','F'];
 const DEFAULT_REST_SLOTS=[6]; // after F by default
 
 const BASE_PASSES=[
-  {id:'A',name:'Chest + Tri',exercises:[{id:'A1',name:'Flat BB',detail:'Ramping → 1 set failure',ramp:true},{id:'A2',name:'Incline Smith Press',detail:'1 set failure'},{id:'A3',name:'Cable Flyes',detail:'Full ROM - Deep stretch · 1 set failure'},{id:'A4',name:'Tri-finisher (Pushdowns/Overhead)',detail:'1 set failure'}]},
+  {id:'A',name:'Chest + Tri',exercises:[{id:'A1',name:'Flat BB',detail:'Ramping → 1 set failure',ramp:true},{id:'A2',name:'Incline Smith Press',detail:'1 set failure'},{id:'A3',name:'Cable Flyes',detail:'Full ROM - Deep stretch · 1 set failure'},{id:'A4',name:'Tricep Pushdowns',detail:'1 set failure'}]},
   {id:'B',name:'Back Heavy + Biceps',exercises:[{id:'B1',name:'Dead Hang',detail:'Supinated or neutral · 1 set failure',bw:true,timed:true},{id:'B2',name:'Deadlift',detail:'Ramping → work sets to failure',ramp:true},{id:'B3',name:'Unilateral Cable Row',detail:'1 set failure',uni:true},{id:'B4',name:'Lat Prayers',detail:'1 set failure'}]},
-  {id:'C',name:'Legs + Calfs',exercises:[{id:'C1',name:'Zercher Squat',detail:'Ramping → 1 set failure',ramp:true},{id:'C2',name:'Lying Leg Curl',detail:'1 set failure'},{id:'C3',name:'Leg Extension',detail:'1 set failure'},{id:'C4',name:'Calfs (standing + seated)',detail:'2 sets'}]},
-  {id:'D',name:'Shoulders + Traps',exercises:[{id:'D1',name:'Military Press',detail:'Ramping → 1 set failure',ramp:true},{id:'D2',name:'Lateral Raises DB/Cable',detail:'1 set failure'},{id:'D3',name:'Helms Rear Delt Row / Face Pulls',detail:'1 set failure'},{id:'D4',name:'Cable Rotator Cuff',detail:'1 set'}]},
-  {id:'E',name:'Chest pt. 2',exercises:[{id:'E1',name:'Flat DB',detail:'Ramping → 1 set failure',ramp:true},{id:'E2',name:'Decline Smith Press',detail:'1 set failure'},{id:'E3',name:'Cable Flyes',detail:'1 set failure'},{id:'E4',name:'Tri-finisher (Pushdowns)',detail:'1 set failure'}]},
+  {id:'C',name:'Legs + Calfs',exercises:[{id:'C1',name:'Zercher Squat',detail:'Ramping → 1 set failure',ramp:true},{id:'C2',name:'Lying Leg Curl',detail:'1 set failure'},{id:'C3',name:'Leg Extension',detail:'1 set failure'},{id:'C4',name:'Seated Calf Raises',detail:'2 sets'}]},
+  {id:'D',name:'Shoulders + Traps',exercises:[{id:'D1',name:'Military Press',detail:'Ramping → 1 set failure',ramp:true},{id:'D2',name:'Lateral Raises',detail:'1 set failure'},{id:'D3',name:'Face Pulls',detail:'1 set failure'},{id:'D4',name:'Cable Rotator Cuff',detail:'1 set'}]},
+  {id:'E',name:'Chest pt. 2',exercises:[{id:'E1',name:'Flat DB',detail:'Ramping → 1 set failure',ramp:true},{id:'E2',name:'Decline Smith Press',detail:'1 set failure'},{id:'E3',name:'Cable Flyes',detail:'1 set failure'},{id:'E4',name:'Overhead Tricep Extension',detail:'1 set failure'}]},
   {id:'F',name:'Back pt. 2',exercises:[{id:'F1',name:'Pull-ups',detail:'1 set failure',bw:true},{id:'F2',name:'Unilateral Cable Row',detail:'1 set failure',uni:true},{id:'F3',name:'Shrugs',detail:'1 set failure'},{id:'F4',name:'Lat Prayers',detail:'1 set failure'}]},
 ];
 
@@ -979,8 +979,16 @@ function getEffectiveChain(){
   return buildEffectiveChain(po, rs);
 }
 
-// Get all cycle done keys based on current chainlet currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[]};
+// Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
+// Bump on substantive changes. Used for debugging + future migrations.
+const APP_VERSION = '1.4.0';
+// Track time when last successful cloud sync completed (read), and
+// time of last successful push (write). Used in Data view sync status.
+let lastSyncRead = 0;
+let lastSyncWrite = 0;
+
+let currentUser=null;
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'1.4.0'};
 state.cycles=[newCycle()];
 
 
@@ -1026,8 +1034,13 @@ function migrateExerciseNames(){
     'Chins or Pullups':'Pull-ups',
     'Decline Smith / DB':'Decline Smith Press',
     'Pull-ups / Chins':'Pull-ups',
+    'Tri-finisher (Pushdowns/Overhead)':'Tricep Pushdowns',
+    'Tri-finisher (Pushdowns)':'Overhead Tricep Extension',
     'Tri-finisher':null, // handled per-ID below
-    'Calfs':null
+    'Calfs (standing + seated)':'Seated Calf Raises',
+    'Calfs':null,
+    'Lateral Raises DB/Cable':'Lateral Raises',
+    'Helms Rear Delt Row / Face Pulls':'Face Pulls'
   };
   let changed=false;
   (state.log||[]).forEach(entry=>{
@@ -1066,7 +1079,7 @@ function migrateExerciseNames(){
   });
   if(changed){
     state.migrations = state.migrations || {};
-    state.migrations.exerciseSplit_v1 = Date.now();
+    state.migrations.exerciseSplit_v2 = Date.now();
   }
 }
 
@@ -1139,7 +1152,9 @@ function selectUser(userId){
         if(!state.theme)state.theme='iron';
         if(!state.exerciseTagOverrides)state.exerciseTagOverrides={};
         if(!state.customExercises)state.customExercises=[];
-        if(!state.migrations?.exerciseSplit_v1) migrateExerciseNames();
+        // Track which app version most recently wrote this state (for debugging)
+        state.appVersion=APP_VERSION;
+        if(!state.migrations?.exerciseSplit_v2) migrateExerciseNames();
       }
     }catch(e){console.warn('localStorage parse error',e);}
   }
@@ -1147,11 +1162,56 @@ function selectUser(userId){
   document.getElementById('userScreen').style.display='none';
   document.getElementById('appShell').style.display='block';
 
-  // First time for this user — run onboarding
+  // First time for this user — check if cloud has data BEFORE onboarding
+  // This prevents overwriting cloud backups when localStorage is cleared
   const needsOnboarding = !raw || !state.onboardingDone;
   if(needsOnboarding){
-    syncFromCloud(userId); // background, don't block
-    showOnboarding(userId, 1, {});
+    // Show a brief "checking" state, then await cloud
+    const chainEl = document.getElementById('view-chain');
+    if(chainEl){
+      chainEl.innerHTML = '<div class="ob-wrap"><div class="ob-step">Syncing…</div><div class="ob-title">Hi ' + currentUser.name + '</div><div class="ob-sub">Checking the cloud for existing data…</div></div>';
+    }
+    // Try to fetch cloud data with a 6s timeout
+    const cloudPromise = sbGet('app_state','id=eq.'+userId+'&select=data,updated_at').catch(()=>null);
+    const timeoutPromise = new Promise(r=>setTimeout(()=>r(null), 6000));
+    Promise.race([cloudPromise, timeoutPromise]).then(rows=>{
+      if(rows && rows.length && rows[0].data && rows[0].data.cycles && rows[0].data.onboardingDone){
+        // Cloud HAS valid data — restore it instead of running onboarding
+        state = rows[0].data;
+        if(!state.log)state.log=[];
+        if(!state.weightLog)state.weightLog=[];
+        if(!state.draft)state.draft=null;
+        if(!state.permanentSwaps)state.permanentSwaps={};
+        if(!state.passOrder)state.passOrder=null;
+        if(!state.restSlots)state.restSlots=null;
+        if(!state.unit)state.unit='kg';
+        if(!state.exerciseOverrides)state.exerciseOverrides={};
+        if(!state.passNameOverrides)state.passNameOverrides={};
+        if(!state.exerciseNotes)state.exerciseNotes={};
+        if(!state.exerciseTagOverrides)state.exerciseTagOverrides={};
+        if(!state.customExercises)state.customExercises=[];
+        if(state.timerEnabled===undefined)state.timerEnabled=false;
+        if(!state.theme)state.theme='iron';
+        if(!state.updatedAt)state.updatedAt=0;
+        if(!state.migrations?.exerciseSplit_v2) migrateExerciseNames();
+        // Restore pass name overrides into BASE_PASSES
+        if(state.passNameOverrides){
+          Object.entries(state.passNameOverrides).forEach(([pid,name])=>{
+            const bp=BASE_PASSES.find(p=>p.id===pid);
+            if(bp) bp.name=name;
+          });
+        }
+        localStorage.setItem(lsKey(userId),JSON.stringify(state));
+        lastSyncRead = Date.now();
+        initTheme();
+        requestNotificationPermission();
+        renderChain();
+        showToast('Restored from cloud ✓');
+      } else {
+        // No cloud data → genuinely first-time setup
+        showOnboarding(userId, 1, {});
+      }
+    });
     return;
   }
 
@@ -1178,6 +1238,7 @@ async function syncFromCloud(userId){
   setSyncDot('syncing');
   try{
     const rows=await sbGet('app_state','id=eq.'+userId+'&select=data,updated_at');
+    lastSyncRead = Date.now();
     if(rows&&rows.length&&rows[0].data){
       const cloud=rows[0].data;
       const cloudTime=cloud.updatedAt||new Date(rows[0].updated_at||0).getTime()||0;
@@ -1187,7 +1248,7 @@ async function syncFromCloud(userId){
       if(cloudNewer){
         state=cloud;
         if(!state.customExercises)state.customExercises=[];
-        if(!state.migrations?.exerciseSplit_v1) migrateExerciseNames();
+        if(!state.migrations?.exerciseSplit_v2) migrateExerciseNames();
         if(!state.log)state.log=[];
         if(!state.weightLog)state.weightLog=[];
         if(!state.draft)state.draft=null;
@@ -1220,10 +1281,57 @@ async function sbUpsert(table,data){const r=await fetch(`${SB_URL}/rest/v1/${tab
 
 let saveTimer=null;
 function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(pushState,800);}
+// ── SYNC STATUS HELPERS ──────────────────────────────────────
+function formatSyncAgo(timestamp){
+  if(!timestamp) return 'never';
+  const ms = Date.now() - timestamp;
+  if(ms < 5000) return 'just now';
+  if(ms < 60000) return Math.floor(ms/1000) + 's ago';
+  if(ms < 3600000) return Math.floor(ms/60000) + 'm ago';
+  if(ms < 86400000) return Math.floor(ms/3600000) + 'h ago';
+  return Math.floor(ms/86400000) + 'd ago';
+}
+
+async function manualSyncNow(){
+  if(!currentUser) return;
+  showToast('Syncing…');
+  // Push local first, then read cloud
+  await pushState();
+  await syncFromCloud(currentUser.id);
+  // Re-check cloud version
+  await checkCloudVersion();
+  // Refresh the data view to update timestamps
+  if(document.getElementById('view-data')?.classList.contains('active')){
+    renderData();
+  }
+  showToast('Synced ✓');
+}
+
+async function checkCloudVersion(){
+  if(!currentUser) return;
+  try{
+    const rows = await sbGet('app_state','id=eq.'+currentUser.id+'&select=data');
+    if(rows&&rows.length&&rows[0].data){
+      const cv = rows[0].data.appVersion || 'unknown';
+      const el = document.getElementById('sync-cloud-version');
+      if(el){
+        const match = cv === APP_VERSION;
+        el.innerHTML = `Cloud version: <span style="color:${match?'#aaa':'var(--gold)'};">${cv}${match?'':' (different)'}</span>`;
+      }
+    }
+  }catch(e){
+    const el = document.getElementById('sync-cloud-version');
+    if(el) el.innerHTML = 'Cloud version: <span style="color:#666;">offline</span>';
+  }
+}
+
 async function pushState(){
   setSyncDot('syncing');
   try{
+    // Stamp current app version on every write so cloud knows which client wrote
+    state.appVersion = APP_VERSION;
     await sbUpsert('app_state',{id:currentUser.id,data:state,updated_at:new Date().toISOString()});
+    lastSyncWrite = Date.now();
     setSyncDot('ok');setTimeout(()=>setSyncDot(''),3000);
   }catch(e){console.error('Cloud push error:',e);setSyncDot('err');}
 }
@@ -1633,8 +1741,8 @@ function buildReorderUI(effectiveChain){
   }
 
   html+=`</div>
-    <div style="font-family:var(--mono);font-size:.52rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;margin-top:8px;">Manage Passes</div>
-    <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);margin-bottom:8px;">Remove a pass from your chain, or add one:</div>
+    <div style="font-family:var(--mono);font-size:.52rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;margin-top:8px;">Manage Sessions</div>
+    <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);margin-bottom:8px;">Remove a session from your chain, or add one:</div>
     <div style="margin-bottom:10px;">`;
   // Show current passes with remove option
   passOrder.forEach((pid,i)=>{
@@ -1660,7 +1768,7 @@ function buildReorderUI(effectiveChain){
   // Show available passes to add
   const available=PASS_TEMPLATES.filter(t=>!passOrder.includes(t.id));
   if(available.length>0){
-    html+=`<div style="font-family:var(--mono);font-size:.48rem;color:#555;padding:8px 0 4px;text-transform:uppercase;letter-spacing:.08em;">Add a pass:</div>`;
+    html+=`<div style="font-family:var(--mono);font-size:.48rem;color:#555;padding:8px 0 4px;text-transform:uppercase;letter-spacing:.08em;">Add a session:</div>`;
     available.forEach(t=>{
       html+=`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1a1a;">
         <span style="font-family:var(--mono);font-size:.56rem;flex:1;color:var(--gray-light);">${t.name}</span>
@@ -1694,7 +1802,7 @@ const PASS_TEMPLATES=[
   {id:'K',name:'Core + Abs',exercises:[{id:'K1',name:'Ab Wheel',detail:'1 set failure'},{id:'K2',name:'Hanging Leg Raise',detail:'1 set failure'},{id:'K3',name:'Cable Crunch',detail:'1 set failure'},{id:'K4',name:'Dead Bug',detail:'2 sets'}]},
   {id:'L',name:'Upper Body Push',exercises:[{id:'L1',name:'Military Press',detail:'Ramping → 1 set failure',ramp:true},{id:'L2',name:'DB Shoulder Press',detail:'1 set failure'},{id:'L3',name:'Lateral Raises',detail:'1 set failure'},{id:'L4',name:'Tricep Pushdowns',detail:'1 set failure'}]},
   {id:'M',name:'Upper Body Pull',exercises:[{id:'M1',name:'Pull-ups',detail:'1 set failure',bw:true},{id:'M2',name:'Seated Cable Row',detail:'1 set failure'},{id:'M3',name:'Face Pulls',detail:'1 set failure'},{id:'M4',name:'Barbell Curl',detail:'1 set failure'}]},
-  {id:'N',name:'Custom Pass',exercises:[{id:'N1',name:'Exercise 1',detail:'1 set failure'},{id:'N2',name:'Exercise 2',detail:'1 set failure'},{id:'N3',name:'Exercise 3',detail:'1 set failure'},{id:'N4',name:'Exercise 4',detail:'1 set failure'}]},
+  {id:'N',name:'Custom Session',exercises:[{id:'N1',name:'Exercise 1',detail:'1 set failure'},{id:'N2',name:'Exercise 2',detail:'1 set failure'},{id:'N3',name:'Exercise 3',detail:'1 set failure'},{id:'N4',name:'Exercise 4',detail:'1 set failure'}]},
 ];
 function togglePassRename(pid){
   const w=document.getElementById('passrenamewrap-'+pid);
@@ -1710,7 +1818,7 @@ function doPassRename(pid){
   const bp=BASE_PASSES.find(p=>p.id===pid);
   if(bp) bp.name=val;
   save();
-  showToast('Pass renamed ✓');
+  showToast('Session renamed ✓');
   const panel=document.getElementById('reorder-panel');
   if(panel){
     const ec=getEffectiveChain();
@@ -1745,7 +1853,7 @@ function addPassToChain(templateId){
     const np=tmp.querySelector('#reorder-panel');
     if(np){np.style.display='block';panel.replaceWith(np);}
   }
-  showToast('Pass added to chain ✓');
+  showToast('Session added to chain ✓');
 }
 
 function removePassFromChain(passId){
@@ -1765,67 +1873,64 @@ function removePassFromChain(passId){
     const np=tmp.querySelector('#reorder-panel');
     if(np){np.style.display='block';panel.replaceWith(np);}
   }
-  showToast('Pass removed ✓');
+  showToast('Session removed ✓');
 }
 
 
 // ── CHAIN GENERATOR ───────────────────────────────────────────
 // Generates a passOrder + restSlots based on onboarding answers
 
-function generateChain(numPasses, focus, restCount){
-  // Templates by focus and count
-  const UPPER_PASSES = ['A','D','E','F']; // Chest+Tri, Shoulders, Chest pt.2, Back pt.2
-  const LOWER_PASSES = ['C'];             // Legs
-  const BACK_PASSES  = ['B','F'];         // Back Heavy, Back pt.2
-  const PUSH_PASSES  = ['A','D','E'];     // Chest+Tri, Shoulders, Chest pt.2
-  const PULL_PASSES  = ['B','F'];         // Back Heavy, Back pt.2
+function generateChain(numSessions, focus, restCount){
+  // HIT-aware session ordering. Same muscle group never trains back-to-back.
+  // Available pass IDs: A=Chest+Tri, B=Back Heavy+Bi, C=Legs+Calfs, D=Shoulders+Traps,
+  //                    E=Chest pt.2, F=Back pt.2, G=Arms, H=Full Body, I=Cardio,
+  //                    J=Glutes+Hamstrings, K=Core+Abs, L=Upper Push, M=Upper Pull
+  //
+  // Goal: avoid scheduling same muscle group 2 sessions in a row.
+  // Push muscles: A, D, E, L (chest/shoulders/tri share fatigue)
+  // Pull muscles: B, F, M (back/biceps share fatigue)
+  // Legs: C, J (quads/glutes/hamstrings)
 
-  let order = [];
+  const POOLS = {
+    full: {
+      3: ['A','B','C'],                    // Push, Pull, Legs — classic
+      4: ['A','B','C','D'],                // + Shoulders (separate push day)
+      5: ['A','B','C','D','F'],            // + Back pt.2 — pull volume
+      6: ['A','B','C','D','E','F'],        // Original 6-cycle
+      7: ['A','B','C','D','E','F','G']     // + Arm day
+    },
+    upper: {
+      3: ['A','B','D'],                    // Chest, Back, Shoulders — no legs
+      4: ['A','B','D','F'],                // + Back pt.2
+      5: ['A','B','D','F','C'],            // + Legs (single day for maintenance)
+      6: ['A','B','D','E','F','C'],        // Push/Pull/Push/Push/Pull/Legs
+      7: ['A','B','D','E','F','G','C']     // + Arm day
+    },
+    lower: {
+      3: ['C','A','J'],                    // Quads/Calfs, Push, Glutes/Hams — full lower coverage
+      4: ['C','A','J','B'],                // + Pull
+      5: ['C','A','J','B','D'],            // + Shoulders
+      6: ['C','A','J','B','D','F'],        // Two leg days separated by upper
+      7: ['C','A','J','B','D','F','K']     // + Core
+    }
+  };
 
-  if(focus === 'upper'){
-    // Upper body emphasis — lots of push/pull, one leg day
-    const pools = [
-      ['A','B','D'],           // 3: Chest, Back, Shoulders
-      ['A','B','D','F'],       // 4: + Back pt.2
-      ['A','B','C','D','F'],   // 5: + Legs
-      ['A','B','C','D','E','F'],// 6: full chain
-      ['A','B','C','D','E','F'], // 7: same, more rest
-    ];
-    order = pools[Math.min(numPasses,7)-3] || pools[3];
-  } else if(focus === 'lower'){
-    // Lower body emphasis — two leg days, push/pull coverage
-    const pools = [
-      ['C','A','B'],           // 3: Legs, Chest+Tri, Back
-      ['C','A','B','D'],       // 4: + Shoulders
-      ['C','A','B','D','F'],   // 5: + Back pt.2
-      ['C','A','B','C','D','F'],// 6: double legs
-      ['C','A','B','C','D','E','F'], // 7
-    ];
-    // Replace duplicate C with custom leg variation
-    order = pools[Math.min(numPasses,7)-3] || pools[3];
-    // Avoid true duplicates — use different leg exercises via rename
-    order = [...new Set(order)]; // dedupe
-    while(order.length < numPasses && order.length < 6) order.push(['A','B','D','E','F'].find(p=>!order.includes(p)));
-  } else {
-    // Full body / balanced — alternate push/pull/legs
-    const pools = [
-      ['A','B','C'],           // 3: Push, Pull, Legs
-      ['A','B','C','D'],       // 4: + Shoulders
-      ['A','B','C','D','F'],   // 5: + Back pt.2
-      ['A','B','C','D','E','F'],// 6: full chain
-      ['A','B','C','D','E','F'], // 7
-    ];
-    order = pools[Math.min(numPasses,7)-3] || pools[3];
+  const n = Math.max(3, Math.min(7, numSessions));
+  const order = (POOLS[focus] || POOLS.full)[n].slice();
+
+  // Rest slot placement — HIT favors recovery, so spread rests evenly
+  // restCount = 1 → at end (day after last session)
+  // restCount = 2 → end + middle
+  // restCount = 3 → end + 1/3 + 2/3
+  // Slots represent positions BETWEEN sessions (1 = after first, n = after last)
+  const slots = new Set();
+  slots.add(order.length); // always after the final session
+  if(restCount >= 2) slots.add(Math.round(order.length / 2));
+  if(restCount >= 3){
+    slots.add(Math.round(order.length / 3));
+    slots.add(Math.round(order.length * 2 / 3));
   }
-
-  // Trim/pad to exact numPasses
-  order = order.slice(0, numPasses);
-
-  // Rest slots: place after last pass (and after middle if restCount > 1)
-  let restSlots = [order.length]; // always after last pass
-  if(restCount >= 2) restSlots.push(Math.floor(order.length / 2));
-  if(restCount >= 3) restSlots.push(Math.floor(order.length * 3/4));
-  restSlots = [...new Set(restSlots)].sort((a,b)=>a-b);
+  const restSlots = [...slots].sort((a,b)=>a-b);
 
   return { passOrder: order, restSlots };
 }
@@ -1845,83 +1950,112 @@ function showOnboarding(userId, step, answers){
 
   if(step === 1){
     el.innerHTML=`<div class="ob-wrap">
-      <div class="ob-step">Step 1 of 3</div>
-      <div class="ob-title">Weight Unit</div>
-      <div class="ob-sub">Choose once for ${name}.<br>You can change this later in Data.</div>
+      <div class="ob-step">Welcome — Step 1 of 3</div>
+      <div class="ob-title">Hey ${name}</div>
+      <div class="ob-sub">Let's set up your training chain.<br>First — your weight unit.</div>
       <div class="ob-options cols2">
         <button class="ob-option${a.unit==='kg'?' selected':''}" onclick="obPickUnit('kg')">
           KG <span class="ob-checkmark">✓</span>
-          <span class="ob-opt-label">Kilograms · Europe &amp; most of the world</span>
+          <span class="ob-opt-label">Kilograms</span>
         </button>
         <button class="ob-option${a.unit==='lbs'?' selected':''}" onclick="obPickUnit('lbs')">
           LBS <span class="ob-checkmark">✓</span>
-          <span class="ob-opt-label">Pounds · US &amp; UK</span>
+          <span class="ob-opt-label">Pounds</span>
         </button>
       </div>
+      <div class="ob-note">You can change this later in Data.</div>
     </div>`;
   }
   else if(step === 2){
     el.innerHTML=`<div class="ob-wrap">
-      <div class="ob-step">Step 2 of 3</div>
-      <div class="ob-title">Your Chain</div>
-      <div class="ob-sub">How many training sessions per cycle?</div>
-      <div class="ob-options cols3" style="margin-bottom:20px;">
+      <div class="ob-step">Step 2 of 3 — Your Chain</div>
+      <div class="ob-title">How long?</div>
+      <div class="ob-sub">Sessions in one full cycle.<br>Pick what fits your week.</div>
+      <div class="ob-options cols3" style="margin-bottom:14px;">
         ${[3,4,5].map(n=>`<button class="ob-option${a.numPasses===n?' selected':''}" onclick="obPickNum(${n})">
           ${n} <span class="ob-checkmark">✓</span>
-          <span class="ob-opt-label">${n===3?'Minimal':n===4?'Moderate':'Balanced'}</span>
+          <span class="ob-opt-label">${n===3?'Quick & focused':n===4?'Balanced load':'Full coverage'}</span>
         </button>`).join('')}
       </div>
-      <div class="ob-options cols2" style="margin-bottom:20px;">
+      <div class="ob-options cols2" style="margin-bottom:24px;">
         ${[6,7].map(n=>`<button class="ob-option${a.numPasses===n?' selected':''}" onclick="obPickNum(${n})">
           ${n} <span class="ob-checkmark">✓</span>
-          <span class="ob-opt-label">${n===6?'Full Chain':'High Volume'}</span>
+          <span class="ob-opt-label">${n===6?'Classic HIT cycle':'High volume'}</span>
         </button>`).join('')}
       </div>
-      <div class="ob-sub" style="margin-bottom:12px;">Training focus?</div>
+      <div class="ob-title" style="font-size:1.4rem;margin-top:8px;">Focus</div>
+      <div class="ob-sub">Which area gets more attention?</div>
       <div class="ob-options cols3">
         <button class="ob-option${a.focus==='full'?' selected':''}" onclick="obPickFocus('full')">
           Full Body <span class="ob-checkmark">✓</span>
-          <span class="ob-opt-label">Balanced push/pull/legs</span>
+          <span class="ob-opt-label">Balanced split</span>
         </button>
         <button class="ob-option${a.focus==='upper'?' selected':''}" onclick="obPickFocus('upper')">
           Upper <span class="ob-checkmark">✓</span>
-          <span class="ob-opt-label">More push &amp; pull</span>
+          <span class="ob-opt-label">More chest/back/arms</span>
         </button>
         <button class="ob-option${a.focus==='lower'?' selected':''}" onclick="obPickFocus('lower')">
           Lower <span class="ob-checkmark">✓</span>
-          <span class="ob-opt-label">More leg emphasis</span>
+          <span class="ob-opt-label">Two leg-focused days</span>
         </button>
       </div>
-      ${a.numPasses && a.focus ? '<button class="btn-primary ob-next" onclick="showOnboarding(obUserId,3)">Next →</button>' : ''}
+      ${(a.numPasses && a.focus) ? '<button class="btn-primary ob-next" onclick="showOnboarding(obUserId,3)">Next →</button>' : '<div class="ob-note">Pick both to continue.</div>'}
     </div>`;
   }
   else if(step === 3){
+    // Preview the generated chain so user knows what they're getting
+    let preview = '';
+    if(a.numPasses && a.focus){
+      const gen = generateChain(a.numPasses, a.focus, a.restCount || 1);
+      const allPasses = [...BASE_PASSES, ...PASS_TEMPLATES.filter(t=>!BASE_PASSES.find(b=>b.id===t.id))];
+      const restPositions = new Set(gen.restSlots);
+      const items = [];
+      gen.passOrder.forEach((pid,i)=>{
+        const p = allPasses.find(x=>x.id===pid);
+        items.push(`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1a1a;font-family:var(--mono);font-size:.55rem;color:#aaa;">
+          <span style="color:var(--red);font-family:var(--display);font-size:.95rem;min-width:18px;">${'ABCDEFGHIJKLMN'[i]||pid}</span>
+          <span style="flex:1;">${p?.name||pid}</span>
+        </div>`);
+        if(restPositions.has(i+1)){
+          items.push(`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dashed #2a2a2a;font-family:var(--mono);font-size:.55rem;color:#666;">
+            <span style="color:#666;font-family:var(--display);font-size:.95rem;min-width:18px;">V</span>
+            <span style="flex:1;font-style:italic;">Rest day</span>
+          </div>`);
+        }
+      });
+      preview = `<div style="width:100%;margin:14px 0 4px;padding:10px 12px;background:#0d0d0d;border:1px solid #2a2a2a;">
+        <div style="font-family:var(--mono);font-size:.46rem;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Preview your chain</div>
+        ${items.join('')}
+      </div>`;
+    }
     el.innerHTML=`<div class="ob-wrap">
-      <div class="ob-step">Step 3 of 3</div>
-      <div class="ob-title">Rest &amp; Recovery</div>
-      <div class="ob-sub">Rest days per cycle?</div>
+      <div class="ob-step">Step 3 of 3 — Recovery</div>
+      <div class="ob-title">Rest days</div>
+      <div class="ob-sub">HIT favors recovery. How many?</div>
       <div class="ob-options cols3" style="margin-bottom:20px;">
         ${[1,2,3].map(n=>`<button class="ob-option${a.restCount===n?' selected':''}" onclick="obPickRest(${n})">
           ${n} <span class="ob-checkmark">✓</span>
-          <span class="ob-opt-label">${n===1?'Standard':n===2?'Extra recovery':'Lots of rest'}</span>
+          <span class="ob-opt-label">${n===1?'Standard':n===2?'Recommended':'Maximum'}</span>
         </button>`).join('')}
       </div>
-      <div class="ob-sub" style="margin-bottom:12px;">Rest timer between sets?</div>
-      <div class="ob-options cols2" style="margin-bottom:4px;">
+      <div class="ob-title" style="font-size:1.4rem;">Set timer</div>
+      <div class="ob-sub">Countdown after each Done?</div>
+      <div class="ob-options cols2" style="margin-bottom:8px;">
         <button class="ob-option${a.timerEnabled===true?' selected':''}" onclick="obPickTimer(true)">
-          Yes <span class="ob-checkmark">✓</span>
-          <span class="ob-opt-label">Countdown after Done</span>
+          On <span class="ob-checkmark">✓</span>
+          <span class="ob-opt-label">Auto rest timer</span>
         </button>
         <button class="ob-option${a.timerEnabled===false?' selected':''}" onclick="obPickTimer(false)">
-          No <span class="ob-checkmark">✓</span>
-          <span class="ob-opt-label">I'll track rest myself</span>
+          Off <span class="ob-checkmark">✓</span>
+          <span class="ob-opt-label">No timer</span>
         </button>
       </div>
-      <div class="ob-note">You can change all of this later in Data.</div>
-      ${a.restCount!==undefined && a.timerEnabled!==undefined ? '<button class="btn-primary ob-next" onclick="finishOnboarding()">Start Training →</button>' : ''}
+      ${preview}
+      ${(a.restCount!==undefined && a.timerEnabled!==undefined) ? '<button class="btn-primary ob-next" onclick="finishOnboarding()">Start training →</button>' : '<div class="ob-note">Pick both to continue.</div>'}
     </div>`;
   }
 }
+
 function obPickUnit(unit){
   obAnswers.unit = unit;
   setTimeout(()=>showOnboarding(obUserId, 2), 180);
@@ -2490,23 +2624,32 @@ function captureInputsToSetsBuffer(exId,passId){
   const isBW=!!ex?.bw;
   const rawSets=state.draft.extraSets[exId];
   if(!state.draft.inputBuffer)state.draft.inputBuffer={};
+  // Merge with existing buffer — keep prior values if DOM is empty
+  const prior = state.draft.inputBuffer[exId] || [];
   state.draft.inputBuffer[exId]=rawSets.map((_,origIdx)=>{
-    const forced=parseInt(document.getElementById('f-'+exId+'-'+origIdx)?.value)||null;
+    const p = prior[origIdx] || {};
+    const domF = document.getElementById('f-'+exId+'-'+origIdx)?.value;
+    const forced = (domF && domF !== '') ? (parseInt(domF)||null) : (p.forced ?? null);
     if(isBW){
-      const extraDisp=parseFloat(document.getElementById('bw-'+exId+'-'+origIdx)?.value);
-      const repsOrSecs2=parseInt(document.getElementById('r-'+exId+'-'+origIdx)?.value)||null;
+      const domBw = document.getElementById('bw-'+exId+'-'+origIdx)?.value;
+      const domR = document.getElementById('r-'+exId+'-'+origIdx)?.value;
+      const extraDisp = (domBw && domBw !== '') ? parseFloat(domBw) : null;
+      const extraKg = extraDisp!==null && !isNaN(extraDisp) ? toKg(extraDisp) : (p.extra ?? null);
+      const repsOrSecs2 = (domR && domR !== '') ? (parseInt(domR)||null) : null;
       const isTimed3=!!(state.exerciseTagOverrides?.[exId]?.timed ?? ex?.timed);
       return isTimed3
-        ? {extra:isNaN(extraDisp)?null:toKg(extraDisp), bwSnap:0, secs:repsOrSecs2, forced}
-        : {extra:isNaN(extraDisp)?null:toKg(extraDisp), bwSnap:0, reps:repsOrSecs2, forced};
+        ? {extra:extraKg, bwSnap:p.bwSnap||0, secs: repsOrSecs2 ?? (p.secs ?? null), forced}
+        : {extra:extraKg, bwSnap:p.bwSnap||0, reps: repsOrSecs2 ?? (p.reps ?? null), forced};
     }else{
-      const weightDisp=parseFloat(document.getElementById('w-'+exId+'-'+origIdx)?.value)||null;
-      const repsOrSecs=parseInt(document.getElementById('r-'+exId+'-'+origIdx)?.value)||null;
+      const domW = document.getElementById('w-'+exId+'-'+origIdx)?.value;
+      const domR = document.getElementById('r-'+exId+'-'+origIdx)?.value;
+      const weightDisp = (domW && domW !== '') ? (parseFloat(domW)||null) : null;
+      const weightKg = weightDisp !== null ? toKg(weightDisp) : (p.weight ?? null);
+      const repsOrSecs = (domR && domR !== '') ? (parseInt(domR)||null) : null;
       const isTimed2=!!(state.exerciseTagOverrides?.[exId]?.timed ?? ex?.timed);
-      // Convert to kg for storage
       return isTimed2
-        ? {weight:weightDisp!=null?toKg(weightDisp):null, secs:repsOrSecs, forced}
-        : {weight:weightDisp!=null?toKg(weightDisp):null, reps:repsOrSecs, forced};
+        ? {weight:weightKg, secs: repsOrSecs ?? (p.secs ?? null), forced}
+        : {weight:weightKg, reps: repsOrSecs ?? (p.reps ?? null), forced};
     }
   });
   // Also capture side buttons
@@ -2617,32 +2760,66 @@ function getBest(exId,isBW,isTimed){
   return best;
 }
 function getLastSession(exId, isBW, isTimed){
-  // Find the exercise name from the current chain for matching across passes
-  // (same exercise can appear in multiple passes with different IDs, e.g. B3 and F2
-  //  both being 'Unilateral Cable Row')
+  // Find the exercise's current name (in any pass it appears in) for cross-pass matching
+  // Same exercise can have different IDs (e.g. D1 Military Press vs L1 Military Press)
   const chain = getEffectiveChain();
-  let targetName = null;
+  const targetNames = new Set();
+  // Direct override for this ID
+  if(state.exerciseOverrides?.[exId]) targetNames.add(state.exerciseOverrides[exId]);
+  // The current name in the chain
   for(const p of chain){
     const found = p.exercises?.find(e=>e.id===exId);
-    if(found){ targetName = (state.exerciseOverrides?.[exId] || found.name); break; }
-  }
-  // Match by ID first (most precise), then by name (across-pass match)
-  for(let i=state.log.length-1; i>=0; i--){
-    const entry=state.log[i];
-    if(!entry.exercises) continue;
-    // Exact ID match first
-    let ex = entry.exercises.find(e=>e.id===exId && !e.skipped);
-    // Fall back to name match (resolves custom rename too)
-    if(!ex && targetName){
-      ex = entry.exercises.find(e=>{
-        if(e.skipped) return false;
-        const loggedName = state.exerciseOverrides?.[e.id] || e.name;
-        return loggedName === targetName;
-      });
+    if(found){
+      targetNames.add(state.exerciseOverrides?.[exId] || found.name);
+      // Also collect names of OTHER exercises in chain that share this name
+      // so we can find logged data that used a different ID for the same exercise
+      const myName = state.exerciseOverrides?.[exId] || found.name;
+      for(const p2 of chain){
+        for(const e2 of (p2.exercises||[])){
+          const n2 = state.exerciseOverrides?.[e2.id] || e2.name;
+          if(n2===myName) targetNames.add(n2);
+        }
+      }
+      break;
     }
+  }
+  function matchExercise(ex){
+    if(ex.skipped) return false;
+    if(ex.id===exId) return true;
+    const loggedName = state.exerciseOverrides?.[ex.id] || ex.name;
+    return targetNames.has(loggedName);
+  }
+  function getWorkSets(ex){
+    return (ex.sets||[]).filter(s=>!s.warmup);
+  }
+  // 1) Search state.log (completed passes) — most recent first
+  for(let i=(state.log||[]).length-1; i>=0; i--){
+    const entry = state.log[i];
+    if(!entry.exercises) continue;
+    const ex = entry.exercises.find(matchExercise);
     if(!ex) continue;
-    const workSets=(ex.sets||[]).filter(s=>!s.warmup);
-    if(workSets.length>0) return {sets:workSets, passName:entry.passName, timestamp:entry.timestamp};
+    const workSets = getWorkSets(ex);
+    if(workSets.length>0)
+      return {sets:workSets, passName:entry.passName, timestamp:entry.timestamp};
+  }
+  // 2) Search state.cycles done snapshots (in-progress data not yet in log)
+  // Walk cycles backwards (most recent last)
+  for(let ci=(state.cycles||[]).length-1; ci>=0; ci--){
+    const cycle = state.cycles[ci];
+    if(!cycle?.done) continue;
+    // Find the most recent completed pass that contains this exercise
+    const passEntries = Object.values(cycle.done).filter(d=>d&&d.exercises);
+    // Sort by some heuristic — we don't have timestamps here, but use cycle order
+    for(let pi=passEntries.length-1; pi>=0; pi--){
+      const passSnap = passEntries[pi];
+      const ex = passSnap.exercises.find(matchExercise);
+      if(!ex) continue;
+      const workSets = getWorkSets(ex);
+      if(workSets.length>0){
+        // Use cycle.id as timestamp proxy (cycle.id = Date.now() when created)
+        return {sets:workSets, passName:'', timestamp: cycle.id || Date.now()};
+      }
+    }
   }
   return null;
 }
@@ -2718,7 +2895,9 @@ function initTheme(){
 }
 
 function renderData(){
-  const el=document.getElementById('view-data');const size=(JSON.stringify(state).length/1024).toFixed(1);
+  const el=document.getElementById('view-data');
+  // Async cloud version check (updates UI when done)
+  checkCloudVersion();const size=(JSON.stringify(state).length/1024).toFixed(1);
   const unitBtn=(u)=>`<button onclick="state.unit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.unit===u?'var(--red)':'none'};border:1px solid ${state.unit===u?'var(--red)':'#2a2a2a'};color:${state.unit===u?'var(--white)':'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u.toUpperCase()}</button>`;
   el.innerHTML=`<div class="section-title">Data</div>
   <div style="font-family:var(--mono);font-size:.58rem;color:#444;margin-bottom:18px">Supabase · ${currentUser?.name} · ${size} KB · ${state.log.length} sessions</div>
@@ -2773,6 +2952,17 @@ function renderData(){
       </button>`;
     }).join('')}
   </div>
+  <div class="section-sub">Sync Status</div>
+  <div id="sync-status-card" style="border:1px solid #2a2a2a;padding:12px 14px;margin-bottom:18px;font-family:var(--mono);font-size:.55rem;color:#888;line-height:1.9;">
+    <div>App version: <span style="color:var(--white);">${APP_VERSION}</span></div>
+    <div id="sync-cloud-version">Cloud version: <span style="color:#666;">checking…</span></div>
+    <div>Last sync (read): <span id="sync-read-time" style="color:#aaa;">${formatSyncAgo(lastSyncRead)}</span></div>
+    <div>Last sync (write): <span id="sync-write-time" style="color:#aaa;">${formatSyncAgo(lastSyncWrite)}</span></div>
+    <div style="display:flex;gap:6px;margin-top:8px;">
+      <button onclick="manualSyncNow()" style="background:none;border:1px solid #444;color:#aaa;font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;">Sync Now</button>
+    </div>
+  </div>
+
   <div class="section-sub">Backup</div>
   <div style="font-family:var(--mono);font-size:.58rem;color:var(--gray-light);line-height:1.8;margin-bottom:10px">Export all data as JSON. Import to restore.</div>
   <div class="data-row"><button class="data-btn" onclick="exportData()">↓ Export JSON</button><button class="data-btn" onclick="document.getElementById('importFile').click()">↑ Import JSON</button></div>
