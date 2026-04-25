@@ -1226,6 +1226,7 @@ function selectUser(userId){
   requestNotificationPermission();
   renderChain();
   syncFromCloud(userId);
+  startPeriodicSync();
 }
 function setUnit(unit, userId){
   state.unit=unit;
@@ -1263,9 +1264,21 @@ async function syncFromCloud(userId){
         if(state.timerEnabled===undefined)state.timerEnabled=false;
         if(!state.updatedAt)state.updatedAt=0;
         if(!state.theme)state.theme='iron';
+        // Reset BASE_PASSES name overrides so cloud's overrides apply cleanly
+        // (BASE_PASSES is module-level mutable, can carry stale local renames)
+        BASE_PASSES.forEach(p=>{ if(_BASE_PASS_NAMES[p.id]) p.name = _BASE_PASS_NAMES[p.id]; });
+        if(state.passNameOverrides){
+          Object.entries(state.passNameOverrides).forEach(([pid,name])=>{
+            const bp = BASE_PASSES.find(p=>p.id===pid);
+            if(bp) bp.name = name;
+          });
+        }
         localStorage.setItem(lsKey(userId),JSON.stringify(state));
         applyTheme(state.theme||'iron');
         renderChain();
+        // Visible feedback that data was pulled — only when there's a meaningful delta
+        const localSessionsBefore = (state.log || []).length;
+        showToast('Updated from cloud ✓');
       }
     }
     setSyncDot('ok');
@@ -1788,6 +1801,9 @@ function buildReorderUI(effectiveChain){
 
 
 // ── PASS MANAGEMENT — add/remove passes ──────────────────────
+// Snapshot original pass names so we can restore them when overrides change
+const _BASE_PASS_NAMES = Object.fromEntries(BASE_PASSES.map(p => [p.id, p.name]));
+
 const PASS_TEMPLATES=[
   {id:'A',name:'Chest + Tri',exercises:[{id:'A1',name:'Flat BB',detail:'Ramping → 1 set failure',ramp:true},{id:'A2',name:'Incline Smith Press',detail:'1 set failure'},{id:'A3',name:'Cable Flyes',detail:'Full ROM · 1 set failure'},{id:'A4',name:'Tricep Pushdowns',detail:'1 set failure'}]},
   {id:'B',name:'Back Heavy + Biceps',exercises:[{id:'B1',name:'Dead Hang',detail:'1 set failure',bw:true,timed:true},{id:'B2',name:'Deadlift',detail:'Ramping → work sets to failure',ramp:true},{id:'B3',name:'Unilateral Cable Row',detail:'1 set failure',uni:true},{id:'B4',name:'Lat Prayers',detail:'1 set failure'}]},
@@ -3052,12 +3068,34 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 // ── PUSH ON PAGE HIDE ─────────────────────────────────────────
 // Ensure cloud gets latest data before user switches device
 document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='hidden' && currentUser){
-    // Flush any pending save immediately
+  if(!currentUser) return;
+  if(document.visibilityState==='hidden'){
+    // Flush any pending save immediately so cloud has latest before tab leaves
     if(saveTimer){ clearTimeout(saveTimer); saveTimer=null; }
     pushState(); // fire and forget
+  } else if(document.visibilityState==='visible'){
+    // Tab/window became visible again — pull fresh data from cloud
+    // in case another device made changes while we were away
+    syncFromCloud(currentUser.id);
   }
 });
+
+// Also pull on window focus (covers cases where visibilitychange doesn't fire)
+window.addEventListener('focus',()=>{
+  if(currentUser) syncFromCloud(currentUser.id);
+});
+
+// Periodic background sync every 30s when tab is visible.
+// Catches multi-device editing without requiring focus events.
+let __periodicSyncTimer = null;
+function startPeriodicSync(){
+  if(__periodicSyncTimer) clearInterval(__periodicSyncTimer);
+  __periodicSyncTimer = setInterval(()=>{
+    if(document.visibilityState === 'visible' && currentUser){
+      syncFromCloud(currentUser.id);
+    }
+  }, 30000);
+}
 window.addEventListener('beforeunload',()=>{
   if(currentUser){
     // fetch with keepalive survives page close AND sends Supabase auth headers
