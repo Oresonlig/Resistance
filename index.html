@@ -330,45 +330,585 @@ canvas#weightChart{width:100%!important;display:block;}
 /* Default: Iron (current dark red) — no extra class needed */
 
 /* ─────────────────────────────────────────────────────────────
-   1. NIGHT CITY — Cyberpunk homage
-   Font: Orbitron (techy, angular), Space Grotesk (body)
-   Palette: Deep navy-black, acid yellow, magenta accents
+   1. NIGHT CITY — Full cyberpunk treatment
+   Asymmetric geometry · RGB chromatic aberration · CRT scanlines
+   Triple-tone palette · Pulsing neon glow · Glitch animations
 ───────────────────────────────────────────────────────────── */
 body.theme-nightcity{
-  --black:#06060f;--white:#f0f0ff;--red:#ffe600;
-  --gold:#ff2d78;--green-bright:#00ffe5;
-  --gray-mid:#1a1a3a;--gray-light:#8888cc;
+  --black:#08010f;
+  --white:#f5f0ff;
+  --red:#ffe600;        /* acid yellow primary */
+  --gold:#ff2d78;       /* magenta accent */
+  --green-bright:#00fff0; /* cyan tertiary */
+  --gray-mid:#1a0830;
+  --gray-light:#7a55a0;
   --display:'Orbitron',sans-serif;
   --sans:'Space Grotesk',sans-serif;
-  --mono:'DM Mono',monospace;
-  background:var(--black);
+  --mono:'JetBrains Mono',monospace;
+  background:#08010f;
+  background-image:
+    /* horizontal scanlines */
+    repeating-linear-gradient(0deg,rgba(255,230,0,0.025) 0px,rgba(255,230,0,0.025) 1px,transparent 1px,transparent 4px),
+    /* vertical RGB noise */
+    repeating-linear-gradient(90deg,rgba(255,45,120,0.015) 0px,transparent 1px,transparent 3px),
+    /* primary radial glow */
+    radial-gradient(ellipse 80% 50% at 50% 0%,rgba(255,45,120,0.12) 0%,transparent 70%),
+    /* secondary cyan glow */
+    radial-gradient(ellipse 60% 40% at 100% 100%,rgba(0,255,240,0.08) 0%,transparent 70%),
+    /* base color */
+    linear-gradient(180deg,#0a0218 0%,#08010f 100%);
 }
+
+/* CRT flicker overlay — full screen */
+body.theme-nightcity::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:linear-gradient(180deg,
+    rgba(255,230,0,0.02) 0%,
+    transparent 0.5%,
+    transparent 99.5%,
+    rgba(255,45,120,0.02) 100%);
+  animation:crt-flicker 4s steps(2) infinite;
+}
+@keyframes crt-flicker{
+  0%,100%{opacity:1;}
+  3%{opacity:0.85;}
+  6%{opacity:1;}
+  91%{opacity:0.95;}
+  93%{opacity:0.7;}
+  95%{opacity:1;}
+}
+
+/* HEADER — angled bottom edge, glitch-pulse */
 body.theme-nightcity header{
-  background:#06060f;
-  border-bottom:1px solid #ffe600;
-  box-shadow:0 0 20px rgba(255,230,0,.15);
+  background:linear-gradient(180deg,rgba(8,1,15,0.95) 0%,rgba(8,1,15,0.85) 100%);
+  backdrop-filter:blur(12px);
+  border-bottom:none;
+  position:relative;
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 8px),calc(100% - 60px) 100%,60px 100%,0 calc(100% - 8px));
+  box-shadow:0 0 30px rgba(255,230,0,0.15),0 4px 0 rgba(255,45,120,0.4);
 }
-body.theme-nightcity .logo span{color:var(--red);}
-body.theme-nightcity nav{border-top:1px solid #ffe600;background:#06060f;}
-body.theme-nightcity nav button.active{border-top-color:var(--red);color:var(--red);}
-body.theme-nightcity .pass-card.next-up{border-color:var(--red);box-shadow:0 0 12px rgba(255,230,0,.2);}
-body.theme-nightcity .pass-card.next-up::before{background:var(--red);color:#06060f;}
-body.theme-nightcity .pass-letter{color:var(--red);}
-body.theme-nightcity .chain-fill{background:linear-gradient(90deg,var(--red),var(--gold));}
-body.theme-nightcity .btn-primary{background:var(--red);color:#06060f;font-family:var(--display);}
-body.theme-nightcity .btn-primary:hover{background:#ffd000;}
-body.theme-nightcity .ex-btn-done{background:#1a1a00;border-color:var(--red);color:var(--red);font-family:var(--display);}
-body.theme-nightcity .ex-btn-skip{border-color:var(--gold);color:var(--gold);}
-body.theme-nightcity .set-input{border-color:#1a1a3a;background:#0a0a1a;}
-body.theme-nightcity .set-input:focus{border-color:var(--red);box-shadow:0 0 8px rgba(255,230,0,.3);}
-body.theme-nightcity .pass-card{border-color:#1a1a3a;}
-body.theme-nightcity .user-screen{background:radial-gradient(ellipse at center,#0a0a2a 0%,#06060f 70%);}
-body.theme-nightcity .user-logo{text-shadow:0 0 30px rgba(255,230,0,.5);}
-body.theme-nightcity .user-btn{border-color:#1a1a3a;}
-body.theme-nightcity .user-btn:hover{border-color:var(--red);box-shadow:0 0 15px rgba(255,230,0,.2);}
-body.theme-nightcity .sync-dot.ok{background:var(--green-bright);}
-body.theme-nightcity .weight-banner{background:#08080e;}
-body.theme-nightcity .ex-tag.ramp{background:#1a1000;border-color:#aa8800;color:#ffe600;}
+body.theme-nightcity header::after{
+  content:'';position:absolute;left:0;right:0;bottom:8px;height:1px;
+  background:linear-gradient(90deg,transparent 0%,#ffe600 20%,#ff2d78 50%,#00fff0 80%,transparent 100%);
+  box-shadow:0 0 10px #ffe600;
+}
+
+/* LOGO — chromatic aberration */
+body.theme-nightcity .logo{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  letter-spacing:.18em;
+  color:var(--white);
+  text-shadow:
+    -2px 0 0 rgba(255,45,120,0.7),
+    2px 0 0 rgba(0,255,240,0.7),
+    0 0 12px rgba(255,230,0,0.4);
+  animation:chromatic-shift 6s ease-in-out infinite;
+}
+@keyframes chromatic-shift{
+  0%,100%{text-shadow:-2px 0 0 rgba(255,45,120,0.7),2px 0 0 rgba(0,255,240,0.7),0 0 12px rgba(255,230,0,0.4);}
+  50%{text-shadow:2px 0 0 rgba(255,45,120,0.7),-2px 0 0 rgba(0,255,240,0.7),0 0 16px rgba(255,230,0,0.6);}
+}
+body.theme-nightcity .logo span{
+  color:var(--red);
+  text-shadow:0 0 20px rgba(255,230,0,0.8),0 0 40px rgba(255,230,0,0.4);
+}
+body.theme-nightcity .header-user{font-family:var(--mono);color:var(--gray-light);font-size:.5rem;}
+body.theme-nightcity .header-user strong{color:var(--green-bright);text-shadow:0 0 8px rgba(0,255,240,0.6);}
+
+/* SYNC DOT — triple-pulse */
+body.theme-nightcity .sync-dot.ok{
+  background:var(--green-bright);
+  box-shadow:0 0 8px var(--green-bright),0 0 16px var(--green-bright);
+  animation:sync-pulse 2s ease-in-out infinite;
+}
+@keyframes sync-pulse{
+  0%,100%{transform:scale(1);box-shadow:0 0 8px #00fff0,0 0 16px #00fff0;}
+  50%{transform:scale(1.3);box-shadow:0 0 14px #00fff0,0 0 28px #00fff0,0 0 42px rgba(0,255,240,0.4);}
+}
+
+/* BOTTOM NAV — angled top edge with glow strip */
+body.theme-nightcity nav{
+  background:linear-gradient(0deg,rgba(8,1,15,0.98) 0%,rgba(8,1,15,0.9) 100%);
+  backdrop-filter:blur(10px);
+  border-top:none;
+  clip-path:polygon(0 8px,60px 0,calc(100% - 60px) 0,100% 8px,100% 100%,0 100%);
+  box-shadow:0 -4px 0 rgba(255,230,0,0.4);
+}
+body.theme-nightcity nav::before{
+  content:'';position:absolute;left:0;right:0;top:8px;height:1px;
+  background:linear-gradient(90deg,transparent 0%,#00fff0 20%,#ff2d78 50%,#ffe600 80%,transparent 100%);
+  box-shadow:0 0 10px #ff2d78;
+}
+body.theme-nightcity nav button{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.2em;
+  color:#5a3a80;
+  text-transform:uppercase;
+  font-size:.5rem;
+}
+body.theme-nightcity nav button.active{
+  color:var(--red);
+  border-top:2px solid var(--red);
+  background:linear-gradient(180deg,rgba(255,230,0,0.15) 0%,transparent 70%);
+  text-shadow:0 0 10px rgba(255,230,0,0.8);
+}
+
+/* PASS CARDS — dramatic asymmetric clip + circuit border */
+body.theme-nightcity .pass-card{
+  background:linear-gradient(135deg,rgba(20,5,40,0.6) 0%,rgba(8,1,15,0.8) 100%);
+  border:none;
+  position:relative;
+  margin-bottom:14px;
+  /* asymmetric notch — bottom-right corner cut deeper than top-left */
+  clip-path:polygon(0 0,calc(100% - 24px) 0,100% 24px,100% calc(100% - 8px),calc(100% - 60px) 100%,8px 100%,0 calc(100% - 8px),0 8px);
+  box-shadow:inset 0 0 0 1px rgba(255,45,120,0.15),inset 0 0 20px rgba(0,255,240,0.03);
+}
+
+/* Circuit trace — subtle glowing line on left edge */
+body.theme-nightcity .pass-card::before{
+  content:'';position:absolute;left:0;top:8px;bottom:8px;width:2px;
+  background:linear-gradient(180deg,transparent 0%,rgba(255,230,0,0.4) 20%,rgba(255,45,120,0.4) 50%,rgba(0,255,240,0.4) 80%,transparent 100%);
+  box-shadow:0 0 8px rgba(255,230,0,0.5);
+}
+
+/* NEXT-UP — pulsing magenta with glitch border */
+body.theme-nightcity .pass-card.next-up{
+  background:linear-gradient(135deg,rgba(40,8,60,0.7) 0%,rgba(15,3,30,0.85) 100%);
+  animation:nightcity-pulse 2.4s ease-in-out infinite;
+}
+@keyframes nightcity-pulse{
+  0%,100%{
+    box-shadow:
+      inset 0 0 0 2px var(--red),
+      inset 0 0 30px rgba(255,230,0,0.12),
+      0 0 24px rgba(255,230,0,0.3),
+      0 0 48px rgba(255,45,120,0.15);
+  }
+  50%{
+    box-shadow:
+      inset 0 0 0 2px var(--gold),
+      inset 0 0 40px rgba(255,45,120,0.2),
+      0 0 36px rgba(255,45,120,0.5),
+      0 0 64px rgba(0,255,240,0.2);
+  }
+}
+body.theme-nightcity .pass-card.next-up::after{
+  content:'NEXT';
+  position:absolute;top:0;right:0;
+  background:var(--red);
+  color:#08010f;
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  letter-spacing:.25em;
+  font-size:.5rem;
+  padding:4px 18px 4px 14px;
+  clip-path:polygon(0 0,100% 0,calc(100% - 12px) 100%,0 100%);
+  text-shadow:none;
+}
+body.theme-nightcity .pass-card.next-up::before{
+  background:linear-gradient(180deg,transparent 0%,#ffe600 30%,#ff2d78 70%,transparent 100%);
+  width:3px;
+  box-shadow:0 0 12px #ffe600,0 0 24px #ff2d78;
+}
+
+/* IN-PROGRESS — cyan accent */
+body.theme-nightcity .pass-card.in-progress{
+  background:linear-gradient(135deg,rgba(8,30,40,0.7) 0%,rgba(5,15,25,0.85) 100%);
+  box-shadow:inset 0 0 0 1px var(--green-bright),0 0 20px rgba(0,255,240,0.2);
+}
+body.theme-nightcity .pass-card.done{opacity:.4;filter:saturate(0.6);}
+
+/* PASS LETTER — stenciled, oversized */
+body.theme-nightcity .pass-letter{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:2.4rem;
+  color:var(--red);
+  text-shadow:
+    0 0 4px rgba(255,230,0,1),
+    0 0 12px rgba(255,230,0,0.6),
+    0 0 24px rgba(255,45,120,0.4);
+  letter-spacing:-0.02em;
+}
+body.theme-nightcity .pass-name{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--white);
+  font-size:.9rem;
+}
+body.theme-nightcity .pass-preview{
+  font-family:'JetBrains Mono',monospace;
+  color:var(--gray-light);
+  font-size:.55rem;
+  letter-spacing:.04em;
+}
+
+/* CHAIN PROGRESS BAR — animated rainbow */
+body.theme-nightcity .chain-bar{
+  background:rgba(20,5,40,0.6);
+  height:6px;
+  position:relative;
+  overflow:hidden;
+}
+body.theme-nightcity .chain-fill{
+  background:linear-gradient(90deg,#ffe600 0%,#ff2d78 50%,#00fff0 100%);
+  background-size:200% 100%;
+  animation:gradient-shift 3s linear infinite;
+  box-shadow:0 0 12px rgba(255,230,0,0.6),0 0 24px rgba(255,45,120,0.3);
+}
+@keyframes gradient-shift{
+  0%{background-position:0% 50%;}
+  100%{background-position:200% 50%;}
+}
+
+/* PRIMARY BUTTON — sharp edges, electric */
+body.theme-nightcity .btn-primary{
+  background:linear-gradient(135deg,var(--red) 0%,#e6cf00 100%);
+  color:#08010f;
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  letter-spacing:.2em;
+  border:none;
+  clip-path:polygon(12px 0,100% 0,calc(100% - 12px) 100%,0 100%);
+  text-transform:uppercase;
+  text-shadow:0 1px 0 rgba(255,255,255,0.3);
+  box-shadow:0 0 16px rgba(255,230,0,0.4);
+  transition:all .15s;
+}
+body.theme-nightcity .btn-primary:hover{
+  background:linear-gradient(135deg,#fff800 0%,var(--red) 100%);
+  box-shadow:0 0 24px rgba(255,230,0,0.7),0 0 48px rgba(255,45,120,0.3);
+  transform:translateY(-1px);
+}
+
+/* EXERCISE DONE BUTTON — armored switch */
+body.theme-nightcity .ex-btn-done{
+  background:linear-gradient(180deg,rgba(40,8,60,0.6) 0%,rgba(15,3,30,0.8) 100%);
+  border:1px solid var(--red);
+  color:var(--red);
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.12em;
+  font-size:.55rem;
+  text-transform:uppercase;
+  text-shadow:0 0 6px rgba(255,230,0,0.6);
+  box-shadow:inset 0 0 10px rgba(255,230,0,0.1);
+  transition:all .15s;
+}
+body.theme-nightcity .ex-btn-done:hover{
+  background:linear-gradient(180deg,rgba(60,15,80,0.7) 0%,rgba(20,5,35,0.85) 100%);
+  box-shadow:inset 0 0 16px rgba(255,230,0,0.25),0 0 12px rgba(255,230,0,0.4);
+}
+body.theme-nightcity .ex-btn-skip{
+  border-color:var(--gold);
+  color:var(--gold);
+  text-shadow:0 0 6px rgba(255,45,120,0.5);
+}
+body.theme-nightcity .ex-btn-edit{
+  border-color:#3a2050;
+  color:var(--gray-light);
+}
+body.theme-nightcity .ex-saved-badge{
+  color:var(--green-bright);
+  text-shadow:0 0 8px rgba(0,255,240,0.7);
+}
+
+/* SET INPUTS — terminal style */
+body.theme-nightcity .set-input{
+  background:rgba(8,1,15,0.8);
+  border:1px solid rgba(255,45,120,0.3);
+  color:var(--red);
+  font-family:'JetBrains Mono',monospace;
+  font-weight:700;
+  text-shadow:0 0 6px rgba(255,230,0,0.5);
+}
+body.theme-nightcity .set-input:focus{
+  border-color:var(--red);
+  box-shadow:
+    inset 0 0 8px rgba(255,230,0,0.15),
+    0 0 12px rgba(255,230,0,0.5),
+    0 0 24px rgba(255,45,120,0.2);
+  outline:none;
+}
+body.theme-nightcity .set-input.work-set{border-color:rgba(255,230,0,0.4);}
+body.theme-nightcity .set-input.warmup{border-color:rgba(122,85,160,0.3);color:var(--gray-light);}
+body.theme-nightcity .set-unit{
+  color:var(--gold);
+  font-family:'JetBrains Mono',monospace;
+  font-weight:600;
+  text-shadow:0 0 4px rgba(255,45,120,0.5);
+}
+body.theme-nightcity .set-num{
+  color:var(--green-bright);
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  text-shadow:0 0 6px rgba(0,255,240,0.6);
+}
+body.theme-nightcity .sets-group-label{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.2em;
+  border-top:1px dashed rgba(255,45,120,0.3);
+  text-transform:uppercase;
+  font-size:.5rem;
+}
+body.theme-nightcity .sets-group-label.warmup-group{color:var(--gray-light);}
+body.theme-nightcity .sets-group-label.work-group{
+  color:var(--red);
+  text-shadow:0 0 8px rgba(255,230,0,0.5);
+}
+
+/* EXERCISE TAGS — angular HUD chips */
+body.theme-nightcity .ex-tag{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.15em;
+  font-size:.42rem;
+  clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);
+  padding:3px 10px !important;
+}
+body.theme-nightcity .ex-tag.ramp{
+  background:linear-gradient(90deg,rgba(255,230,0,0.15),rgba(255,230,0,0.05));
+  border-color:var(--red);
+  color:var(--red);
+  text-shadow:0 0 4px rgba(255,230,0,0.5);
+}
+body.theme-nightcity .ex-tag.bw{
+  background:linear-gradient(90deg,rgba(0,255,240,0.15),rgba(0,255,240,0.05));
+  border-color:var(--green-bright);
+  color:var(--green-bright);
+  text-shadow:0 0 4px rgba(0,255,240,0.5);
+}
+body.theme-nightcity .ex-tag.uni{
+  background:linear-gradient(90deg,rgba(255,45,120,0.15),rgba(255,45,120,0.05));
+  border-color:var(--gold);
+  color:var(--gold);
+  text-shadow:0 0 4px rgba(255,45,120,0.5);
+}
+
+/* EXERCISE NAME & DETAIL */
+body.theme-nightcity .ex-name{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.05em;
+  color:var(--white);
+}
+body.theme-nightcity .ex-detail{
+  font-family:'JetBrains Mono',monospace;
+  color:var(--gray-light);
+  font-size:.55rem;
+}
+body.theme-nightcity .ex-prev .last-val{color:var(--green-bright);text-shadow:0 0 4px rgba(0,255,240,0.4);}
+body.theme-nightcity .ex-prev .pr-val{color:var(--red);text-shadow:0 0 6px rgba(255,230,0,0.6);}
+
+/* USER SELECT SCREEN */
+body.theme-nightcity .user-screen{
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 30%,rgba(255,45,120,0.2) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 80%,rgba(0,255,240,0.15) 0%,transparent 70%),
+    linear-gradient(180deg,#0a0218 0%,#08010f 100%);
+  position:relative;
+}
+body.theme-nightcity .user-logo{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  letter-spacing:.18em;
+  text-shadow:
+    -3px 0 0 rgba(255,45,120,0.8),
+    3px 0 0 rgba(0,255,240,0.8),
+    0 0 30px rgba(255,230,0,0.6),
+    0 0 60px rgba(255,230,0,0.3);
+  animation:chromatic-shift 6s ease-in-out infinite;
+}
+body.theme-nightcity .user-logo span{color:var(--red);}
+body.theme-nightcity .user-tagline{
+  color:var(--gray-light);
+  font-family:'JetBrains Mono',monospace;
+  font-size:.6rem;
+  letter-spacing:.1em;
+}
+body.theme-nightcity .user-btn{
+  background:linear-gradient(135deg,rgba(20,5,40,0.7) 0%,rgba(8,1,15,0.85) 100%);
+  border:1px solid rgba(255,45,120,0.3);
+  clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
+  transition:all .25s;
+  position:relative;
+}
+body.theme-nightcity .user-btn::before{
+  content:'';position:absolute;left:0;top:14px;bottom:14px;width:2px;
+  background:linear-gradient(180deg,transparent 0%,#ffe600 50%,transparent 100%);
+  opacity:0;transition:opacity .25s;
+}
+body.theme-nightcity .user-btn:hover{
+  border-color:var(--red);
+  box-shadow:0 0 24px rgba(255,230,0,0.4),inset 0 0 30px rgba(255,45,120,0.1);
+  transform:translateY(-2px);
+}
+body.theme-nightcity .user-btn:hover::before{opacity:1;box-shadow:0 0 12px #ffe600;}
+body.theme-nightcity .user-btn .user-initial{
+  color:var(--red);
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  text-shadow:0 0 12px rgba(255,230,0,0.7);
+}
+body.theme-nightcity .user-btn .user-name{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.12em;
+  color:var(--white);
+}
+
+/* WEIGHT BANNER — readout panel */
+body.theme-nightcity .weight-banner{
+  background:linear-gradient(180deg,rgba(15,3,30,0.6) 0%,rgba(8,1,15,0.8) 100%);
+  border-bottom:1px solid rgba(255,45,120,0.25);
+}
+body.theme-nightcity .weight-banner-label{
+  color:var(--gray-light);
+  font-family:'Orbitron',sans-serif;
+  letter-spacing:.15em;
+}
+body.theme-nightcity .weight-input{
+  background:rgba(8,1,15,0.8);
+  border:1px solid rgba(255,45,120,0.3);
+  color:var(--red);
+  font-family:'JetBrains Mono',monospace;
+  font-weight:700;
+  text-shadow:0 0 6px rgba(255,230,0,0.5);
+}
+body.theme-nightcity .weight-input:focus{
+  border-color:var(--red);
+  box-shadow:0 0 12px rgba(255,230,0,0.4);
+}
+body.theme-nightcity .weight-log-btn{
+  border:1px solid rgba(122,85,160,0.5);
+  color:var(--gray-light);
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.12em;
+  clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);
+}
+body.theme-nightcity .weight-log-btn:hover{
+  border-color:var(--green-bright);
+  color:var(--green-bright);
+  text-shadow:0 0 6px rgba(0,255,240,0.6);
+  box-shadow:0 0 12px rgba(0,255,240,0.3);
+}
+body.theme-nightcity .weight-today{
+  color:var(--red);
+  font-family:'JetBrains Mono',monospace;
+  text-shadow:0 0 4px rgba(255,230,0,0.5);
+}
+
+/* SECTION HEADERS */
+body.theme-nightcity .section-title,
+body.theme-nightcity .chain-intro-title{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  text-shadow:
+    -1px 0 0 rgba(255,45,120,0.5),
+    1px 0 0 rgba(0,255,240,0.5),
+    0 0 12px rgba(255,230,0,0.3);
+}
+body.theme-nightcity .section-sub,
+body.theme-nightcity .chain-intro-sub{
+  color:var(--gray-light);
+  font-family:'Orbitron',sans-serif;
+  font-weight:600;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+}
+
+/* STAT BOXES */
+body.theme-nightcity .stat-box{
+  background:linear-gradient(135deg,rgba(20,5,40,0.5) 0%,rgba(8,1,15,0.8) 100%);
+  border:1px solid rgba(255,45,120,0.25);
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));
+  position:relative;
+}
+body.theme-nightcity .stat-num{
+  color:var(--red);
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  text-shadow:0 0 12px rgba(255,230,0,0.6),0 0 24px rgba(255,45,120,0.3);
+}
+body.theme-nightcity .stat-desc{
+  color:var(--gray-light);
+  font-family:'JetBrains Mono',monospace;
+  letter-spacing:.08em;
+}
+
+/* PR CARDS */
+body.theme-nightcity .pr-card{
+  background:linear-gradient(135deg,rgba(20,5,40,0.6) 0%,rgba(8,1,15,0.85) 100%);
+  border:1px solid rgba(255,230,0,0.3);
+  clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
+  position:relative;
+}
+body.theme-nightcity .pr-card::before{
+  background:var(--red);
+  color:#08010f;
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  letter-spacing:.15em;
+}
+body.theme-nightcity .pr-value{
+  color:var(--red);
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  text-shadow:0 0 12px rgba(255,230,0,0.6);
+}
+
+/* HISTORY ENTRIES */
+body.theme-nightcity .hist-entry{
+  background:linear-gradient(90deg,rgba(20,5,40,0.5) 0%,rgba(8,1,15,0.7) 100%);
+  border-left:2px solid var(--gold);
+  padding-left:12px;
+}
+body.theme-nightcity .hist-date{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  color:var(--white);
+  letter-spacing:.08em;
+}
+body.theme-nightcity .hist-pass{
+  color:var(--red);
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  text-shadow:0 0 4px rgba(255,230,0,0.4);
+}
+
+/* SCROLLBAR */
+body.theme-nightcity::-webkit-scrollbar{width:8px;}
+body.theme-nightcity::-webkit-scrollbar-track{background:rgba(8,1,15,1);}
+body.theme-nightcity::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,#ffe600 0%,#ff2d78 100%);
+  border-radius:0;
+}
+body.theme-nightcity::-webkit-scrollbar-thumb:hover{
+  background:linear-gradient(180deg,#fff800 0%,#ff5090 100%);
+}
+
+/* TOAST */
+body.theme-nightcity .toast{
+  background:linear-gradient(135deg,rgba(20,5,40,0.95) 0%,rgba(8,1,15,0.98) 100%);
+  border:1px solid var(--red);
+  color:var(--red);
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  font-size:.65rem;
+  clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);
+  box-shadow:0 0 24px rgba(255,230,0,0.3);
+  text-shadow:0 0 6px rgba(255,230,0,0.6);
+}
 
 /* ─────────────────────────────────────────────────────────────
    2. RENAISSANCE — Old world elegance
@@ -905,7 +1445,7 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
     <div class="logo" onclick="switchUser()">THE <span>CHAIN</span></div>
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v1.5.1 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v1.6.0 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -984,14 +1524,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '1.5.1';
+const APP_VERSION = '1.6.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'1.5.1'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'1.6.0'};
 state.cycles=[newCycle()];
 
 
