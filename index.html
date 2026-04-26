@@ -1427,29 +1427,204 @@ body.theme-nanosuit::-webkit-scrollbar{width:6px;}
 body.theme-nanosuit::-webkit-scrollbar-track{background:#050810;}
 body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid #00d4ff;}
 
+
+/* ── AUTH SCREEN ──────────────────────────────────────────────
+   Iron-themed login screen with subtle hexagon fade
+─────────────────────────────────────────────────────────────── */
+#userScreen{
+  position:fixed;inset:0;
+  background:var(--black);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;z-index:100;overflow:hidden;
+}
+.auth-bg{
+  position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='48' viewBox='0 0 84 48'%3E%3Cg fill='none' stroke='%23a02020' stroke-width='1' stroke-opacity='0.18'%3E%3Cpath d='M14 24L0 16L0 0L14 -8L28 0L28 16L14 24L14 48'/%3E%3Cpath d='M14 0L14 16L0 24L0 40L14 48L28 40L28 24L14 16'/%3E%3Cpath d='M70 24L56 16L56 0L70 -8L84 0L84 16L70 24L70 48'/%3E%3Cpath d='M42 8L28 0L28 -16L42 -24L56 -16L56 0L42 8L42 32'/%3E%3Cpath d='M42 56L28 48L28 32L42 24L56 32L56 48L42 56'/%3E%3C/g%3E%3C/svg%3E");
+  /* Fade hexagons at edges, full opacity in middle */
+  -webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 50%,black 30%,transparent 90%);
+  mask-image:radial-gradient(ellipse 70% 60% at 50% 50%,black 30%,transparent 90%);
+  pointer-events:none;
+}
+.auth-wrap{
+  position:relative;z-index:2;
+  width:100%;max-width:380px;
+  display:flex;flex-direction:column;align-items:center;
+}
+.auth-logo{
+  font-family:var(--display);
+  font-size:2.6rem;
+  letter-spacing:.18em;
+  color:var(--white);
+  margin-bottom:4px;
+}
+.auth-logo span{color:var(--red);}
+.auth-tagline{
+  font-family:var(--mono);
+  font-size:.55rem;
+  color:#666;
+  letter-spacing:.25em;
+  text-transform:uppercase;
+  margin-bottom:48px;
+}
+.auth-btn-google{
+  width:100%;
+  background:#1a1a1a;
+  border:1px solid #2a2a2a;
+  color:var(--white);
+  font-family:var(--sans);
+  font-size:.85rem;
+  font-weight:500;
+  padding:12px 16px;
+  cursor:pointer;
+  transition:all .15s;
+  display:flex;align-items:center;justify-content:center;
+}
+.auth-btn-google:hover{background:#222;border-color:#3a3a3a;}
+.auth-divider{
+  display:flex;align-items:center;
+  width:100%;margin:0 0 20px;
+  color:#444;font-family:var(--mono);font-size:.5rem;
+  letter-spacing:.2em;text-transform:uppercase;
+}
+.auth-divider::before,.auth-divider::after{
+  content:'';flex:1;height:1px;background:#222;
+}
+.auth-divider span{padding:0 12px;}
+#auth-email-form input[type="email"],
+#auth-email-form input[type="password"]{
+  width:100%;
+  background:#0a0a0a;
+  border:1px solid #2a2a2a;
+  color:var(--white);
+  font-family:var(--mono);
+  font-size:.9rem;
+  padding:11px 14px;
+  margin-bottom:10px;
+  box-sizing:border-box;
+}
+#auth-email-form input:focus{
+  outline:none;
+  border-color:var(--red);
+  box-shadow:0 0 0 1px var(--red);
+}
+.auth-stay{
+  display:flex;align-items:center;gap:8px;
+  margin:6px 0 18px;cursor:pointer;
+  font-family:var(--mono);font-size:.55rem;color:#888;
+  letter-spacing:.1em;text-transform:uppercase;
+  user-select:none;
+}
+.auth-stay input{
+  width:14px;height:14px;cursor:pointer;
+  accent-color:var(--red);
+}
+.auth-btn-row{
+  display:flex;gap:8px;width:100%;
+}
+.auth-btn-primary{
+  flex:1;background:var(--red);border:none;color:var(--white);
+  font-family:var(--display);font-size:.95rem;
+  letter-spacing:.12em;padding:11px;cursor:pointer;
+  transition:background .15s;
+}
+.auth-btn-primary:hover{background:#c02525;}
+.auth-btn-secondary{
+  flex:1;background:transparent;border:1px solid #3a3a3a;color:#bbb;
+  font-family:var(--display);font-size:.95rem;
+  letter-spacing:.12em;padding:11px;cursor:pointer;
+  transition:all .15s;
+}
+.auth-btn-secondary:hover{border-color:#555;color:#fff;}
+#auth-message{
+  margin-top:14px;
+  font-family:var(--mono);font-size:.6rem;
+  text-align:center;letter-spacing:.05em;
+  min-height:14px;
+}
+#auth-message.error{color:#e06060;}
+#auth-message.success{color:#60c060;}
+.auth-footer{
+  margin-top:24px;text-align:center;
+  font-family:var(--mono);font-size:.55rem;
+  letter-spacing:.1em;
+}
+.auth-footer a{
+  color:#666;text-decoration:none;
+  text-transform:uppercase;
+}
+.auth-footer a:hover{color:var(--red);}
+
+/* Hide auth screen when authenticated */
+#userScreen.hidden{display:none !important;}
+
+/* Logout button (replaces switchUser) */
+.header-logout{
+  background:none;border:1px solid #2a2a2a;
+  color:#666;font-family:var(--mono);
+  font-size:.5rem;letter-spacing:.12em;
+  padding:4px 10px;cursor:pointer;
+  text-transform:uppercase;
+}
+.header-logout:hover{border-color:var(--red);color:var(--red);}
+
 </style>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+  const SB_URL = 'https://qjmjqideqrgozexudaqr.supabase.co'
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbWpxaWRlcXJnb3pleHVkYXFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwOTIwODQsImV4cCI6MjA5MTY2ODA4NH0.byRwDswpbfMWDoln4n7Opp0ntrNis_du4EnLVMFuIp8'
+  window.sb = createClient(SB_URL, SB_KEY, {
+    auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+  })
+  // Notify the rest of the app once client is ready
+  window.dispatchEvent(new Event('sb-ready'))
+</script>
 </head>
 <body>
 <div id="userScreen">
-  <div class="user-screen">
-    <div class="user-logo">THE <span>CHAIN</span></div>
-    <div class="user-tagline">Resistance Training · High Intensity</div>
-    <div style="font-family:var(--mono);font-size:.46rem;color:#2a2a2a;letter-spacing:.08em;text-transform:uppercase;margin-top:6px;margin-bottom:36px;">Inspired by classic High Intensity Training principles</div>
-    <div class="user-label">Who's training?</div>
-    <div class="user-grid">
-      <button class="user-btn" onclick="selectUser('niklas')"><span class="user-initial">N</span><span class="user-name">Niklas</span></button>
-      <button class="user-btn" onclick="selectUser('henrik')"><span class="user-initial">H</span><span class="user-name">Henrik</span></button>
-      <button class="user-btn" onclick="selectUser('lt')"><span class="user-initial">LT</span><span class="user-name">LT</span></button>
-      <button class="user-btn" onclick="selectUser('robban')"><span class="user-initial">R</span><span class="user-name">Robban</span></button>
+  <div class="auth-bg"></div>
+  <div class="auth-wrap">
+    <div class="auth-logo">THE <span>CHAIN</span></div>
+    <div class="auth-tagline">RESISTANCE TRAINING</div>
+
+    <div id="auth-google-wrap" style="margin-bottom:20px;">
+      <button id="btn-google" class="auth-btn-google">
+        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" style="margin-right:10px;vertical-align:middle;">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.836.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+          <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </button>
+    </div>
+
+    <div class="auth-divider"><span>or</span></div>
+
+    <div id="auth-email-form">
+      <input id="auth-email" type="email" placeholder="email" autocomplete="email">
+      <input id="auth-password" type="password" placeholder="password (min 8)" autocomplete="current-password">
+      <label class="auth-stay">
+        <input type="checkbox" id="auth-stay-checkbox" checked>
+        <span>Stay logged in</span>
+      </label>
+      <div class="auth-btn-row">
+        <button id="btn-login" class="auth-btn-primary">Log in</button>
+        <button id="btn-signup" class="auth-btn-secondary">Sign up</button>
+      </div>
+      <div id="auth-message"></div>
+    </div>
+
+    <div class="auth-footer">
+      <a href="#" id="auth-forgot">Forgot password?</a>
     </div>
   </div>
-</div>
-<div id="appShell" style="display:none">
+</div><div id="appShell" style="display:none">
   <header>
-    <div class="logo" onclick="switchUser()">THE <span>CHAIN</span></div>
+    <div class="logo">THE <span>CHAIN</span></div>
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v1.7.1 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <button class="header-logout" onclick="logoutUser()">Log out</button>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.0.0 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -1470,7 +1645,241 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
 const SB_URL='https://qjmjqideqrgozexudaqr.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbWpxaWRlcXJnb3pleHVkYXFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwOTIwODQsImV4cCI6MjA5MTY2ODA4NH0.byRwDswpbfMWDoln4n7Opp0ntrNis_du4EnLVMFuIp8';
 const HDRS={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
-const USERS={niklas:{name:'Niklas',id:'niklas'},henrik:{name:'Henrik',id:'henrik'},lt:{name:'LT',id:'lt'},robban:{name:'Robban',id:'robban'}};
+// USERS array removed — auth handled by Supabase
+
+// ══════════════════════════════════════════════════════════════
+// SUPABASE AUTH — Session & user management
+// ══════════════════════════════════════════════════════════════
+
+// Wait for Supabase client to be ready before using it
+function whenSbReady(cb){
+  if(window.sb){ cb(); return; }
+  window.addEventListener('sb-ready', cb, { once:true });
+}
+
+// Build the wrapper currentUser object {id, name} from a session
+async function buildCurrentUser(session){
+  if(!session) return null;
+  const u = session.user;
+  let displayName = null;
+  try{
+    const { data: profile } = await window.sb
+      .from('profiles')
+      .select('display_name, email')
+      .eq('id', u.id)
+      .maybeSingle();
+    displayName = profile?.display_name;
+  }catch(e){ /* ignore — profile fetch is non-critical */ }
+  const email = u.email || '';
+  const name = displayName || email.split('@')[0] || 'User';
+  return { id: u.id, name: name };
+}
+
+// Show / hide auth screen vs app
+function showAuthScreen(){
+  document.getElementById('userScreen').classList.remove('hidden');
+  document.getElementById('appShell').style.display='none';
+  // Clear any user state
+  if(__periodicSyncTimer){ clearInterval(__periodicSyncTimer); __periodicSyncTimer=null; }
+}
+function showAppShell(){
+  document.getElementById('userScreen').classList.add('hidden');
+  document.getElementById('appShell').style.display='block';
+}
+
+// Auth message helper
+function authMsg(text, kind){
+  const el = document.getElementById('auth-message');
+  if(!el) return;
+  el.textContent = text || '';
+  el.className = kind === 'error' ? 'error' : kind === 'success' ? 'success' : '';
+}
+
+// Handle a session (whether new or existing)
+async function handleSession(session){
+  if(!session){
+    currentUser = null;
+    showAuthScreen();
+    return;
+  }
+  currentUser = await buildCurrentUser(session);
+  // Clean up legacy localStorage keys from pre-auth era
+  cleanLegacyLocalStorage();
+  // Load state from cloud or localStorage
+  await loadStateForUser();
+  showAppShell();
+  initTheme();
+  requestNotificationPermission && requestNotificationPermission();
+  renderChain();
+  startPeriodicSync && startPeriodicSync();
+  syncFromCloud && syncFromCloud(currentUser.id);
+}
+
+// Clean up old localStorage keys from before auth migration
+function cleanLegacyLocalStorage(){
+  ['thechain_niklas','thechain_henrik','thechain_lt','thechain_robban'].forEach(k=>{
+    try{ localStorage.removeItem(k); }catch(e){}
+  });
+}
+
+// Load state for the now-logged-in user
+async function loadStateForUser(){
+  if(!currentUser) return;
+  const raw = localStorage.getItem(lsKey(currentUser.id));
+  if(raw){
+    try{
+      state = JSON.parse(raw);
+      ensureStateDefaults && ensureStateDefaults();
+      if(state.migrations && !state.migrations.exerciseSplit_v2)
+        migrateExerciseNames && migrateExerciseNames();
+    }catch(e){
+      console.warn('Local state parse failed', e);
+      state = freshState();
+    }
+  } else {
+    // No local — try cloud first
+    try{
+      const rows = await sbGet('app_state','id=eq.'+currentUser.id+'&select=data,updated_at');
+      if(rows && rows.length && rows[0].data && rows[0].data.cycles){
+        state = rows[0].data;
+        ensureStateDefaults && ensureStateDefaults();
+        localStorage.setItem(lsKey(currentUser.id), JSON.stringify(state));
+        showToast && showToast('Restored from cloud ✓');
+      } else {
+        state = freshState();
+      }
+    }catch(e){
+      state = freshState();
+    }
+  }
+  // Restore pass name overrides into BASE_PASSES
+  if(state.passNameOverrides){
+    Object.entries(state.passNameOverrides).forEach(([pid,name])=>{
+      const bp = BASE_PASSES.find(p=>p.id===pid);
+      if(bp) bp.name = name;
+    });
+  }
+}
+
+// Default state for a fresh user
+function freshState(){
+  return {
+    cycles:[newCycle()],
+    log:[], weightLog:[], draft:null, restCount:1,
+    permanentSwaps:{}, passOrder:null, restSlots:null,
+    unit:'kg', exerciseOverrides:{}, passNameOverrides:{},
+    timerDefault:120, timerEnabled:false, exerciseNotes:{},
+    onboardingDone:false, theme:'iron',
+    exerciseTagOverrides:{}, updatedAt:0,
+    customExercises:[], appVersion:APP_VERSION
+  };
+}
+
+// ══════════════════════════════════════════════════════════════
+// AUTH UI EVENT HANDLERS
+// ══════════════════════════════════════════════════════════════
+
+function bindAuthHandlers(){
+  // Google login
+  const gBtn = document.getElementById('btn-google');
+  if(gBtn) gBtn.onclick = async () => {
+    authMsg('Redirecting to Google…');
+    const { error } = await window.sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    });
+    if(error) authMsg(error.message, 'error');
+  };
+
+  // Email signup
+  const sBtn = document.getElementById('btn-signup');
+  if(sBtn) sBtn.onclick = async () => {
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    if(!email || !password){ authMsg('Email and password required', 'error'); return; }
+    if(password.length < 8){ authMsg('Password must be at least 8 characters', 'error'); return; }
+    authMsg('Creating account…');
+    const { error } = await window.sb.auth.signUp({
+      email, password,
+      options: { emailRedirectTo: window.location.origin }
+    });
+    if(error){
+      authMsg(error.message, 'error');
+    } else {
+      authMsg('Check your email to confirm your account.', 'success');
+    }
+  };
+
+  // Email login
+  const lBtn = document.getElementById('btn-login');
+  if(lBtn) lBtn.onclick = async () => {
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    if(!email || !password){ authMsg('Email and password required', 'error'); return; }
+    authMsg('Logging in…');
+    const stayChecked = document.getElementById('auth-stay-checkbox')?.checked;
+    if(!stayChecked){
+      // Note: Supabase JS client doesn't have per-session persistence toggle without
+      // re-creating the client. For now we'll just show a hint and rely on default.
+      // (Future: switch to sessionStorage-based persistence when this is unchecked)
+    }
+    const { error } = await window.sb.auth.signInWithPassword({ email, password });
+    if(error){
+      authMsg(error.message, 'error');
+    }
+    // On success, onAuthStateChange fires → handleSession runs
+  };
+
+  // Forgot password
+  const fBtn = document.getElementById('auth-forgot');
+  if(fBtn) fBtn.onclick = async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('auth-email').value.trim();
+    if(!email){ authMsg('Enter your email first', 'error'); return; }
+    authMsg('Sending reset email…');
+    const { error } = await window.sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin
+    });
+    if(error){
+      authMsg(error.message, 'error');
+    } else {
+      authMsg('Password reset email sent.', 'success');
+    }
+  };
+
+  // Allow Enter key to submit login from password field
+  const pwField = document.getElementById('auth-password');
+  if(pwField){
+    pwField.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter'){ e.preventDefault(); lBtn?.click(); }
+    });
+  }
+}
+
+// Logout
+async function logoutUser(){
+  if(!window.sb) return;
+  await window.sb.auth.signOut();
+  // onAuthStateChange will fire and handleSession(null) will show auth screen
+}
+
+// ══════════════════════════════════════════════════════════════
+// AUTH BOOTSTRAP — wire everything up on load
+// ══════════════════════════════════════════════════════════════
+whenSbReady(async () => {
+  bindAuthHandlers();
+
+  // Listen for auth state changes
+  window.sb.auth.onAuthStateChange((_event, session) => {
+    handleSession(session);
+  });
+
+  // Initial check — do we already have a session?
+  const { data } = await window.sb.auth.getSession();
+  handleSession(data.session);
+});
+
+
 const EXERCISE_LIBRARY = [
   // CHEST
   {name:'Cable Crossover', cat:'Chest'},
@@ -1624,14 +2033,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '1.7.1';
+const APP_VERSION = '2.0.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'1.7.1'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.0.0'};
 state.cycles=[newCycle()];
 
 
@@ -1764,118 +2173,13 @@ function toKg(val){
 }
 function unitLabel(){return state.unit||'kg';}
 
-// ── USER SELECT: LOCAL FIRST ───────────────────────────────────
-function selectUser(userId){
-  currentUser=USERS[userId];
-  document.getElementById('headerUser').textContent=currentUser.name;
+// ── USER SELECT: replaced by Supabase Auth ─────────────────────
+// (selectUser/switchUser removed — auth screen handles all login)
 
-  const raw=localStorage.getItem(lsKey(userId));
-  if(raw){
-    try{
-      const saved=JSON.parse(raw);
-      if(saved&&saved.cycles){
-        state=saved;
-        if(!state.log)state.log=[];
-        if(!state.weightLog)state.weightLog=[];
-        if(!state.draft)state.draft=null;
-        if(!state.permanentSwaps)state.permanentSwaps={};
-        if(!state.passOrder)state.passOrder=null;
-        if(!state.restSlots)state.restSlots=null;
-        if(!state.unit)state.unit='kg';
-        if(!state.exerciseOverrides)state.exerciseOverrides={};
-        if(!state.passNameOverrides)state.passNameOverrides={};
-        if(!state.exerciseNotes)state.exerciseNotes={};
-        if(!state.exerciseTagOverrides)state.exerciseTagOverrides={};
-        if(!state.updatedAt)state.updatedAt=0;
-        if(state.timerEnabled===undefined)state.timerEnabled=false;
-        if(state.timerEnabled===undefined)state.timerEnabled=false;
-        if(state.onboardingDone===undefined){
-          state.onboardingDone = !!(state.cycles && state.cycles.length > 0);
-        }
-        if(!state.theme)state.theme='iron';
-        if(!state.exerciseTagOverrides)state.exerciseTagOverrides={};
-        if(!state.customExercises)state.customExercises=[];
-        // Track which app version most recently wrote this state (for debugging)
-        state.appVersion=APP_VERSION;
-        if(!state.migrations?.exerciseSplit_v2) migrateExerciseNames();
-      }
-    }catch(e){console.warn('localStorage parse error',e);}
-  }
-
-  document.getElementById('userScreen').style.display='none';
-  document.getElementById('appShell').style.display='block';
-
-  // First time for this user — check if cloud has data BEFORE onboarding
-  // This prevents overwriting cloud backups when localStorage is cleared
-  const needsOnboarding = !raw || !state.onboardingDone;
-  if(needsOnboarding){
-    // Show a brief "checking" state, then await cloud
-    const chainEl = document.getElementById('view-chain');
-    if(chainEl){
-      chainEl.innerHTML = '<div class="ob-wrap"><div class="ob-step">Syncing…</div><div class="ob-title">Hi ' + currentUser.name + '</div><div class="ob-sub">Checking the cloud for existing data…</div></div>';
-    }
-    // Try to fetch cloud data with a 6s timeout
-    const cloudPromise = sbGet('app_state','id=eq.'+userId+'&select=data,updated_at').catch(()=>null);
-    const timeoutPromise = new Promise(r=>setTimeout(()=>r(null), 6000));
-    Promise.race([cloudPromise, timeoutPromise]).then(rows=>{
-      if(rows && rows.length && rows[0].data && rows[0].data.cycles && rows[0].data.onboardingDone){
-        // Cloud HAS valid data — restore it instead of running onboarding
-        state = rows[0].data;
-        if(!state.log)state.log=[];
-        if(!state.weightLog)state.weightLog=[];
-        if(!state.draft)state.draft=null;
-        if(!state.permanentSwaps)state.permanentSwaps={};
-        if(!state.passOrder)state.passOrder=null;
-        if(!state.restSlots)state.restSlots=null;
-        if(!state.unit)state.unit='kg';
-        if(!state.exerciseOverrides)state.exerciseOverrides={};
-        if(!state.passNameOverrides)state.passNameOverrides={};
-        if(!state.exerciseNotes)state.exerciseNotes={};
-        if(!state.exerciseTagOverrides)state.exerciseTagOverrides={};
-        if(!state.customExercises)state.customExercises=[];
-        if(state.timerEnabled===undefined)state.timerEnabled=false;
-        if(!state.theme)state.theme='iron';
-        if(!state.updatedAt)state.updatedAt=0;
-        if(!state.migrations?.exerciseSplit_v2) migrateExerciseNames();
-        // Restore pass name overrides into BASE_PASSES
-        if(state.passNameOverrides){
-          Object.entries(state.passNameOverrides).forEach(([pid,name])=>{
-            const bp=BASE_PASSES.find(p=>p.id===pid);
-            if(bp) bp.name=name;
-          });
-        }
-        localStorage.setItem(lsKey(userId),JSON.stringify(state));
-        lastSyncRead = Date.now();
-        initTheme();
-        requestNotificationPermission();
-        renderChain();
-        showToast('Restored from cloud ✓');
-      } else {
-        // No cloud data → genuinely first-time setup
-        showOnboarding(userId, 1, {});
-      }
-    });
-    return;
-  }
-
-  // Restore any pass name overrides into BASE_PASSES
-  if(state.passNameOverrides){
-    Object.entries(state.passNameOverrides).forEach(([pid,name])=>{
-      const bp=BASE_PASSES.find(p=>p.id===pid);
-      if(bp) bp.name=name;
-    });
-  }
-  initTheme();
-  requestNotificationPermission();
-  renderChain();
-  syncFromCloud(userId);
-  startPeriodicSync();
-}
 function setUnit(unit, userId){
   state.unit=unit;
   save();
   renderChain();
-  // syncFromCloud already called in selectUser — no double call needed
 }
 
 async function syncFromCloud(userId){
@@ -1937,8 +2241,30 @@ async function syncFromCloud(userId){
   }
 }
 
-async function sbGet(table,query=''){const r=await fetch(`${SB_URL}/rest/v1/${table}${query?'?'+query:''}`,{headers:HDRS,mode:'cors'});if(!r.ok)throw new Error(await r.text());return r.json();}
-async function sbUpsert(table,data){const r=await fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:{...HDRS,'Prefer':'resolution=merge-duplicates'},body:JSON.stringify(data),mode:'cors'});if(!r.ok)throw new Error(await r.text());}
+async function getAuthHeaders(){
+  const base = {...HDRS};
+  if(window.sb){
+    try{
+      const { data } = await window.sb.auth.getSession();
+      if(data?.session?.access_token){
+        base['Authorization'] = 'Bearer ' + data.session.access_token;
+      }
+    }catch(e){ /* fall back to anon-only */ }
+  }
+  return base;
+}
+
+async function sbGet(table,query=''){
+  const headers = await getAuthHeaders();
+  const r=await fetch(`${SB_URL}/rest/v1/${table}${query?'?'+query:''}`,{headers,mode:'cors'});
+  if(!r.ok)throw new Error(await r.text());
+  return r.json();
+}
+async function sbUpsert(table,data){
+  const headers = await getAuthHeaders();
+  const r=await fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:{...headers,'Prefer':'resolution=merge-duplicates'},body:JSON.stringify(data),mode:'cors'});
+  if(!r.ok)throw new Error(await r.text());
+}
 
 let saveTimer=null;
 function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(pushState,800);}
