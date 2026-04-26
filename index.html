@@ -1571,6 +1571,54 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
   width:14px;height:14px;cursor:pointer;
   accent-color:var(--red);
 }
+#auth-signup-fields{
+  width:100%;
+  animation:slideDown .25s ease-out;
+}
+@keyframes slideDown{
+  from{opacity:0;transform:translateY(-8px);}
+  to{opacity:1;transform:translateY(0);}
+}
+#auth-signup-fields input[type="text"]{
+  width:100%;
+  background:#0a0a0a;
+  border:1px solid #2a2a2a;
+  color:var(--white);
+  font-family:var(--mono);
+  font-size:.9rem;
+  padding:11px 14px;
+  margin-bottom:10px;
+  box-sizing:border-box;
+}
+#auth-signup-fields input[type="text"]:focus{
+  outline:none;
+  border-color:var(--red);
+  box-shadow:0 0 0 1px var(--red);
+}
+.auth-checkbox-row{
+  display:flex;align-items:flex-start;gap:8px;
+  margin:6px 0 14px;cursor:pointer;
+  font-family:var(--mono);font-size:.55rem;color:#888;
+  letter-spacing:.05em;line-height:1.5;
+  user-select:none;
+}
+.auth-checkbox-row input{
+  width:14px;height:14px;cursor:pointer;
+  accent-color:var(--red);
+  margin-top:2px;flex-shrink:0;
+}
+.auth-disclaimer{
+  font-family:var(--mono);
+  font-size:.5rem;
+  color:#555;
+  line-height:1.6;
+  letter-spacing:.02em;
+  padding:10px 12px;
+  border-left:2px solid #2a2a2a;
+  background:rgba(255,255,255,0.02);
+  margin-bottom:14px;
+}
+
 .auth-btn-row{
   display:flex;gap:8px;width:100%;
 }
@@ -1656,6 +1704,19 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
     <div id="auth-email-form">
       <input id="auth-email" type="email" placeholder="email" autocomplete="email">
       <input id="auth-password" type="password" placeholder="password (min 8)" autocomplete="current-password">
+      
+      <!-- Signup-only fields, hidden by default -->
+      <div id="auth-signup-fields" style="display:none;">
+        <input id="auth-displayname" type="text" placeholder="display name (optional)" autocomplete="nickname" maxlength="40">
+        <label class="auth-checkbox-row">
+          <input type="checkbox" id="auth-emailupdates">
+          <span>Email me about updates and new features</span>
+        </label>
+        <div class="auth-disclaimer">
+          By signing up you accept that The Chain is in active development. Use at your own risk. Always consult a qualified trainer or doctor before changing your training. We're not responsible for injuries or health outcomes.
+        </div>
+      </div>
+      
       <label class="auth-stay">
         <input type="checkbox" id="auth-stay-checkbox" checked>
         <span>Stay logged in</span>
@@ -1677,7 +1738,7 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.0.1 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.0.2 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -1844,22 +1905,46 @@ function bindAuthHandlers(){
     if(error) authMsg(error.message, 'error');
   };
 
-  // Email signup
+  // Email signup — two-stage: first click reveals fields, second click submits
   const sBtn = document.getElementById('btn-signup');
   if(sBtn) sBtn.onclick = async () => {
+    const fieldsEl = document.getElementById('auth-signup-fields');
+    const isExpanded = fieldsEl && fieldsEl.style.display !== 'none';
+    
+    // First click — just reveal the signup-only fields and let user fill them
+    if(!isExpanded){
+      fieldsEl.style.display = 'block';
+      document.getElementById('auth-displayname')?.focus();
+      authMsg('Fill in details and click Sign up again', 'success');
+      return;
+    }
+    
+    // Second click — actually submit
     const email = document.getElementById('auth-email').value.trim();
     const password = document.getElementById('auth-password').value;
+    const displayName = document.getElementById('auth-displayname').value.trim();
+    const emailUpdates = document.getElementById('auth-emailupdates').checked;
+    
     if(!email || !password){ authMsg('Email and password required', 'error'); return; }
     if(password.length < 8){ authMsg('Password must be at least 8 characters', 'error'); return; }
+    
     authMsg('Creating account…');
     const { error } = await window.sb.auth.signUp({
       email, password,
-      options: { emailRedirectTo: window.location.origin }
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: {
+          display_name: displayName || email.split('@')[0],
+          email_updates_opt_in: emailUpdates
+        }
+      }
     });
     if(error){
       authMsg(error.message, 'error');
     } else {
       authMsg('Check your email to confirm your account.', 'success');
+      // Hide fields again
+      if(fieldsEl) fieldsEl.style.display = 'none';
     }
   };
 
@@ -2086,14 +2171,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.0.1';
+const APP_VERSION = '2.0.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.0.1'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.0.2'};
 state.cycles=[newCycle()];
 
 
