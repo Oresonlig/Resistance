@@ -181,6 +181,22 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .add-set-btn{background:none;border:1px dashed #333;color:#666;font-family:var(--mono);font-size:.46rem;letter-spacing:.07em;text-transform:uppercase;padding:4px;width:100%;cursor:pointer;transition:all .15s;margin-top:2px;display:flex;align-items:center;justify-content:center;gap:3px;}
 .add-set-btn:hover{border-color:var(--red);color:#777;}
 .swap-select{background:#111;border:1px solid #5a1a1a;color:var(--white);font-family:var(--mono);font-size:.56rem;padding:4px 6px;width:100%;margin-top:4px;cursor:pointer;}
+.swap-select optgroup{
+  font-family:var(--mono);
+  font-size:.7rem;
+  font-weight:700;
+  color:var(--gold);
+  background:var(--black);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:6px 0;
+}
+.swap-select option{
+  font-family:var(--sans);
+  background:var(--black);
+  color:var(--white);
+  padding:6px 10px;
+}
 .swap-select:focus{outline:none;border-color:var(--red);}
 .swap-select option{background:#111;}
 .add-ex-row{padding:6px 0 0;}
@@ -1433,7 +1449,7 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
     <div class="logo" onclick="switchUser()">THE <span>CHAIN</span></div>
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v1.6.3 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v1.7.1 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -1455,7 +1471,103 @@ const SB_URL='https://qjmjqideqrgozexudaqr.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbWpxaWRlcXJnb3pleHVkYXFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwOTIwODQsImV4cCI6MjA5MTY2ODA4NH0.byRwDswpbfMWDoln4n7Opp0ntrNis_du4EnLVMFuIp8';
 const HDRS={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
 const USERS={niklas:{name:'Niklas',id:'niklas'},henrik:{name:'Henrik',id:'henrik'},lt:{name:'LT',id:'lt'},robban:{name:'Robban',id:'robban'}};
-const ALL_EXERCISES=['Flat BB Bench Press','Incline Smith Press','Incline BB Press','Flat DB Press','Hammer Strength Press','Decline Smith Press','Decline DB Press','Pec Deck','Cable Flyes','Chest Dips','Pull-ups (pronated)','Chins (supinated)','Neutral Grip Pull-ups','Close-grip Pulldown','Wide-grip Pulldown','Unilateral Cable Row','Seated Cable Row','Bentover Row','T-bar Row','Lat Prayers','Deadlift','Rack Pull','Straight-arm Pulldown','Zercher Squat','Back Squat','Front Squat','Leg Press','Leg Extension','Lying Leg Curl','Seated Leg Curl','Nordic Curl','Standing Calf Raise','Seated Calf Raise','Vader (standing)','Vader (seated)','Romanian Deadlift','Bulgarian Split Squat','Hack Squat','Military Press (barbell)','DB Shoulder Press','Arnold Press','Lateral Raises','Cable Lateral Raises','Upright Row','Helms Rear Delt Row','Face Pulls','Rear Delt Flyes','External Rotator Cuff','Internal Rotator Cuff','Barbell Shrugs','DB Shrugs','Trap Bar Shrugs','Barbell Curl','DB Curl','Hammer Curl','Incline DB Curl','Preacher Curl','Cable Curl','Spider Curl','Tricep Pushdowns','Overhead Tricep Extension','Skull Crushers','Close-Grip Bench','Tricep Dips','Ab Wheel','Hanging Leg Raise','Cable Crunch','Plank','Sit-ups','Crunches','Dragon Flag','Dead Bug','Dead Hang','Light Face Pulls','Band Pull-apart','Farmers Walk','Sled Push','Bike Cardio','Walk'];
+const EXERCISE_LIBRARY = [
+  // CHEST
+  {name:'Cable Crossover', cat:'Chest'},
+  {name:'Cable Flyes', cat:'Chest'},
+  {name:'Chest Dips', cat:'Chest'},
+  {name:'Decline Cable Flyes', cat:'Chest'},
+  {name:'Decline DB Press', cat:'Chest'},
+  {name:'Decline Smith Press', cat:'Chest'},
+  {name:'Flat BB Bench Press', cat:'Chest'},
+  {name:'Flat DB Press', cat:'Chest'},
+  {name:'Hammer Strength Press', cat:'Chest'},
+  {name:'Incline BB Press', cat:'Chest'},
+  {name:'Incline Cable Flyes', cat:'Chest'},
+  {name:'Incline DB Press', cat:'Chest'},
+  {name:'Incline Smith Press', cat:'Chest'},
+  {name:'Pec Deck', cat:'Chest'},
+  {name:'Single-Arm Cable Flyes', cat:'Chest'},
+  // BACK
+  {name:'Bentover Row', cat:'Back'},
+  {name:'Chins (supinated)', cat:'Back'},
+  {name:'Close-grip Pulldown', cat:'Back'},
+  {name:'Deadlift', cat:'Back'},
+  {name:'Lat Prayers', cat:'Back'},
+  {name:'Neutral Grip Pull-ups', cat:'Back'},
+  {name:'Pull-ups (pronated)', cat:'Back'},
+  {name:'Rack Pull', cat:'Back'},
+  {name:'Seated Cable Row', cat:'Back'},
+  {name:'Straight-arm Pulldown', cat:'Back'},
+  {name:'T-bar Row', cat:'Back'},
+  {name:'Unilateral Cable Row', cat:'Back'},
+  {name:'Wide-grip Pulldown', cat:'Back'},
+  // SHOULDERS
+  {name:'Arnold Press', cat:'Shoulders'},
+  {name:'Band Pull-apart', cat:'Shoulders'},
+  {name:'Cable Lateral Raises', cat:'Shoulders'},
+  {name:'DB Shoulder Press', cat:'Shoulders'},
+  {name:'External Rotator Cuff', cat:'Shoulders'},
+  {name:'Face Pulls', cat:'Shoulders'},
+  {name:'Helms Rear Delt Row', cat:'Shoulders'},
+  {name:'Internal Rotator Cuff', cat:'Shoulders'},
+  {name:'Lateral Raises', cat:'Shoulders'},
+  {name:'Light Face Pulls', cat:'Shoulders'},
+  {name:'Military Press (barbell)', cat:'Shoulders'},
+  {name:'Rear Delt Flyes', cat:'Shoulders'},
+  {name:'Upright Row', cat:'Shoulders'},
+  // ARMS
+  {name:'Barbell Curl', cat:'Arms'},
+  {name:'Cable Curl', cat:'Arms'},
+  {name:'Close-Grip Bench', cat:'Arms'},
+  {name:'DB Curl', cat:'Arms'},
+  {name:'Hammer Curl', cat:'Arms'},
+  {name:'Incline DB Curl', cat:'Arms'},
+  {name:'Overhead Tricep Extension', cat:'Arms'},
+  {name:'Preacher Curl', cat:'Arms'},
+  {name:'Skull Crushers', cat:'Arms'},
+  {name:'Spider Curl', cat:'Arms'},
+  {name:'Tricep Dips', cat:'Arms'},
+  {name:'Tricep Pushdowns', cat:'Arms'},
+  // LEGS
+  {name:'Back Squat', cat:'Legs'},
+  {name:'Bulgarian Split Squat', cat:'Legs'},
+  {name:'Front Squat', cat:'Legs'},
+  {name:'Hack Squat', cat:'Legs'},
+  {name:'Leg Extension', cat:'Legs'},
+  {name:'Leg Press', cat:'Legs'},
+  {name:'Lying Leg Curl', cat:'Legs'},
+  {name:'Nordic Curl', cat:'Legs'},
+  {name:'Romanian Deadlift', cat:'Legs'},
+  {name:'Seated Calf Raise', cat:'Legs'},
+  {name:'Seated Leg Curl', cat:'Legs'},
+  {name:'Standing Calf Raise', cat:'Legs'},
+  {name:'Vader (seated)', cat:'Legs'},
+  {name:'Vader (standing)', cat:'Legs'},
+  {name:'Zercher Squat', cat:'Legs'},
+  // TRAPS
+  {name:'Barbell Shrugs', cat:'Traps'},
+  {name:'DB Shrugs', cat:'Traps'},
+  {name:'Trap Bar Shrugs', cat:'Traps'},
+  // CORE
+  {name:'Ab Wheel', cat:'Core'},
+  {name:'Cable Crunch', cat:'Core'},
+  {name:'Crunches', cat:'Core'},
+  {name:'Dead Bug', cat:'Core'},
+  {name:'Dragon Flag', cat:'Core'},
+  {name:'Hanging Leg Raise', cat:'Core'},
+  {name:'Plank', cat:'Core'},
+  {name:'Sit-ups', cat:'Core'},
+  // CARDIO / CONDITIONING
+  {name:'Bike Cardio', cat:'Cardio'},
+  {name:'Dead Hang', cat:'Cardio'},
+  {name:'Farmers Walk', cat:'Cardio'},
+  {name:'Sled Push', cat:'Cardio'},
+  {name:'Walk', cat:'Cardio'},
+];
+
+// Backward-compat: flat list still exported for any code reading ALL_EXERCISES
+const ALL_EXERCISES = EXERCISE_LIBRARY.map(e=>e.name);
 
 // ── IMPROVEMENT 3: Pass order is per-user, drag & drop reorderable ─
 // Default pass order (can be reordered per user)
@@ -1512,14 +1624,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '1.6.3';
+const APP_VERSION = '1.7.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'1.6.3'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'1.7.1'};
 state.cycles=[newCycle()];
 
 
@@ -2079,9 +2191,28 @@ function renderChain(){
             </div>
           </div>`;
           {
+            // Build categorized swap dropdown with optgroups
+            const grouped = {};
+            EXERCISE_LIBRARY.forEach(e=>{
+              if(!grouped[e.cat]) grouped[e.cat] = [];
+              grouped[e.cat].push(e.name);
+            });
+            // Custom exercises in their own group
             const customExes = (state.customExercises||[]).map(e=>e.name);
-            const allOpts = [...ALL_EXERCISES, ...customExes];
-            html+=`<div id="swapwrap-${ex.id}" style="display:none"><div style="font-family:var(--mono);font-size:.48rem;color:#555;padding:4px 0 2px;text-transform:uppercase;letter-spacing:.08em" id="swaplabel-${ex.id}"></div><select class="swap-select" id="swap-${ex.id}" onchange="doSwap('${ex.id}',this.value,'${passId}')"><option value="">— Select exercise —</option>${allOpts.map(e=>`<option value="${e}"${e===customName?' selected':''}>${e}</option>`).join('')}<option value="__CUSTOM__">+ Add custom exercise...</option></select></div>`;
+            if(customExes.length) grouped['Custom'] = customExes.slice().sort();
+            // Render in fixed category order
+            const catOrder = ['Chest','Back','Shoulders','Arms','Legs','Traps','Core','Cardio','Custom'];
+            let optsHtml = '';
+            catOrder.forEach(cat=>{
+              if(!grouped[cat]) return;
+              optsHtml += `<optgroup label="${cat}">`;
+              grouped[cat].forEach(n=>{
+                const sel = (n===customName) ? ' selected' : '';
+                optsHtml += `<option value="${n}"${sel}>${n}</option>`;
+              });
+              optsHtml += `</optgroup>`;
+            });
+            html+=`<div id="swapwrap-${ex.id}" style="display:none"><div style="font-family:var(--mono);font-size:.48rem;color:#555;padding:4px 0 2px;text-transform:uppercase;letter-spacing:.08em" id="swaplabel-${ex.id}"></div><select class="swap-select" id="swap-${ex.id}" onchange="doSwap('${ex.id}',this.value,'${passId}')"><option value="">— Select exercise —</option>${optsHtml}<option value="__CUSTOM__">+ Add custom exercise...</option></select></div>`;
           }
         }
 
@@ -3226,8 +3357,16 @@ function addWarmupSet(exId,passId){
 }
 function removeExtraSet(exId,idx,passId){
   ensureExtraSets(exId,passId);
-  if(state.draft.extraSets[exId].length>1)
+  // Capture current DOM values BEFORE mutation so unsaved inputs survive
+  captureInputsToSetsBuffer(exId,passId);
+  if(state.draft.extraSets[exId].length>1){
     state.draft.extraSets[exId].splice(idx,1);
+    // Keep buffer in sync — remove the corresponding buffer slot so
+    // remaining sets render with their correct values
+    if(state.draft.inputBuffer && state.draft.inputBuffer[exId]){
+      state.draft.inputBuffer[exId].splice(idx,1);
+    }
+  }
   save();rerenderPass(passId);
 }
 
