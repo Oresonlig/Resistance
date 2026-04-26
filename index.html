@@ -342,6 +342,59 @@ canvas#weightChart{width:100%!important;display:block;}
 }
 
 
+
+/* ── IRON THEME — Subtle hexagon texture & accents ─────────────
+   Applied to default theme only (no class). Other themes override. */
+body:not([class*="theme-"]){
+  background-color:var(--black);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='34' viewBox='0 0 60 34'%3E%3Cg fill='none' stroke='%23a02020' stroke-width='1' stroke-opacity='0.06'%3E%3Cpath d='M10 17L0 11L0 -1L10 -7L20 -1L20 11L10 17L10 35'/%3E%3Cpath d='M40 17L30 11L30 -1L40 -7L50 -1L50 11L40 17L40 35'/%3E%3Cpath d='M25 25L15 19L15 7L25 1L35 7L35 19L25 25'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(ellipse 100% 70% at 50% 0%,rgba(160,32,32,0.08) 0%,transparent 70%),
+    linear-gradient(180deg,#0a0606 0%,#070303 100%);
+  background-attachment:fixed;
+}
+
+/* Pass letter — subtle hex frame on the big letter (Iron only) */
+body:not([class*="theme-"]) .pass-card.next-up .pass-letter{
+  position:relative;
+}
+body:not([class*="theme-"]) .pass-card.next-up .pass-letter::before{
+  content:'';
+  position:absolute;
+  inset:-6px -10px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='46' viewBox='0 0 40 46'%3E%3Cpath d='M20 2L36 11L36 35L20 44L4 35L4 11Z' fill='none' stroke='%23a02020' stroke-width='1' stroke-opacity='0.5'/%3E%3C/svg%3E");
+  background-size:contain;
+  background-position:center;
+  background-repeat:no-repeat;
+  z-index:-1;
+  pointer-events:none;
+}
+
+/* Header — subtle bottom hex line accent (Iron only) */
+body:not([class*="theme-"]) header{
+  position:relative;
+}
+body:not([class*="theme-"]) header::after{
+  content:'';
+  position:absolute;
+  left:0;right:0;bottom:-1px;
+  height:1px;
+  background:linear-gradient(90deg,transparent 0%,rgba(160,32,32,0.4) 30%,rgba(160,32,32,0.6) 50%,rgba(160,32,32,0.4) 70%,transparent 100%);
+}
+
+/* Set input focus — hex-edge glow accent */
+body:not([class*="theme-"]) .set-input:focus{
+  border-color:var(--red);
+  box-shadow:0 0 0 1px rgba(160,32,32,0.3),0 0 8px rgba(160,32,32,0.2);
+}
+
+/* Weight banner — subtle hex-pattern background */
+body:not([class*="theme-"]) .weight-banner{
+  background-color:#0a0505;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='23' viewBox='0 0 40 23'%3E%3Cg fill='none' stroke='%23a02020' stroke-width='1' stroke-opacity='0.04'%3E%3Cpath d='M7 11L0 7L0 0L7 -3L14 0L14 7L7 11'/%3E%3Cpath d='M27 11L20 7L20 0L27 -3L34 0L34 7L27 11'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+
 /* ── THEMES ──────────────────────────────────────────────────── */
 /* Default: Iron (current dark red) — no extra class needed */
 
@@ -1624,7 +1677,7 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.0.0 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.0.1 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -2033,14 +2086,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.0.0';
+const APP_VERSION = '2.0.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.0.0'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.0.1'};
 state.cycles=[newCycle()];
 
 
