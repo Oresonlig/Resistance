@@ -1738,7 +1738,7 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.0.3 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.0.4 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -1873,6 +1873,34 @@ async function loadStateForUser(){
       if(bp) bp.name = name;
     });
   }
+}
+
+// Ensure all expected state fields exist with sensible defaults.
+// Used when loading state from localStorage or cloud, since older state
+// objects may lack fields added in newer versions.
+function ensureStateDefaults(){
+  if(!state) state = {};
+  if(!state.cycles) state.cycles = [newCycle()];
+  if(!Array.isArray(state.log)) state.log = [];
+  if(!Array.isArray(state.weightLog)) state.weightLog = [];
+  if(state.draft === undefined) state.draft = null;
+  if(typeof state.restCount !== 'number') state.restCount = 1;
+  if(!state.permanentSwaps) state.permanentSwaps = {};
+  if(state.passOrder === undefined) state.passOrder = null;
+  if(state.restSlots === undefined) state.restSlots = null;
+  if(!state.unit) state.unit = 'kg';
+  if(!state.exerciseOverrides) state.exerciseOverrides = {};
+  if(!state.passNameOverrides) state.passNameOverrides = {};
+  if(typeof state.timerDefault !== 'number') state.timerDefault = 120;
+  if(typeof state.timerEnabled !== 'boolean') state.timerEnabled = false;
+  if(!state.exerciseNotes) state.exerciseNotes = {};
+  if(typeof state.onboardingDone !== 'boolean') state.onboardingDone = false;
+  if(!state.theme) state.theme = 'iron';
+  if(!state.exerciseTagOverrides) state.exerciseTagOverrides = {};
+  if(typeof state.updatedAt !== 'number') state.updatedAt = 0;
+  if(!Array.isArray(state.customExercises)) state.customExercises = [];
+  if(!state.appVersion) state.appVersion = APP_VERSION;
+  if(!state.migrations) state.migrations = {};
 }
 
 // Default state for a fresh user
@@ -2171,14 +2199,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.0.3';
+const APP_VERSION = '2.0.4';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.0.3'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.0.4'};
 state.cycles=[newCycle()];
 
 
