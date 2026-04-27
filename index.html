@@ -358,11 +358,24 @@ body:not([class*="theme-"]){
 body:not([class*="theme-"]) .pass-card.next-up .pass-letter{
   position:relative;
 }
+body:not([class*="theme-"]) .pass-card.next-up .pass-letter{
+  /* Make sure the letter itself is the centering anchor */
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:48px;
+  height:54px;
+}
 body:not([class*="theme-"]) .pass-card.next-up .pass-letter::before{
   content:'';
   position:absolute;
-  inset:-6px -10px;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='46' viewBox='0 0 40 46'%3E%3Cpath d='M20 2L36 11L36 35L20 44L4 35L4 11Z' fill='none' stroke='%23a02020' stroke-width='1' stroke-opacity='0.5'/%3E%3C/svg%3E");
+  /* Center the hexagon on the letter, not relative to bounding box */
+  top:50%;
+  left:50%;
+  width:54px;
+  height:60px;
+  transform:translate(-50%, -50%);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='54' height='60' viewBox='0 0 54 60'%3E%3Cpath d='M27 3L48 15L48 45L27 57L6 45L6 15Z' fill='none' stroke='%23a02020' stroke-width='1' stroke-opacity='0.5'/%3E%3C/svg%3E");
   background-size:contain;
   background-position:center;
   background-repeat:no-repeat;
@@ -1738,7 +1751,7 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.0.6 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.0.7 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -1824,7 +1837,12 @@ async function handleSession(session){
   showAppShell();
   initTheme();
   requestNotificationPermission && requestNotificationPermission();
-  renderChain();
+  // First-time user — run onboarding before showing chain
+  if(!state.onboardingDone){
+    showOnboarding(currentUser.id, 1, {});
+  } else {
+    renderChain();
+  }
   startPeriodicSync && startPeriodicSync();
   syncFromCloud && syncFromCloud(currentUser.id);
 }
@@ -2205,14 +2223,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.0.6';
+const APP_VERSION = '2.0.7';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.0.6'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.0.7'};
 state.cycles=[newCycle()];
 
 
