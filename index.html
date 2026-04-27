@@ -1156,7 +1156,7 @@ body.theme-ember nav{
   background:linear-gradient(0deg,#0c0600 0%,#150900 100%);
   border-top:none;
   box-shadow:0 -2px 0 rgba(255,106,0,0.4);
-  position:relative;
+  /* Keep position:fixed from default — don't override */
 }
 body.theme-ember nav::before{
   content:'';position:absolute;left:0;right:0;top:-1px;height:1px;
@@ -2248,7 +2248,7 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.2.0 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.2.1 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -2747,14 +2747,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.2.0';
+const APP_VERSION = '2.2.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.2.0'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.2.1'};
 state.cycles=[newCycle()];
 
 
@@ -2870,7 +2870,7 @@ function ensureDraft(passId){if(!state.draft||state.draft.passId!==passId)state.
 // ── LOCAL STORAGE ─────────────────────────────────────────────
 function lsKey(uid){return 'thechain_'+uid;}
 
-// ── UNIT CONVERSION (Improvement 5) ──────────────────────────
+// ── UNIT CONVERSION ──────────────────────────────────────────
 function toDisplay(kg){
   if(kg===null||kg===undefined)return null;
   if(state.unit==='lbs'){
@@ -3084,7 +3084,7 @@ function renderChain(){
   const effectiveChain=getEffectiveChain();
   const totalPasses=effectiveChain.filter(p=>!p.rest).length;
   const donePasses=effectiveChain.filter(p=>!p.rest&&cycle.done[p.id]!==null&&cycle.done[p.id]!==undefined).length;
-  const pct=Math.round(donePasses/totalPasses*100);
+  const pct=totalPasses>0?Math.round(donePasses/totalPasses*100):0;
   const todayWkg=getTodayWeight();
   const todayW = todayWkg ? toDisplay(todayWkg) : null;
 
@@ -3149,7 +3149,7 @@ function renderChain(){
         const isUni  = tagOvr.uni!==undefined    ? tagOvr.uni  : !!effEx.uni;
         const isSingles = tagOvr.singles!==undefined ? tagOvr.singles : !!effEx.singles;
 
-        // Improvement 7: default 2 warmup sets
+        // Default to 2 warmup sets when none specified
         let extraSets=draftExtraSets[ex.id];
         if(!extraSets){
           // Default: 2 warmup sets for all exercises
@@ -3201,7 +3201,6 @@ function renderChain(){
 
                 <button onclick="toggleNote('${ex.id}');closeEditMenu('${ex.id}')" style="color:var(--gold)">📝 Note</button>
                 <button onclick="toggleTagEditor('${ex.id}');closeEditMenu('${ex.id}')">🏷 Tags</button>
-                <button onclick="toggleTagEditor('${ex.id}');closeEditMenu('${ex.id}')" style="color:#7ab;">🏷 Tags</button>
               </div>
             </div>`;
           }
@@ -3214,7 +3213,7 @@ function renderChain(){
         }
         html+=`</div></div>`;
 
-        // Improvement 6: Rename UI
+        // Inline rename UI for pass/exercise
         
 
         if(!isDone){
@@ -3424,7 +3423,7 @@ function renderChain(){
   el.innerHTML=html;
 }
 
-// ── REORDER UI (Improvement 3) ────────────────────────────────
+// ── REORDER UI ──────────────────────────────────────────────
 function buildReorderUI(effectiveChain){
   const passOrder = state.passOrder || DEFAULT_PASS_ORDER;
   const restSlots = state.restSlots || DEFAULT_REST_SLOTS;
@@ -4092,7 +4091,7 @@ function saveReorder(){
   renderChain();
 }
 
-// ── EXERCISE RENAME (Improvement 6) ──────────────────────────
+// ── EXERCISE RENAME ──────────────────────────────────────────
 function toggleEditMenu(exId){
   const menu=document.getElementById('editmenu-'+exId);
   if(menu){
@@ -4828,7 +4827,7 @@ function requestNotificationPermission(){
 
 // ── UTILS ─────────────────────────────────────────────────────
 function fmtDate(ts){return new Date(ts).toLocaleDateString('en-GB',{weekday:'short',month:'short',day:'numeric'});}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
+function showToast(msg,duration){const t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),duration||2400);}
 
 
 // ── VERSION COMPARISON ───────────────────────────────────────
@@ -4905,7 +4904,7 @@ window.addEventListener('beforeunload',()=>{
   }catch(e){ /* fall back to anon */ }
   
   // Skip push if state is fresh (safety guard)
-  if(typeof isFreshState === 'function' && isFreshState(state)) return;
+  if(isFreshState(state)) return;
   
   // fetch with keepalive survives page close AND sends auth headers
   // (sendBeacon can't set custom headers, so Supabase rejected it silently)
