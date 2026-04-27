@@ -981,40 +981,6 @@ body.theme-nightcity .toast{
 }
 
 /* ─────────────────────────────────────────────────────────────
-   2. RENAISSANCE — Old world elegance
-   Font: Playfair Display (editorial, serif), Crimson Pro (body)
-   Palette: Aged parchment, deep burgundy, gold leaf
-───────────────────────────────────────────────────────────── */
-body.theme-renaissance{
-  --black:#1a0f08;--white:#f5e6c8;--red:#8b1a2a;
-  --gold:#c8960c;--green-bright:#4a7a3a;
-  --gray-mid:#3a2818;--gray-light:#9a8060;
-  --display:'Playfair Display',serif;
-  --sans:'Crimson Pro',serif;
-  --mono:'DM Mono',monospace;
-}
-body.theme-renaissance body{
-  background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c8960c' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-}
-body.theme-renaissance header{background:#1a0f08;border-bottom:1px solid #c8960c;}
-body.theme-renaissance .logo{font-family:'Playfair Display',serif;font-style:italic;letter-spacing:.05em;}
-body.theme-renaissance .logo span{color:var(--red);}
-body.theme-renaissance nav{border-top:2px solid #c8960c;background:#1a0f08;}
-body.theme-renaissance nav button.active{border-top-color:var(--red);color:var(--white);}
-body.theme-renaissance .pass-card.next-up{border-color:#c8960c;border-width:2px;}
-body.theme-renaissance .pass-card.next-up::before{background:var(--red);font-family:'Crimson Pro',serif;letter-spacing:.15em;}
-body.theme-renaissance .pass-letter{font-family:'Playfair Display',serif;color:var(--red);font-style:italic;}
-body.theme-renaissance .pass-name{font-family:'Playfair Display',serif;letter-spacing:.02em;}
-body.theme-renaissance .chain-fill{background:linear-gradient(90deg,#8b1a2a,#c8960c);}
-body.theme-renaissance .btn-primary{background:var(--red);font-family:'Playfair Display',serif;letter-spacing:.08em;}
-body.theme-renaissance .ex-btn-done{background:#1a0808;border-color:#4a7a3a;color:#4a7a3a;font-family:'Playfair Display',serif;font-size:.5rem;}
-body.theme-renaissance .section-title,.renaissance .chain-intro-title{font-family:'Playfair Display',serif;}
-body.theme-renaissance .set-input{background:#150c06;border-color:#3a2818;}
-body.theme-renaissance .user-screen{background:radial-gradient(ellipse at top,#2a1a0a 0%,#1a0f08 60%);}
-body.theme-renaissance .weight-banner{background:#150c06;}
-body.theme-renaissance .pass-card{border-color:#2a1a0a;}
-
-/* ─────────────────────────────────────────────────────────────
    3. ARCTIC TERMINAL — Cold precision
    Font: Rajdhani (military/tech), DM Mono
    Palette: Near-black with electric cyan, white text, clinical
@@ -2178,6 +2144,459 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
 }
 .header-logout:hover{border-color:var(--red);color:var(--red);}
 
+
+/* ── REUSABLE MODAL ───────────────────────────────────────────
+   Controlled via JS. Adapts to current theme via CSS variables. */
+.app-modal{
+  position:fixed;inset:0;z-index:1000;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+  animation:modalFadeIn .2s ease-out;
+}
+@keyframes modalFadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+.app-modal-backdrop{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,0.7);
+  backdrop-filter:blur(4px);
+}
+.app-modal-card{
+  position:relative;
+  background:linear-gradient(135deg,var(--gray-mid,#1a1a1a) 0%,var(--black,#0a0a0a) 100%);
+  border:1px solid var(--red,#a02020);
+  width:100%;max-width:380px;
+  padding:22px 22px 18px;
+  box-shadow:0 8px 40px rgba(0,0,0,0.6),0 0 24px rgba(160,32,32,0.15);
+  animation:modalSlideIn .25s ease-out;
+}
+@keyframes modalSlideIn{
+  from{opacity:0;transform:translateY(-12px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.app-modal-title{
+  font-family:var(--display);
+  font-size:1.1rem;
+  font-weight:700;
+  color:var(--white,#fff);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:4px;
+}
+.app-modal-body{
+  font-family:var(--mono);
+  font-size:.65rem;
+  color:var(--gray-light,#888);
+  line-height:1.7;
+  margin:8px 0 16px;
+}
+.app-modal-input{
+  width:100%;
+  background:var(--black,#0a0a0a);
+  border:1px solid #2a2a2a;
+  color:var(--white,#fff);
+  font-family:var(--mono);
+  font-size:.85rem;
+  padding:10px 12px;
+  margin:6px 0 4px;
+  box-sizing:border-box;
+}
+.app-modal-input:focus{
+  outline:none;
+  border-color:var(--red);
+  box-shadow:0 0 0 1px var(--red);
+}
+.app-modal-label{
+  font-family:var(--mono);
+  font-size:.5rem;
+  color:var(--gray-light,#777);
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  margin-top:10px;
+  display:block;
+}
+.app-modal-select{
+  width:100%;
+  background:var(--black,#0a0a0a);
+  border:1px solid #2a2a2a;
+  color:var(--white,#fff);
+  font-family:var(--mono);
+  font-size:.8rem;
+  padding:10px 12px;
+  margin:6px 0;
+  cursor:pointer;
+  box-sizing:border-box;
+}
+.app-modal-actions{
+  display:flex;gap:8px;justify-content:flex-end;
+  margin-top:16px;
+}
+.app-modal-btn{
+  font-family:var(--display);
+  font-size:.85rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  padding:10px 18px;
+  cursor:pointer;
+  border:1px solid #3a3a3a;
+  background:transparent;
+  color:#bbb;
+  transition:all .15s;
+}
+.app-modal-btn:hover{
+  border-color:#666;color:#fff;
+}
+.app-modal-btn-primary{
+  background:var(--red);
+  border-color:var(--red);
+  color:#fff;
+}
+.app-modal-btn-primary:hover{
+  background:#c02525;
+  border-color:#c02525;
+}
+.app-modal-btn-danger{
+  background:transparent;
+  border-color:#8b1a2a;
+  color:#e06060;
+}
+.app-modal-btn-danger:hover{
+  background:#8b1a2a;
+  color:#fff;
+}
+.app-modal-error{
+  font-family:var(--mono);
+  font-size:.55rem;
+  color:#e06060;
+  margin-top:8px;
+  min-height:14px;
+}
+
+
+
+/* ─────────────────────────────────────────────────────────────
+   8. DAYLIGHT — Sun-readable, paper-clean
+   For outdoor gym use, bright environments
+   Palette: Pure paper, deep charcoal, navy accent
+───────────────────────────────────────────────────────────── */
+body.theme-daylight{
+  --black:#fafaf7;          /* now means "background" — paper white */
+  --white:#0e1418;          /* now means "primary text" — near black */
+  --red:#c0392b;            /* keep brand red, slightly darker for contrast */
+  --gold:#a8830a;           /* darker for readability on white */
+  --green-bright:#2a7a3a;
+  --gray-mid:#e8e6df;
+  --gray-light:#6a6a6a;
+  --display:'Bebas Neue',sans-serif;
+  --sans:'Inter',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  background:#fafaf7;
+  color:#0e1418;
+}
+
+body.theme-daylight header{
+  background:#ffffff;
+  border-bottom:1px solid #e0dcd0;
+  box-shadow:0 1px 0 rgba(0,0,0,0.04);
+}
+body.theme-daylight .logo{color:#0e1418;font-weight:700;letter-spacing:.16em;}
+body.theme-daylight .logo span{color:var(--red);}
+body.theme-daylight .header-user{color:#666;}
+body.theme-daylight .header-user strong{color:#0e1418;}
+body.theme-daylight .header-logout{
+  border-color:#d0ccc0;
+  color:#666;
+}
+body.theme-daylight .header-logout:hover{
+  border-color:var(--red);color:var(--red);
+}
+
+body.theme-daylight nav{
+  background:#ffffff;
+  border-top:1px solid #e0dcd0;
+  box-shadow:0 -1px 0 rgba(0,0,0,0.04);
+}
+body.theme-daylight nav button{
+  color:#888;
+  font-family:var(--sans);
+  font-weight:500;
+}
+body.theme-daylight nav button.active{
+  border-top:2px solid var(--red);
+  color:var(--red);
+  background:none;
+}
+
+body.theme-daylight .pass-card{
+  background:#ffffff;
+  border:1px solid #e0dcd0;
+  box-shadow:0 1px 3px rgba(0,0,0,0.03);
+}
+body.theme-daylight .pass-card.next-up{
+  background:#ffffff;
+  border:2px solid var(--red);
+  box-shadow:0 2px 12px rgba(192,57,43,0.15);
+}
+body.theme-daylight .pass-card.next-up::before{
+  background:var(--red);
+  color:#ffffff;
+  font-family:var(--display);
+  font-weight:700;
+  letter-spacing:.12em;
+}
+body.theme-daylight .pass-card.in-progress{
+  background:#fafff8;
+  border-color:var(--green-bright);
+  box-shadow:0 2px 8px rgba(42,122,58,0.1);
+}
+body.theme-daylight .pass-card.done{opacity:.55;background:#f5f3ee;}
+body.theme-daylight .pass-letter{
+  font-family:var(--display);
+  color:var(--red);
+  font-weight:700;
+}
+body.theme-daylight .pass-name{
+  color:#0e1418;
+  font-family:var(--sans);
+  font-weight:700;
+  letter-spacing:.02em;
+}
+body.theme-daylight .pass-preview{color:#888;}
+
+body.theme-daylight .chain-bar{background:#e8e6df;}
+body.theme-daylight .chain-fill{
+  background:linear-gradient(90deg,var(--red) 0%,#a02525 100%);
+}
+
+body.theme-daylight .btn-primary{
+  background:var(--red);
+  color:#ffffff;
+  font-family:var(--display);
+  letter-spacing:.1em;
+  border:none;
+}
+body.theme-daylight .btn-primary:hover{
+  background:#a02525;
+}
+
+body.theme-daylight .ex-btn-done{
+  background:#ffffff;
+  border:1px solid var(--green-bright);
+  color:var(--green-bright);
+  font-weight:600;
+}
+body.theme-daylight .ex-btn-done:hover{
+  background:#f0f7ec;
+}
+body.theme-daylight .ex-btn-skip{
+  border-color:#d0ccc0;
+  color:#888;
+}
+body.theme-daylight .ex-btn-edit{
+  border-color:#d0ccc0;
+  color:#666;
+}
+body.theme-daylight .ex-saved-badge{color:var(--green-bright);}
+
+body.theme-daylight .set-input{
+  background:#ffffff;
+  border:1px solid #d0ccc0;
+  color:#0e1418;
+  font-family:var(--mono);
+  font-weight:600;
+}
+body.theme-daylight .set-input:focus{
+  border-color:var(--red);
+  box-shadow:0 0 0 2px rgba(192,57,43,0.15);
+  outline:none;
+}
+body.theme-daylight .set-input.work-set{border-color:#c0c0b8;}
+body.theme-daylight .set-input.warmup{border-color:#e0dcd0;color:#888;}
+body.theme-daylight .set-unit{color:var(--red);font-weight:600;}
+body.theme-daylight .set-num{color:var(--red);font-family:var(--display);font-weight:700;}
+body.theme-daylight .sets-group-label{
+  color:#666;
+  border-top:1px dashed #d0ccc0;
+  font-family:var(--sans);
+  font-weight:600;
+}
+body.theme-daylight .sets-group-label.work-group{color:var(--red);}
+
+body.theme-daylight .ex-name{color:#0e1418;font-family:var(--sans);font-weight:700;}
+body.theme-daylight .ex-detail{color:#666;}
+body.theme-daylight .ex-prev .last-val{color:var(--green-bright);}
+body.theme-daylight .ex-prev .pr-val{color:var(--red);}
+
+body.theme-daylight .ex-tag.ramp{
+  background:#fff8e6;
+  border-color:var(--gold);
+  color:var(--gold);
+}
+body.theme-daylight .ex-tag.bw{
+  background:#f0f7ec;
+  border-color:var(--green-bright);
+  color:var(--green-bright);
+}
+body.theme-daylight .ex-tag.uni{
+  background:#fdf2ec;
+  border-color:#d0612b;
+  color:#d0612b;
+}
+
+body.theme-daylight #userScreen{
+  background:#fafaf7;
+}
+body.theme-daylight .auth-bg{
+  /* Lighter hexagons on white */
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='48' viewBox='0 0 84 48'%3E%3Cg fill='none' stroke='%23c0392b' stroke-width='1' stroke-opacity='0.08'%3E%3Cpath d='M14 24L0 16L0 0L14 -8L28 0L28 16L14 24L14 48'/%3E%3Cpath d='M14 0L14 16L0 24L0 40L14 48L28 40L28 24L14 16'/%3E%3Cpath d='M70 24L56 16L56 0L70 -8L84 0L84 16L70 24L70 48'/%3E%3C/g%3E%3C/svg%3E");
+}
+body.theme-daylight .auth-logo{color:#0e1418;}
+body.theme-daylight .auth-logo span{color:var(--red);}
+body.theme-daylight .auth-tagline{color:#888;}
+body.theme-daylight .auth-btn-google{
+  background:#ffffff;
+  border:1px solid #d0ccc0;
+  color:#0e1418;
+}
+body.theme-daylight .auth-btn-google:hover{
+  background:#f5f3ee;
+  border-color:#888;
+}
+body.theme-daylight .auth-divider{color:#888;}
+body.theme-daylight .auth-divider::before,
+body.theme-daylight .auth-divider::after{background:#e0dcd0;}
+body.theme-daylight #auth-email-form input,
+body.theme-daylight #auth-signup-fields input{
+  background:#ffffff;
+  border:1px solid #d0ccc0;
+  color:#0e1418;
+}
+body.theme-daylight #auth-email-form input:focus,
+body.theme-daylight #auth-signup-fields input:focus{
+  border-color:var(--red);
+  box-shadow:0 0 0 1px var(--red);
+}
+body.theme-daylight .auth-stay,
+body.theme-daylight .auth-checkbox-row{color:#666;}
+body.theme-daylight .auth-disclaimer{
+  background:#f5f3ee;
+  border-left-color:#d0ccc0;
+  color:#666;
+}
+body.theme-daylight .auth-btn-primary{background:var(--red);color:#ffffff;}
+body.theme-daylight .auth-btn-primary:hover{background:#a02525;}
+body.theme-daylight .auth-btn-secondary{
+  background:none;border-color:#d0ccc0;color:#666;
+}
+body.theme-daylight .auth-btn-secondary:hover{border-color:#888;color:#0e1418;}
+body.theme-daylight .auth-footer a{color:#888;}
+body.theme-daylight .auth-footer a:hover{color:var(--red);}
+
+body.theme-daylight .weight-banner{
+  background:#ffffff;
+  border-bottom:1px solid #e0dcd0;
+}
+body.theme-daylight .weight-banner-label{color:#666;}
+body.theme-daylight .weight-input{
+  background:#ffffff;
+  border:1px solid #d0ccc0;
+  color:#0e1418;
+}
+body.theme-daylight .weight-input:focus{
+  border-color:var(--red);
+  box-shadow:0 0 0 2px rgba(192,57,43,0.15);
+}
+body.theme-daylight .weight-log-btn{
+  background:#ffffff;
+  border:1px solid #d0ccc0;
+  color:#666;
+}
+body.theme-daylight .weight-log-btn:hover{
+  border-color:var(--green-bright);
+  color:var(--green-bright);
+}
+body.theme-daylight .weight-today{color:var(--red);}
+
+body.theme-daylight .section-title,
+body.theme-daylight .chain-intro-title{
+  color:#0e1418;
+  font-family:var(--display);
+  font-weight:700;
+}
+body.theme-daylight .section-sub,
+body.theme-daylight .chain-intro-sub{color:#888;}
+
+body.theme-daylight .stat-box{
+  background:#ffffff;
+  border:1px solid #e0dcd0;
+}
+body.theme-daylight .stat-num{color:var(--red);font-family:var(--display);}
+body.theme-daylight .stat-desc{color:#666;}
+
+body.theme-daylight .pr-card{
+  background:#ffffff;
+  border:1px solid #e0dcd0;
+}
+body.theme-daylight .pr-value{color:var(--red);font-weight:700;}
+
+body.theme-daylight .hist-entry{
+  background:#ffffff;
+  border-left:2px solid var(--red);
+}
+body.theme-daylight .hist-date{color:#0e1418;font-weight:600;}
+body.theme-daylight .hist-pass{color:var(--red);font-weight:600;}
+body.theme-daylight .hist-ex strong{color:#0e1418;}
+body.theme-daylight .hist-set{color:#666;}
+
+body.theme-daylight .toast{
+  background:#ffffff;
+  border:1px solid var(--red);
+  color:var(--red);
+  box-shadow:0 4px 16px rgba(0,0,0,0.1);
+}
+
+body.theme-daylight::-webkit-scrollbar-track{background:#f0eee8;}
+body.theme-daylight::-webkit-scrollbar-thumb{background:#c0c0b8;}
+
+body.theme-daylight .app-modal-card{
+  background:#ffffff;
+  border-color:var(--red);
+  color:#0e1418;
+}
+body.theme-daylight .app-modal-title{color:#0e1418;}
+body.theme-daylight .app-modal-body{color:#666;}
+body.theme-daylight .app-modal-input,
+body.theme-daylight .app-modal-select{
+  background:#ffffff;
+  border-color:#d0ccc0;
+  color:#0e1418;
+}
+body.theme-daylight .app-modal-btn{
+  background:#ffffff;
+  border-color:#d0ccc0;
+  color:#666;
+}
+body.theme-daylight .app-modal-btn:hover{
+  border-color:#888;color:#0e1418;
+}
+body.theme-daylight .app-modal-btn-primary{
+  background:var(--red);
+  border-color:var(--red);
+  color:#ffffff;
+}
+body.theme-daylight .app-modal-btn-primary:hover{background:#a02525;}
+body.theme-daylight .app-modal-btn-danger{
+  background:#ffffff;
+  border-color:var(--red);
+  color:var(--red);
+}
+body.theme-daylight .app-modal-btn-danger:hover{
+  background:var(--red);
+  color:#ffffff;
+}
+
+
 </style>
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -2248,7 +2667,7 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.2.1 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.4.0 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -2429,6 +2848,7 @@ function ensureStateDefaults(){
   if(typeof state.onboardingDone !== 'boolean') state.onboardingDone = false;
   if(!state.theme) state.theme = 'iron';
   if(!state.exerciseTagOverrides) state.exerciseTagOverrides = {};
+  if(!state.removedExercises) state.removedExercises = {};
   if(typeof state.updatedAt !== 'number') state.updatedAt = 0;
   if(!Array.isArray(state.customExercises)) state.customExercises = [];
   if(!state.appVersion) state.appVersion = APP_VERSION;
@@ -2461,7 +2881,8 @@ function freshState(){
     timerDefault:120, timerEnabled:false, exerciseNotes:{},
     onboardingDone:false, theme:'iron',
     exerciseTagOverrides:{}, updatedAt:0,
-    customExercises:[], appVersion:APP_VERSION
+    customExercises:[], appVersion:APP_VERSION,
+    removedExercises:{}
   };
 }
 
@@ -2716,7 +3137,15 @@ const BASE_PASSES=[
 function buildEffectiveChain(passOrder, restSlots){
   const po = passOrder || DEFAULT_PASS_ORDER;
   const rs = restSlots || DEFAULT_REST_SLOTS;
-  const passes = po.map(id => BASE_PASSES.find(p => p.id === id)).filter(Boolean);
+  const removed = state.removedExercises || {};
+  const passes = po.map(id => {
+    const base = BASE_PASSES.find(p => p.id === id);
+    if(!base) return null;
+    // Filter out removed exercises for this pass
+    const removedIds = removed[id] || [];
+    if(removedIds.length === 0) return base;
+    return {...base, exercises: base.exercises.filter(e => !removedIds.includes(e.id))};
+  }).filter(Boolean);
   // Insert rest days at specified positions
   // Sort slots descending to insert from end without shifting earlier indices
   const sortedSlots = [...new Set(rs)].sort((a,b)=>b-a);
@@ -2747,14 +3176,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.2.1';
+const APP_VERSION = '2.4.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.2.1'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.4.0'};
 state.cycles=[newCycle()];
 
 
@@ -2790,6 +3219,19 @@ function deleteCustomExercise(id){
     state.permanentSwaps[passKey] = list.filter(s=>s.toId!==id);
   });
   save();
+}
+
+// Modal-based confirm for deleting custom exercise (replaces inline confirm())
+async function confirmDeleteCustomEx(id, name){
+  const ok = await askModalConfirm('Delete custom exercise?', 
+    `"${name}" will be removed. Existing log entries are kept, but you cannot add it to new sessions.`, {
+    confirmLabel: 'Delete',
+    danger: true
+  });
+  if(ok){
+    deleteCustomExercise(id);
+    renderData();
+  }
 }
 
 // ── DATA MIGRATION: Rename split exercises (runs once per load) ──
@@ -3201,6 +3643,7 @@ function renderChain(){
 
                 <button onclick="toggleNote('${ex.id}');closeEditMenu('${ex.id}')" style="color:var(--gold)">📝 Note</button>
                 <button onclick="toggleTagEditor('${ex.id}');closeEditMenu('${ex.id}')">🏷 Tags</button>
+                <button onclick="removeExerciseFromPass('${ex.id}','${passId}');closeEditMenu('${ex.id}')" style="color:#c06060">Remove</button>
               </div>
             </div>`;
           }
@@ -3372,6 +3815,23 @@ function renderChain(){
         html+=`</div>`;
       });
 
+      // Removed exercises (offer to restore)
+      const removedIds = state.removedExercises?.[passId] || [];
+      if(removedIds.length > 0){
+        const baseEx = BASE_PASSES.find(p => p.id === passId)?.exercises || [];
+        const removedItems = removedIds.map(id => baseEx.find(e => e.id === id)).filter(Boolean);
+        if(removedItems.length > 0){
+          html += `<div style="padding:10px 14px 4px;margin-top:6px;border-top:1px dashed #2a2a2a;font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;">Removed</div>`;
+          removedItems.forEach(ex => {
+            const name = state.exerciseOverrides?.[ex.id] || ex.name;
+            html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;font-family:var(--sans);">
+              <span style="color:#666;font-size:.78rem;text-decoration:line-through;">${name}</span>
+              <button onclick="addExerciseToPass('${ex.id}','${passId}')" style="background:none;border:1px solid #3a3a3a;color:#888;font-family:var(--mono);font-size:.5rem;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">+ Restore</button>
+            </div>`;
+          });
+        }
+      }
+
       // Extras
       extras.forEach((ex,i)=>{
       const exSaved=ex.saved&&!ex.editing;
@@ -3430,7 +3890,7 @@ function buildReorderUI(effectiveChain){
 
   let html=`<div id="reorder-panel" style="display:none;border:1px solid #2a2a2a;margin:0 11px 8px;padding:12px;max-width:560px;margin-left:auto;margin-right:auto;">
     <div style="font-family:var(--mono);font-size:.52rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Edit Chain Order</div>
-    <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);margin-bottom:10px;line-height:1.7;">On desktop: drag & drop. On mobile: <strong style='color:var(--white)'>hold & drag</strong> each pass to reorder.</div>
+    <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);margin-bottom:10px;line-height:1.7;">On desktop: drag & drop. On mobile: <strong style='color:var(--white)'>hold & drag</strong> each session to reorder.</div>
     <div id="reorder-list" style="margin-bottom:12px;">`;
 
   passOrder.forEach((pid,i)=>{
@@ -3588,8 +4048,12 @@ function addPassToChain(templateId){
   showToast('Session added to chain ✓');
 }
 
-function removePassFromChain(passId){
-  if(!confirm('Remove this pass from the chain?')) return;
+async function removePassFromChain(passId){
+  const ok = await askModalConfirm('Remove session?', 'This session will be removed from your chain. You can add it back later from the Edit menu.', {
+    confirmLabel: 'Remove',
+    danger: true
+  });
+  if(!ok) return;
   const order=[...(state.passOrder||DEFAULT_PASS_ORDER)];
   const idx=order.indexOf(passId);
   if(idx<0) return;
@@ -4286,6 +4750,48 @@ function skipExercise(passId,exId){
   save();rerenderPass(passId);
 }
 function unskipExercise(passId,exId){ensureDraft(passId);delete state.draft.savedExercises[exId];save();rerenderPass(passId);}
+
+// Permanently remove an exercise from a pass — survives across sessions
+async function removeExerciseFromPass(exId, passId){
+  // Get exercise name for confirmation
+  const base = BASE_PASSES.find(p => p.id === passId);
+  const ex = base?.exercises.find(e => e.id === exId);
+  const exName = state.exerciseOverrides?.[exId] || ex?.name || 'this exercise';
+  
+  const ok = await askModalConfirm('Remove exercise?',
+    `<strong>${exName}</strong> will be removed from this session permanently. You can add it back later from the Edit menu. Existing log history is kept.`,
+    { confirmLabel: 'Remove', danger: true }
+  );
+  if(!ok) return;
+  
+  if(!state.removedExercises) state.removedExercises = {};
+  if(!state.removedExercises[passId]) state.removedExercises[passId] = [];
+  if(!state.removedExercises[passId].includes(exId)){
+    state.removedExercises[passId].push(exId);
+  }
+  
+  // Also clean up any draft state for this exercise so the UI updates properly
+  if(state.draft && state.draft.passId === passId){
+    delete state.draft.savedExercises[exId];
+    if(state.draft.extraSets) delete state.draft.extraSets[exId];
+    if(state.draft.inputBuffer) delete state.draft.inputBuffer[exId];
+    if(state.draft.swaps) delete state.draft.swaps[exId];
+  }
+  
+  save();
+  rerenderPass(passId);
+  showToast('Exercise removed');
+}
+
+// Add a previously-removed exercise back to a pass
+function addExerciseToPass(exId, passId){
+  if(!state.removedExercises || !state.removedExercises[passId]) return;
+  state.removedExercises[passId] = state.removedExercises[passId].filter(id => id !== exId);
+  if(state.removedExercises[passId].length === 0) delete state.removedExercises[passId];
+  save();
+  rerenderPass(passId);
+  showToast('Exercise restored');
+}
 function saveExtra(passId,idx){
   ensureDraft(passId);
   const ex=state.draft.extras[idx];
@@ -4420,17 +4926,35 @@ function removeExtraSet(exId,idx,passId){
 
 // ── SWAP / ADD ────────────────────────────────────────────────
 function toggleSwap(exId,passId,mode){const wrap=document.getElementById('swapwrap-'+exId);const lbl=document.getElementById('swaplabel-'+exId);if(!wrap)return;const open=wrap.style.display==='none';wrap.style.display=open?'block':'none';if(open&&lbl){wrap.dataset.mode=mode;lbl.textContent=mode==='perm'?'Permanent swap (replaces for '+currentUser.name+' always)':'Temporary swap (this session only)';lbl.style.color=mode==='perm'?'#b8922a':'#888';}}
-function doSwap(exId,val,passId){
+async function doSwap(exId,val,passId){
   if(!val) return;
   if(val==='__CUSTOM__'){
-    // Reset dropdown and prompt for name
+    // Reset dropdown and ask via modal
     const sel=document.getElementById('swap-'+exId);
     if(sel) sel.value='';
-    const name=prompt('Name your custom exercise:');
-    if(!name||!name.trim()) return;
-    const newId=addCustomExercise(name,{});
-    const finalName=state.customExercises.find(e=>e.id===newId)?.name||name;
-    // Continue swap with the new custom name
+    
+    const result = await askModalText('Add custom exercise', {
+      placeholder: 'e.g. Cable Lateral Raises',
+      maxLength: 60,
+      confirmLabel: 'Add',
+      selectLabel: 'Category',
+      selectOptions: [
+        {value:'Chest', label:'Chest'},
+        {value:'Back', label:'Back'},
+        {value:'Shoulders', label:'Shoulders'},
+        {value:'Arms', label:'Arms'},
+        {value:'Legs', label:'Legs'},
+        {value:'Traps', label:'Traps'},
+        {value:'Core', label:'Core'},
+        {value:'Cardio', label:'Cardio'},
+        {value:'Custom', label:'Custom (no category)'}
+      ],
+      selectDefault: 'Custom'
+    });
+    
+    if(!result || !result.text) return;
+    const newId=addCustomExercise(result.text, {cat: result.select});
+    const finalName=state.customExercises.find(e=>e.id===newId)?.name||result.text;
     val=finalName;
   }
   const wrap=document.getElementById('swapwrap-'+exId);
@@ -4592,13 +5116,15 @@ function deleteWeight(date){state.weightLog=state.weightLog.filter(e=>e.date!==d
 
 // ── THEMES ────────────────────────────────────────────────────
 const THEMES = [
-  {id:'iron',          name:'Iron',          desc:'Dark red on black · Bebas Neue · The original',        class:''},
-  {id:'nanosuit',      name:'Nanosuit',      desc:'Hexagonal · Morphing cyan · Adaptive armor',           class:'theme-nanosuit'},
-  {id:'nightcity',     name:'Night City',    desc:'Acid yellow + magenta · Orbitron · Cyberpunk homage',  class:'theme-nightcity'},
-  {id:'renaissance',   name:'Renaissance',   desc:'Burgundy + gold leaf · Playfair Display · Old world',  class:'theme-renaissance'},
-  {id:'arctic',        name:'Arctic Terminal',desc:'Electric cyan · Rajdhani · Cold precision',           class:'theme-arctic'},
-  {id:'ember',         name:'Ember',         desc:'Molten orange · Rajdhani · Industrial forge',          class:'theme-ember'},
-  {id:'void',          name:'Void',          desc:'Pure black & white · Playfair italic · Luxury minimal',class:'theme-void'},
+  // DARK
+  {id:'iron',          name:'Iron',          cat:'dark', desc:'Dark red on black · Bebas Neue · The original',        class:''},
+  {id:'nanosuit',      name:'Nanosuit',      cat:'dark', desc:'Hexagonal · Morphing cyan · Adaptive armor',           class:'theme-nanosuit'},
+  {id:'nightcity',     name:'Night City',    cat:'dark', desc:'Acid yellow + magenta · Orbitron · Cyberpunk homage',  class:'theme-nightcity'},
+  {id:'arctic',        name:'Arctic Terminal',cat:'dark',desc:'Electric cyan · Rajdhani · Cold precision',            class:'theme-arctic'},
+  {id:'ember',         name:'Ember',         cat:'dark', desc:'Molten orange · Rajdhani · Industrial forge',          class:'theme-ember'},
+  {id:'void',          name:'Void',          cat:'dark', desc:'Pure black & white · Playfair italic · Luxury minimal',class:'theme-void'},
+  // LIGHT
+  {id:'daylight',      name:'Daylight',      cat:'light', desc:'Clean white · Charcoal text · Bright sun-readable',   class:'theme-daylight'},
 ];
 
 function applyTheme(themeId){
@@ -4649,7 +5175,7 @@ function renderData(){
             <input type="text" value="${c.name.replace(/"/g,'&quot;')}" id="custName-${c.id}"
               style="flex:1;background:#111;border:1px solid #333;color:var(--white);font-family:var(--sans);font-size:.82rem;padding:5px 8px;"
               onblur="updateCustomExercise('${c.id}',{name:this.value});renderData();">
-            <button onclick="if(confirm('Delete this custom exercise?')){deleteCustomExercise('${c.id}');renderData();}"
+            <button onclick="confirmDeleteCustomEx('${c.id}','${c.name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')"
               style="background:none;border:1px solid #3a1a1a;color:#884444;font-family:var(--mono);font-size:.44rem;padding:4px 8px;cursor:pointer;text-transform:uppercase;">Delete</button>
           </div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;">
@@ -4665,8 +5191,23 @@ function renderData(){
       </div>`}
 
   <div class="section-sub">Theme</div>
+  <div style="font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Dark</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+    ${THEMES.filter(t=>t.cat==='dark').map(t=>{
+      const active = (state.theme||'iron')===t.id;
+      return `<button onclick="applyTheme('${t.id}');renderData();"
+        style="background:${active?'#1a0000':'none'};border:1px solid ${active?'var(--red)':'#333'};
+        color:${active?'var(--white)':'#888'};padding:10px 8px;cursor:pointer;text-align:left;
+        font-family:var(--mono);font-size:.48rem;letter-spacing:.04em;transition:all .2s;position:relative;">
+        <div style="font-family:var(--sans);font-size:.8rem;color:${active?'var(--white)':'#aaa'};margin-bottom:3px;">${t.name}</div>
+        <div style="font-size:.44rem;color:#666;line-height:1.4;">${t.desc}</div>
+        ${active?'<div style="position:absolute;top:6px;right:8px;color:var(--red);font-size:.6rem;">✓</div>':''}
+      </button>`;
+    }).join('')}
+  </div>
+  <div style="font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Light</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;">
-    ${THEMES.map(t=>{
+    ${THEMES.filter(t=>t.cat==='light').map(t=>{
       const active = (state.theme||'iron')===t.id;
       return `<button onclick="applyTheme('${t.id}');renderData();"
         style="background:${active?'#1a0000':'none'};border:1px solid ${active?'var(--red)':'#333'};
@@ -4752,7 +5293,17 @@ User: ${currentUser?.name || 'unknown'}
   window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
 }
 function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.cycles||!d.log)throw new Error('Invalid file');state=d;if(!state.unit)state.unit='kg';if(!state.exerciseOverrides)state.exerciseOverrides={};save();showToast('Data imported!');renderChain();}catch{showToast('Error: invalid file');}};reader.readAsText(file);}
-function resetAll(){if(!confirm('Reset ALL data for '+currentUser?.name+'? Cannot be undone.'))return;state={cycles:[newCycle()],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:state.passOrder,restSlots:state.restSlots,unit:state.unit||'kg',exerciseOverrides:{}};save();showToast('Data reset');renderChain();}
+async function resetAll(){
+  const ok = await askModalConfirm('Reset all data?',
+    `This will permanently erase all training data for <strong>${currentUser?.name || 'this account'}</strong> — sessions, weight logs, custom exercises, everything. This cannot be undone.`,
+    { confirmLabel: 'Yes, erase all', danger: true }
+  );
+  if(!ok) return;
+  state={cycles:[newCycle()],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:state.passOrder,restSlots:state.restSlots,unit:state.unit||'kg',exerciseOverrides:{}};
+  save();
+  showToast('Data reset');
+  renderChain();
+}
 
 // ── REST TIMER ────────────────────────────────────────────────
 let timerInterval=null;
@@ -4828,6 +5379,167 @@ function requestNotificationPermission(){
 // ── UTILS ─────────────────────────────────────────────────────
 function fmtDate(ts){return new Date(ts).toLocaleDateString('en-GB',{weekday:'short',month:'short',day:'numeric'});}
 function showToast(msg,duration){const t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),duration||2400);}
+
+// ══════════════════════════════════════════════════════════════
+// REUSABLE MODAL API
+// 
+// Returns Promise that resolves with user input or null if cancelled.
+// 
+// askModalText(title, label, options) → Promise<string|null>
+// askModalConfirm(title, body, options) → Promise<boolean>
+// closeModal() → void
+// ══════════════════════════════════════════════════════════════
+
+let __modalResolver = null;
+
+function closeModal(){
+  const m = document.getElementById('appModal');
+  if(m) m.style.display = 'none';
+  if(__modalResolver){
+    const r = __modalResolver;
+    __modalResolver = null;
+    r(null);  // null = cancelled
+  }
+}
+
+// Async text/select prompt
+function askModalText(title, opts = {}){
+  return new Promise(resolve => {
+    const m = document.getElementById('appModal');
+    const t = document.getElementById('appModalTitle');
+    const b = document.getElementById('appModalBody');
+    const a = document.getElementById('appModalActions');
+    if(!m || !t || !b || !a) return resolve(null);
+
+    t.textContent = title;
+    
+    let bodyHtml = '';
+    if(opts.body) bodyHtml += `<div>${opts.body}</div>`;
+    bodyHtml += `<input type="text" class="app-modal-input" id="appModalInput" 
+                  placeholder="${opts.placeholder || ''}" 
+                  value="${opts.defaultValue || ''}" 
+                  maxlength="${opts.maxLength || 60}">`;
+    
+    if(opts.selectOptions){
+      bodyHtml += `<label class="app-modal-label">${opts.selectLabel || 'Category'}</label>`;
+      bodyHtml += `<select class="app-modal-select" id="appModalSelect">`;
+      opts.selectOptions.forEach(o => {
+        const sel = o.value === opts.selectDefault ? ' selected' : '';
+        bodyHtml += `<option value="${o.value}"${sel}>${o.label}</option>`;
+      });
+      bodyHtml += `</select>`;
+    }
+    
+    bodyHtml += `<div class="app-modal-error" id="appModalError"></div>`;
+    b.innerHTML = bodyHtml;
+
+    a.innerHTML = `
+      <button class="app-modal-btn" onclick="closeModal()">Cancel</button>
+      <button class="app-modal-btn app-modal-btn-primary" id="appModalConfirm">${opts.confirmLabel || 'OK'}</button>
+    `;
+
+    m.style.display = 'flex';
+    
+    // Focus input after a small delay (let CSS animation start)
+    setTimeout(() => {
+      const inp = document.getElementById('appModalInput');
+      if(inp) inp.focus();
+    }, 50);
+
+    // Resolver — called by Confirm or Enter
+    const finish = () => {
+      const inp = document.getElementById('appModalInput');
+      const sel = document.getElementById('appModalSelect');
+      const errEl = document.getElementById('appModalError');
+      const value = inp ? inp.value.trim() : '';
+      
+      if(opts.required !== false && !value){
+        if(errEl) errEl.textContent = 'Please enter a name';
+        return;
+      }
+      
+      m.style.display = 'none';
+      __modalResolver = null;
+      resolve({
+        text: value,
+        select: sel ? sel.value : null
+      });
+    };
+    
+    __modalResolver = resolve;
+    
+    document.getElementById('appModalConfirm').onclick = finish;
+    
+    // Enter key submits
+    setTimeout(() => {
+      const inp = document.getElementById('appModalInput');
+      if(inp){
+        inp.onkeydown = (e) => {
+          if(e.key === 'Enter'){ e.preventDefault(); finish(); }
+          if(e.key === 'Escape'){ e.preventDefault(); closeModal(); }
+        };
+      }
+    }, 50);
+  });
+}
+
+// Async confirm dialog
+function askModalConfirm(title, body, opts = {}){
+  return new Promise(resolve => {
+    const m = document.getElementById('appModal');
+    const t = document.getElementById('appModalTitle');
+    const b = document.getElementById('appModalBody');
+    const a = document.getElementById('appModalActions');
+    if(!m || !t || !b || !a) return resolve(false);
+
+    t.textContent = title;
+    b.innerHTML = `<div>${body || ''}</div>`;
+    
+    const confirmClass = opts.danger ? 'app-modal-btn-danger' : 'app-modal-btn-primary';
+    a.innerHTML = `
+      <button class="app-modal-btn" id="appModalCancel">${opts.cancelLabel || 'Cancel'}</button>
+      <button class="app-modal-btn ${confirmClass}" id="appModalConfirm">${opts.confirmLabel || 'Confirm'}</button>
+    `;
+
+    m.style.display = 'flex';
+    
+    const cancel = () => {
+      m.style.display = 'none';
+      __modalResolver = null;
+      resolve(false);
+    };
+    const confirm = () => {
+      m.style.display = 'none';
+      __modalResolver = null;
+      resolve(true);
+    };
+    
+    __modalResolver = (val) => resolve(false);
+    
+    document.getElementById('appModalCancel').onclick = cancel;
+    document.getElementById('appModalConfirm').onclick = confirm;
+    
+    // Keyboard handlers
+    setTimeout(() => {
+      document.getElementById('appModalConfirm').focus();
+      const onKey = (e) => {
+        if(e.key === 'Escape'){ document.removeEventListener('keydown', onKey); cancel(); }
+        if(e.key === 'Enter' && document.activeElement?.id === 'appModalConfirm'){ 
+          document.removeEventListener('keydown', onKey); confirm(); 
+        }
+      };
+      document.addEventListener('keydown', onKey);
+    }, 50);
+  });
+}
+
+// Close on backdrop click
+document.addEventListener('click', (e) => {
+  if(e.target.classList?.contains('app-modal-backdrop')){
+    closeModal();
+  }
+});
+
 
 
 // ── VERSION COMPARISON ───────────────────────────────────────
@@ -4929,5 +5641,15 @@ window.addEventListener('beforeunload',()=>{
 });
 
 </script>
+<!-- Reusable modal — controlled by JS, theme-aware via CSS vars -->
+<div id="appModal" class="app-modal" style="display:none">
+  <div class="app-modal-backdrop"></div>
+  <div class="app-modal-card">
+    <div class="app-modal-title" id="appModalTitle"></div>
+    <div class="app-modal-body" id="appModalBody"></div>
+    <div class="app-modal-actions" id="appModalActions"></div>
+  </div>
+</div>
+
 </body>
 </html>
