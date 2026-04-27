@@ -1053,9 +1053,9 @@ body.theme-arctic .section-title{font-family:'Rajdhani',sans-serif;font-weight:7
 
 /* ─────────────────────────────────────────────────────────────
    4. EMBER — Industrial forge
-   Font: Rajdhani (heavy), Space Grotesk (body)
-   Palette: Charcoal black, molten orange, deep red
-   Texture: Subtle noise / grit
+   Font: Rajdhani (heavy display), Space Grotesk (body), DM Mono (data)
+   Palette: Charcoal black, molten orange, ember red, brass yellow
+   Atmosphere: Hot metal, glowing forges, dim industrial spaces
 ───────────────────────────────────────────────────────────── */
 body.theme-ember{
   --black:#0c0600;--white:#ffe8cc;--red:#ff6a00;
@@ -1064,33 +1064,530 @@ body.theme-ember{
   --display:'Rajdhani',sans-serif;
   --sans:'Space Grotesk',sans-serif;
   --mono:'DM Mono',monospace;
+  background-color:#0c0600;
+  background-image:
+    /* Glowing forge from below — slow ember pulse */
+    radial-gradient(ellipse 90% 50% at 50% 100%,rgba(255,106,0,0.18) 0%,transparent 60%),
+    /* Secondary glow upper-left */
+    radial-gradient(ellipse 50% 40% at 0% 30%,rgba(204,51,0,0.08) 0%,transparent 70%),
+    /* Subtle vertical gradient — heat rising */
+    linear-gradient(180deg,#0c0600 0%,#0a0400 70%,#100800 100%);
+  background-attachment:fixed;
 }
+
+/* Floating ember particles drifting upward — purely decorative, very subtle */
+body.theme-ember::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+  background-image:
+    radial-gradient(2px 2px at 12% 80%,rgba(255,106,0,0.4) 50%,transparent 100%),
+    radial-gradient(1px 1px at 28% 65%,rgba(255,200,80,0.3) 50%,transparent 100%),
+    radial-gradient(2px 1px at 67% 75%,rgba(255,80,20,0.35) 50%,transparent 100%),
+    radial-gradient(1px 2px at 88% 55%,rgba(255,180,60,0.3) 50%,transparent 100%),
+    radial-gradient(1px 1px at 45% 90%,rgba(255,140,40,0.4) 50%,transparent 100%);
+  background-size:100% 200%;
+  animation:ember-drift 18s linear infinite;
+  opacity:0.7;
+}
+@keyframes ember-drift{
+  0%{background-position:0% 100%;}
+  100%{background-position:0% -100%;}
+}
+
+/* HEADER — burnished metal with ember-glow underline */
 body.theme-ember header{
-  background:#0c0600;
-  border-bottom:2px solid #ff6a00;
-  box-shadow:0 2px 20px rgba(255,106,0,.2);
+  background:linear-gradient(180deg,#150900 0%,#0c0600 100%);
+  border-bottom:none;
+  box-shadow:0 2px 0 rgba(255,106,0,0.6),0 4px 24px rgba(255,106,0,0.15);
+  position:relative;
 }
-body.theme-ember .logo{font-family:'Rajdhani',sans-serif;font-weight:900;letter-spacing:.15em;}
-body.theme-ember .logo span{color:var(--red);}
-body.theme-ember nav{border-top:2px solid #2a1800;background:#0c0600;}
-body.theme-ember nav button.active{border-top-color:var(--red);color:var(--red);}
-body.theme-ember .pass-card{border-color:#2a1800;}
-body.theme-ember .pass-card.next-up{border-color:var(--red);box-shadow:0 0 15px rgba(255,106,0,.25);}
-body.theme-ember .pass-card.next-up::before{background:var(--red);color:#0c0600;}
-body.theme-ember .pass-letter{font-family:'Rajdhani',sans-serif;font-weight:900;color:var(--red);}
-body.theme-ember .pass-name{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.08em;}
-body.theme-ember .chain-fill{background:linear-gradient(90deg,#cc3300,#ff6a00,#ffcc00);}
-body.theme-ember .chain-bar{background:#1a0c00;}
-body.theme-ember .btn-primary{background:var(--red);color:#0c0600;font-family:'Rajdhani',sans-serif;font-weight:700;}
-body.theme-ember .btn-primary:hover{background:#e05500;}
-body.theme-ember .ex-btn-done{background:#1a0e00;border-color:#a0cc40;color:#a0cc40;}
-body.theme-ember .set-input{background:#080400;border-color:#2a1800;}
-body.theme-ember .set-input:focus{border-color:var(--red);box-shadow:0 0 8px rgba(255,106,0,.3);}
+body.theme-ember header::after{
+  content:'';position:absolute;left:0;right:0;bottom:-2px;height:1px;
+  background:linear-gradient(90deg,transparent 0%,#ff6a00 30%,#ffcc00 50%,#ff6a00 70%,transparent 100%);
+  filter:blur(0.5px);
+  animation:ember-pulse 4s ease-in-out infinite;
+}
+@keyframes ember-pulse{
+  0%,100%{opacity:0.7;}
+  50%{opacity:1;filter:blur(1px);}
+}
+
+/* LOGO — heated steel with glow */
+body.theme-ember .logo{
+  font-family:'Rajdhani',sans-serif;
+  font-weight:900;
+  letter-spacing:.15em;
+  color:var(--white);
+  text-shadow:0 0 12px rgba(255,232,204,0.3);
+}
+body.theme-ember .logo span{
+  color:var(--red);
+  text-shadow:
+    0 0 8px rgba(255,106,0,0.8),
+    0 0 16px rgba(255,106,0,0.5),
+    0 0 24px rgba(255,106,0,0.3);
+  animation:logo-heat 5s ease-in-out infinite;
+}
+@keyframes logo-heat{
+  0%,100%{
+    text-shadow:0 0 8px rgba(255,106,0,0.8),0 0 16px rgba(255,106,0,0.5),0 0 24px rgba(255,106,0,0.3);
+  }
+  50%{
+    text-shadow:0 0 10px rgba(255,140,30,0.9),0 0 20px rgba(255,140,30,0.6),0 0 32px rgba(255,200,80,0.4);
+  }
+}
+body.theme-ember .header-user strong{
+  color:var(--gold);
+  text-shadow:0 0 6px rgba(255,204,0,0.4);
+}
+
+/* SYNC DOT — ember glow when active */
+body.theme-ember .sync-dot.ok{
+  background:#a0cc40;
+  box-shadow:0 0 8px #a0cc40,0 0 16px rgba(160,204,64,0.4);
+}
+body.theme-ember .sync-dot.syncing{
+  background:var(--red);
+  box-shadow:0 0 8px var(--red),0 0 16px rgba(255,106,0,0.5);
+  animation:ember-pulse 1s ease-in-out infinite;
+}
+
+/* BOTTOM NAV */
+body.theme-ember nav{
+  background:linear-gradient(0deg,#0c0600 0%,#150900 100%);
+  border-top:none;
+  box-shadow:0 -2px 0 rgba(255,106,0,0.4);
+  position:relative;
+}
+body.theme-ember nav::before{
+  content:'';position:absolute;left:0;right:0;top:-1px;height:1px;
+  background:linear-gradient(90deg,transparent 0%,#ff6a00 50%,transparent 100%);
+  filter:blur(0.5px);
+  opacity:0.6;
+}
+body.theme-ember nav button{
+  font-family:'Rajdhani',sans-serif;
+  font-weight:600;
+  letter-spacing:.18em;
+  color:#664422;
+  text-transform:uppercase;
+  font-size:.55rem;
+}
+body.theme-ember nav button.active{
+  border-top:2px solid var(--red);
+  color:var(--red);
+  background:linear-gradient(180deg,rgba(255,106,0,0.15) 0%,transparent 70%);
+  text-shadow:0 0 8px rgba(255,106,0,0.6);
+}
+
+/* PASS CARDS — dark steel plates */
+body.theme-ember .pass-card{
+  background:linear-gradient(135deg,#150a02 0%,#0c0600 100%);
+  border:1px solid #2a1800;
+  position:relative;
+  margin-bottom:14px;
+}
+body.theme-ember .pass-card::after{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,transparent 0%,rgba(255,106,0,0.15) 50%,transparent 100%);
+  pointer-events:none;
+}
+
+/* NEXT UP — molten heat with pulsing ember glow */
+body.theme-ember .pass-card.next-up{
+  background:linear-gradient(135deg,#1f0c02 0%,#150700 100%);
+  border-color:var(--red);
+  animation:next-up-forge 3s ease-in-out infinite;
+}
+@keyframes next-up-forge{
+  0%,100%{
+    box-shadow:
+      0 0 16px rgba(255,106,0,0.3),
+      0 0 32px rgba(255,106,0,0.15),
+      inset 0 0 24px rgba(255,106,0,0.06);
+  }
+  50%{
+    box-shadow:
+      0 0 24px rgba(255,140,30,0.45),
+      0 0 48px rgba(255,140,30,0.2),
+      inset 0 0 32px rgba(255,140,30,0.1);
+  }
+}
+body.theme-ember .pass-card.next-up::before{
+  background:linear-gradient(135deg,var(--red) 0%,#cc3300 100%);
+  color:#0c0600;
+  font-family:'Rajdhani',sans-serif;
+  font-weight:900;
+  letter-spacing:.15em;
+  box-shadow:0 0 12px rgba(255,106,0,0.6);
+}
+body.theme-ember .pass-card.next-up::after{
+  background:linear-gradient(180deg,transparent 0%,#ff6a00 50%,transparent 100%);
+  filter:blur(0.5px);
+  width:3px;
+  opacity:1;
+}
+
+/* IN-PROGRESS — green ember (cooling lava) */
+body.theme-ember .pass-card.in-progress{
+  border-color:#a0cc40;
+  box-shadow:0 0 16px rgba(160,204,64,0.2),inset 0 0 24px rgba(160,204,64,0.04);
+}
+body.theme-ember .pass-card.done{opacity:.45;filter:saturate(0.5);}
+
+/* PASS LETTER — heated metal (the big A/B/C...) */
+body.theme-ember .pass-letter{
+  font-family:'Rajdhani',sans-serif;
+  font-weight:900;
+  color:var(--red);
+  text-shadow:
+    0 0 4px rgba(255,106,0,1),
+    0 0 12px rgba(255,106,0,0.6),
+    0 0 24px rgba(255,140,30,0.3);
+  font-size:2.4rem;
+}
+body.theme-ember .pass-card.next-up .pass-letter{
+  animation:letter-heat 3s ease-in-out infinite;
+}
+@keyframes letter-heat{
+  0%,100%{
+    text-shadow:0 0 4px rgba(255,106,0,1),0 0 12px rgba(255,106,0,0.6),0 0 24px rgba(255,140,30,0.3);
+    color:#ff6a00;
+  }
+  50%{
+    text-shadow:0 0 6px rgba(255,180,60,1),0 0 16px rgba(255,180,60,0.7),0 0 32px rgba(255,200,80,0.4);
+    color:#ff8c1a;
+  }
+}
+body.theme-ember .pass-name{
+  font-family:'Rajdhani',sans-serif;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--white);
+}
+body.theme-ember .pass-preview{
+  font-family:'DM Mono',monospace;
+  color:var(--gray-light);
+  font-size:.55rem;
+}
+
+/* CHAIN PROGRESS — molten metal flowing */
+body.theme-ember .chain-bar{
+  background:#1a0c00;
+  position:relative;
+  overflow:hidden;
+}
+body.theme-ember .chain-fill{
+  background:linear-gradient(90deg,#cc3300 0%,#ff6a00 30%,#ffcc00 60%,#ff6a00 80%,#cc3300 100%);
+  background-size:200% 100%;
+  animation:molten-flow 4s linear infinite;
+  box-shadow:0 0 12px rgba(255,106,0,0.6);
+}
+@keyframes molten-flow{
+  0%{background-position:0% 50%;}
+  100%{background-position:200% 50%;}
+}
+
+/* PRIMARY BUTTON — glowing furnace switch */
+body.theme-ember .btn-primary{
+  background:linear-gradient(180deg,#ff8c1a 0%,#cc3300 100%);
+  color:#0c0600;
+  font-family:'Rajdhani',sans-serif;
+  font-weight:900;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  border:none;
+  text-shadow:0 1px 0 rgba(255,255,255,0.2);
+  box-shadow:0 0 12px rgba(255,106,0,0.4),inset 0 1px 0 rgba(255,200,100,0.4);
+  transition:all .2s;
+}
+body.theme-ember .btn-primary:hover{
+  background:linear-gradient(180deg,#ffaa40 0%,#ff5500 100%);
+  box-shadow:0 0 20px rgba(255,106,0,0.7),inset 0 1px 0 rgba(255,220,120,0.5);
+  transform:translateY(-1px);
+}
+
+/* DONE / SKIP / EDIT BUTTONS */
+body.theme-ember .ex-btn-done{
+  background:linear-gradient(180deg,#1a0e00 0%,#0c0600 100%);
+  border:1px solid #a0cc40;
+  color:#a0cc40;
+  font-family:'Rajdhani',sans-serif;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  text-shadow:0 0 6px rgba(160,204,64,0.5);
+  box-shadow:inset 0 0 8px rgba(160,204,64,0.08);
+  transition:all .2s;
+}
+body.theme-ember .ex-btn-done:hover{
+  background:linear-gradient(180deg,#1f1500 0%,#150700 100%);
+  box-shadow:inset 0 0 12px rgba(160,204,64,0.15),0 0 8px rgba(160,204,64,0.3);
+}
+body.theme-ember .ex-btn-skip{
+  border-color:#cc3300;
+  color:#ff6a00;
+  text-shadow:0 0 6px rgba(255,106,0,0.4);
+}
+body.theme-ember .ex-btn-edit{
+  border-color:#3a1800;
+  color:#aa7040;
+}
+body.theme-ember .ex-saved-badge{
+  color:#a0cc40;
+  text-shadow:0 0 6px rgba(160,204,64,0.6);
+}
+
+/* SET INPUTS — dark metal panels with ember focus */
+body.theme-ember .set-input{
+  background:#080400;
+  border:1px solid #2a1800;
+  color:var(--red);
+  font-family:'DM Mono',monospace;
+  font-weight:700;
+  text-shadow:0 0 4px rgba(255,106,0,0.4);
+}
+body.theme-ember .set-input:focus{
+  border-color:var(--red);
+  box-shadow:
+    inset 0 0 8px rgba(255,106,0,0.15),
+    0 0 12px rgba(255,106,0,0.5),
+    0 0 24px rgba(255,140,30,0.2);
+  outline:none;
+}
 body.theme-ember .set-input.work-set{border-color:#3a1800;}
-body.theme-ember .user-screen{background:radial-gradient(ellipse at bottom,#2a1000 0%,#0c0600 60%);}
-body.theme-ember .user-logo{text-shadow:0 0 40px rgba(255,106,0,.4);}
-body.theme-ember .weight-banner{background:#080400;}
-body.theme-ember .ex-tag.ramp{border-color:#aa4400;background:#1a0800;color:#ff8844;}
+body.theme-ember .set-input.warmup{border-color:#1a0c00;color:var(--gray-light);}
+body.theme-ember .set-unit{
+  color:var(--gold);
+  font-family:'DM Mono',monospace;
+  text-shadow:0 0 4px rgba(255,204,0,0.4);
+}
+body.theme-ember .set-num{
+  color:#a0cc40;
+  font-family:'Rajdhani',sans-serif;
+  font-weight:700;
+  text-shadow:0 0 4px rgba(160,204,64,0.5);
+}
+body.theme-ember .sets-group-label{
+  font-family:'Rajdhani',sans-serif;
+  font-weight:700;
+  letter-spacing:.18em;
+  border-top:1px dashed #2a1800;
+  text-transform:uppercase;
+}
+body.theme-ember .sets-group-label.warmup-group{color:var(--gray-light);}
+body.theme-ember .sets-group-label.work-group{
+  color:var(--red);
+  text-shadow:0 0 6px rgba(255,106,0,0.4);
+}
+
+/* EXERCISE TAGS — branded metal stamps */
+body.theme-ember .ex-tag{
+  font-family:'Rajdhani',sans-serif;
+  font-weight:700;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+}
+body.theme-ember .ex-tag.ramp{
+  border-color:#aa4400;
+  background:linear-gradient(90deg,rgba(255,106,0,0.15),rgba(255,106,0,0.04));
+  color:#ff8844;
+  text-shadow:0 0 4px rgba(255,106,0,0.4);
+}
+body.theme-ember .ex-tag.bw{
+  border-color:#a0cc40;
+  background:linear-gradient(90deg,rgba(160,204,64,0.15),rgba(160,204,64,0.04));
+  color:#a0cc40;
+  text-shadow:0 0 4px rgba(160,204,64,0.4);
+}
+body.theme-ember .ex-tag.uni{
+  border-color:#ffcc00;
+  background:linear-gradient(90deg,rgba(255,204,0,0.15),rgba(255,204,0,0.04));
+  color:#ffcc00;
+  text-shadow:0 0 4px rgba(255,204,0,0.4);
+}
+
+/* EXERCISE NAME & DETAILS */
+body.theme-ember .ex-name{
+  font-family:'Rajdhani',sans-serif;
+  font-weight:700;
+  color:var(--white);
+  letter-spacing:.04em;
+}
+body.theme-ember .ex-detail{
+  font-family:'DM Mono',monospace;
+  color:var(--gray-light);
+  font-size:.55rem;
+}
+body.theme-ember .ex-prev .last-val{color:#a0cc40;text-shadow:0 0 4px rgba(160,204,64,0.4);}
+body.theme-ember .ex-prev .pr-val{
+  color:var(--gold);
+  text-shadow:0 0 6px rgba(255,204,0,0.5);
+}
+
+/* USER SELECT / AUTH SCREEN */
+body.theme-ember .user-screen,
+body.theme-ember #userScreen{
+  background:radial-gradient(ellipse 80% 60% at 50% 80%,#2a1000 0%,#0c0600 60%);
+}
+body.theme-ember .user-logo,
+body.theme-ember .auth-logo{
+  font-family:'Rajdhani',sans-serif;
+  text-shadow:
+    0 0 12px rgba(255,106,0,0.5),
+    0 0 30px rgba(255,106,0,0.3),
+    0 0 60px rgba(255,140,30,0.15);
+  animation:logo-heat 5s ease-in-out infinite;
+}
+body.theme-ember .user-tagline,
+body.theme-ember .auth-tagline{
+  color:#664422;
+  font-family:'DM Mono',monospace;
+}
+body.theme-ember .user-btn{
+  background:linear-gradient(135deg,#150a02 0%,#0c0600 100%);
+  border:1px solid #2a1800;
+  transition:all .25s;
+}
+body.theme-ember .user-btn:hover{
+  border-color:var(--red);
+  box-shadow:0 0 20px rgba(255,106,0,0.3),inset 0 0 24px rgba(255,106,0,0.05);
+  transform:translateY(-2px);
+}
+body.theme-ember .user-btn .user-initial{
+  color:var(--red);
+  font-family:'Rajdhani',sans-serif;
+  font-weight:900;
+  text-shadow:0 0 12px rgba(255,106,0,0.6);
+}
+
+/* WEIGHT BANNER — forge readout */
+body.theme-ember .weight-banner{
+  background:linear-gradient(180deg,#0a0400 0%,#080400 100%);
+  border-bottom:1px solid rgba(255,106,0,0.2);
+}
+body.theme-ember .weight-banner-label{
+  color:var(--gray-light);
+  font-family:'Rajdhani',sans-serif;
+  letter-spacing:.12em;
+}
+body.theme-ember .weight-input{
+  background:#050200;
+  border:1px solid #2a1800;
+  color:var(--red);
+  font-family:'DM Mono',monospace;
+  font-weight:700;
+  text-shadow:0 0 4px rgba(255,106,0,0.4);
+}
+body.theme-ember .weight-input:focus{
+  border-color:var(--red);
+  box-shadow:0 0 10px rgba(255,106,0,0.4);
+}
+body.theme-ember .weight-log-btn{
+  border:1px solid #aa4400;
+  color:var(--gray-light);
+  font-family:'Rajdhani',sans-serif;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+body.theme-ember .weight-log-btn:hover{
+  border-color:#a0cc40;
+  color:#a0cc40;
+  text-shadow:0 0 4px rgba(160,204,64,0.5);
+}
+body.theme-ember .weight-today{
+  color:var(--red);
+  font-family:'DM Mono',monospace;
+  text-shadow:0 0 4px rgba(255,106,0,0.4);
+}
+
+/* SECTION HEADERS */
+body.theme-ember .section-title,
+body.theme-ember .chain-intro-title{
+  font-family:'Rajdhani',sans-serif;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  text-shadow:0 0 8px rgba(255,106,0,0.2);
+}
+body.theme-ember .section-sub,
+body.theme-ember .chain-intro-sub{
+  color:var(--gray-light);
+  font-family:'Rajdhani',sans-serif;
+  font-weight:600;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+}
+
+/* STAT BOXES */
+body.theme-ember .stat-box{
+  background:linear-gradient(135deg,#150a02 0%,#0c0600 100%);
+  border:1px solid #2a1800;
+}
+body.theme-ember .stat-num{
+  color:var(--red);
+  font-family:'Rajdhani',sans-serif;
+  font-weight:900;
+  text-shadow:0 0 12px rgba(255,106,0,0.5);
+}
+body.theme-ember .stat-desc{
+  color:var(--gray-light);
+  font-family:'DM Mono',monospace;
+}
+
+/* PR CARDS */
+body.theme-ember .pr-card{
+  background:linear-gradient(135deg,#1a0a02 0%,#0c0600 100%);
+  border:1px solid rgba(255,204,0,0.3);
+}
+body.theme-ember .pr-value{
+  color:var(--gold);
+  font-family:'Rajdhani',sans-serif;
+  font-weight:900;
+  text-shadow:0 0 10px rgba(255,204,0,0.5);
+}
+
+/* HISTORY ENTRIES */
+body.theme-ember .hist-entry{
+  background:linear-gradient(90deg,#150a02 0%,#0c0600 100%);
+  border-left:2px solid var(--red);
+}
+body.theme-ember .hist-date{
+  font-family:'Rajdhani',sans-serif;
+  font-weight:700;
+  color:var(--white);
+}
+body.theme-ember .hist-pass{
+  color:var(--red);
+  font-family:'Rajdhani',sans-serif;
+  font-weight:700;
+  text-shadow:0 0 4px rgba(255,106,0,0.4);
+}
+
+/* SCROLLBAR */
+body.theme-ember::-webkit-scrollbar{width:8px;}
+body.theme-ember::-webkit-scrollbar-track{background:#0c0600;}
+body.theme-ember::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,#ff6a00 0%,#cc3300 100%);
+}
+body.theme-ember::-webkit-scrollbar-thumb:hover{
+  background:linear-gradient(180deg,#ff8c1a 0%,#ff5500 100%);
+}
+
+/* TOAST */
+body.theme-ember .toast{
+  background:linear-gradient(135deg,#150a02 0%,#0c0600 100%);
+  border:1px solid var(--red);
+  color:var(--red);
+  font-family:'Rajdhani',sans-serif;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  box-shadow:0 0 20px rgba(255,106,0,0.3);
+  text-shadow:0 0 4px rgba(255,106,0,0.5);
+}
+
 
 /* ─────────────────────────────────────────────────────────────
    5. VOID — Luxury minimal
@@ -1751,7 +2248,7 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.0.7 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.1.0 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -1869,25 +2366,36 @@ async function loadStateForUser(){
       state = freshState();
     }
   } else {
-    // No local — try cloud, but with a 4s timeout so we never hang.
-    // If offline (e.g. cache cleared in a bunker gym), fall back to fresh state.
+    // No local data — must reach cloud to know if user has existing data.
+    // 4s timeout prevents indefinite hang.
+    let cloudReached = false;
     try{
       const cloudPromise = sbGet('app_state','id=eq.'+currentUser.id+'&select=data,updated_at');
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('cloud timeout')), 4000)
       );
       const rows = await Promise.race([cloudPromise, timeoutPromise]);
+      cloudReached = true;
       if(rows && rows.length && rows[0].data && rows[0].data.cycles){
         state = rows[0].data;
         ensureStateDefaults && ensureStateDefaults();
         localStorage.setItem(lsKey(currentUser.id), JSON.stringify(state));
         showToast && showToast('Restored from cloud ✓');
       } else {
+        // Cloud reachable but no data → genuinely first-time user
         state = freshState();
       }
     }catch(e){
-      // Offline or cloud error — start fresh, sync will catch up later
+      // OFFLINE — we cannot tell if user has existing data.
+      // Show a fresh state but DO NOT mark it complete; pushState's
+      // isFreshState guard will prevent corrupting cloud.
       state = freshState();
+      // Show a clear message so user knows what happened
+      setTimeout(()=>{
+        if(typeof showToast === 'function'){
+          showToast('Offline — your training data will load when you reconnect', 5000);
+        }
+      }, 500);
     }
   }
   // Restore pass name overrides into BASE_PASSES
@@ -1928,6 +2436,22 @@ function ensureStateDefaults(){
 }
 
 // Default state for a fresh user
+
+// Detect if state is a freshly initialized blank state (never used).
+// Used to prevent fresh/empty states from overwriting real data via sync.
+function isFreshState(s){
+  if(!s) return true;
+  // Real states have log entries, weight log entries, or cycle progress
+  const hasLog = Array.isArray(s.log) && s.log.length > 0;
+  const hasWeight = Array.isArray(s.weightLog) && s.weightLog.length > 0;
+  const hasProgress = s.cycles && s.cycles.some(c => c.done && Object.keys(c.done).length > 0);
+  const hasCustomEx = Array.isArray(s.customExercises) && s.customExercises.length > 0;
+  const hasOverrides = s.exerciseOverrides && Object.keys(s.exerciseOverrides).length > 0;
+  const hasSwaps = s.permanentSwaps && Object.keys(s.permanentSwaps).length > 0;
+  const completedOnboarding = s.onboardingDone === true;
+  return !hasLog && !hasWeight && !hasProgress && !hasCustomEx && !hasOverrides && !hasSwaps && !completedOnboarding;
+}
+
 function freshState(){
   return {
     cycles:[newCycle()],
@@ -2223,14 +2747,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.0.7';
+const APP_VERSION = '2.1.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.0.7'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.1.0'};
 state.cycles=[newCycle()];
 
 
@@ -2365,12 +2889,7 @@ function unitLabel(){return state.unit||'kg';}
 
 // ── USER SELECT: replaced by Supabase Auth ─────────────────────
 // (selectUser/switchUser removed — auth screen handles all login)
-
-function setUnit(unit, userId){
-  state.unit=unit;
-  save();
-  renderChain();
-}
+// (setUnit also removed — replaced by inline state.unit assignment)
 
 // Update the sync indicator in the header
 function setSyncDot(state){
@@ -2424,7 +2943,10 @@ async function syncFromCloud(userId){
           });
         }
         localStorage.setItem(lsKey(userId),JSON.stringify(state));
-        applyTheme(state.theme||'iron');
+        // CSS-only theme apply (no save side-effect, since state is fresh from cloud)
+        const theme = THEMES.find(t=>t.id===state.theme) || THEMES[0];
+        THEMES.forEach(t=>{ if(t.class) document.body.classList.remove(t.class); });
+        if(theme.class) document.body.classList.add(theme.class);
         renderChain();
         // Visible feedback that data was pulled — only when there's a meaningful delta
         const localSessionsBefore = (state.log || []).length;
@@ -2511,6 +3033,12 @@ async function checkCloudVersion(){
 }
 
 async function pushState(){
+  if(!currentUser) return;
+  // SAFETY: Never push a fresh/empty state — would overwrite real data on other devices
+  if(isFreshState(state)){
+    console.warn('Refusing to push fresh state to cloud (safety guard)');
+    return;
+  }
   setSyncDot('syncing');
   try{
     // Stamp current app version on every write so cloud knows which client wrote
@@ -3152,7 +3680,7 @@ function showOnboarding(userId, step, answers){
   obUserId = userId;
   if(answers) obAnswers = answers;
   const el = document.getElementById('view-chain');
-  const name = USERS[userId]?.name || userId;
+  const name = currentUser?.name || 'there';
   const a = obAnswers;
 
   if(step === 1){
@@ -3955,25 +4483,6 @@ function rerenderPass(passId){renderChain();setTimeout(()=>{const c=document.get
 function toggleCard(id){document.getElementById('card-'+id)?.classList.toggle('open');}
 
 // ── PR / BEST ─────────────────────────────────────────────────
-function getBest(exId,isBW,isTimed){
-  let best=null;
-  for(const entry of state.log){
-    const ex=entry.exercises?.find(e=>e.id===exId);
-    if(!ex||ex.skipped)continue;
-    for(const s of(ex.sets||[])){
-      if(s.warmup)continue; // only look at work sets for PR
-      if(isTimed){
-        if(!best||(s.secs||0)>(best.secs||0))best={...s};
-      }else if(isBW){
-        const t=(s.extra||0)+(s.bwSnap||0);
-        if(!best||t>((best.extra||0)+(best.bwSnap||0)))best={...s};
-      }else{
-        if(s.weight&&(!best||s.weight>best.weight||(s.weight===best.weight&&(s.reps||0)>(best.reps||0))))best={...s};
-      }
-    }
-  }
-  return best;
-}
 function getLastSession(exId, isBW, isTimed){
   // Find the exercise's current name (in any pass it appears in) for cross-pass matching
   // Same exercise can have different IDs (e.g. D1 Military Press vs L1 Military Press)
@@ -4184,6 +4693,13 @@ function renderData(){
     </div>
   </div>
 
+  <div class="section-sub">Feedback</div>
+  <div style="font-family:var(--mono);font-size:.58rem;color:var(--gray-light);line-height:1.8;margin-bottom:10px">Found a bug? Have a feature request? Open your email app with a pre-filled message including app version + your user ID for quick debugging.</div>
+  <div class="data-row" style="margin-bottom:18px;">
+    <button class="data-btn" onclick="reportBug()">🐛 Report a bug</button>
+    <button class="data-btn" onclick="sendFeedback()">💡 Send feedback</button>
+  </div>
+
   <div class="section-sub">Backup</div>
   <div style="font-family:var(--mono);font-size:.58rem;color:var(--gray-light);line-height:1.8;margin-bottom:10px">Export all data as JSON. Import to restore.</div>
   <div class="data-row"><button class="data-btn" onclick="exportData()">↓ Export JSON</button><button class="data-btn" onclick="document.getElementById('importFile').click()">↑ Import JSON</button></div>
@@ -4192,6 +4708,53 @@ function renderData(){
   <div class="data-row"><button class="data-btn danger" onclick="resetAll()">✕ Reset all data</button></div>`;
 }
 function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`thechain-${currentUser?.id}-${todayStr()}.json`;a.click();showToast('Export done!');}
+
+// ── FEEDBACK & BUG REPORTS ────────────────────────────────────
+const SUPPORT_EMAIL = 'oresonlig@gmail.com'; // TODO: change to support@thechain.training when SMTP is set up
+
+function reportBug(){
+  const subject = encodeURIComponent('[The Chain] Bug report');
+  const body = encodeURIComponent(
+`Describe what happened:
+
+
+Describe what you expected to happen:
+
+
+Steps to reproduce:
+1.
+2.
+3.
+
+
+─── Diagnostic info (do not edit) ───
+App version: ${APP_VERSION}
+User ID: ${currentUser?.id || 'not logged in'}
+User: ${currentUser?.name || 'unknown'}
+Theme: ${state?.theme || 'default'}
+Browser: ${navigator.userAgent}
+Time: ${new Date().toISOString()}
+Online: ${navigator.onLine}
+Sessions logged: ${(state?.log || []).length}
+Cycles: ${(state?.cycles || []).length}
+`);
+  window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
+}
+
+function sendFeedback(){
+  const subject = encodeURIComponent('[The Chain] Feedback');
+  const body = encodeURIComponent(
+`Your idea or feedback:
+
+
+
+
+─── Context (optional, helpful for prioritization) ───
+App version: ${APP_VERSION}
+User: ${currentUser?.name || 'unknown'}
+`);
+  window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
+}
 function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.cycles||!d.log)throw new Error('Invalid file');state=d;if(!state.unit)state.unit='kg';if(!state.exerciseOverrides)state.exerciseOverrides={};save();showToast('Data imported!');renderChain();}catch{showToast('Error: invalid file');}};reader.readAsText(file);}
 function resetAll(){if(!confirm('Reset ALL data for '+currentUser?.name+'? Cannot be undone.'))return;state={cycles:[newCycle()],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:state.passOrder,restSlots:state.restSlots,unit:state.unit||'kg',exerciseOverrides:{}};save();showToast('Data reset');renderChain();}
 
@@ -4330,28 +4893,43 @@ function startPeriodicSync(){
   }, 30000);
 }
 window.addEventListener('beforeunload',()=>{
-  if(currentUser){
-    // fetch with keepalive survives page close AND sends Supabase auth headers
-    // (sendBeacon can't set custom headers, so Supabase rejected it silently)
-    const payload=JSON.stringify({
-      id:currentUser.id,
-      data:state,
-      updated_at:new Date().toISOString()
-    });
-    try{
-      fetch(SB_URL+'/rest/v1/app_state',{
-        method:'POST',
-        headers:{
-          'apikey':SB_KEY,
-          'Authorization':'Bearer '+SB_KEY,
-          'Content-Type':'application/json',
-          'Prefer':'resolution=merge-duplicates'
-        },
-        body:payload,
-        keepalive:true
-      }).catch(()=>{});
-    }catch(e){/* best-effort */}
-  }
+  if(!currentUser) return;
+  // Try to get the active session token synchronously from Supabase client
+  // (it stores the session in localStorage as a known key)
+  let authToken = SB_KEY;
+  try{
+    // Supabase v2 stores session in localStorage with this key pattern
+    const lsKeys = Object.keys(localStorage);
+    const sbKey = lsKeys.find(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+    if(sbKey){
+      const session = JSON.parse(localStorage.getItem(sbKey));
+      if(session?.access_token) authToken = session.access_token;
+    }
+  }catch(e){ /* fall back to anon */ }
+  
+  // Skip push if state is fresh (safety guard)
+  if(typeof isFreshState === 'function' && isFreshState(state)) return;
+  
+  // fetch with keepalive survives page close AND sends auth headers
+  // (sendBeacon can't set custom headers, so Supabase rejected it silently)
+  const payload=JSON.stringify({
+    id:currentUser.id,
+    data:state,
+    updated_at:new Date().toISOString()
+  });
+  try{
+    fetch(SB_URL+'/rest/v1/app_state',{
+      method:'POST',
+      headers:{
+        'apikey':SB_KEY,
+        'Authorization':'Bearer '+authToken,
+        'Content-Type':'application/json',
+        'Prefer':'resolution=merge-duplicates'
+      },
+      body:payload,
+      keepalive:true
+    }).catch(()=>{});
+  }catch(e){/* best-effort */}
 });
 
 </script>
