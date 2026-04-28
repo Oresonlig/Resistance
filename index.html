@@ -292,7 +292,7 @@ canvas#weightChart{width:100%!important;display:block;}
 .data-btn:hover{border-color:#555;color:var(--white);}
 .data-btn.danger:hover{border-color:var(--red);color:var(--red);}
 .empty-state{text-align:center;padding:44px 16px;font-family:var(--mono);font-size:.6rem;color:#555;text-transform:uppercase;letter-spacing:.1em;line-height:2.2;}
-.rest-timer{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(120px);background:#0d1a0d;border:1px solid var(--green-bright);color:var(--green-bright);font-family:var(--display);font-size:2rem;letter-spacing:.1em;padding:10px 24px;transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:998;pointer-events:all;display:flex;align-items:center;gap:12px;white-space:nowrap;}
+.rest-timer{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom, 0px));left:50%;transform:translateX(-50%) translateY(120px);background:#0d1a0d;border:1px solid var(--green-bright);color:var(--green-bright);font-family:var(--display);font-size:2rem;letter-spacing:.1em;padding:10px 24px;transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:99;pointer-events:all;display:flex;align-items:center;gap:12px;white-space:nowrap;}
 .rest-timer.show{transform:translateX(-50%) translateY(0);}
 .rest-timer.warning{border-color:var(--gold);color:var(--gold);}
 .rest-timer.done{border-color:var(--red);color:var(--red);}
@@ -2596,8 +2596,55 @@ body.theme-daylight .app-modal-btn-danger:hover{
   color:#ffffff;
 }
 
+/* ── DONE PRIMARY BUTTON ─────────────────────────────────────*/
+.ex-done-primary{
+  width:100%;margin-top:10px;padding:14px;
+  background:var(--green-bright);border:none;
+  color:#0a0a0a;font-family:var(--display);
+  font-size:1.1rem;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,transform .1s;
+  min-height:52px;
+}
+.ex-done-primary:hover{background:#4aaa6a;transform:translateY(-1px);}
+.ex-done-primary:active{transform:translateY(0);}
+body.theme-daylight .ex-done-primary{color:#fff;}
 
-</style>
+ ────────────────────────────────
+   Safari zooms in when input font-size < 16px.
+   Override to 16px on all focusable inputs on iOS devices. */
+@supports (-webkit-touch-callout: none) {
+  input[type="text"],input[type="email"],input[type="password"],input[type="number"],select,textarea{
+    font-size:16px !important;
+  }
+}
+
+/* ── DAYLIGHT SELECT FIX ─────────────────────────────────────*/
+body.theme-daylight select,
+body.theme-daylight .swap-select,
+body.theme-daylight .app-modal-select{
+  background:#ffffff !important;
+  color:#0e1418 !important;
+  border-color:#d0ccc0 !important;
+}
+body.theme-daylight select option,
+body.theme-daylight .swap-select option{background:#ffffff;color:#0e1418;}
+body.theme-daylight select optgroup,
+body.theme-daylight .swap-select optgroup{background:#f5f3ee;color:#555;}
+
+/* ── DAYLIGHT DONE CARD ──────────────────────────────────────*/
+body.theme-daylight .pass-card.done{
+  background:#f0eeea !important;
+  border-color:#d8d4cc !important;
+  filter:saturate(0.5) !important;
+  opacity:1 !important;
+}
+body.theme-daylight .pass-card.done .pass-letter{color:#bbb !important;}
+body.theme-daylight .pass-card.done .pass-name{color:#999 !important;}
+body.theme-daylight .pass-card.done .pass-preview{color:#bbb !important;}
+
+
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
   const SB_URL = 'https://qjmjqideqrgozexudaqr.supabase.co'
@@ -2667,7 +2714,7 @@ body.theme-daylight .app-modal-btn-danger:hover{
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.4.0 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.6.0 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -2849,6 +2896,7 @@ function ensureStateDefaults(){
   if(!state.theme) state.theme = 'iron';
   if(!state.exerciseTagOverrides) state.exerciseTagOverrides = {};
   if(!state.removedExercises) state.removedExercises = {};
+  if(!state.weightStep) state.weightStep = 2.5;
   if(typeof state.updatedAt !== 'number') state.updatedAt = 0;
   if(!Array.isArray(state.customExercises)) state.customExercises = [];
   if(!state.appVersion) state.appVersion = APP_VERSION;
@@ -2882,7 +2930,7 @@ function freshState(){
     onboardingDone:false, theme:'iron',
     exerciseTagOverrides:{}, updatedAt:0,
     customExercises:[], appVersion:APP_VERSION,
-    removedExercises:{}
+    removedExercises:{}, weightStep:2.5
   };
 }
 
@@ -3176,14 +3224,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.4.0';
+const APP_VERSION = '2.6.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.4.0'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.6.0'};
 state.cycles=[newCycle()];
 
 
@@ -3631,16 +3679,16 @@ function renderChain(){
           html+=`<div class="ex-mini-btns">`;
           if(isSaved){
             html+=`<span class="ex-saved-badge">✓ Done</span>
-              <button class="ex-btn-edit" onclick="unsaveExercise('${passId}','${ex.id}')">Edit ▾</button>`;
+              <button class="ex-btn-edit" onclick="unsaveExercise('${passId}','${ex.id}')">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="margin-right:4px;vertical-align:middle;"><circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.4"/><path d="M6.5 1v1.2M6.5 10.8V12M1 6.5h1.2M10.8 6.5H12M2.4 2.4l.85.85M9.75 9.75l.85.85M2.4 10.6l.85-.85M9.75 3.25l.85-.85" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Edit ▾</button>`;
           }else{
-            html+=`<button class="ex-btn-done" onclick="saveExercise('${passId}','${ex.id}')">Done</button>`;
             html+=`<button class="ex-btn-skip" onclick="skipExercise('${passId}','${ex.id}')">Skip</button>`;
             html+=`<div class="ex-edit-dropdown" id="editdd-${ex.id}">
-              <button class="ex-btn-edit" onclick="toggleEditMenu('${ex.id}')">Edit ▾</button>
+              <button class="ex-btn-edit" onclick="toggleEditMenu('${ex.id}')">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="margin-right:4px;vertical-align:middle;"><circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.4"/><path d="M6.5 1v1.2M6.5 10.8V12M1 6.5h1.2M10.8 6.5H12M2.4 2.4l.85.85M9.75 9.75l.85.85M2.4 10.6l.85-.85M9.75 3.25l.85-.85" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Edit</button>
               <div class="ex-edit-menu" id="editmenu-${ex.id}">
                 <button onclick="toggleSwap('${ex.id}','${passId}','temp');closeEditMenu('${ex.id}')">Swap (session)</button>
                 <button onclick="toggleSwap('${ex.id}','${passId}','perm');closeEditMenu('${ex.id}')">Swap (always)</button>
-
                 <button onclick="toggleNote('${ex.id}');closeEditMenu('${ex.id}')" style="color:var(--gold)">📝 Note</button>
                 <button onclick="toggleTagEditor('${ex.id}');closeEditMenu('${ex.id}')">🏷 Tags</button>
                 <button onclick="removeExerciseFromPass('${ex.id}','${passId}');closeEditMenu('${ex.id}')" style="color:#c06060">Remove</button>
@@ -3765,12 +3813,16 @@ function renderChain(){
             const savedSet = savedData?.sets?.[origIdx] || null;
             // Use input buffer values if available (preserves unsaved inputs when adding sets)
             const bufVal = (!savedSet && state.draft?.inputBuffer?.[ex.id]?.[origIdx]) || null;
+            // Per-set logging state
+            const isLogged = !savedSet && !!(state.draft?.loggedSets?.[ex.id]?.[origIdx]);
+            // Apply logged-set CSS class to set-row
+            const loggedCls = isLogged ? ' set-logged' : '';
             const dis   = (isDone||isSaved) ? 'disabled' : '';
             const canDel = !isDone && !isSaved && rawSets.length > 1;
             if(isBW){
               const snapKg   = savedSet?.bwSnap || (todayWkg||0);
               const snapDisp = toDisplay(snapKg)||'?';
-              html+=`<div class="set-row bw-set">
+              html+=`<div class="set-row bw-set${loggedCls}">
                 <span class="set-num${warmup?' warmup-label':''}">${lbl}</span>
                 <div><input class="set-input${wCls}" type="number" id="bw-${ex.id}-${origIdx}" placeholder="0"
                   value="${savedSet?.extra!=null?toDisplay(savedSet.extra):bufVal?.extra!=null?toDisplay(bufVal.extra):''}"
@@ -3784,15 +3836,20 @@ function renderChain(){
                   <div class="set-unit forced-unit">+f</div></div>
                 ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${origIdx}" onclick="toggleSide('${ex.id}',${origIdx})" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
                 ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}',${origIdx},'${passId}')">✕</button>`:'<div></div>'}
+                ${(!isSaved&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${ex.id}',${origIdx},'${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn" onclick="logSet('${ex.id}',${origIdx},'${passId}',${warmup})">Log</button>`):''}
               </div>`;
             } else {
               const rowClass = isUni ? 'uni-set' : 'normal-set';
-              html+=`<div class="set-row ${rowClass}">
+              html+=`<div class="set-row ${rowClass}${loggedCls}">
                 <span class="set-num${warmup?' warmup-label':''}">${lbl}</span>
-                <div><input class="set-input${wCls}" type="number" id="w-${ex.id}-${origIdx}"
+                <div class="weight-stepper-wrap">
+                  ${(dis==='')?`<button class="step-btn" onclick="stepWeight('${ex.id}',${origIdx},-1)" tabindex="-1">−</button>`:''}
+                  <input class="set-input${wCls}" type="number" id="w-${ex.id}-${origIdx}"
                   placeholder="${placeholderW}" value="${savedSet?.weight!=null?toDisplay(savedSet.weight):bufVal?.weight!=null?toDisplay(bufVal.weight):''}"
                   min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis}>
-                  <div class="set-unit">${unitL}</div></div>
+                  ${(dis==='')?`<button class="step-btn" onclick="stepWeight('${ex.id}',${origIdx},1)" tabindex="-1">+</button>`:''}
+                </div>
+                <div class="set-unit" style="text-align:center;">${unitL}</div>
                 <div><input class="${'set-input'+wCls+(isTimed?' timed':'')}" type="number" id="r-${ex.id}-${origIdx}"
                   placeholder="${isTimed?(prev?.secs||'—'):(prev?.reps||'—')}" value="${isTimed?(savedSet?.secs||bufVal?.secs||''):(savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:'')}" min="1" ${isTimed?'max="3600"':'max="50"'} ${dis}>
                   <div class="set-unit${isTimed?' time-unit':''}">${isTimed?'sec':'reps'}</div></div>
@@ -3801,6 +3858,7 @@ function renderChain(){
                   <div class="set-unit forced-unit">+f</div></div>
                 ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${origIdx}" onclick="toggleSide('${ex.id}',${origIdx})" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
                 ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}',${origIdx},'${passId}')">✕</button>`:'<div></div>'}
+                ${(!isSaved&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${ex.id}',${origIdx},'${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn" onclick="logSet('${ex.id}',${origIdx},'${passId}',${warmup})">Log</button>`):''}
               </div>`;
             }
           }
@@ -3809,6 +3867,11 @@ function renderChain(){
             if(!isRampEx){
               html+=`<button class="add-set-btn" style="border-color:#1a1400;color:#3a2a00" onclick="addWarmupSet('${ex.id}','${passId}')">+ Warm-up</button>`;
             }
+            // Wide primary Done CTA — below sets, full width, unmissable
+            html+=`<button class="ex-done-primary" onclick="saveExercise('${passId}','${ex.id}')">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:6px;vertical-align:middle;"><path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Done
+            </button>`;
           }
           html+=`</div>`;
         }
@@ -4742,6 +4805,66 @@ function unsaveExercise(passId,exId){
   }
   save();rerenderPass(passId);
 }
+
+// ── PER-SET LOGGING ───────────────────────────────────────────
+// draft.loggedSets[exId][origIdx] = {weight, reps, secs, extra, bwSnap, forced, side}
+// Logging a set captures inputs and starts rest timer (work sets only)
+
+function logSet(exId, origIdx, passId, isWarmup){
+  if(!state.draft || state.draft.passId !== passId) ensureDraft(passId);
+  captureInputsToSetsBuffer(exId, passId);
+  
+  if(!state.draft.loggedSets) state.draft.loggedSets = {};
+  if(!state.draft.loggedSets[exId]) state.draft.loggedSets[exId] = {};
+  
+  // Read current values from buffer
+  const buf = state.draft.inputBuffer?.[exId]?.[origIdx] || {};
+  state.draft.loggedSets[exId][origIdx] = {...buf, warmup: !!isWarmup, origIdx};
+  
+  save();
+  rerenderPass(passId);
+  
+  // Start rest timer for work sets (not warmup), if timer is enabled
+  if(!isWarmup && state.timerEnabled){
+    startRestTimer(state.timerDefault || 120);
+  }
+}
+
+function unlogSet(exId, origIdx, passId){
+  if(!state.draft?.loggedSets?.[exId]) return;
+  delete state.draft.loggedSets[exId][origIdx];
+  if(Object.keys(state.draft.loggedSets[exId]).length === 0){
+    delete state.draft.loggedSets[exId];
+  }
+  save();
+  rerenderPass(passId);
+}
+
+
+// ── WEIGHT STEPPERS ───────────────────────────────────────────
+// weightStep is configurable per user (stored in state.weightStep)
+// Default 2.5 kg. Tap-and-hold eventually supported via press timer.
+
+function getWeightStep(){
+  return parseFloat(state.weightStep) || 2.5;
+}
+
+function stepWeight(exId, origIdx, delta){
+  const inp = document.getElementById('w-'+exId+'-'+origIdx);
+  if(!inp || inp.disabled) return;
+  const step = getWeightStep();
+  const current = parseFloat(inp.value) || 0;
+  const next = Math.max(0, Math.round((current + delta * step) * 100) / 100);
+  inp.value = next;
+  // Also update buffer so value isn't lost on rerender
+  if(!state.draft) return;
+  if(!state.draft.inputBuffer) state.draft.inputBuffer = {};
+  if(!state.draft.inputBuffer[exId]) state.draft.inputBuffer[exId] = [];
+  if(!state.draft.inputBuffer[exId][origIdx]) state.draft.inputBuffer[exId][origIdx] = {};
+  state.draft.inputBuffer[exId][origIdx].weight = 
+    state.unit === 'lbs' ? next / 2.20462 : next;
+}
+
 function skipExercise(passId,exId){
   ensureDraft(passId);
   const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);const ex=pass.exercises.find(e=>e.id===exId);
@@ -4765,6 +4888,7 @@ async function removeExerciseFromPass(exId, passId){
   if(!ok) return;
   
   if(!state.removedExercises) state.removedExercises = {};
+  if(!state.weightStep) state.weightStep = 2.5;
   if(!state.removedExercises[passId]) state.removedExercises[passId] = [];
   if(!state.removedExercises[passId].includes(exId)){
     state.removedExercises[passId].push(exId);
@@ -5228,6 +5352,21 @@ function renderData(){
     <div style="display:flex;gap:6px;margin-top:8px;">
       <button onclick="manualSyncNow()" style="background:none;border:1px solid #444;color:#aaa;font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;">Sync Now</button>
     </div>
+  </div>
+
+  <div class="section-sub">Training Settings</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;margin-bottom:8px;border-bottom:1px solid #1e1e1e;">
+    <div>
+      <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);">Weight step</div>
+      <div style="font-family:var(--mono);font-size:.5rem;color:#666;margin-top:2px;">Used by +/− steppers on set inputs</div>
+    </div>
+    <select onchange="state.weightStep=parseFloat(this.value);save();" style="background:#111;border:1px solid #2a2a2a;color:var(--white);font-family:var(--mono);font-size:.7rem;padding:6px 10px;cursor:pointer;">
+      <option value="1.25" ${(state.weightStep||2.5)===1.25?'selected':''}>1.25 kg</option>
+      <option value="2.5"  ${(state.weightStep||2.5)===2.5?'selected':''}>2.5 kg</option>
+      <option value="5"    ${(state.weightStep||2.5)===5?'selected':''}>5 kg</option>
+      <option value="10"   ${(state.weightStep||2.5)===10?'selected':''}>10 kg</option>
+      <option value="20"   ${(state.weightStep||2.5)===20?'selected':''}>20 kg</option>
+    </select>
   </div>
 
   <div class="section-sub">Feedback</div>
