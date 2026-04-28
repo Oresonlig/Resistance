@@ -115,7 +115,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .ex-tag.singles{border-color:#4a2a2a;background:#140a0a;color:#c07060;}
 .ex-tag.bw{border-color:#1a3a1a;background:#0a140a;color:#5aaa5a;}
 .ex-tag.uni{border-color:#4a3a00;background:#120e00;color:#c89030;}
-.ex-detail{font-family:var(--mono);font-size:.64rem;color:#bbb;margin-top:4px;line-height:1.5;}
+.ex-detail{font-family:var(--mono);font-size:.74rem;color:#bbb;margin-top:4px;line-height:1.5;}
 .ex-prev{font-family:var(--mono);font-size:.48rem;color:#555;margin-top:3px;line-height:1.5;}
 .ex-prev span{color:#777;}
 .ex-prev .last-val{color:#6a8a6a;font-style:italic;}
@@ -152,9 +152,9 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 /* SETS */
 .sets-table{margin-top:6px;width:100%;}
 .set-row{display:grid;align-items:center;gap:4px;margin-bottom:4px;}
-.set-row.normal-set{grid-template-columns:28px 1fr 1fr 1fr 18px;}
-.set-row.uni-set{grid-template-columns:28px 1fr 1fr 1fr 28px 18px;}
-.set-row.bw-set{grid-template-columns:28px 1fr 1fr 1fr 18px;}
+.set-row.normal-set{grid-template-columns:28px 1fr 1fr 1fr 18px auto;}
+.set-row.uni-set{grid-template-columns:28px 1fr 1fr 1fr 28px 18px auto;}
+.set-row.bw-set{grid-template-columns:28px 1fr 1fr 1fr 18px auto;}
 .set-num{font-family:var(--mono);font-size:.44rem;color:#666;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .set-num.warmup-label{color:#4a4a4a;}
 .set-input{background:#111;border:1px solid #3a1a1a;color:var(--white);font-family:var(--mono);font-size:.76rem;padding:5px 5px;text-align:center;transition:border-color .15s;-moz-appearance:textfield;width:100%;}
@@ -2598,41 +2598,26 @@ body.theme-daylight .app-modal-btn-danger:hover{
 
 /* ── DONE PRIMARY BUTTON ─────────────────────────────────────*/
 .ex-done-primary{
-  width:100%;margin-top:10px;padding:12px;
-  background:transparent;
-  border:1px solid var(--green-bright);
-  color:var(--green-bright);
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  margin-top:8px;
+  padding:8px 20px;
+  background:var(--red);
+  border:none;
+  color:var(--white);
   font-family:var(--display);
-  font-size:1rem;font-weight:700;letter-spacing:.14em;
+  font-size:.95rem;letter-spacing:.12em;
   text-transform:uppercase;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  transition:background .15s,border-color .15s,color .15s;
-  min-height:48px;
+  transition:background .15s;
+  min-height:40px;
+  width:auto;
+  float:right;
 }
-.ex-done-primary:hover{
-  background:rgba(58,154,90,0.12);
-}
-.ex-done-primary:active{
-  background:rgba(58,154,90,0.2);
-}
-body.theme-daylight .ex-done-primary{
-  border-color:var(--green-bright);
-  color:var(--green-bright);
-}
-body.theme-ember .ex-done-primary{
-  border-color:#a0cc40;
-  color:#a0cc40;
-}
-body.theme-ember .ex-done-primary:hover{
-  background:rgba(160,204,64,0.1);
-}
-body.theme-nightcity .ex-done-primary{
-  border-color:#39ff14;
-  color:#39ff14;
-}
-body.theme-nightcity .ex-done-primary:hover{
-  background:rgba(57,255,20,0.08);
-}
+.ex-done-primary::after{content:'';display:block;clear:both;}
+.ex-done-primary:hover{background:#a02525;}
+.ex-done-primary:active{background:#8a1f1f;}
+body.theme-daylight .ex-done-primary{background:var(--red);color:#fff;}
+body.theme-ember .ex-done-primary{background:#c0392b;color:#ffe8cc;}
+body.theme-nightcity .ex-done-primary{background:#c0392b;color:#ffe020;}
 
 /* ── iOS SAFARI AUTO-ZOOM FIX ────────────────────────────────
    Safari zooms in when input font-size < 16px.
@@ -2789,7 +2774,7 @@ body.theme-daylight .theme-btn-active{
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.6.4 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.6.5 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -3299,14 +3284,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.6.4';
+const APP_VERSION = '2.6.5';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.6.4'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.6.5'};
 state.cycles=[newCycle()];
 
 
@@ -3939,10 +3924,7 @@ function renderChain(){
               html+=`<button class="add-set-btn" style="border-color:#1a1400;color:#3a2a00" onclick="addWarmupSet('${ex.id}','${passId}')">+ Warm-up</button>`;
             }
             // Wide primary Done CTA — below sets, full width, unmissable
-            html+=`<button class="ex-done-primary" onclick="saveExercise('${passId}','${ex.id}')">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:6px;vertical-align:middle;"><path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Done
-            </button>`;
+            html+=`<div style="overflow:hidden;"><button class="ex-done-primary" onclick="saveExercise('${passId}','${ex.id}')">✓ Done</button></div>`;
           }
           html+=`</div>`;
         }
