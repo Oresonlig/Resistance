@@ -138,9 +138,9 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .ex-saved-badge{font-family:var(--mono);font-size:.44rem;color:var(--green-bright);letter-spacing:.08em;}
 .ex-btn-done{background:#0d2a0d;border:1px solid var(--green-bright);color:var(--green-bright);font-family:var(--mono);font-size:.52rem;font-weight:500;letter-spacing:.05em;padding:5px 10px;cursor:pointer;text-transform:uppercase;transition:all .15s;white-space:nowrap;}
 .ex-btn-done:hover{background:#1a4a1a;}
-.ex-btn-skip{background:none;border:1px solid #5a3a00;color:#b87a00;font-family:var(--mono);font-size:.44rem;letter-spacing:.05em;padding:3px 7px;cursor:pointer;text-transform:uppercase;transition:all .15s;white-space:nowrap;}
+.ex-btn-skip{background:none;border:1px solid #5a3a00;color:#b87a00;font-family:var(--mono);font-size:.44rem;letter-spacing:.05em;padding:0 12px;cursor:pointer;text-transform:uppercase;transition:all .15s;white-space:nowrap;min-height:36px;display:inline-flex;align-items:center;}
 .ex-btn-skip:hover{border-color:#c08800;color:#c08800;}
-.ex-btn-edit{background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.44rem;letter-spacing:.05em;padding:3px 7px;cursor:pointer;text-transform:uppercase;transition:all .15s;white-space:nowrap;}
+.ex-btn-edit{background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.44rem;letter-spacing:.05em;padding:0 12px;cursor:pointer;text-transform:uppercase;transition:all .15s;white-space:nowrap;min-height:36px;display:inline-flex;align-items:center;gap:4px;}
 .ex-btn-edit:hover{border-color:#666;color:#888;}
 .ex-edit-dropdown{position:relative;display:inline-block;}
 .ex-edit-menu{display:none;position:absolute;right:0;top:100%;background:#1a1a1a;border:1px solid #333;z-index:50;min-width:120px;margin-top:2px;}
@@ -151,13 +151,13 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 
 /* SETS */
 .sets-table{margin-top:6px;width:100%;}
-.set-row{display:grid;align-items:center;gap:4px;margin-bottom:4px;}
+.set-row{display:grid;align-items:stretch;gap:4px;margin-bottom:4px;}
 .set-row.normal-set{grid-template-columns:28px 1fr 1fr 1fr 18px auto;}
 .set-row.uni-set{grid-template-columns:28px 1fr 1fr 1fr 28px 18px auto;}
 .set-row.bw-set{grid-template-columns:28px 1fr 1fr 1fr 18px auto;}
 .set-num{font-family:var(--mono);font-size:.44rem;color:#666;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .set-num.warmup-label{color:#4a4a4a;}
-.set-input{background:#111;border:1px solid #3a1a1a;color:var(--white);font-family:var(--mono);font-size:.76rem;padding:5px 5px;text-align:center;transition:border-color .15s;-moz-appearance:textfield;width:100%;}
+.set-input{background:#111;border:1px solid #3a1a1a;color:var(--white);font-family:var(--mono);font-size:.76rem;padding:0 4px;text-align:center;transition:border-color .15s;-moz-appearance:textfield;width:100%;height:100%;min-height:42px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;;width:100%;height:38px;box-sizing:border-box;}
 .set-input::-webkit-outer-spin-button,.set-input::-webkit-inner-spin-button{-webkit-appearance:none;}
 .set-input:focus{outline:none;border-color:var(--red);}
 .set-input:disabled{opacity:.2;cursor:not-allowed;}
@@ -178,7 +178,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .set-delete{background:none;border:none;color:#555;font-size:.7rem;cursor:pointer;padding:0 2px;transition:color .15s;line-height:1;}
 .set-delete:hover{color:var(--red);}
 .bw-snap{font-family:var(--mono);font-size:.5rem;color:#3a3a3a;text-align:center;padding:1px 0 2px;}
-.add-set-btn{background:none;border:1px dashed #333;color:#666;font-family:var(--mono);font-size:.46rem;letter-spacing:.07em;text-transform:uppercase;padding:4px;width:100%;cursor:pointer;transition:all .15s;margin-top:2px;display:flex;align-items:center;justify-content:center;gap:3px;}
+.add-set-btn{background:none;border:1px dashed #333;color:#888;font-family:var(--mono);font-size:.62rem;letter-spacing:.07em;text-transform:uppercase;padding:10px 4px;width:100%;cursor:pointer;transition:all .15s;margin-top:3px;display:flex;align-items:center;justify-content:center;gap:3px;}
 .add-set-btn:hover{border-color:var(--red);color:#777;}
 .swap-select{background:#111;border:1px solid #5a1a1a;color:var(--white);font-family:var(--mono);font-size:.56rem;padding:4px 6px;width:100%;margin-top:4px;cursor:pointer;}
 .swap-select optgroup{
@@ -2598,26 +2598,28 @@ body.theme-daylight .app-modal-btn-danger:hover{
 
 /* ── DONE PRIMARY BUTTON ─────────────────────────────────────*/
 .ex-done-primary{
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  margin-top:8px;
-  padding:8px 20px;
-  background:var(--red);
-  border:none;
-  color:var(--white);
+  width:100%;margin-top:3px;
+  background:none;
+  border:1px dashed #2a1a1a;
+  color:#3a2a2a;
   font-family:var(--display);
-  font-size:.95rem;letter-spacing:.12em;
-  text-transform:uppercase;cursor:pointer;
-  transition:background .15s;
-  min-height:40px;
-  width:auto;
-  float:right;
+  font-size:.75rem;letter-spacing:.1em;
+  text-transform:uppercase;cursor:default;
+  transition:background .2s,border-color .2s,color .2s;
+  min-height:36px;
+  display:flex;align-items:center;justify-content:center;gap:5px;
 }
-.ex-done-primary::after{content:'';display:block;clear:both;}
-.ex-done-primary:hover{background:#a02525;}
-.ex-done-primary:active{background:#8a1f1f;}
-body.theme-daylight .ex-done-primary{background:var(--red);color:#fff;}
-body.theme-ember .ex-done-primary{background:#c0392b;color:#ffe8cc;}
-body.theme-nightcity .ex-done-primary{background:#c0392b;color:#ffe020;}
+.ex-done-primary.ready{
+  background:var(--red);
+  border:1px solid var(--red);
+  color:var(--white);
+  cursor:pointer;
+}
+.ex-done-primary.ready:hover{background:#a02525;border-color:#a02525;}
+body.theme-daylight .ex-done-primary{border-color:#e0dcd0;color:#d0ccc0;}
+body.theme-daylight .ex-done-primary.ready{background:var(--red);border-color:var(--red);color:#fff;}
+body.theme-ember .ex-done-primary.ready{background:#c0392b;border-color:#c0392b;color:#ffe8cc;}
+body.theme-nightcity .ex-done-primary.ready{background:#c0392b;border-color:#c0392b;color:#ffe020;}
 
 /* ── iOS SAFARI AUTO-ZOOM FIX ────────────────────────────────
    Safari zooms in when input font-size < 16px.
@@ -2657,22 +2659,41 @@ body.theme-daylight .pass-card.done .pass-preview{color:#bbb !important;}
 /* ── SET LOG BUTTON ──────────────────────────────────────────*/
 .set-log-btn{
   background:none;
-  border:1px solid #2a2a2a;
-  color:#555;
+  border:1px solid #1e1e1e;
+  color:#2a2a2a;
   font-family:var(--mono);
-  font-size:.6rem;
-  padding:0 10px;
-  cursor:pointer;
+  font-size:.52rem;
+  padding:0 8px;
+  cursor:default;
   transition:border-color .15s,color .15s,background .15s;
   white-space:nowrap;
-  letter-spacing:.04em;
-  min-height:44px;
-  min-width:40px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  height:38px;
+  min-width:36px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
 }
-.set-log-btn:hover{
+.set-log-btn.has-value,.set-log-btn.bw-active{
+  border-color:#2a3a2a;
+  color:var(--green-bright);
+  cursor:pointer;
+}
+.set-log-btn.has-value:hover,.set-log-btn.bw-active:hover{
+  background:rgba(58,154,90,0.1);
+  border-color:var(--green-bright);
+}
+body.theme-daylight .set-log-btn{border-color:#e8e5df;color:#ccc;}
+body.theme-daylight .set-log-btn.has-value,
+body.theme-daylight .set-log-btn.bw-active{border-color:#b0d4b0;color:var(--green-bright);}
+
+.set-log-btn.has-value{
+  border-color:#2a4a2a;
+  color:#4a8a4a;
+  opacity:1;
+}
+.set-log-btn.has-value:hover{
   border-color:var(--green-bright);
   color:var(--green-bright);
   background:rgba(58,154,90,0.08);
@@ -2703,6 +2724,15 @@ body.theme-daylight .theme-btn-active{
   border-color:var(--red) !important;
   color:var(--red) !important;
 }
+
+
+.ex-note-add{
+  font-family:var(--mono);font-size:.52rem;
+  color:#444;cursor:pointer;margin-top:3px;
+  letter-spacing:.04em;display:inline-block;
+  transition:color .15s;
+}
+.ex-note-add:hover{color:#888;}
 
 </style>
 <script type="module">
@@ -2774,7 +2804,7 @@ body.theme-daylight .theme-btn-active{
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.6.5 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.6.7 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -3284,14 +3314,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.6.5';
+const APP_VERSION = '2.6.7';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.6.5'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.6.7'};
 state.cycles=[newCycle()];
 
 
@@ -3730,8 +3760,12 @@ function renderChain(){
         }
 
         const existingNote = state.exerciseNotes?.[ex.id]||'';
-        const noteBanner = existingNote && !isDone
-          ? `<div class="ex-note-banner" onclick="toggleNote('${ex.id}')" title="Tap to edit">📝 ${existingNote}</div>` : '';
+        const noteBanner = !isDone
+          ? existingNote
+            ? `<div class="ex-note-banner" onclick="toggleNote('${ex.id}')" title="Tap to edit">📝 ${existingNote}</div>`
+            : `<div class="ex-note-add" onclick="toggleNote('${ex.id}')">+ note</div>`
+          : existingNote
+            ? `<div class="ex-note-banner done-note">📝 ${existingNote}</div>` : '';
         html+=`<div class="${'ex-block'+(isSkipped?' skipped':'')+(isSaved?' saved':'')}" id="exblock-${ex.id}">`;
         html+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${customName}${tags}</div><div class="ex-detail">${ex.detail}</div>${prevText}${noteBanner}</div><div class="ex-action-col">`;
 
@@ -3749,7 +3783,6 @@ function renderChain(){
               <div class="ex-edit-menu" id="editmenu-${ex.id}">
                 <button onclick="toggleSwap('${ex.id}','${passId}','temp');closeEditMenu('${ex.id}')">Swap (session)</button>
                 <button onclick="toggleSwap('${ex.id}','${passId}','perm');closeEditMenu('${ex.id}')">Swap (always)</button>
-                <button onclick="toggleNote('${ex.id}');closeEditMenu('${ex.id}')" style="color:var(--gold)">📝 Note</button>
                 <button onclick="toggleTagEditor('${ex.id}');closeEditMenu('${ex.id}')">🏷 Tags</button>
                 <button onclick="removeExerciseFromPass('${ex.id}','${passId}');closeEditMenu('${ex.id}')" style="color:#c06060">Remove</button>
               </div>
@@ -3854,6 +3887,13 @@ function renderChain(){
             html+=`<div class="sets-group-label warmup-group">Warm-up</div>`;
           }
           let warmupCount=0, workCount=0, shownWorkHeader=false;
+          // Compute whether all work sets have been logged (for Done button ready state)
+          const workSetCount = workList.length;
+          const loggedWorkCount = workList.filter(s => {
+            const lg = state.draft?.loggedSets?.[ex.id]?.[s.origIdx];
+            return !!lg;
+          }).length;
+          const allWorkLogged = workSetCount > 0 && loggedWorkCount >= workSetCount;
           for(let si=0; si<sortedSets.length; si++){
             const setMeta = sortedSets[si];
             const warmup  = setMeta.warmup;
@@ -3896,7 +3936,7 @@ function renderChain(){
                   <div class="set-unit forced-unit">+f</div></div>
                 ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${origIdx}" onclick="toggleSide('${ex.id}',${origIdx})" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
                 ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}',${origIdx},'${passId}')">✕</button>`:'<div></div>'}
-                ${(!isSaved&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${ex.id}',${origIdx},'${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn" onclick="logSet('${ex.id}',${origIdx},'${passId}',${warmup})">Log</button>`):''}
+                ${(!isSaved&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${ex.id}',${origIdx},'${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn has-value" onclick="logSet('${ex.id}',${origIdx},'${passId}',${warmup})">Log</button>`):''}
               </div>`;
             } else {
               const rowClass = isUni ? 'uni-set' : 'normal-set';
@@ -3904,7 +3944,8 @@ function renderChain(){
                 <span class="set-num${warmup?' warmup-label':''}">${lbl}</span>
                 <div><input class="set-input${wCls}" type="number" id="w-${ex.id}-${origIdx}"
                   placeholder="${placeholderW}" value="${savedSet?.weight!=null?toDisplay(savedSet.weight):bufVal?.weight!=null?toDisplay(bufVal.weight):''}"
-                  min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis}>
+                  min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis}
+                  oninput="updateLogBtnState('${ex.id}',${origIdx})">
                   <div class="set-unit">${unitL}</div></div>
                 <div><input class="${'set-input'+wCls+(isTimed?' timed':'')}" type="number" id="r-${ex.id}-${origIdx}"
                   placeholder="${isTimed?(prev?.secs||'—'):(prev?.reps||'—')}" value="${isTimed?(savedSet?.secs||bufVal?.secs||''):(savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:'')}" min="1" ${isTimed?'max="3600"':'max="50"'} ${dis}>
@@ -3914,7 +3955,7 @@ function renderChain(){
                   <div class="set-unit forced-unit">+f</div></div>
                 ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${origIdx}" onclick="toggleSide('${ex.id}',${origIdx})" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
                 ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}',${origIdx},'${passId}')">✕</button>`:'<div></div>'}
-                ${(!isSaved&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${ex.id}',${origIdx},'${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn" onclick="logSet('${ex.id}',${origIdx},'${passId}',${warmup})">Log</button>`):''}
+                ${(!isSaved&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${ex.id}',${origIdx},'${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${ex.id}',${origIdx},'${passId}',${warmup})">Log</button>`):''}
               </div>`;
             }
           }
@@ -3924,7 +3965,7 @@ function renderChain(){
               html+=`<button class="add-set-btn" style="border-color:#1a1400;color:#3a2a00" onclick="addWarmupSet('${ex.id}','${passId}')">+ Warm-up</button>`;
             }
             // Wide primary Done CTA — below sets, full width, unmissable
-            html+=`<div style="overflow:hidden;"><button class="ex-done-primary" onclick="saveExercise('${passId}','${ex.id}')">✓ Done</button></div>`;
+            html+=`<button class="ex-done-primary${allWorkLogged?' ready':''}" id="done-${ex.id}" onclick="saveExercise('${passId}','${ex.id}')">✓ Done</button>`;
           }
           html+=`</div>`;
         }
@@ -4862,6 +4903,21 @@ function unsaveExercise(passId,exId){
 // ── PER-SET LOGGING ───────────────────────────────────────────
 // draft.loggedSets[exId][origIdx] = {weight, reps, secs, extra, bwSnap, forced, side}
 // Logging a set captures inputs and starts rest timer (work sets only)
+
+// Update log button has-value state when weight/reps change
+function updateLogBtnState(exId, origIdx){
+  const wInp = document.getElementById('w-'+exId+'-'+origIdx);
+  const rInp = document.getElementById('r-'+exId+'-'+origIdx);
+  const logBtn = document.querySelector(`button.set-log-btn[onclick*="logSet('${exId}',${origIdx}"]`);
+  if(!logBtn) return;
+  const hasW = wInp && wInp.value !== '';
+  const hasR = rInp && rInp.value !== '';
+  if(hasW || hasR){
+    logBtn.classList.add('has-value');
+  } else {
+    logBtn.classList.remove('has-value');
+  }
+}
 
 function logSet(exId, origIdx, passId, isWarmup){
   if(!state.draft || state.draft.passId !== passId) ensureDraft(passId);
