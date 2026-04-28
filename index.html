@@ -2611,7 +2611,7 @@ body.theme-daylight .app-modal-btn-danger:hover{
 .ex-done-primary:active{transform:translateY(0);}
 body.theme-daylight .ex-done-primary{color:#fff;}
 
- ────────────────────────────────
+/* ── iOS SAFARI AUTO-ZOOM FIX ────────────────────────────────
    Safari zooms in when input font-size < 16px.
    Override to 16px on all focusable inputs on iOS devices. */
 @supports (-webkit-touch-callout: none) {
@@ -2714,7 +2714,7 @@ body.theme-daylight .pass-card.done .pass-preview{color:#bbb !important;}
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.6.0 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.6.1 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -3224,14 +3224,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.6.0';
+const APP_VERSION = '2.6.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.6.0'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.6.1'};
 state.cycles=[newCycle()];
 
 
@@ -5361,11 +5361,11 @@ function renderData(){
       <div style="font-family:var(--mono);font-size:.5rem;color:#666;margin-top:2px;">Used by +/− steppers on set inputs</div>
     </div>
     <select onchange="state.weightStep=parseFloat(this.value);save();" style="background:#111;border:1px solid #2a2a2a;color:var(--white);font-family:var(--mono);font-size:.7rem;padding:6px 10px;cursor:pointer;">
-      <option value="1.25" ${(state.weightStep||2.5)===1.25?'selected':''}>1.25 kg</option>
-      <option value="2.5"  ${(state.weightStep||2.5)===2.5?'selected':''}>2.5 kg</option>
-      <option value="5"    ${(state.weightStep||2.5)===5?'selected':''}>5 kg</option>
-      <option value="10"   ${(state.weightStep||2.5)===10?'selected':''}>10 kg</option>
-      <option value="20"   ${(state.weightStep||2.5)===20?'selected':''}>20 kg</option>
+      <option value="1.25" ${(state.weightStep||2.5)===1.25?"selected":""}>1.25 kg</option>
+      <option value="2.5"  ${(state.weightStep||2.5)===2.5?"selected":""}>2.5 kg</option>
+      <option value="5"    ${(state.weightStep||2.5)===5?"selected":""}>5 kg</option>
+      <option value="10"   ${(state.weightStep||2.5)===10?"selected":""}>10 kg</option>
+      <option value="20"   ${(state.weightStep||2.5)===20?"selected":""}>20 kg</option>
     </select>
   </div>
 
