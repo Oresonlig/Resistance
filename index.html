@@ -157,7 +157,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .set-row.bw-set{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
 .set-num{font-family:var(--mono);font-size:.44rem;color:#666;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .set-num.warmup-label{color:#4a4a4a;}
-.set-input{background:#111;border:1px solid #3a1a1a;color:var(--white);font-family:var(--mono);font-size:.76rem;padding:8px 4px;text-align:center;transition:border-color .15s;-moz-appearance:textfield;;width:100%;height:38px;box-sizing:border-box;}
+.set-input{background:#111;border:1px solid #3a1a1a;color:var(--white);font-family:var(--mono);font-size:.76rem;padding:5px 4px;text-align:center;transition:border-color .15s;-moz-appearance:textfield;;width:100%;height:38px;box-sizing:border-box;}
 .set-input::-webkit-outer-spin-button,.set-input::-webkit-inner-spin-button{-webkit-appearance:none;}
 .set-input:focus{outline:none;border-color:var(--red);}
 .set-input:disabled{opacity:.2;cursor:not-allowed;}
@@ -165,7 +165,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .set-input.work-set{border-color:#1a2a1a;}
 .set-input.forced{border-color:#2a1a2a;color:#9a6a9a;}
 .set-input.timed{border-color:#1a2a3a;color:#7ab;}
-.set-unit{font-family:var(--mono);font-size:.44rem;color:#333;text-transform:uppercase;text-align:center;margin-top:1px;}
+.set-unit{font-family:var(--mono);font-size:.52rem;color:#444;text-transform:uppercase;text-align:center;margin-top:2px;}
 .set-unit.forced-unit{color:#5a3a5a;}
 .set-unit.time-unit{color:#3a5a5a;}
 .side-btn{background:none;border:1px solid #3a2a00;color:#c89030;font-family:var(--mono);font-size:.6rem;font-weight:600;padding:3px 6px;cursor:pointer;transition:all .15s;width:100%;text-align:center;}
@@ -175,7 +175,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .sets-group-label{font-family:var(--mono);font-size:.42rem;color:#666;text-transform:uppercase;letter-spacing:.1em;padding:4px 0 2px;margin-top:4px;border-top:1px solid #1a1a1a;}
 .sets-group-label.warmup-group{color:#664a4a;border-top-color:#1a1a1a;}
 .sets-group-label.work-group{color:#4a664a;border-top-color:#2a2a2a;margin-top:6px;}
-.set-delete{background:none;border:none;color:#444;font-size:.75rem;cursor:pointer;width:28px;height:100%;min-height:32px;display:flex;align-items:center;justify-content:center;padding:0;transition:color .15s;}
+.set-delete{background:none;border:none;color:#333;font-size:.7rem;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;padding:0;transition:color .15s;}
 .set-delete:hover{color:var(--red);}
 .bw-snap{font-family:var(--mono);font-size:.5rem;color:#3a3a3a;text-align:center;padding:1px 0 2px;}
 .add-set-btn{background:none;border:1px dashed #333;color:#888;font-family:var(--mono);font-size:.62rem;letter-spacing:.07em;text-transform:uppercase;padding:10px 4px;width:100%;cursor:pointer;transition:all .15s;margin-top:3px;display:flex;align-items:center;justify-content:center;gap:3px;}
@@ -2659,64 +2659,32 @@ body.theme-daylight .pass-card.done .pass-preview{color:#bbb !important;}
 /* ── SET LOG BUTTON ──────────────────────────────────────────*/
 .set-log-btn{
   background:none;
-  border:1px solid #1e1e1e;
+  border:1px solid #252525;
   color:#2a2a2a;
   font-family:var(--mono);
-  font-size:.52rem;
-  padding:0 8px;
-  cursor:default;
-  transition:border-color .15s,color .15s,background .15s;
-  white-space:nowrap;
-  letter-spacing:.06em;
+  font-size:.5rem;
+  letter-spacing:.05em;
   text-transform:uppercase;
-  height:38px;
-  min-width:36px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
+  cursor:default;
+  padding:0;
+  width:36px;
+  height:24px;
+  transition:border-color .15s,color .15s,background .15s;
 }
-.set-log-btn.has-value,.set-log-btn.bw-active{
+.set-log-btn.has-value{
   border-color:#2a3a2a;
   color:var(--green-bright);
   cursor:pointer;
 }
-.set-log-btn.has-value:hover,.set-log-btn.bw-active:hover{
+.set-log-btn.has-value:hover{
   background:rgba(58,154,90,0.1);
   border-color:var(--green-bright);
 }
-body.theme-daylight .set-log-btn{border-color:#e8e5df;color:#ccc;}
-body.theme-daylight .set-log-btn.has-value,
-body.theme-daylight .set-log-btn.bw-active{border-color:#b0d4b0;color:var(--green-bright);}
-
-.set-log-btn.has-value{
-  border-color:#2a4a2a;
-  color:#4a8a4a;
-  opacity:1;
-}
-.set-log-btn.has-value:hover{
-  border-color:var(--green-bright);
-  color:var(--green-bright);
-  background:rgba(58,154,90,0.08);
-}
-.set-logged-indicator{
-  color:var(--green-bright);
-  font-size:.7rem;
-  min-width:22px;
-  text-align:center;
-  cursor:pointer;
-  opacity:0.8;
-}
-.set-row.set-logged::before{
-  content:'';
-  position:absolute;
-  left:0;right:0;top:0;bottom:0;
-  background:rgba(58,154,90,0.05);
-  pointer-events:none;
-}
-body.theme-daylight .set-log-btn{border-color:#d0ccc0;color:#aaa;}
-body.theme-daylight .set-log-btn:hover{border-color:var(--green-bright);color:var(--green-bright);}
-body.theme-ember .set-log-btn{border-color:#2a2a2a;color:#555;}
-body.theme-ember .set-log-btn:hover{border-color:#a0cc40;color:#a0cc40;}
+/* Theme overrides */
+body.theme-daylight .set-log-btn{border-color:#d8d4cc;color:#ccc;}
+body.theme-daylight .set-log-btn.has-value{border-color:#b0d4b0;color:var(--green-bright);}
+body.theme-ember .set-log-btn{border-color:#2a2a2a;color:#444;}
+body.theme-ember .set-log-btn.has-value{border-color:#5a7a2a;color:#a0cc40;}
 
 /* Daylight theme card active state */
 body.theme-daylight .theme-btn-active{
@@ -2804,7 +2772,7 @@ body.theme-daylight .theme-btn-active{
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.6.9 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.7.0 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -3314,14 +3282,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.6.9';
+const APP_VERSION = '2.7.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.6.9'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.7.0'};
 state.cycles=[newCycle()];
 
 
@@ -3954,7 +3922,6 @@ function renderChain(){
                   placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}>
                   <div class="set-unit forced-unit">+f</div></div>
                 ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${origIdx}" onclick="toggleSide('${ex.id}',${origIdx})" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
-                ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}',${origIdx},'${passId}')">✕</button>`:'<div></div>'}
                 ${(!isSaved&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${ex.id}',${origIdx},'${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${ex.id}',${origIdx},'${passId}',${warmup})">Log</button>`):'<div></div>'}
                 ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}',${origIdx},'${passId}')">✕</button>`:'<div></div>'}
               </div>`;
