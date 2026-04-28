@@ -2598,18 +2598,41 @@ body.theme-daylight .app-modal-btn-danger:hover{
 
 /* ── DONE PRIMARY BUTTON ─────────────────────────────────────*/
 .ex-done-primary{
-  width:100%;margin-top:10px;padding:14px;
-  background:var(--green-bright);border:none;
-  color:#0a0a0a;font-family:var(--display);
-  font-size:1.1rem;font-weight:700;letter-spacing:.12em;
+  width:100%;margin-top:10px;padding:12px;
+  background:transparent;
+  border:1px solid var(--green-bright);
+  color:var(--green-bright);
+  font-family:var(--display);
+  font-size:1rem;font-weight:700;letter-spacing:.14em;
   text-transform:uppercase;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:background .15s,transform .1s;
-  min-height:52px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:background .15s,border-color .15s,color .15s;
+  min-height:48px;
 }
-.ex-done-primary:hover{background:#4aaa6a;transform:translateY(-1px);}
-.ex-done-primary:active{transform:translateY(0);}
-body.theme-daylight .ex-done-primary{color:#fff;}
+.ex-done-primary:hover{
+  background:rgba(58,154,90,0.12);
+}
+.ex-done-primary:active{
+  background:rgba(58,154,90,0.2);
+}
+body.theme-daylight .ex-done-primary{
+  border-color:var(--green-bright);
+  color:var(--green-bright);
+}
+body.theme-ember .ex-done-primary{
+  border-color:#a0cc40;
+  color:#a0cc40;
+}
+body.theme-ember .ex-done-primary:hover{
+  background:rgba(160,204,64,0.1);
+}
+body.theme-nightcity .ex-done-primary{
+  border-color:#39ff14;
+  color:#39ff14;
+}
+body.theme-nightcity .ex-done-primary:hover{
+  background:rgba(57,255,20,0.08);
+}
 
 /* ── iOS SAFARI AUTO-ZOOM FIX ────────────────────────────────
    Safari zooms in when input font-size < 16px.
@@ -2644,6 +2667,57 @@ body.theme-daylight .pass-card.done .pass-letter{color:#bbb !important;}
 body.theme-daylight .pass-card.done .pass-name{color:#999 !important;}
 body.theme-daylight .pass-card.done .pass-preview{color:#bbb !important;}
 
+
+
+/* ── SET LOG BUTTON ──────────────────────────────────────────*/
+.set-log-btn{
+  background:none;
+  border:1px solid #2a2a2a;
+  color:#555;
+  font-family:var(--mono);
+  font-size:.6rem;
+  padding:0 10px;
+  cursor:pointer;
+  transition:border-color .15s,color .15s,background .15s;
+  white-space:nowrap;
+  letter-spacing:.04em;
+  min-height:44px;
+  min-width:40px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.set-log-btn:hover{
+  border-color:var(--green-bright);
+  color:var(--green-bright);
+  background:rgba(58,154,90,0.08);
+}
+.set-logged-indicator{
+  color:var(--green-bright);
+  font-size:.7rem;
+  min-width:22px;
+  text-align:center;
+  cursor:pointer;
+  opacity:0.8;
+}
+.set-row.set-logged::before{
+  content:'';
+  position:absolute;
+  left:0;right:0;top:0;bottom:0;
+  background:rgba(58,154,90,0.05);
+  pointer-events:none;
+}
+body.theme-daylight .set-log-btn{border-color:#d0ccc0;color:#aaa;}
+body.theme-daylight .set-log-btn:hover{border-color:var(--green-bright);color:var(--green-bright);}
+body.theme-ember .set-log-btn{border-color:#2a2a2a;color:#555;}
+body.theme-ember .set-log-btn:hover{border-color:#a0cc40;color:#a0cc40;}
+
+/* Daylight theme card active state */
+body.theme-daylight .theme-btn-active{
+  background:#f5f0e8 !important;
+  border-color:var(--red) !important;
+  color:var(--red) !important;
+}
 
 </style>
 <script type="module">
@@ -2715,7 +2789,7 @@ body.theme-daylight .pass-card.done .pass-preview{color:#bbb !important;}
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.6.2 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.6.4 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -3225,14 +3299,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.6.2';
+const APP_VERSION = '2.6.4';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.6.2'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.6.4'};
 state.cycles=[newCycle()];
 
 
@@ -3584,7 +3658,7 @@ function renderChain(){
     return;
   }
 
-  let html=`<div class="weight-banner"><span class="weight-banner-label">Morning Weight</span><div style="display:flex;align-items:center;gap:4px"><input class="weight-input" type="number" id="morningWeight" placeholder="${state.unit==='lbs'?'165.0':'75.0'}" step="${state.unit==='lbs'?'0.5':'0.1'}" min="${state.unit==='lbs'?'44':'20'}" max="${state.unit==='lbs'?'660':'300'}" value="${todayW||''}"><span class="weight-unit">${unitLabel()}</span></div><span id="weightBannerToday" class="weight-today">${todayW?todayW+' '+unitLabel()+' today':''}</span><button class="weight-log-btn" onclick="logWeight()">Log</button></div><div class="chain-intro"><div><div class="chain-intro-title">The Chain</div><div class="chain-intro-sub">${donePasses}/${totalPasses} sessions done · Round ${state.cycles.length}</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--mono);font-size:.52rem;color:var(--gray-mid)">${pct}%</span><button style="background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.7rem;padding:3px 9px;cursor:pointer;transition:all .15s;line-height:1;" title="Configure chain" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='#444';this.style.color='#888'" onclick="showEditPage()">⚙</button></div></div><div class="chain-bar"><div class="chain-fill" style="width:${pct}%"></div></div>`;
+  let html=`<div class="weight-banner"><span class="weight-banner-label">Morning Weight</span><div style="display:flex;align-items:center;gap:4px"><input class="weight-input" type="number" id="morningWeight" placeholder="${state.unit==='lbs'?'165.0':'75.0'}" step="${state.unit==='lbs'?'0.5':'0.1'}" min="${state.unit==='lbs'?'44':'20'}" max="${state.unit==='lbs'?'660':'300'}" value="${todayW||''}"><span class="weight-unit">${unitLabel()}</span></div><span id="weightBannerToday" class="weight-today">${todayW?todayW+' '+unitLabel()+' today':''}</span><button class="weight-log-btn" onclick="logWeight()">Log</button></div><div class="chain-intro"><div><div class="chain-intro-title">The Chain</div><div class="chain-intro-sub">${donePasses}/${totalPasses} sessions done · Round ${state.cycles.length}</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--mono);font-size:.52rem;color:var(--gray-mid)">${pct}%</span><button style="background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.7rem;padding:3px 9px;cursor:pointer;transition:all .15s;line-height:1;" title="Configure chain" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='#444';this.style.color='#888'" onclick="showEditPage()"><svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit</button></div></div><div class="chain-bar"><div class="chain-fill" style="width:${pct}%"></div></div>`;
 
 
   html += `<div class="chain-list">`;
@@ -3681,12 +3755,12 @@ function renderChain(){
           if(isSaved){
             html+=`<span class="ex-saved-badge">✓ Done</span>
               <button class="ex-btn-edit" onclick="unsaveExercise('${passId}','${ex.id}')">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="margin-right:4px;vertical-align:middle;"><circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.4"/><path d="M6.5 1v1.2M6.5 10.8V12M1 6.5h1.2M10.8 6.5H12M2.4 2.4l.85.85M9.75 9.75l.85.85M2.4 10.6l.85-.85M9.75 3.25l.85-.85" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Edit ▾</button>`;
+                <svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit ▾</button>`;
           }else{
             html+=`<button class="ex-btn-skip" onclick="skipExercise('${passId}','${ex.id}')">Skip</button>`;
             html+=`<div class="ex-edit-dropdown" id="editdd-${ex.id}">
               <button class="ex-btn-edit" onclick="toggleEditMenu('${ex.id}')">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="margin-right:4px;vertical-align:middle;"><circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.4"/><path d="M6.5 1v1.2M6.5 10.8V12M1 6.5h1.2M10.8 6.5H12M2.4 2.4l.85.85M9.75 9.75l.85.85M2.4 10.6l.85-.85M9.75 3.25l.85-.85" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Edit</button>
+                <svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit</button>
               <div class="ex-edit-menu" id="editmenu-${ex.id}">
                 <button onclick="toggleSwap('${ex.id}','${passId}','temp');closeEditMenu('${ex.id}')">Swap (session)</button>
                 <button onclick="toggleSwap('${ex.id}','${passId}','perm');closeEditMenu('${ex.id}')">Swap (always)</button>
@@ -3843,14 +3917,10 @@ function renderChain(){
               const rowClass = isUni ? 'uni-set' : 'normal-set';
               html+=`<div class="set-row ${rowClass}${loggedCls}">
                 <span class="set-num${warmup?' warmup-label':''}">${lbl}</span>
-                <div class="weight-stepper-wrap">
-                  ${(dis==='')?`<button class="step-btn" onclick="stepWeight('${ex.id}',${origIdx},-1)" tabindex="-1">−</button>`:''}
-                  <input class="set-input${wCls}" type="number" id="w-${ex.id}-${origIdx}"
+                <div><input class="set-input${wCls}" type="number" id="w-${ex.id}-${origIdx}"
                   placeholder="${placeholderW}" value="${savedSet?.weight!=null?toDisplay(savedSet.weight):bufVal?.weight!=null?toDisplay(bufVal.weight):''}"
                   min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis}>
-                  ${(dis==='')?`<button class="step-btn" onclick="stepWeight('${ex.id}',${origIdx},1)" tabindex="-1">+</button>`:''}
-                </div>
-                <div class="set-unit" style="text-align:center;">${unitL}</div>
+                  <div class="set-unit">${unitL}</div></div>
                 <div><input class="${'set-input'+wCls+(isTimed?' timed':'')}" type="number" id="r-${ex.id}-${origIdx}"
                   placeholder="${isTimed?(prev?.secs||'—'):(prev?.reps||'—')}" value="${isTimed?(savedSet?.secs||bufVal?.secs||''):(savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:'')}" min="1" ${isTimed?'max="3600"':'max="50"'} ${dis}>
                   <div class="set-unit${isTimed?' time-unit':''}">${isTimed?'sec':'reps'}</div></div>
