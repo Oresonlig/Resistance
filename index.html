@@ -33,19 +33,7 @@ body{background:var(--black);color:var(--white);font-family:var(--sans);min-heig
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-/* USER SCREEN */
-.user-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 20px;gap:0;}
-.user-logo{font-family:var(--display);font-size:3.5rem;letter-spacing:.1em;color:var(--white);margin-bottom:4px;}
-.user-logo span{color:var(--red);}
-.user-tagline{font-family:var(--mono);font-size:.6rem;color:#777;letter-spacing:.15em;text-transform:uppercase;margin-bottom:6px;}
-.user-label{font-family:var(--mono);font-size:.6rem;color:#aaa;letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px;}
-.user-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:320px;}
-.user-btn{background:none;border:1px solid #2a2a2a;color:var(--white);font-family:var(--display);font-size:1.6rem;letter-spacing:.08em;padding:22px 12px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
-.user-btn::after{content:'';position:absolute;inset:0;background:var(--red);opacity:0;transition:opacity .2s;}
-.user-btn:hover{border-color:var(--red);}
-.user-btn:hover::after{opacity:.08;}
-.user-btn .user-initial{position:relative;z-index:1;display:block;font-size:2.4rem;color:var(--red);margin-bottom:4px;}
-.user-btn .user-name{position:relative;z-index:1;display:block;font-size:.9rem;}
+/* User screen CSS removed — replaced by auth screen */
 
 /* HEADER */
 header{border-bottom:1px solid #1e1e1e;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--black);z-index:100;}
@@ -157,7 +145,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .set-row.bw-set{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
 .set-num{font-family:var(--mono);font-size:.44rem;color:#666;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .set-num.warmup-label{color:#4a4a4a;}
-.set-input{background:#111;border:1px solid #3a1a1a;color:var(--white);font-family:var(--mono);font-size:.76rem;padding:5px 4px;text-align:center;transition:border-color .15s;-moz-appearance:textfield;;width:100%;}
+.set-input{background:#111;border:1px solid #3a1a1a;color:var(--white);font-family:var(--mono);font-size:.76rem;padding:5px 4px;text-align:center;transition:border-color .15s;-moz-appearance:textfield;width:100%;}
 .set-input::-webkit-outer-spin-button,.set-input::-webkit-inner-spin-button{-webkit-appearance:none;}
 .set-input:focus{outline:none;border-color:var(--red);}
 .set-input:disabled{opacity:.2;cursor:not-allowed;}
@@ -165,7 +153,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .set-input.work-set{border-color:#1a2a1a;}
 .set-input.forced{border-color:#2a1a2a;color:#9a6a9a;}
 .set-input.timed{border-color:#1a2a3a;color:#7ab;}
-.set-unit{font-family:var(--mono);font-size:.52rem;color:#444;text-transform:uppercase;text-align:center;margin-top:2px;}
+.set-unit{font-family:var(--mono);font-size:.55rem;color:#666;text-transform:uppercase;text-align:center;margin-top:2px;}
 .set-unit.forced-unit{color:#5a3a5a;}
 .set-unit.time-unit{color:#3a5a5a;}
 .side-btn{background:none;border:1px solid #3a2a00;color:#c89030;font-family:var(--mono);font-size:.6rem;font-weight:600;padding:3px 6px;cursor:pointer;transition:all .15s;width:100%;text-align:center;}
@@ -191,14 +179,9 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
   text-transform:uppercase;
   padding:6px 0;
 }
-.swap-select option{
-  font-family:var(--sans);
-  background:var(--black);
-  color:var(--white);
-  padding:6px 10px;
-}
+.swap-select option{font-family:var(--sans);background:#111;color:var(--white);padding:6px 10px;}
 .swap-select:focus{outline:none;border-color:var(--red);}
-.swap-select option{background:#111;}
+
 .add-ex-row{padding:6px 0 0;}
 .add-ex-btn{background:none;border:1px dashed #333;color:#666;font-family:var(--mono);font-size:.5rem;letter-spacing:.07em;text-transform:uppercase;padding:7px;width:100%;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px;}
 .add-ex-btn:hover{border-color:var(--red);color:#777;}
@@ -357,9 +340,6 @@ body:not([class*="theme-"]){
 /* Pass letter — subtle hex frame on the big letter (Iron only) */
 body:not([class*="theme-"]) .pass-card.next-up .pass-letter{
   position:relative;
-}
-body:not([class*="theme-"]) .pass-card.next-up .pass-letter{
-  /* Make sure the letter itself is the centering anchor */
   display:inline-flex;
   align-items:center;
   justify-content:center;
@@ -2350,7 +2330,7 @@ body.theme-daylight .pass-card.in-progress{
   border-color:var(--green-bright);
   box-shadow:0 2px 8px rgba(42,122,58,0.1);
 }
-body.theme-daylight .pass-card.done{opacity:.55;background:#f5f3ee;}
+
 body.theme-daylight .pass-letter{
   font-family:var(--display);
   color:var(--red);
@@ -2567,11 +2547,7 @@ body.theme-daylight .app-modal-card{
 body.theme-daylight .app-modal-title{color:#0e1418;}
 body.theme-daylight .app-modal-body{color:#666;}
 body.theme-daylight .app-modal-input,
-body.theme-daylight .app-modal-select{
-  background:#ffffff;
-  border-color:#d0ccc0;
-  color:#0e1418;
-}
+
 body.theme-daylight .app-modal-btn{
   background:#ffffff;
   border-color:#d0ccc0;
@@ -2659,23 +2635,22 @@ body.theme-daylight .pass-card.done .pass-preview{color:#bbb !important;}
 /* ── SET LOG BUTTON ──────────────────────────────────────────*/
 .set-log-btn{
   background:none;
-  border:1px solid #252525;
-  color:#2a2a2a;
+  border:1px solid #2a3a2a;
+  color:var(--green-bright);
+  cursor:pointer;
   font-family:var(--mono);
   font-size:.5rem;
   letter-spacing:.05em;
   text-transform:uppercase;
   cursor:default;
-  padding:0;
+  padding:5px 0;
   width:36px;
-  height:24px;
+  box-sizing:border-box;
   transition:border-color .15s,color .15s,background .15s;
+  display:block;
+  text-align:center;
 }
-.set-log-btn.has-value{
-  border-color:#2a3a2a;
-  color:var(--green-bright);
-  cursor:pointer;
-}
+/* has-value: no change needed since base is already green */
 .set-log-btn.has-value:hover{
   background:rgba(58,154,90,0.1);
   border-color:var(--green-bright);
@@ -2686,12 +2661,7 @@ body.theme-daylight .set-log-btn.has-value{border-color:#b0d4b0;color:var(--gree
 body.theme-ember .set-log-btn{border-color:#2a2a2a;color:#444;}
 body.theme-ember .set-log-btn.has-value{border-color:#5a7a2a;color:#a0cc40;}
 
-/* Daylight theme card active state */
-body.theme-daylight .theme-btn-active{
-  background:#f5f0e8 !important;
-  border-color:var(--red) !important;
-  color:var(--red) !important;
-}
+
 
 
 .ex-note-add{
@@ -2774,7 +2744,7 @@ body.theme-daylight .theme-btn-active{
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.7.1 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.8.0 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -3262,7 +3232,7 @@ function buildEffectiveChain(passOrder, restSlots){
   for(const pos of sortedSlots){
     const clampedPos = Math.max(0, Math.min(pos, result.length));
     const restId = restIdx===1 ? 'V' : ('V'+String.fromCharCode(64+restIdx)); // V, VB, VC, VD...
-    result.splice(clampedPos, 0, {id:restId, name:'Rest Day', rest:true, exercises:[], restSlotPos:pos});
+    result.splice(clampedPos, 0, {id:restId, name:'Forced Rest', rest:true, exercises:[], restSlotPos:pos});
     restIdx++;
   }
   // Assign display letters A-Z to workout passes
@@ -3284,14 +3254,14 @@ function getEffectiveChain(){
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.7.1';
+const APP_VERSION = '2.8.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.7.1'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.8.0'};
 state.cycles=[newCycle()];
 
 
@@ -4039,7 +4009,7 @@ function buildReorderUI(effectiveChain){
   });
 
   html+=`</div>
-    <div style="font-family:var(--mono);font-size:.52rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;margin-top:4px;">Rest Day Positions</div>
+    <div style="font-family:var(--mono);font-size:.52rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;margin-top:4px;">Forced Rest Positions</div>
     <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);margin-bottom:10px;">Add a rest day after any session:</div>
     <div id="rest-slot-list" style="margin-bottom:12px;">`;
 
@@ -4441,7 +4411,7 @@ function showEditPage(){
       <div class="edit-cards">
         <div class="edit-card" onclick="showEditRest()">
           <div class="edit-card-icon">🌙</div>
-          <div class="edit-card-title">Rest Days</div>
+          <div class="edit-card-title">Forced Rest</div>
           <div class="edit-card-desc">Add or remove rest days.<br>Place them after any session in your cycle.</div>
         </div>
         <div class="edit-card" onclick="showEditSort()">
@@ -4463,7 +4433,7 @@ function showEditRest(){
   const restSlots=state.restSlots||DEFAULT_REST_SLOTS;
   let html=`<div class="edit-page">
     <div class="edit-back" onclick="showEditPage()">← Back to Edit</div>
-    <div class="edit-title">Rest Days</div>
+    <div class="edit-title">Forced Rest</div>
     <div class="edit-section-sub">Add a rest day after any session. Changes take effect next cycle.</div>`;
   for(let pos=1;pos<=passOrder.length;pos++){
     const p=BASE_PASSES.find(x=>x.id===passOrder[pos-1]);
@@ -4818,56 +4788,73 @@ function clearNote(exId){
   saveNote(exId);
 }// ── EXERCISE ACTIONS ──────────────────────────────────────────
 function saveExercise(passId,exId){
+  // Capture any unsaved DOM inputs to buffer first — 
+  // this ensures values aren't lost if DOM is partially rendered (iOS background)
+  captureInputsToSetsBuffer(exId, passId);
   ensureDraft(passId);
   const chain = getEffectiveChain();
   const pass = chain.find(p=>p.id===passId);
   const ex = pass.exercises.find(e=>e.id===exId);
   const isBW=!!ex.bw;
-  const isTimed=!!ex.timed;
+  const isTimed=!!(state.exerciseTagOverrides?.[exId]?.timed ?? ex.timed);
   const todayWkg=getTodayWeight();
-  // Ensure extraSets initialized with correct defaults
   ensureExtraSets(exId, passId);
   const rawSets = state.draft.extraSets[exId];
-  // Read values using origIdx (the DOM IDs use origIdx)
+  const buf = state.draft.inputBuffer?.[exId] || [];
+  // Read values: DOM first, fall back to buffer (handles iOS background case)
   const sets = rawSets.map((s, origIdx) => {
     const warmup = s.warmup;
-    const forced = parseInt(document.getElementById('f-'+exId+'-'+origIdx)?.value)||null;
+    const b = buf[origIdx] || {};
+    const domF = document.getElementById('f-'+exId+'-'+origIdx)?.value;
+    const forced = (domF && domF !== '') ? (parseInt(domF)||null) : (b.forced ?? null);
     if(isBW){
-      const extraDisp = parseFloat(document.getElementById('bw-'+exId+'-'+origIdx)?.value);
-      const extraKg = isNaN(extraDisp)?0:toKg(extraDisp);
-      const repsOrSecs = parseInt(document.getElementById('r-'+exId+'-'+origIdx)?.value)||null;
+      const domBw = document.getElementById('bw-'+exId+'-'+origIdx)?.value;
+      const domR = document.getElementById('r-'+exId+'-'+origIdx)?.value;
+      const extraDisp = (domBw && domBw !== '') ? parseFloat(domBw) : null;
+      const extraKg = extraDisp !== null && !isNaN(extraDisp) ? toKg(extraDisp) : (b.extra ?? 0);
+      const repsOrSecs = (domR && domR !== '') ? (parseInt(domR)||null) : (isTimed ? (b.secs ?? null) : (b.reps ?? null));
       return isTimed ? {extra:extraKg, bwSnap:todayWkg||0, secs:repsOrSecs, forced, warmup}
                      : {extra:extraKg, bwSnap:todayWkg||0, reps:repsOrSecs, forced, warmup};
     }else{
-      const weightDisp = parseFloat(document.getElementById('w-'+exId+'-'+origIdx)?.value)||null;
-      const weightKg = weightDisp!=null ? toKg(weightDisp) : null;
-      const repsOrSecs = parseInt(document.getElementById('r-'+exId+'-'+origIdx)?.value)||null;
-      const sideBtn=document.getElementById('side-'+exId+'-'+origIdx);
-      const side=sideBtn?sideBtn.textContent.trim():null;
-      const sideVal=(side&&side!=='—')?side:null;
+      const domW = document.getElementById('w-'+exId+'-'+origIdx)?.value;
+      const domR = document.getElementById('r-'+exId+'-'+origIdx)?.value;
+      const weightDisp = (domW && domW !== '') ? parseFloat(domW) : null;
+      const weightKg = weightDisp !== null && !isNaN(weightDisp) ? toKg(weightDisp) : (b.weight ?? null);
+      const repsOrSecs = (domR && domR !== '') ? (parseInt(domR)||null) : (isTimed ? (b.secs ?? null) : (b.reps ?? null));
+      const sideBtn = document.getElementById('side-'+exId+'-'+origIdx);
+      const side = sideBtn ? sideBtn.textContent.trim() : null;
+      const sideVal = (side && side !== '—') ? side : (b.side ?? null);
       return isTimed ? {weight:weightKg, secs:repsOrSecs, forced, warmup, side:sideVal}
                      : {weight:weightKg, reps:repsOrSecs, forced, warmup, side:sideVal};
     }
   });
-  const displayName = state.exerciseOverrides?.[exId] || state.draft.swaps[exId] || ex.name;
-  state.draft.savedExercises[exId]={id:exId,name:displayName,sets,bw:isBW};
-  delete state.draft.savedExercises[exId].editing;
-  save();showToast('Saved ✓');if(state.timerEnabled)startRestTimer();rerenderPass(passId);
+  const displayName = state.exerciseOverrides?.[exId] || state.draft?.swaps?.[exId] || ex.name;
+  state.draft.savedExercises[exId] = {id:exId, name:displayName, sets, bw:isBW};
+  // Clear logged sets after saving — they're now in savedExercises
+  if(state.draft.loggedSets) delete state.draft.loggedSets[exId];
+  save(); showToast('Saved ✓');
+  if(state.timerEnabled) startRestTimer();
+  rerenderPass(passId);
 }
 function unsaveExercise(passId,exId){
   ensureDraft(passId);
-  const saved=state.draft.savedExercises[exId];
+  const saved = state.draft.savedExercises[exId];
   if(saved){
-    // Restore extraSets from all saved sets (new model: all sets in one array)
-    if(saved.sets&&saved.sets.length>0){
-      state.draft.extraSets[exId]=saved.sets.map(s=>({warmup:!!s.warmup}));
+    // Restore inputBuffer from saved sets so inputs show old values
+    if(saved.sets && saved.sets.length > 0){
+      state.draft.inputBuffer[exId] = saved.sets.map(s => ({
+        weight: s.weight, reps: s.reps, secs: s.secs,
+        extra: s.extra, forced: s.forced, side: s.side
+      }));
     }
-    // Mark as editing — render will show filled-in inputs instead of disabled
-    state.draft.savedExercises[exId]={...saved,editing:true};
-  }else{
+    // Clear logged state — user needs to re-log after editing
+    if(state.draft.loggedSets) delete state.draft.loggedSets[exId];
+    // Remove the saved exercise so it renders as editable again
+    delete state.draft.savedExercises[exId];
+  } else {
     delete state.draft.savedExercises[exId];
   }
-  save();rerenderPass(passId);
+  save(); rerenderPass(passId);
 }
 
 // ── PER-SET LOGGING ───────────────────────────────────────────
@@ -5281,7 +5268,7 @@ function renderProgress(){
   const prs=getAllPRs();
   if(prs.length){html+=`<div class="section-sub">★ Personal Records</div><div class="pr-grid">`;prs.forEach(pr=>{const val=pr.bw?`BW+${toDisplay(pr.extra)||0}${unitLabel()}`:`${toDisplay(pr.weight)}${unitLabel()}`;const sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${unitLabel()} · ${pr.reps||'?'}r`:`${pr.reps||'?'} reps`;html+=`<div class="pr-card"><div class="pr-ex-name">${pr.name}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;});html+=`</div>`;}
   html+=`<div class="section-sub">History</div>`;
-  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${entry.passId} — ${entry.passName}</div></div><div style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Rest Day</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${ex.name}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW(${toDisplay(s.bwSnap)||0})+${toDisplay(s.extra)||0}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${ex.name}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
+  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${entry.passId} — ${entry.passName}</div></div><div style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${ex.name}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW(${toDisplay(s.bwSnap)||0})+${toDisplay(s.extra)||0}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${ex.name}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
   el.innerHTML=html;
 }
 
