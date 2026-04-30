@@ -2740,7 +2740,7 @@ body.theme-ember .set-log-btn.has-value{border-color:#5a7a2a;color:#a0cc40;}
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.9.0 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.9.1 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -3256,14 +3256,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.9.0';
+const APP_VERSION = '2.9.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.9.0'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.9.1'};
 state.cycles=[newCycle()];
 
 
@@ -3812,7 +3812,7 @@ function renderChain(){
           const workList   = rawSets.map((s,i)=>({...s,origIdx:i})).filter(s=>!s.warmup);
           const sortedSets = [...warmupList, ...workList];
           const unitL = unitLabel();
-          const placeholderW = prev ? (toDisplay(prev.weight)||'—') : '—';
+          const placeholderW = '—';
           html+=`<div class="sets-table">`;
           // Column header for unilateral exercises
           if(isUni){
@@ -3872,7 +3872,7 @@ function renderChain(){
                   min="-50" step="${unitL==='lbs'?'1':'1.25'}" ${dis}>
                   <div class="set-unit">+${unitL} (BW:${snapDisp})</div></div>
                 <div><input class="${'set-input'+wCls+(isTimed?' timed':'')}" type="number" id="r-${ex.id}-${origIdx}"
-                  placeholder="${isTimed?(prev?.secs||'—'):(prev?.reps||'—')}" value="${isTimed?(savedSet?.secs||bufVal?.secs||''):(savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:'')}" min="1" ${isTimed?'max="3600"':'max="50"'} ${dis}>
+                  placeholder="${isTimed?('—'):('—')}" value="${isTimed?(savedSet?.secs||bufVal?.secs||''):(savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:'')}" min="1" ${isTimed?'max="3600"':'max="50"'} ${dis}>
                   <div class="set-unit${isTimed?' time-unit':''}">${isTimed?'sec':'reps'}</div></div>
                 <div><input class="set-input${wCls} forced" type="number" id="f-${ex.id}-${origIdx}"
                   placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}>
@@ -3891,7 +3891,7 @@ function renderChain(){
                   oninput="updateLogBtnState('${ex.id}',${origIdx})">
                   <div class="set-unit">${unitL}</div></div>
                 <div><input class="${'set-input'+wCls+(isTimed?' timed':'')}" type="number" id="r-${ex.id}-${origIdx}"
-                  placeholder="${isTimed?(prev?.secs||'—'):(prev?.reps||'—')}" value="${isTimed?(savedSet?.secs||bufVal?.secs||''):(savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:'')}" min="1" ${isTimed?'max="3600"':'max="50"'} ${dis}>
+                  placeholder="${isTimed?('—'):('—')}" value="${isTimed?(savedSet?.secs||bufVal?.secs||''):(savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:'')}" min="1" ${isTimed?'max="3600"':'max="50"'} ${dis}>
                   <div class="set-unit${isTimed?' time-unit':''}">${isTimed?'sec':'reps'}</div></div>
                 <div><input class="set-input${wCls} forced" type="number" id="f-${ex.id}-${origIdx}"
                   placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}>
