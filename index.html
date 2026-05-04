@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="The Chain — Resistance Training">
 <meta name="theme-color" content="#0a0a0a">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230a0a0a'/><text y='68' x='50' text-anchor='middle' font-size='38' font-family='serif' fill='%23c0392b'>TC</text></svg>">
+<link rel="manifest" href="data:application/manifest+json,{%22name%22:%22The%20Chain%20%E2%80%94%20Resistance%20Training%22,%22short_name%22:%22The%20Chain%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%230a0a0a%22,%22theme_color%22:%22%230a0a0a%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Crect%20width='100'%20height='100'%20fill='%230a0a0a'/%3E%3Ctext%20y='68'%20x='50'%20text-anchor='middle'%20font-size='38'%20font-family='serif'%20fill='%23c0392b'%3ETC%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22any%22,%22type%22:%22image/svg+xml%22}]}">
 <title>The Chain — Resistance Training</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&family=Orbitron:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Space+Grotesk:wght@300;400;700&family=Crimson+Pro:ital,wght@0,300;1,300&family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -2370,12 +2371,12 @@ body.theme-daylight .ex-btn-done:hover{
   background:#f0f7ec;
 }
 body.theme-daylight .ex-btn-skip{
-  border-color:#d0ccc0;
-  color:#888;
+  border-color:#aaa49a;
+  color:#555;
 }
 body.theme-daylight .ex-btn-edit{
-  border-color:#d0ccc0;
-  color:#666;
+  border-color:#aaa49a;
+  color:#444;
 }
 body.theme-daylight .ex-saved-badge{color:var(--green-bright);}
 
@@ -2740,7 +2741,7 @@ body.theme-ember .set-log-btn.has-value{border-color:#5a7a2a;color:#a0cc40;}
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.9.2 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v3.0.0 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -3105,6 +3106,7 @@ const EXERCISE_LIBRARY = [
   {name:'Pec Deck', cat:'Chest'},
   {name:'Single-Arm Cable Flyes', cat:'Chest'},
   // BACK
+  {name:'Back Extension', cat:'Back'},
   {name:'Bentover Row', cat:'Back'},
   {name:'Chins (supinated)', cat:'Back'},
   {name:'Close-grip Pulldown', cat:'Back'},
@@ -3259,14 +3261,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.9.2';
+const APP_VERSION = '3.0.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.9.2'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.0.0'};
 state.cycles=[newCycle()];
 
 
@@ -3976,7 +3978,7 @@ function renderChain(){
       const skippedCount=Object.values(savedExs).filter(e=>e&&e.skipped).length;
       html+=`<div class="pass-actions">`;
       if(!isDone){html+=`<button class="btn-primary" onclick="finishPass('${passId}')" ${savedCount===0?'disabled':''}>Finish Session →</button><button class="btn-secondary" onclick="undoPass('${passId}')">↩</button>`;}
-      else{html+=`<button class="btn-secondary" onclick="undoPass('${passId}')">↩ Undo</button>`;}
+      else{html+=`<button class="btn-secondary" onclick="undoPass('${passId}')">↩ Undo</button><button class="btn-secondary" onclick="copySessionToClipboard('${passId}')" style="margin-left:6px;">⎘ Copy</button>`;}
       html+=`</div>`;
       if(!isDone&&(savedCount>0||skippedCount>0)){html+=`<div class="draft-notice">☁ ${savedCount} saved · ${skippedCount} skipped · synced to cloud</div>`;}
     }
@@ -5019,7 +5021,7 @@ function finishPass(passId){
   curCycle().done[passId]={date:today,exercises};
   state.log.push({passId,passName:pass.name,timestamp:Date.now(),exercises});
   state.draft=null;
-  save();showToast('Session done! 💪');renderChain();
+  save();pushState();showToast('Session done! 💪');renderChain();
 }
 
 // ── SET MANAGEMENT ────────────────────────────────────────────
@@ -5170,7 +5172,7 @@ async function doSwap(exId,val,passId){
   rerenderPass(passId);
 }
 function showAddEx(passId){document.getElementById('addbtn-'+passId).style.display='none';document.getElementById('addform-'+passId).style.display='flex';setTimeout(()=>document.getElementById('addinput-'+passId)?.focus(),50);}
-function confirmAddEx(passId){const inp=document.getElementById('addinput-'+passId);const name=inp?.value.trim();if(!name)return;ensureDraft(passId);state.draft.extras.push({name,saved:false});save();rerenderPass(passId);}
+function confirmAddEx(passId){const inp=document.getElementById('addinput-'+passId);const name=inp?.value.trim();if(!name)return;ensureDraft(passId);state.draft.extras.push({name,saved:false});save();rerenderPass(passId);setTimeout(()=>{const card=document.getElementById('card-'+passId);const blocks=card?.querySelectorAll('.ex-block');if(blocks?.length)blocks[blocks.length-1].scrollIntoView({behavior:'smooth',block:'start'});},50);}
 function removeExtra(passId,idx){ensureDraft(passId);state.draft.extras.splice(idx,1);save();rerenderPass(passId);}
 function addExtraExSet(passId,idx,warmup){
   ensureDraft(passId);
@@ -5189,6 +5191,42 @@ function removeExtraExSet(passId,idx,si){
 // ── PASS MANAGEMENT ───────────────────────────────────────────
 function doneRest(passId){const today=new Date().toLocaleDateString('en-GB',{month:'short',day:'numeric'});curCycle().done[passId]={date:today,exercises:[]};save();showToast('Rest logged ✓');renderChain();}
 function undoPass(passId){curCycle().done[passId]=null;if(state.draft&&state.draft.passId===passId)state.draft=null;for(let i=state.log.length-1;i>=0;i--){if(state.log[i].passId===passId){state.log.splice(i,1);break;}}save();renderChain();}
+
+function copySessionToClipboard(passId){
+  const cycle=curCycle();const data=cycle.done[passId];if(!data)return;
+  const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);
+  const u=unitLabel();
+  let lines=['💪 The Chain — '+(pass?.name||passId),'📅 '+data.date,''];
+  (data.exercises||[]).forEach(ex=>{
+    lines.push(ex.name);
+    let w=0,s=0;
+    (ex.sets||[]).forEach(set=>{
+      if(set.warmup){
+        w++;
+        const wt=set.weight!=null?toDisplay(set.weight)+' '+u+' × ':'BW × ';
+        lines.push('  W'+w+': '+wt+(set.reps||'?')+'r');
+      }else{
+        s++;
+        let str='  S'+s+': ';
+        if(set.extra!=null)str+='BW+'+toDisplay(set.extra)+' '+u+' × '+(set.reps||'?')+'r';
+        else if(set.secs)str+=set.secs+'s';
+        else str+=(set.weight!=null?toDisplay(set.weight)+' '+u:'')+' × '+(set.reps||'?')+'r';
+        if(set.forced)str+=' (+'+set.forced+'f)';
+        lines.push(str);
+      }
+    });
+    lines.push('');
+  });
+  lines.push('thechain.training');
+  const text=lines.join('\n');
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>showToast('Copied ✓')).catch(()=>showToast('Copy failed'));
+  }else{
+    const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    showToast('Copied ✓');
+  }
+}
 function doNewCycle(){
   // Ensure new cycle has all current chain keys
   const newC={id:Date.now(),done:{}};
@@ -5853,6 +5891,14 @@ window.addEventListener('beforeunload',()=>{
       keepalive:true
     }).catch(()=>{});
   }catch(e){/* best-effort */}
+});
+
+// Push state when tab goes hidden (more reliable than beforeunload on mobile/desktop)
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden'&&currentUser&&!isLoading&&!isFreshState(state)){
+    clearTimeout(saveTimer);
+    pushState();
+  }
 });
 
 </script>
