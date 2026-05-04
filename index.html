@@ -2740,7 +2740,7 @@ body.theme-ember .set-log-btn.has-value{border-color:#5a7a2a;color:#a0cc40;}
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.9.1 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v2.9.2 · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -2818,20 +2818,23 @@ async function handleSession(session){
     showAuthScreen();
     return;
   }
-  currentUser = await buildCurrentUser(session);
-  // Clean up legacy localStorage keys from pre-auth era
-  cleanLegacyLocalStorage();
-  // Load state from cloud or localStorage
-  await loadStateForUser();
-  showAppShell();
-  initTheme();
-  requestNotificationPermission && requestNotificationPermission();
-  // First-time user — run onboarding before showing chain
-  if(!state.onboardingDone){
-    showOnboarding(currentUser.id, 1, {});
-  } else {
-    renderChain();
+  isLoading = true; // block save() during entire load sequence
+  try{
+    currentUser = await buildCurrentUser(session);
+    cleanLegacyLocalStorage();
+    await loadStateForUser();
+    showAppShell();
+    initTheme();
+    requestNotificationPermission && requestNotificationPermission();
+    if(!state.onboardingDone){
+      showOnboarding(currentUser.id, 1, {});
+    } else {
+      renderChain();
+    }
+  } finally {
+    isLoading = false; // always unblock, even if something throws
   }
+  // Now safe to sync — loading is complete
   startPeriodicSync && startPeriodicSync();
   syncFromCloud && syncFromCloud(currentUser.id);
 }
@@ -3256,14 +3259,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '2.9.1';
+const APP_VERSION = '2.9.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.9.1'};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'2.9.2'};
 state.cycles=[newCycle()];
 
 
@@ -3570,6 +3573,7 @@ async function pushState(){
   }catch(e){console.error('Cloud push error:',e);setSyncDot('err');}
 }
 function save(){
+  if(isLoading) return; // never write during load phase — prevents mobile overwriting cloud
   invalidateChainCache(); // chain may have changed
   state.updatedAt=Date.now();
   if(currentUser){try{localStorage.setItem(lsKey(currentUser.id),JSON.stringify(state));}catch(e){console.warn('localStorage write failed',e);}}
