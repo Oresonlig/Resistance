@@ -3274,6 +3274,7 @@ function ensureStateDefaults(){
   if(!state.removedExercises) state.removedExercises = {};
   if(!state.weightStep) state.weightStep = 2.5;
   if(!state.addedExercises) state.addedExercises = {};
+  if(!Array.isArray(state.importedPRs)) state.importedPRs = [];
   if(typeof state.updatedAt !== 'number') state.updatedAt = 0;
   if(!Array.isArray(state.customExercises)) state.customExercises = [];
   if(!state.appVersion) state.appVersion = APP_VERSION;
@@ -3612,14 +3613,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.3.1';
+const APP_VERSION = '3.4.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.3.1',removedExercises:{},weightStep:2.5,addedExercises:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.4.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
 state.cycles=[newCycle()];
 
 
@@ -5847,7 +5848,26 @@ function getLastSession(exId){
   }
   return null;
 }
-function getAllPRs(){const prs={};const defs=BASE_PASSES.flatMap(p=>p.exercises).map(e=>({id:e.id,name:e.name,bw:!!e.bw}));for(const entry of state.log){for(const ex of(entry.exercises||[])){if(ex.skipped||ex.extra)continue;const def=defs.find(d=>d.id===ex.id);const isBW=def?.bw;for(const s of(ex.sets||[])){if(isBW){const t=(s.extra||0)+(s.bwSnap||0);const cur=prs[ex.id];if(!cur||t>((cur.extra||0)+(cur.bwSnap||0)))prs[ex.id]={name:ex.name,extra:s.extra||0,bwSnap:s.bwSnap||0,reps:s.reps,bw:true};}else{if(!s.weight)continue;const cur=prs[ex.id];if(!cur||s.weight>cur.weight||(s.weight===cur.weight&&(s.reps||0)>(cur.reps||0)))prs[ex.id]={name:ex.name,weight:s.weight,reps:s.reps,bw:false};}}}}return Object.values(prs);}
+function getAllPRs(){
+  const prs={};
+  const defs=BASE_PASSES.flatMap(p=>p.exercises).map(e=>({id:e.id,name:e.name,bw:!!e.bw}));
+  for(const entry of state.log){
+    for(const ex of(entry.exercises||[])){
+      if(ex.skipped||ex.extra)continue;
+      const def=defs.find(d=>d.id===ex.id);const isBW=def?.bw;
+      for(const s of(ex.sets||[])){
+        if(isBW){const t=(s.extra||0)+(s.bwSnap||0);const cur=prs[ex.id];if(!cur||t>((cur.extra||0)+(cur.bwSnap||0)))prs[ex.id]={name:ex.name,extra:s.extra||0,bwSnap:s.bwSnap||0,reps:s.reps,bw:true};}
+        else{if(!s.weight)continue;const cur=prs[ex.id];if(!cur||s.weight>cur.weight||(s.weight===cur.weight&&(s.reps||0)>(cur.reps||0)))prs[ex.id]={name:ex.name,weight:s.weight,reps:s.reps,bw:false};}
+      }
+    }
+  }
+  // Append imported PRs for exercises not yet trained (lower priority than logged PRs)
+  const loggedNames=new Set(Object.values(prs).map(p=>p.name.toLowerCase()));
+  for(const pr of (state.importedPRs||[])){
+    if(!loggedNames.has(pr.name.toLowerCase())) prs['imp_'+pr.name]=pr;
+  }
+  return Object.values(prs);
+}
 
 // ── PROGRESS ──────────────────────────────────────────────────
 function renderProgress(){
@@ -6033,7 +6053,11 @@ function renderData(){
     <button class="data-btn" onclick="sendFeedback()">💡 Send feedback</button>
   </div>
 
-  <div class="section-sub">Backup</div>
+  <div class="section-sub">Chain Template</div>
+  <div style="font-family:var(--mono);font-size:.58rem;color:var(--gray-light);line-height:1.8;margin-bottom:10px">Share your training program. Export a template — others can import it to start with the same chain structure and PRs.</div>
+  <div class="data-row"><button class="data-btn" onclick="exportTemplate()">↓ Export template</button><button class="data-btn" onclick="document.getElementById('importTemplateFile').click()">↑ Import template</button></div>
+  <input type="file" id="importTemplateFile" accept=".json" style="display:none" onchange="importTemplate(event)">
+  <div class="section-sub" style="margin-top:24px">Backup</div>
   <div style="font-family:var(--mono);font-size:.58rem;color:var(--gray-light);line-height:1.8;margin-bottom:10px">Export all data as JSON. Import to restore.</div>
   <div class="data-row"><button class="data-btn" onclick="exportData()">↓ Export JSON</button><button class="data-btn" onclick="document.getElementById('importFile').click()">↑ Import JSON</button></div>
   <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
@@ -6041,6 +6065,105 @@ function renderData(){
   <div class="data-row"><button class="data-btn danger" onclick="resetAll()">✕ Reset all data</button></div>`;
 }
 function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`thechain-${currentUser?.id}-${todayStr()}.json`;a.click();showToast('Export done!');}
+
+// ── CHAIN TEMPLATE EXPORT / IMPORT ───────────────────────────
+function exportTemplate(){
+  // Build PR map keyed by exercise name
+  const prMap={};
+  const defs=BASE_PASSES.flatMap(p=>p.exercises).map(e=>({id:e.id,name:e.name,bw:!!e.bw}));
+  for(const entry of state.log){
+    for(const ex of(entry.exercises||[])){
+      if(ex.skipped||ex.extra)continue;
+      const def=defs.find(d=>d.id===ex.id);const isBW=def?.bw;
+      for(const s of(ex.sets||[])){
+        if(isBW){
+          const t=(s.extra||0)+(s.bwSnap||0);const cur=prMap[ex.name];
+          if(!cur||t>((cur.extra||0)+(cur.bwSnap||0)))prMap[ex.name]={name:ex.name,extra:s.extra||0,bwSnap:s.bwSnap||0,reps:s.reps,bw:true};
+        }else{
+          if(!s.weight)continue;const cur=prMap[ex.name];
+          if(!cur||s.weight>cur.weight||(s.weight===cur.weight&&(s.reps||0)>(cur.reps||0)))prMap[ex.name]={name:ex.name,weight:s.weight,reps:s.reps,bw:false};
+        }
+      }
+    }
+  }
+  const template={
+    format:'thechain-template',v:1,
+    exportedAt:todayStr(),
+    exportedBy:currentUser?.name||'',
+    passOrder:state.passOrder||DEFAULT_PASS_ORDER,
+    restSlots:state.restSlots||DEFAULT_REST_SLOTS,
+    passNameOverrides:state.passNameOverrides||{},
+    removedExercises:state.removedExercises||{},
+    addedExercises:state.addedExercises||{},
+    permanentSwaps:state.permanentSwaps||{},
+    exerciseTagOverrides:state.exerciseTagOverrides||{},
+    exerciseOverrides:state.exerciseOverrides||{},
+    customExercises:state.customExercises||[],
+    prs:Object.values(prMap)
+  };
+  const blob=new Blob([JSON.stringify(template,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`thechain-template-${todayStr()}.json`;a.click();
+  showToast('Template exported!');
+}
+
+async function importTemplate(e){
+  const file=e.target.files[0];if(!file)return;
+  e.target.value='';
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(d.format!=='thechain-template'||!Array.isArray(d.passOrder))throw new Error('Invalid template');
+      // Build confirmation text
+      const sessionNames=(d.passOrder||[]).map(id=>{
+        const ov=(d.passNameOverrides||{})[id];
+        const base=BASE_PASSES.find(p=>p.id===id);
+        return ov||base?.name||id;
+      });
+      const restCount=(d.restSlots||[]).length;
+      const prCount=(d.prs||[]).length;
+      const restText=restCount?` + ${restCount} rest day${restCount>1?'s':''}`:'';
+      const prText=prCount?`<br><span style="font-size:.9em;opacity:.8;">${prCount} PR${prCount>1?'s':''} included</span>`:'';
+      const ok=await askModalConfirm(
+        'Import chain template?',
+        `<strong>${sessionNames.length} session${sessionNames.length>1?'s':''}${restText}:</strong><br>${sessionNames.join(' · ')}${prText}<br><br>This will replace your current chain structure. Your training history will be kept.`,
+        {confirmLabel:'Import'}
+      );
+      if(!ok)return;
+      // Apply chain structure
+      state.passOrder=d.passOrder;
+      state.restSlots=d.restSlots||[];
+      state.passNameOverrides=d.passNameOverrides||{};
+      state.removedExercises=d.removedExercises||{};
+      state.addedExercises=d.addedExercises||{};
+      state.permanentSwaps=d.permanentSwaps||{};
+      state.exerciseTagOverrides=d.exerciseTagOverrides||{};
+      state.exerciseOverrides=d.exerciseOverrides||{};
+      // Merge custom exercises (skip duplicates by name)
+      const existingNames=new Set((state.customExercises||[]).map(e=>e.name.toLowerCase()));
+      for(const ex of (d.customExercises||[])){
+        if(!existingNames.has(ex.name.toLowerCase()))state.customExercises.push(ex);
+      }
+      // Import PRs
+      state.importedPRs=d.prs||[];
+      ensureStateDefaults();
+      invalidateChainCache();
+      // Ensure current cycle has slots for all new sessions
+      const newChain=getEffectiveChain();
+      if(state.cycles.length>0){
+        const curC=state.cycles[state.cycles.length-1];
+        newChain.filter(p=>!p.rest).forEach(p=>{if(!(p.id in curC.done))curC.done[p.id]=null;});
+      }
+      save();
+      showToast('Template imported!');
+      renderChain();
+    }catch(err){
+      showToast('Error: invalid template file');
+    }
+  };
+  reader.readAsText(file);
+}
 
 // ── FEEDBACK & BUG REPORTS ────────────────────────────────────
 const SUPPORT_EMAIL = 'oresonlig@gmail.com'; // TODO: change to support@thechain.training when SMTP is set up
