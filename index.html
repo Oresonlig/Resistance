@@ -3086,7 +3086,7 @@ body.theme-ember .set-log-btn.has-value{border-color:#5a7a2a;color:#a0cc40;}
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v3.0.0 · Sync <span class="sync-dot" id="syncDot"></span></div>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v<span id="headerVersion">—</span> · Sync <span class="sync-dot" id="syncDot"></span></div>
     </div>
   </header>
   <nav>
@@ -3171,6 +3171,7 @@ async function handleSession(session){
     await loadStateForUser();
     showAppShell();
     initTheme();
+    const hv=document.getElementById('headerVersion');if(hv)hv.textContent=APP_VERSION;
     requestNotificationPermission && requestNotificationPermission();
     if(!state.onboardingDone){
       showOnboarding(currentUser.id, 1, {});
@@ -3611,14 +3612,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.2.0';
+const APP_VERSION = '3.3.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.2.0',removedExercises:{},weightStep:2.5,addedExercises:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.3.1',removedExercises:{},weightStep:2.5,addedExercises:{}};
 state.cycles=[newCycle()];
 
 
