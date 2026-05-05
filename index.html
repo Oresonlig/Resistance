@@ -2639,7 +2639,9 @@ body.theme-daylight .pass-card.done .pass-preview{color:#bbb !important;}
    Fonts: Cinzel (display), Crimson Pro (body), DM Mono (data)
 ─────────────────────────────────────────────────────────────── */
 body.theme-crusader{
-  --black:#1c1208;--white:#f2ecd8;--red:#8b1a1a;
+  --black:#ede6d4;    /* semantic parchment — matches Daylight inversion pattern */
+  --white:#1c1208;    /* semantic inkwood — primary text */
+  --red:#8b1a1a;
   --gold:#b8930a;--green-bright:#2a6624;
   --gray-mid:#e0d8c4;--gray-light:#9a8e7a;
   --display:'Cinzel',serif;
@@ -2651,24 +2653,39 @@ body.theme-crusader{
     radial-gradient(ellipse 60% 40% at 80% 80%,rgba(139,26,26,0.04) 0%,transparent 70%),
     linear-gradient(180deg,#f0e8d5 0%,#ede6d4 50%,#e8dfc8 100%);
   background-attachment:fixed;
+  color:#1c1208;
 }
 
-/* Golden sacred motes drifting upward */
+/* Sacred motes drifting upward — gold & crimson on parchment */
 body.theme-crusader::before{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
   background-image:
-    radial-gradient(1px 2px at 8% 78%,rgba(184,147,10,0.4) 50%,transparent 100%),
-    radial-gradient(2px 1px at 24% 62%,rgba(184,147,10,0.25) 50%,transparent 100%),
-    radial-gradient(1px 1px at 54% 85%,rgba(139,26,26,0.2) 50%,transparent 100%),
-    radial-gradient(2px 2px at 76% 70%,rgba(184,147,10,0.35) 50%,transparent 100%),
-    radial-gradient(1px 1px at 91% 55%,rgba(184,147,10,0.3) 50%,transparent 100%);
+    radial-gradient(3px 4px at 8% 78%,rgba(139,26,26,0.55) 50%,transparent 100%),
+    radial-gradient(4px 3px at 24% 62%,rgba(184,147,10,0.65) 50%,transparent 100%),
+    radial-gradient(3px 3px at 54% 85%,rgba(139,26,26,0.5) 50%,transparent 100%),
+    radial-gradient(4px 4px at 76% 70%,rgba(184,147,10,0.7) 50%,transparent 100%),
+    radial-gradient(3px 3px at 91% 55%,rgba(184,147,10,0.6) 50%,transparent 100%),
+    radial-gradient(2px 3px at 38% 40%,rgba(139,26,26,0.45) 50%,transparent 100%),
+    radial-gradient(3px 2px at 65% 25%,rgba(184,147,10,0.55) 50%,transparent 100%);
   background-size:100% 200%;
-  animation:crusader-motes 22s linear infinite;
-  opacity:0.55;
+  animation:crusader-motes 18s linear infinite;
+  opacity:0.85;
 }
 @keyframes crusader-motes{
   0%{background-position:0% 100%;}
   100%{background-position:0% -100%;}
+}
+
+/* Crusader cross — ghosted in background of chain view */
+body.theme-crusader #view-chain{position:relative;}
+body.theme-crusader #view-chain::before{
+  content:'';
+  position:fixed;right:-35px;top:48%;
+  transform:translateY(-50%);
+  width:220px;height:330px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 120'%3E%3Crect x='33' y='0' width='14' height='120' fill='%238b1a1a'/%3E%3Crect x='0' y='25' width='80' height='14' fill='%238b1a1a'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-size:contain;
+  opacity:0.07;pointer-events:none;z-index:0;
 }
 
 /* HEADER */
@@ -2684,15 +2701,22 @@ body.theme-crusader header::after{
   animation:crusader-line 7s ease-in-out infinite;
 }
 @keyframes crusader-line{
-  0%,100%{opacity:0.55;}
-  50%{opacity:1;filter:blur(0.4px);}
+  0%,100%{opacity:0.5;height:1px;}
+  50%{opacity:1;height:2px;filter:blur(0.5px);}
 }
 
 body.theme-crusader .logo{
   font-family:'Cinzel',serif;font-weight:700;
   color:#1c1208;letter-spacing:.2em;text-transform:uppercase;
 }
-body.theme-crusader .logo span{color:#8b1a1a;text-shadow:0 0 10px rgba(139,26,26,0.15);}
+body.theme-crusader .logo span{
+  color:#8b1a1a;
+  animation:crusader-logo 5s ease-in-out infinite;
+}
+@keyframes crusader-logo{
+  0%,100%{text-shadow:0 0 6px rgba(139,26,26,0.2);}
+  50%{text-shadow:0 0 16px rgba(139,26,26,0.5),0 0 28px rgba(184,147,10,0.25);}
+}
 body.theme-crusader .header-user{color:#7a6e5e;}
 body.theme-crusader .header-user strong{color:#1c1208;font-family:'Cinzel',serif;}
 body.theme-crusader .header-logout{border-color:#c8bca4;color:#7a6e5e;}
@@ -5952,11 +5976,11 @@ function renderData(){
     ${THEMES.filter(t=>t.cat==='dark').map(t=>{
       const active = (state.theme||'iron')===t.id;
       return `<button onclick="applyTheme('${t.id}');renderData();"
-        style="background:${active?'#1a0000':'none'};border:1px solid ${active?'var(--red)':'#333'};
-        color:${active?'var(--white)':'#888'};padding:10px 8px;cursor:pointer;text-align:left;
+        style="background:${active?'var(--red)':'none'};border:1px solid ${active?'var(--red)':'var(--gray-mid)'};
+        color:${active?'var(--black)':'inherit'};padding:10px 8px;cursor:pointer;text-align:left;
         font-family:var(--mono);font-size:.48rem;letter-spacing:.04em;transition:all .2s;position:relative;">
-        <div style="font-family:var(--sans);font-size:.8rem;color:${active?'var(--white)':'#aaa'};margin-bottom:3px;">${t.name}</div>
-        <div style="font-size:.44rem;color:#666;line-height:1.4;">${t.desc}</div>
+        <div style="font-family:var(--sans);font-size:.8rem;color:${active?'var(--black)':'inherit'};margin-bottom:3px;">${t.name}</div>
+        <div style="font-size:.44rem;color:var(--gray-light);line-height:1.4;">${t.desc}</div>
         ${active?'<div style="position:absolute;top:6px;right:8px;color:var(--red);font-size:.6rem;">✓</div>':''}
       </button>`;
     }).join('')}
@@ -5966,11 +5990,11 @@ function renderData(){
     ${THEMES.filter(t=>t.cat==='light').map(t=>{
       const active = (state.theme||'iron')===t.id;
       return `<button onclick="applyTheme('${t.id}');renderData();"
-        style="background:${active?'#1a0000':'none'};border:1px solid ${active?'var(--red)':'#333'};
-        color:${active?'var(--white)':'#888'};padding:10px 8px;cursor:pointer;text-align:left;
+        style="background:${active?'var(--red)':'none'};border:1px solid ${active?'var(--red)':'var(--gray-mid)'};
+        color:${active?'var(--black)':'inherit'};padding:10px 8px;cursor:pointer;text-align:left;
         font-family:var(--mono);font-size:.48rem;letter-spacing:.04em;transition:all .2s;position:relative;">
-        <div style="font-family:var(--sans);font-size:.8rem;color:${active?'var(--white)':'#aaa'};margin-bottom:3px;">${t.name}</div>
-        <div style="font-size:.44rem;color:#666;line-height:1.4;">${t.desc}</div>
+        <div style="font-family:var(--sans);font-size:.8rem;color:${active?'var(--black)':'inherit'};margin-bottom:3px;">${t.name}</div>
+        <div style="font-size:.44rem;color:var(--gray-light);line-height:1.4;">${t.desc}</div>
         ${active?'<div style="position:absolute;top:6px;right:8px;color:var(--red);font-size:.6rem;">✓</div>':''}
       </button>`;
     }).join('')}
