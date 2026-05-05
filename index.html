@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230a0a0a'/><text y='68' x='50' text-anchor='middle' font-size='38' font-family='serif' fill='%23c0392b'>TC</text></svg>">
 <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22The%20Chain%20%E2%80%94%20Resistance%20Training%22,%22short_name%22:%22The%20Chain%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%230a0a0a%22,%22theme_color%22:%22%230a0a0a%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Crect%20width='100'%20height='100'%20fill='%230a0a0a'/%3E%3Ctext%20y='68'%20x='50'%20text-anchor='middle'%20font-size='38'%20font-family='serif'%20fill='%23c0392b'%3ETC%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22any%22,%22type%22:%22image/svg+xml%22}]}">
 <title>The Chain — Resistance Training</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&family=Orbitron:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Space+Grotesk:wght@300;400;700&family=Crimson+Pro:ital,wght@0,300;1,300&family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&family=Orbitron:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Space+Grotesk:wght@300;400;700&family=Crimson+Pro:ital,wght@0,300;1,300&family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 
 :root{
@@ -2632,6 +2632,327 @@ body.theme-daylight .pass-card.done .pass-name{color:#999 !important;}
 body.theme-daylight .pass-card.done .pass-preview{color:#bbb !important;}
 
 
+
+/* ── CRUSADER ─────────────────────────────────────────────────
+   Palette: Aged parchment, crusader crimson, burnished gold, deep inkwood
+   Atmosphere: Illuminated manuscript, sacred warrior, stained glass light
+   Fonts: Cinzel (display), Crimson Pro (body), DM Mono (data)
+─────────────────────────────────────────────────────────────── */
+body.theme-crusader{
+  --black:#1c1208;--white:#f2ecd8;--red:#8b1a1a;
+  --gold:#b8930a;--green-bright:#2a6624;
+  --gray-mid:#e0d8c4;--gray-light:#9a8e7a;
+  --display:'Cinzel',serif;
+  --sans:'Crimson Pro',serif;
+  --mono:'DM Mono',monospace;
+  background-color:#ede6d4;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% 0%,rgba(184,147,10,0.09) 0%,transparent 65%),
+    radial-gradient(ellipse 60% 40% at 80% 80%,rgba(139,26,26,0.04) 0%,transparent 70%),
+    linear-gradient(180deg,#f0e8d5 0%,#ede6d4 50%,#e8dfc8 100%);
+  background-attachment:fixed;
+}
+
+/* Golden sacred motes drifting upward */
+body.theme-crusader::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+  background-image:
+    radial-gradient(1px 2px at 8% 78%,rgba(184,147,10,0.4) 50%,transparent 100%),
+    radial-gradient(2px 1px at 24% 62%,rgba(184,147,10,0.25) 50%,transparent 100%),
+    radial-gradient(1px 1px at 54% 85%,rgba(139,26,26,0.2) 50%,transparent 100%),
+    radial-gradient(2px 2px at 76% 70%,rgba(184,147,10,0.35) 50%,transparent 100%),
+    radial-gradient(1px 1px at 91% 55%,rgba(184,147,10,0.3) 50%,transparent 100%);
+  background-size:100% 200%;
+  animation:crusader-motes 22s linear infinite;
+  opacity:0.55;
+}
+@keyframes crusader-motes{
+  0%{background-position:0% 100%;}
+  100%{background-position:0% -100%;}
+}
+
+/* HEADER */
+body.theme-crusader header{
+  background:linear-gradient(180deg,#f5eed8 0%,#f0e8d0 100%);
+  border-bottom:none;
+  box-shadow:0 1px 0 rgba(184,147,10,0.35),0 3px 16px rgba(0,0,0,0.06);
+  position:relative;
+}
+body.theme-crusader header::after{
+  content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,transparent 0%,#b8930a 20%,#8b1a1a 50%,#b8930a 80%,transparent 100%);
+  animation:crusader-line 7s ease-in-out infinite;
+}
+@keyframes crusader-line{
+  0%,100%{opacity:0.55;}
+  50%{opacity:1;filter:blur(0.4px);}
+}
+
+body.theme-crusader .logo{
+  font-family:'Cinzel',serif;font-weight:700;
+  color:#1c1208;letter-spacing:.2em;text-transform:uppercase;
+}
+body.theme-crusader .logo span{color:#8b1a1a;text-shadow:0 0 10px rgba(139,26,26,0.15);}
+body.theme-crusader .header-user{color:#7a6e5e;}
+body.theme-crusader .header-user strong{color:#1c1208;font-family:'Cinzel',serif;}
+body.theme-crusader .header-logout{border-color:#c8bca4;color:#7a6e5e;}
+body.theme-crusader .header-logout:hover{border-color:#8b1a1a;color:#8b1a1a;}
+
+/* NAV */
+body.theme-crusader nav{
+  background:linear-gradient(0deg,#f0e8d0 0%,#f5eed8 100%);
+  border-top:none;
+  box-shadow:0 -1px 0 rgba(184,147,10,0.3),0 -4px 12px rgba(0,0,0,0.04);
+}
+body.theme-crusader nav::before{
+  content:'';position:absolute;left:0;right:0;top:-1px;height:1px;
+  background:linear-gradient(90deg,transparent 0%,#b8930a 30%,#8b1a1a 50%,#b8930a 70%,transparent 100%);
+  opacity:0.45;
+}
+body.theme-crusader nav button{
+  font-family:'Cinzel',serif;font-weight:600;
+  letter-spacing:.1em;color:#9a8e7a;text-transform:uppercase;font-size:.46rem;
+}
+body.theme-crusader nav button.active{
+  border-top:2px solid #8b1a1a;color:#8b1a1a;
+  background:linear-gradient(180deg,rgba(139,26,26,0.06) 0%,transparent 60%);
+}
+
+/* PASS CARDS */
+body.theme-crusader .pass-card{
+  background:linear-gradient(150deg,#f5eed8 0%,#efe8d0 100%);
+  border:1px solid #d8ceb8;
+  box-shadow:0 1px 4px rgba(0,0,0,0.05);
+  position:relative;
+}
+body.theme-crusader .pass-card::after{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,transparent 0%,rgba(184,147,10,0.25) 50%,transparent 100%);
+  pointer-events:none;
+}
+body.theme-crusader .pass-card.next-up{
+  background:linear-gradient(150deg,#faf4e2 0%,#f5edda 100%);
+  border:2px solid #b8930a;
+  animation:crusader-beacon 4s ease-in-out infinite;
+}
+@keyframes crusader-beacon{
+  0%,100%{box-shadow:0 2px 16px rgba(184,147,10,0.18),0 0 32px rgba(184,147,10,0.06);}
+  50%{box-shadow:0 2px 26px rgba(184,147,10,0.32),0 0 52px rgba(184,147,10,0.14);}
+}
+body.theme-crusader .pass-card.next-up::before{
+  background:linear-gradient(135deg,#b8930a 0%,#8b6a00 100%);
+  color:#f5eed8;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.12em;
+  box-shadow:0 0 10px rgba(184,147,10,0.4);
+}
+body.theme-crusader .pass-card.next-up::after{
+  background:linear-gradient(180deg,transparent 0%,#b8930a 50%,transparent 100%);
+  opacity:0.9;width:3px;
+}
+body.theme-crusader .pass-card.in-progress{
+  background:linear-gradient(150deg,#f0f7ec 0%,#eaf3e3 100%);
+  border-color:#2a6624;
+  box-shadow:0 2px 10px rgba(42,102,36,0.1);
+}
+body.theme-crusader .pass-card.done{
+  background:#e8e0cc !important;border-color:#cfc5ae !important;
+  filter:saturate(0.4) !important;opacity:1 !important;
+}
+body.theme-crusader .pass-card.done .pass-letter{color:#c0b8a8 !important;}
+body.theme-crusader .pass-card.done .pass-name{color:#b0a898 !important;}
+body.theme-crusader .pass-card.done .pass-preview{color:#c0b8a8 !important;}
+
+/* PASS LETTER */
+body.theme-crusader .pass-letter{
+  font-family:'Cinzel',serif;font-weight:700;
+  color:#8b1a1a;font-size:2.2rem;
+  text-shadow:0 0 8px rgba(139,26,26,0.1);
+}
+body.theme-crusader .pass-card.next-up .pass-letter{
+  color:#b8930a;
+  animation:crusader-letter 4s ease-in-out infinite;
+}
+@keyframes crusader-letter{
+  0%,100%{color:#b8930a;text-shadow:0 0 6px rgba(184,147,10,0.2);}
+  50%{color:#c9a820;text-shadow:0 0 14px rgba(184,147,10,0.45);}
+}
+body.theme-crusader .pass-name{
+  color:#1c1208;font-family:'Cinzel',serif;font-weight:600;letter-spacing:.05em;
+}
+body.theme-crusader .pass-preview{color:#9a8e7a;font-family:var(--mono);}
+
+/* CHAIN BAR */
+body.theme-crusader .chain-bar{background:#d8d0bc;}
+body.theme-crusader .chain-fill{
+  background:linear-gradient(90deg,#8b1a1a 0%,#b8930a 25%,#8b1a1a 50%,#b8930a 75%,#8b1a1a 100%);
+  background-size:200% 100%;
+  animation:crusader-march 5s linear infinite;
+  box-shadow:0 0 6px rgba(184,147,10,0.35);
+}
+@keyframes crusader-march{
+  0%{background-position:0% 50%;}
+  100%{background-position:200% 50%;}
+}
+
+/* BUTTONS */
+body.theme-crusader .btn-primary{
+  background:linear-gradient(180deg,#a02020 0%,#7a1515 100%);
+  color:#f5eed8;font-family:'Cinzel',serif;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;border:none;
+  box-shadow:0 2px 10px rgba(139,26,26,0.25),inset 0 1px 0 rgba(255,200,100,0.1);
+  transition:all .2s;
+}
+body.theme-crusader .btn-primary:hover{
+  background:linear-gradient(180deg,#b02424 0%,#8b1a1a 100%);
+  box-shadow:0 4px 18px rgba(139,26,26,0.38);transform:translateY(-1px);
+}
+body.theme-crusader .btn-secondary{background:none;border:1px solid #c8bca4;color:#7a6e5e;}
+body.theme-crusader .btn-secondary:hover{border-color:#8b1a1a;color:#8b1a1a;}
+body.theme-crusader .data-btn{background:none;border:1px solid #c8bca4;color:#7a6e5e;}
+body.theme-crusader .data-btn:hover{border-color:#8b1a1a;color:#8b1a1a;}
+
+/* EX BUTTONS */
+body.theme-crusader .ex-btn-done{
+  background:linear-gradient(180deg,#f5eed8 0%,#efe8d0 100%);
+  border:1px solid #2a6624;color:#2a6624;
+  font-family:'Cinzel',serif;font-weight:700;letter-spacing:.08em;
+  transition:all .15s;
+}
+body.theme-crusader .ex-btn-done:hover{background:linear-gradient(180deg,#eef7e8 0%,#e4f0dc 100%);}
+body.theme-crusader .ex-btn-skip{border-color:#b8930a;color:#8a6408;}
+body.theme-crusader .ex-btn-edit{border-color:#c8bca4;color:#7a6e5e;}
+body.theme-crusader .ex-saved-badge{color:#2a6624;}
+body.theme-crusader .ex-done-primary{border-color:#d8ceb8;color:#c8bca4;}
+body.theme-crusader .ex-done-primary.ready{
+  background:linear-gradient(180deg,#a02020 0%,#7a1515 100%);
+  border-color:#8b1a1a;color:#f5eed8;
+}
+
+/* SET INPUTS */
+body.theme-crusader .set-input{
+  background:#faf4e8;border:1px solid #d0c8b4;
+  color:#8b1a1a;font-family:var(--mono);font-weight:700;
+}
+body.theme-crusader .set-input:focus{
+  border-color:#8b1a1a;box-shadow:0 0 0 2px rgba(139,26,26,0.12);outline:none;
+}
+body.theme-crusader .set-input.work-set{border-color:#c4baa6;}
+body.theme-crusader .set-input.warmup{border-color:#e0d8c4;color:#9a8e7a;}
+body.theme-crusader .set-unit{color:#8b1a1a;font-weight:600;}
+body.theme-crusader .set-num{color:#8b1a1a;font-family:'Cinzel',serif;font-weight:700;}
+body.theme-crusader .sets-group-label{
+  color:#7a6e5e;border-top:1px dashed #d0c8b4;
+  font-family:'Cinzel',serif;font-weight:600;
+}
+body.theme-crusader .sets-group-label.work-group{color:#8b1a1a;}
+
+/* EXERCISE NAMES */
+body.theme-crusader .ex-name{
+  color:#1c1208;font-family:'Cinzel',serif;font-weight:600;
+  letter-spacing:.03em;font-size:.88rem;
+}
+body.theme-crusader .ex-detail{color:#7a6e5e;}
+body.theme-crusader .ex-prev .last-val{color:#2a6624;}
+body.theme-crusader .ex-prev .pr-val{color:#8b1a1a;}
+body.theme-crusader .ex-tag.ramp{background:#fef8e6;border-color:#b8930a;color:#8a6408;}
+body.theme-crusader .ex-tag.bw{background:#eef5ea;border-color:#2a6624;color:#2a6624;}
+body.theme-crusader .ex-tag.uni{background:#fdf0ec;border-color:#c05030;color:#a03a20;}
+
+/* AUTH SCREEN */
+body.theme-crusader #userScreen{background:#f0e8d5;}
+body.theme-crusader .auth-bg{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%238b1a1a' stroke-width='1' stroke-opacity='0.07'%3E%3Cline x1='30' y1='0' x2='30' y2='60'/%3E%3Cline x1='0' y1='30' x2='60' y2='30'/%3E%3Crect x='4' y='4' width='52' height='52'/%3E%3C/g%3E%3C/svg%3E");
+}
+body.theme-crusader .auth-logo{color:#1c1208;font-family:'Cinzel',serif;font-weight:700;}
+body.theme-crusader .auth-logo span{color:#8b1a1a;}
+body.theme-crusader .auth-tagline{color:#7a6e5e;}
+body.theme-crusader .auth-btn-google{background:#f5eed8;border:1px solid #d0c8b4;color:#1c1208;}
+body.theme-crusader .auth-btn-google:hover{background:#ede6d0;border-color:#8b1a1a;}
+body.theme-crusader .auth-divider{color:#9a8e7a;}
+body.theme-crusader .auth-divider::before,
+body.theme-crusader .auth-divider::after{background:#d0c8b4;}
+body.theme-crusader #auth-email-form input,
+body.theme-crusader #auth-signup-fields input{background:#faf4e8;border:1px solid #d0c8b4;color:#1c1208;}
+body.theme-crusader #auth-email-form input:focus,
+body.theme-crusader #auth-signup-fields input:focus{border-color:#8b1a1a;box-shadow:0 0 0 1px #8b1a1a;}
+body.theme-crusader .auth-stay,
+body.theme-crusader .auth-checkbox-row{color:#7a6e5e;}
+body.theme-crusader .auth-disclaimer{background:#f0e8d5;border-left-color:#d0c8b4;color:#7a6e5e;}
+body.theme-crusader .auth-btn-primary{
+  background:linear-gradient(180deg,#a02020 0%,#7a1515 100%);
+  color:#f5eed8;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.1em;
+}
+body.theme-crusader .auth-btn-primary:hover{background:linear-gradient(180deg,#b02424 0%,#8b1a1a 100%);}
+body.theme-crusader .auth-btn-secondary{background:none;border-color:#d0c8b4;color:#7a6e5e;}
+body.theme-crusader .auth-btn-secondary:hover{border-color:#8b1a1a;color:#1c1208;}
+body.theme-crusader .auth-footer a{color:#9a8e7a;}
+body.theme-crusader .auth-footer a:hover{color:#8b1a1a;}
+
+/* WEIGHT SCREEN */
+body.theme-crusader .weight-banner{background:#f0e8d0;border-bottom:1px solid #d0c8b4;}
+body.theme-crusader .weight-banner-label{color:#7a6e5e;}
+body.theme-crusader .weight-input{background:#faf4e8;border:1px solid #d0c8b4;color:#1c1208;}
+body.theme-crusader .weight-input:focus{border-color:#8b1a1a;box-shadow:0 0 0 2px rgba(139,26,26,0.12);}
+body.theme-crusader .weight-log-btn{background:#f5eed8;border:1px solid #d0c8b4;color:#7a6e5e;}
+body.theme-crusader .weight-log-btn:hover{border-color:#2a6624;color:#2a6624;}
+body.theme-crusader .weight-today{color:#8b1a1a;}
+
+/* SECTION TITLES */
+body.theme-crusader .section-title,
+body.theme-crusader .chain-intro-title{
+  color:#1c1208;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.06em;
+}
+body.theme-crusader .section-sub,
+body.theme-crusader .chain-intro-sub{color:#9a8e7a;}
+
+/* STATS & PRs */
+body.theme-crusader .stat-box{background:#f5eed8;border:1px solid #d0c8b4;}
+body.theme-crusader .stat-num{color:#8b1a1a;font-family:'Cinzel',serif;}
+body.theme-crusader .stat-desc{color:#7a6e5e;}
+body.theme-crusader .pr-card{background:#f5eed8;border:1px solid #d0c8b4;}
+body.theme-crusader .pr-value{color:#8b1a1a;font-weight:700;}
+
+/* HISTORY */
+body.theme-crusader .hist-entry{background:#f5eed8;border:1px solid #d0c8b4;border-left:3px solid #8b1a1a;}
+body.theme-crusader .hist-date{color:#1c1208;font-family:'Cinzel',serif;font-weight:600;}
+body.theme-crusader .hist-pass{color:#8b1a1a;}
+body.theme-crusader .hist-ex strong{color:#1c1208;}
+body.theme-crusader .hist-set{color:#7a6e5e;}
+
+/* TOAST */
+body.theme-crusader .toast{
+  background:#f5eed8;border:1px solid #8b1a1a;color:#8b1a1a;
+  box-shadow:0 4px 20px rgba(0,0,0,0.1);font-family:'Cinzel',serif;
+}
+
+/* SCROLLBAR */
+body.theme-crusader::-webkit-scrollbar-track{background:#e8e0cc;}
+body.theme-crusader::-webkit-scrollbar-thumb{background:#c0b8a8;}
+
+/* MODAL */
+body.theme-crusader .app-modal-card{background:#f5eed8;border-color:#b8930a;color:#1c1208;}
+body.theme-crusader .app-modal-title{color:#1c1208;font-family:'Cinzel',serif;}
+body.theme-crusader .app-modal-body{color:#5a4e3a;}
+body.theme-crusader .app-modal-input,
+body.theme-crusader .app-modal-btn{background:#f0e8d0;border-color:#d0c8b4;color:#7a6e5e;}
+body.theme-crusader .app-modal-btn:hover{border-color:#8b1a1a;color:#1c1208;}
+body.theme-crusader .app-modal-btn-primary{
+  background:linear-gradient(180deg,#a02020 0%,#7a1515 100%);
+  border-color:#8b1a1a;color:#f5eed8;
+}
+body.theme-crusader .app-modal-btn-primary:hover{background:linear-gradient(180deg,#b02424 0%,#8b1a1a 100%);}
+body.theme-crusader .app-modal-btn-danger{background:#f5eed8;border-color:#8b1a1a;color:#8b1a1a;}
+body.theme-crusader .app-modal-btn-danger:hover{background:#8b1a1a;color:#f5eed8;}
+
+/* SELECT FIX (light theme) */
+body.theme-crusader select,
+body.theme-crusader .swap-select,
+body.theme-crusader .app-modal-select{
+  background:#faf4e8 !important;color:#1c1208 !important;border-color:#d0c8b4 !important;
+}
+body.theme-crusader select option,
+body.theme-crusader .swap-select option{background:#f5eed8;color:#1c1208;}
+body.theme-crusader select optgroup,
+body.theme-crusader .swap-select optgroup{background:#efe8d0;color:#5a4e3a;}
 
 /* ── SET LOG BUTTON ──────────────────────────────────────────*/
 .set-log-btn{
@@ -5407,6 +5728,25 @@ function copySessionToClipboard(passId){
     showToast('Copied ✓');
   }
 }
+function copyLogEntryToClipboard(idx){
+  const entry=state.log[idx];if(!entry)return;
+  const u=unitLabel();
+  let lines=['💪 The Chain — '+(entry.passName||entry.passId),'📅 '+fmtDate(entry.timestamp),''];
+  (entry.exercises||[]).forEach(ex=>{
+    if(ex.skipped)return;
+    lines.push(ex.name+(ex.extra?' +':''));
+    let w=0,s=0;
+    (ex.sets||[]).forEach(set=>{
+      if(set.warmup){w++;const wt=set.weight!=null?toDisplay(set.weight)+' '+u+' × ':'BW × ';lines.push('  W'+w+': '+wt+(set.reps||'?')+'r');}
+      else{s++;let str='  S'+s+': ';if(set.extra!=null)str+='BW+'+toDisplay(set.extra)+' '+u+' × '+(set.reps||'?')+'r';else if(set.secs)str+=set.secs+'s';else str+=(set.weight!=null?toDisplay(set.weight)+' '+u:'')+' × '+(set.reps||'?')+'r';if(set.forced)str+=' (+'+set.forced+'f)';lines.push(str);}
+    });
+    lines.push('');
+  });
+  lines.push('thechain.training');
+  const text=lines.join('\n');
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>showToast('Copied ✓')).catch(()=>showToast('Copy failed'));}
+  else{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Copied ✓');}
+}
 function doNewCycle(){
   // Ensure new cycle has all current chain keys
   const newC={id:Date.now(),done:{}};
@@ -5493,7 +5833,7 @@ function renderProgress(){
   const prs=getAllPRs();
   if(prs.length){html+=`<div class="section-sub">★ Personal Records</div><div class="pr-grid">`;prs.forEach(pr=>{const val=pr.bw?`BW+${toDisplay(pr.extra)||0}${unitLabel()}`:`${toDisplay(pr.weight)}${unitLabel()}`;const sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${unitLabel()} · ${pr.reps||'?'}r`:`${pr.reps||'?'} reps`;html+=`<div class="pr-card"><div class="pr-ex-name">${pr.name}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;});html+=`</div>`;}
   html+=`<div class="section-sub">History</div>`;
-  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${entry.passId} — ${entry.passName}</div></div><div style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${ex.name}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW(${toDisplay(s.bwSnap)||0})+${toDisplay(s.extra)||0}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${ex.name}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
+  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${entry.passId} — ${entry.passName}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #333;color:#888;font-family:var(--mono);font-size:.44rem;padding:2px 7px;cursor:pointer;letter-spacing:.04em;">⎘</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${ex.name}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW(${toDisplay(s.bwSnap)||0})+${toDisplay(s.extra)||0}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${ex.name}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
   el.innerHTML=html;
 }
 
@@ -5540,6 +5880,7 @@ const THEMES = [
   {id:'void',          name:'Void',          cat:'dark', desc:'Pure black & white · Playfair italic · Luxury minimal',class:'theme-void'},
   // LIGHT
   {id:'daylight',      name:'Daylight',      cat:'light', desc:'Clean white · Charcoal text · Bright sun-readable',   class:'theme-daylight'},
+  {id:'crusader',      name:'Crusader',      cat:'light', desc:'Aged parchment · Crimson & gold · Sacred warrior spirit', class:'theme-crusader'},
 ];
 
 function applyTheme(themeId){
