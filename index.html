@@ -3613,14 +3613,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.4.0';
+const APP_VERSION = '3.5.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.4.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.5.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
 state.cycles=[newCycle()];
 
 
@@ -3958,6 +3958,106 @@ function logWeight(){
   const el=document.getElementById('weightBannerToday');if(el)el.textContent=val+' '+unitLabel()+' today';
 }
 
+// ── CHAIN RENDER HELPERS ──────────────────────────────────────
+function buildRemovedSection(passId){
+  const removedIds=state.removedExercises?.[passId]||[];
+  if(!removedIds.length)return'';
+  const baseEx=BASE_PASSES.find(p=>p.id===passId)?.exercises||[];
+  const removedItems=removedIds.map(id=>baseEx.find(e=>e.id===id)).filter(Boolean);
+  if(!removedItems.length)return'';
+  let h=`<div style="padding:10px 14px 4px;margin-top:6px;border-top:1px dashed #2a2a2a;font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;">Removed</div>`;
+  removedItems.forEach(ex=>{
+    const name=state.exerciseOverrides?.[ex.id]||ex.name;
+    h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;font-family:var(--sans);"><span style="color:#666;font-size:.78rem;text-decoration:line-through;">${name}</span><button onclick="addExerciseToPass('${ex.id}','${passId}')" style="background:none;border:1px solid #3a3a3a;color:#888;font-family:var(--mono);font-size:.5rem;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">+ Restore</button></div>`;
+  });
+  return h;
+}
+
+function buildAddExRow(passId){
+  const grouped={};
+  EXERCISE_LIBRARY.forEach(e=>{if(!grouped[e.cat])grouped[e.cat]=[];grouped[e.cat].push(e.name);});
+  const customExes=(state.customExercises||[]).map(e=>e.name);
+  if(customExes.length)grouped['Custom']=customExes.slice().sort();
+  const catOrder=['Chest','Back','Shoulders','Arms','Legs','Traps','Core','Cardio','Custom'];
+  let opts=`<option value="">— Select exercise —</option>`;
+  catOrder.forEach(cat=>{if(!grouped[cat])return;opts+=`<optgroup label="${cat}">`;grouped[cat].forEach(n=>{opts+=`<option value="${n}">${n}</option>`;});opts+=`</optgroup>`;});
+  opts+=`<option value="__CUSTOM__">+ Custom exercise...</option>`;
+  return`<div class="add-ex-row"><button class="add-ex-btn" id="addbtn-${passId}" onclick="showAddEx('${passId}')"><span style="font-size:.85rem">+</span> Add exercise</button><div class="add-ex-form" id="addform-${passId}" style="display:none"><select class="add-ex-input" id="addinput-${passId}">${opts}</select><button class="add-ex-confirm" onclick="confirmAddEx('${passId}')">+</button></div></div>`;
+}
+
+function buildPassFooter(passId,savedExs,isDone){
+  const savedCount=Object.values(savedExs).filter(e=>e&&!e.skipped).length;
+  const skippedCount=Object.values(savedExs).filter(e=>e&&e.skipped).length;
+  let h=`<div class="pass-actions">`;
+  if(!isDone){h+=`<button class="btn-primary" onclick="finishPass('${passId}')" ${savedCount===0?'disabled':''}>Finish Session →</button><button class="btn-secondary" onclick="undoPass('${passId}')">↩</button>`;}
+  else{h+=`<button class="btn-secondary" onclick="undoPass('${passId}')">↩ Undo</button><button class="btn-secondary" onclick="copySessionToClipboard('${passId}')" style="margin-left:6px;">⎘ Copy</button>`;}
+  h+=`</div>`;
+  if(!isDone&&(savedCount>0||skippedCount>0))h+=`<div class="draft-notice">☁ ${savedCount} saved · ${skippedCount} skipped · synced to cloud</div>`;
+  return h;
+}
+
+function buildExtraBlock(ex,i,passId,isDone,savedExs,draftExtraSets,completedData){
+  const extraId='extra_'+passId+'_'+i;
+  const isSavedEx=!!savedExs[extraId]&&!savedExs[extraId].skipped&&!savedExs[extraId].editing;
+  const isSkippedEx=savedExs[extraId]?.skipped===true;
+  const defaultExtraSets=[{warmup:true},{warmup:true},{warmup:false}];
+  const rawExSets=draftExtraSets[extraId]!==undefined?draftExtraSets[extraId]:defaultExtraSets;
+  const savedExData=isDone?completedData?.exercises?.find(e=>e.id===extraId):savedExs[extraId];
+  const warmupListEx=rawExSets.map((s,j)=>({...s,origIdx:j})).filter(s=>s.warmup);
+  const workListEx=rawExSets.map((s,j)=>({...s,origIdx:j})).filter(s=>!s.warmup);
+  const sortedSetsEx=[...warmupListEx,...workListEx];
+  const allWorkLoggedEx=workListEx.length>0&&workListEx.filter(s=>!!(state.draft?.loggedSets?.[extraId]?.[s.origIdx])).length>=workListEx.length;
+  const unitL=unitLabel();
+  let h=`<div class="${'ex-block'+(isSkippedEx?' skipped':'')+(isSavedEx?' saved':'')}" id="exblock-${extraId}">`;
+  h+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${ex.name} <span class="ex-tag" style="color:#446;border-color:#223">Extra</span></div></div><div class="ex-action-col"><div class="ex-mini-btns">`;
+  if(!isDone&&!isSkippedEx){
+    if(isSavedEx){
+      h+=`<span class="ex-saved-badge">✓ Done</span><button class="ex-btn-edit" onclick="unsaveExercise('${passId}','${extraId}')"><svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit ▾</button>`;
+      h+=`<button class="ex-btn-edit" onclick="saveExtraToProgram('${passId}',${i})" style="color:#4a7a4a;border-color:#2a3a2a;">+ Program</button>`;
+    }else{
+      h+=`<button class="ex-btn-skip" onclick="skipExercise('${passId}','${extraId}')">Skip</button>`;
+      h+=`<button class="ex-btn-edit" onclick="removeExtra('${passId}',${i})">✕ Remove</button>`;
+      h+=`<button class="ex-btn-edit" onclick="saveExtraToProgram('${passId}',${i})" style="color:#4a7a4a;border-color:#2a3a2a;">+ Program</button>`;
+    }
+  }else if(!isDone&&isSkippedEx){
+    h+=`<span style="font-family:var(--mono);font-size:.44rem;color:#5a3a00;">Skipped</span><button class="ex-btn-edit" onclick="unskipExercise('${passId}','${extraId}')">↩ Undo</button>`;
+  }
+  h+=`</div></div></div>`;
+  if(!isSkippedEx){
+    h+=`<div class="sets-table">`;
+    if(warmupListEx.length>0)h+=`<div class="sets-group-label warmup-group">Warm-up</div>`;
+    let wuCntEx=0,wkCntEx=0,shownWkEx=false;
+    for(let si=0;si<sortedSetsEx.length;si++){
+      const sm=sortedSetsEx[si];const wu=sm.warmup;const origIdx=sm.origIdx;
+      if(!wu&&!shownWkEx){h+=`<div class="sets-group-label work-group">Work</div>`;shownWkEx=true;}
+      const lbl=wu?('W'+(++wuCntEx)):('S'+(++wkCntEx));
+      const wCls=wu?' warmup':' work-set';
+      const savedSet=savedExData?.sets?.[origIdx]||null;
+      const bufVal=(!savedSet&&state.draft?.inputBuffer?.[extraId]?.[origIdx])||null;
+      const isLogged=!savedSet&&!!(state.draft?.loggedSets?.[extraId]?.[origIdx]);
+      const loggedCls=isLogged?' set-logged':'';
+      const dis=(isDone||isSavedEx)?'disabled':'';
+      const canDel=!isDone&&!isSavedEx&&rawExSets.length>1;
+      h+=`<div class="set-row normal-set${loggedCls}">
+        <span class="set-num${wu?' warmup-label':''}">${lbl}</span>
+        <div><input class="set-input${wCls}" type="number" id="w-${extraId}-${origIdx}" placeholder="—" value="${savedSet?.weight!=null?toDisplay(savedSet.weight):bufVal?.weight!=null?toDisplay(bufVal.weight):''}" min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis} oninput="updateLogBtnState('${extraId}',${origIdx})"><div class="set-unit">${unitL}</div></div>
+        <div><input class="set-input${wCls}" type="number" id="r-${extraId}-${origIdx}" placeholder="—" value="${savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:''}" min="1" max="50" ${dis}><div class="set-unit">reps</div></div>
+        <div><input class="set-input${wCls} forced" type="number" id="f-${extraId}-${origIdx}" placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}><div class="set-unit forced-unit">+f</div></div>
+        ${(!isSavedEx&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${extraId}',${origIdx},'${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${extraId}',${origIdx},'${passId}',${wu})">Log</button>`):'<div></div>'}
+        ${canDel?`<button class="set-delete" onclick="removeExtraSet('${extraId}',${origIdx},'${passId}')">✕</button>`:'<div></div>'}
+      </div>`;
+    }
+    if(!isDone&&!isSavedEx){
+      h+=`<button class="add-set-btn" onclick="addWorkSet('${extraId}','${passId}')">+ Work Set</button>`;
+      h+=`<button class="add-set-btn" style="border-color:#1a1400;color:#3a2a00" onclick="addWarmupSet('${extraId}','${passId}')">+ Warm-up</button>`;
+      h+=`<button class="ex-done-primary${allWorkLoggedEx?' ready':''}" id="done-${extraId}" onclick="saveExercise('${passId}','${extraId}')">✓ Done</button>`;
+    }
+    h+=`</div>`;
+  }
+  h+=`</div>`;
+  return h;
+}
+
 // ── CHAIN RENDER ──────────────────────────────────────────────
 function renderChain(){
   const el=document.getElementById('view-chain');
@@ -4273,104 +4373,14 @@ function renderChain(){
         html+=`</div>`;
       });
 
-      // Removed exercises (offer to restore)
-      const removedIds = state.removedExercises?.[passId] || [];
-      if(removedIds.length > 0){
-        const baseEx = BASE_PASSES.find(p => p.id === passId)?.exercises || [];
-        const removedItems = removedIds.map(id => baseEx.find(e => e.id === id)).filter(Boolean);
-        if(removedItems.length > 0){
-          html += `<div style="padding:10px 14px 4px;margin-top:6px;border-top:1px dashed #2a2a2a;font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;">Removed</div>`;
-          removedItems.forEach(ex => {
-            const name = state.exerciseOverrides?.[ex.id] || ex.name;
-            html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;font-family:var(--sans);">
-              <span style="color:#666;font-size:.78rem;text-decoration:line-through;">${name}</span>
-              <button onclick="addExerciseToPass('${ex.id}','${passId}')" style="background:none;border:1px solid #3a3a3a;color:#888;font-family:var(--mono);font-size:.5rem;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">+ Restore</button>
-            </div>`;
-          });
-        }
-      }
+      html+=buildRemovedSection(passId);
 
-      // Extras — unified with regular exercise rendering via draft.extraSets/savedExercises
-      extras.forEach((ex,i)=>{
-        const extraId='extra_'+passId+'_'+i;
-        const isSavedEx=!!savedExs[extraId]&&!savedExs[extraId].skipped&&!savedExs[extraId].editing;
-        const isSkippedEx=savedExs[extraId]?.skipped===true;
-        const defaultExtraSets=[{warmup:true},{warmup:true},{warmup:false}];
-        const rawExSets=draftExtraSets[extraId]!==undefined?draftExtraSets[extraId]:defaultExtraSets;
-        const savedExData=isDone?completedData?.exercises?.find(e=>e.id===extraId):savedExs[extraId];
-        const warmupListEx=rawExSets.map((s,j)=>({...s,origIdx:j})).filter(s=>s.warmup);
-        const workListEx=rawExSets.map((s,j)=>({...s,origIdx:j})).filter(s=>!s.warmup);
-        const sortedSetsEx=[...warmupListEx,...workListEx];
-        const allWorkLoggedEx=workListEx.length>0&&workListEx.filter(s=>!!(state.draft?.loggedSets?.[extraId]?.[s.origIdx])).length>=workListEx.length;
-        const unitL=unitLabel();
-        html+=`<div class="${'ex-block'+(isSkippedEx?' skipped':'')+(isSavedEx?' saved':'')}" id="exblock-${extraId}">`;
-        html+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${ex.name} <span class="ex-tag" style="color:#446;border-color:#223">Extra</span></div></div><div class="ex-action-col"><div class="ex-mini-btns">`;
-        if(!isDone&&!isSkippedEx){
-          if(isSavedEx){
-            html+=`<span class="ex-saved-badge">✓ Done</span><button class="ex-btn-edit" onclick="unsaveExercise('${passId}','${extraId}')"><svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit ▾</button>`;
-            html+=`<button class="ex-btn-edit" onclick="saveExtraToProgram('${passId}',${i})" style="color:#4a7a4a;border-color:#2a3a2a;">+ Program</button>`;
-          }else{
-            html+=`<button class="ex-btn-skip" onclick="skipExercise('${passId}','${extraId}')">Skip</button>`;
-            html+=`<button class="ex-btn-edit" onclick="removeExtra('${passId}',${i})">✕ Remove</button>`;
-            html+=`<button class="ex-btn-edit" onclick="saveExtraToProgram('${passId}',${i})" style="color:#4a7a4a;border-color:#2a3a2a;">+ Program</button>`;
-          }
-        }else if(!isDone&&isSkippedEx){
-          html+=`<span style="font-family:var(--mono);font-size:.44rem;color:#5a3a00;">Skipped</span><button class="ex-btn-edit" onclick="unskipExercise('${passId}','${extraId}')">↩ Undo</button>`;
-        }
-        html+=`</div></div></div>`;
-        if(!isSkippedEx){
-          html+=`<div class="sets-table">`;
-          if(warmupListEx.length>0)html+=`<div class="sets-group-label warmup-group">Warm-up</div>`;
-          let wuCntEx=0,wkCntEx=0,shownWkEx=false;
-          for(let si=0;si<sortedSetsEx.length;si++){
-            const sm=sortedSetsEx[si];const wu=sm.warmup;const origIdx=sm.origIdx;
-            if(!wu&&!shownWkEx){html+=`<div class="sets-group-label work-group">Work</div>`;shownWkEx=true;}
-            const lbl=wu?('W'+(++wuCntEx)):('S'+(++wkCntEx));
-            const wCls=wu?' warmup':' work-set';
-            const savedSet=savedExData?.sets?.[origIdx]||null;
-            const bufVal=(!savedSet&&state.draft?.inputBuffer?.[extraId]?.[origIdx])||null;
-            const isLogged=!savedSet&&!!(state.draft?.loggedSets?.[extraId]?.[origIdx]);
-            const loggedCls=isLogged?' set-logged':'';
-            const dis=(isDone||isSavedEx)?'disabled':'';
-            const canDel=!isDone&&!isSavedEx&&rawExSets.length>1;
-            html+=`<div class="set-row normal-set${loggedCls}">
-              <span class="set-num${wu?' warmup-label':''}">${lbl}</span>
-              <div><input class="set-input${wCls}" type="number" id="w-${extraId}-${origIdx}" placeholder="—" value="${savedSet?.weight!=null?toDisplay(savedSet.weight):bufVal?.weight!=null?toDisplay(bufVal.weight):''}" min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis} oninput="updateLogBtnState('${extraId}',${origIdx})"><div class="set-unit">${unitL}</div></div>
-              <div><input class="set-input${wCls}" type="number" id="r-${extraId}-${origIdx}" placeholder="—" value="${savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:''}" min="1" max="50" ${dis}><div class="set-unit">reps</div></div>
-              <div><input class="set-input${wCls} forced" type="number" id="f-${extraId}-${origIdx}" placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}><div class="set-unit forced-unit">+f</div></div>
-              ${(!isSavedEx&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${extraId}',${origIdx},'${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${extraId}',${origIdx},'${passId}',${wu})">Log</button>`):'<div></div>'}
-              ${canDel?`<button class="set-delete" onclick="removeExtraSet('${extraId}',${origIdx},'${passId}')">✕</button>`:'<div></div>'}
-            </div>`;
-          }
-          if(!isDone&&!isSavedEx){
-            html+=`<button class="add-set-btn" onclick="addWorkSet('${extraId}','${passId}')">+ Work Set</button>`;
-            html+=`<button class="add-set-btn" style="border-color:#1a1400;color:#3a2a00" onclick="addWarmupSet('${extraId}','${passId}')">+ Warm-up</button>`;
-            html+=`<button class="ex-done-primary${allWorkLoggedEx?' ready':''}" id="done-${extraId}" onclick="saveExercise('${passId}','${extraId}')">✓ Done</button>`;
-          }
-          html+=`</div>`;
-        }
-        html+=`</div>`;
-      });
+      // Extras
+      extras.forEach((ex,i)=>{ html+=buildExtraBlock(ex,i,passId,isDone,savedExs,draftExtraSets,completedData); });
 
-      if(!isDone){
-        const grouped2={};
-        EXERCISE_LIBRARY.forEach(e=>{if(!grouped2[e.cat])grouped2[e.cat]=[];grouped2[e.cat].push(e.name);});
-        const customExes2=(state.customExercises||[]).map(e=>e.name);
-        if(customExes2.length)grouped2['Custom']=customExes2.slice().sort();
-        const catOrder2=['Chest','Back','Shoulders','Arms','Legs','Traps','Core','Cardio','Custom'];
-        let addOptsHtml=`<option value="">— Select exercise —</option>`;
-        catOrder2.forEach(cat=>{if(!grouped2[cat])return;addOptsHtml+=`<optgroup label="${cat}">`;grouped2[cat].forEach(n=>{addOptsHtml+=`<option value="${n}">${n}</option>`;});addOptsHtml+=`</optgroup>`;});
-        addOptsHtml+=`<option value="__CUSTOM__">+ Custom exercise...</option>`;
-        html+=`<div class="add-ex-row"><button class="add-ex-btn" id="addbtn-${passId}" onclick="showAddEx('${passId}')"><span style="font-size:.85rem">+</span> Add exercise</button><div class="add-ex-form" id="addform-${passId}" style="display:none"><select class="add-ex-input" id="addinput-${passId}">${addOptsHtml}</select><button class="add-ex-confirm" onclick="confirmAddEx('${passId}')">+</button></div></div>`;
-      }
+      if(!isDone) html+=buildAddExRow(passId);
 
-      const savedCount=Object.values(savedExs).filter(e=>e&&!e.skipped).length;
-      const skippedCount=Object.values(savedExs).filter(e=>e&&e.skipped).length;
-      html+=`<div class="pass-actions">`;
-      if(!isDone){html+=`<button class="btn-primary" onclick="finishPass('${passId}')" ${savedCount===0?'disabled':''}>Finish Session →</button><button class="btn-secondary" onclick="undoPass('${passId}')">↩</button>`;}
-      else{html+=`<button class="btn-secondary" onclick="undoPass('${passId}')">↩ Undo</button><button class="btn-secondary" onclick="copySessionToClipboard('${passId}')" style="margin-left:6px;">⎘ Copy</button>`;}
-      html+=`</div>`;
-      if(!isDone&&(savedCount>0||skippedCount>0)){html+=`<div class="draft-notice">☁ ${savedCount} saved · ${skippedCount} skipped · synced to cloud</div>`;}
+      html+=buildPassFooter(passId,savedExs,isDone);
     }
     html+=`</div></div>`;
   });
