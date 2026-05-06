@@ -3661,14 +3661,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.7.1';
+const APP_VERSION = '3.8.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.7.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.8.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
 state.cycles=[newCycle()];
 
 
@@ -5783,7 +5783,25 @@ function removeExtra(passId,idx){
 
 // ── PASS MANAGEMENT ───────────────────────────────────────────
 function doneRest(passId){const today=new Date().toLocaleDateString('en-GB',{month:'short',day:'numeric'});curCycle().done[passId]={date:today,exercises:[]};save();showToast('Rest logged ✓');renderChain();}
-function undoPass(passId){curCycle().done[passId]=null;if(state.draft&&state.draft.passId===passId)state.draft=null;for(let i=state.log.length-1;i>=0;i--){if(state.log[i].passId===passId){state.log.splice(i,1);break;}}save();renderChain();}
+function undoPass(passId){
+  const completed=curCycle().done[passId];
+  curCycle().done[passId]=null;
+  for(let i=state.log.length-1;i>=0;i--){if(state.log[i].passId===passId){state.log.splice(i,1);break;}}
+  if(completed&&(completed.exercises||[]).length>0){
+    // Finished session undo — restore exercises as an editable draft (all in "✓ Done" state)
+    const savedExercises={},extras=[],extraSets={};
+    (completed.exercises||[]).forEach(ex=>{
+      savedExercises[ex.id]={...ex};
+      if(ex.sets&&ex.sets.length) extraSets[ex.id]=ex.sets.map(s=>({warmup:!!s.warmup}));
+      if(ex.id.startsWith('extra_'+passId+'_')) extras[parseInt(ex.id.split('_').pop())]={name:ex.name};
+    });
+    state.draft={passId,savedExercises,swaps:{},extras:extras.filter(Boolean),extraSets,loggedSets:{},inputBuffer:{}};
+  }else{
+    // In-progress draft undo or rest-day undo — just discard any existing draft
+    if(state.draft&&state.draft.passId===passId) state.draft=null;
+  }
+  save();renderChain();
+}
 
 function formatSetLine(set,u){
   let str;
