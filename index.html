@@ -2001,7 +2001,8 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
 }
 .auth-divider span{padding:0 12px;}
 #auth-email-form input[type="email"],
-#auth-email-form input[type="password"]{
+#auth-email-form input[type="password"],
+#reset-password-form input[type="password"]{
   width:100%;
   background:#0a0a0a;
   border:1px solid #2a2a2a;
@@ -2012,7 +2013,8 @@ body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid
   margin-bottom:10px;
   box-sizing:border-box;
 }
-#auth-email-form input:focus{
+#auth-email-form input:focus,
+#reset-password-form input:focus{
   outline:none;
   border-color:var(--red);
   box-shadow:0 0 0 1px var(--red);
@@ -2448,13 +2450,15 @@ body.theme-daylight .auth-divider{color:#888;}
 body.theme-daylight .auth-divider::before,
 body.theme-daylight .auth-divider::after{background:#e0dcd0;}
 body.theme-daylight #auth-email-form input,
-body.theme-daylight #auth-signup-fields input{
+body.theme-daylight #auth-signup-fields input,
+body.theme-daylight #reset-password-form input{
   background:#ffffff;
   border:1px solid #d0ccc0;
   color:#0e1418;
 }
 body.theme-daylight #auth-email-form input:focus,
-body.theme-daylight #auth-signup-fields input:focus{
+body.theme-daylight #auth-signup-fields input:focus,
+body.theme-daylight #reset-password-form input:focus{
   border-color:var(--red);
   box-shadow:0 0 0 1px var(--red);
 }
@@ -2895,9 +2899,11 @@ body.theme-crusader .auth-divider{color:#9a8e7a;}
 body.theme-crusader .auth-divider::before,
 body.theme-crusader .auth-divider::after{background:#d0c8b4;}
 body.theme-crusader #auth-email-form input,
-body.theme-crusader #auth-signup-fields input{background:#faf4e8;border:1px solid #d0c8b4;color:#1c1208;}
+body.theme-crusader #auth-signup-fields input,
+body.theme-crusader #reset-password-form input{background:#faf4e8;border:1px solid #d0c8b4;color:#1c1208;}
 body.theme-crusader #auth-email-form input:focus,
-body.theme-crusader #auth-signup-fields input:focus{border-color:#8b1a1a;box-shadow:0 0 0 1px #8b1a1a;}
+body.theme-crusader #auth-signup-fields input:focus,
+body.theme-crusader #reset-password-form input:focus{border-color:#8b1a1a;box-shadow:0 0 0 1px #8b1a1a;}
 body.theme-crusader .auth-stay,
 body.theme-crusader .auth-checkbox-row{color:#7a6e5e;}
 body.theme-crusader .auth-disclaimer{background:#f0e8d5;border-left-color:#d0c8b4;color:#7a6e5e;}
@@ -3079,6 +3085,16 @@ body.theme-ember .set-log-btn.has-value{border-color:#5a7a2a;color:#a0cc40;}
     <div class="auth-footer">
       <a href="#" id="auth-forgot">Forgot password?</a>
     </div>
+
+    <div id="reset-password-form" style="display:none;width:100%;">
+      <div style="font-family:var(--mono);font-size:.62rem;color:var(--gray-light);letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px;text-align:center;">Set New Password</div>
+      <input id="reset-new-password" type="password" placeholder="new password (min 8)" autocomplete="new-password">
+      <input id="reset-confirm-password" type="password" placeholder="confirm new password" autocomplete="new-password">
+      <div class="auth-btn-row" style="margin-top:4px;">
+        <button onclick="doResetPassword()" class="auth-btn-primary">Set Password</button>
+      </div>
+      <div id="reset-message" style="font-family:var(--mono);font-size:.6rem;margin-top:10px;min-height:1.2em;text-align:center;"></div>
+    </div>
   </div>
 </div><div id="appShell" style="display:none">
   <header>
@@ -3147,6 +3163,34 @@ function showAuthScreen(){
 function showAppShell(){
   document.getElementById('userScreen').classList.add('hidden');
   document.getElementById('appShell').style.display='block';
+}
+
+function showResetPasswordScreen(){
+  document.getElementById('userScreen').classList.remove('hidden');
+  document.getElementById('appShell').style.display='none';
+  document.getElementById('auth-google-wrap').style.display='none';
+  document.querySelector('.auth-divider').style.display='none';
+  document.getElementById('auth-email-form').style.display='none';
+  document.querySelector('.auth-footer').style.display='none';
+  document.getElementById('reset-password-form').style.display='block';
+  setTimeout(()=>document.getElementById('reset-new-password')?.focus(),50);
+}
+
+async function doResetPassword(){
+  const pw  = document.getElementById('reset-new-password').value;
+  const cf  = document.getElementById('reset-confirm-password').value;
+  const msg = document.getElementById('reset-message');
+  msg.className=''; msg.textContent='';
+  if(pw.length < 8){ msg.textContent='Password must be at least 8 characters.'; msg.className='error'; return; }
+  if(pw !== cf){ msg.textContent="Passwords don't match."; msg.className='error'; return; }
+  msg.textContent='Updating password…';
+  const { error } = await window.sb.auth.updateUser({ password: pw });
+  if(error){ msg.textContent=error.message; msg.className='error'; return; }
+  msg.textContent='Password updated! Signing you in…'; msg.className='success';
+  setTimeout(async ()=>{
+    const { data } = await window.sb.auth.getSession();
+    handleSession(data.session);
+  }, 1500);
 }
 
 // Auth message helper
@@ -3427,7 +3471,11 @@ whenSbReady(async () => {
   bindAuthHandlers();
 
   // Listen for auth state changes
-  window.sb.auth.onAuthStateChange((_event, session) => {
+  window.sb.auth.onAuthStateChange((event, session) => {
+    if(event === 'PASSWORD_RECOVERY'){
+      showResetPasswordScreen();
+      return;
+    }
     handleSession(session);
   });
 
@@ -3613,14 +3661,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.6.0';
+const APP_VERSION = '3.7.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.6.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.7.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
 state.cycles=[newCycle()];
 
 
@@ -5896,7 +5944,7 @@ function renderProgress(){
   const prs=getAllPRs();
   if(prs.length){html+=`<div class="section-sub">★ Personal Records</div><div class="pr-grid">`;prs.forEach(pr=>{const val=pr.bw?`BW+${toDisplay(pr.extra)||0}${unitLabel()}`:`${toDisplay(pr.weight)}${unitLabel()}`;const sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${unitLabel()} · ${pr.reps||'?'}r`:`${pr.reps||'?'} reps`;html+=`<div class="pr-card"><div class="pr-ex-name">${pr.name}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;});html+=`</div>`;}
   html+=`<div class="section-sub">History</div>`;
-  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${entry.passId} — ${entry.passName}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #333;color:#888;font-family:var(--mono);font-size:.44rem;padding:2px 7px;cursor:pointer;letter-spacing:.04em;">⎘</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${ex.name}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW(${toDisplay(s.bwSnap)||0})+${toDisplay(s.extra)||0}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${ex.name}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
+  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${entry.passId} — ${entry.passName}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${ex.name}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW(${toDisplay(s.bwSnap)||0})+${toDisplay(s.extra)||0}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${ex.name}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
   el.innerHTML=html;
 }
 
