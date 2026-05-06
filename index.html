@@ -3709,14 +3709,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.14.0';
+const APP_VERSION = '3.14.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.14.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.14.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -5155,9 +5155,9 @@ function showEditAddRemove(){
           <button class="add-ex-confirm" style="background:#1a1a1a;" onclick="togglePassRename('${pid}')">✕</button>
         </div>
       </div>
-      <div style="display:flex;border-top:1px solid #1a1a1a;">
-        <button onclick="togglePassRename('${pid}')" style="flex:1;padding:12px 0;background:var(--gray-mid);border:none;border-right:1px solid #1a1a1a;color:var(--gray-light);font-family:var(--mono);font-size:.48rem;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;">✎ Rename</button>
-        <button onclick="showEditExercises('${pid}')" style="flex:1;padding:12px 0;background:var(--gray-mid);border:none;color:var(--gray-light);font-family:var(--mono);font-size:.48rem;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;">Exercises →</button>
+      <div style="display:flex;gap:5px;padding:5px;background:var(--black);border-top:1px solid #1a1a1a;">
+        <button onclick="togglePassRename('${pid}')" style="flex:1;padding:11px 0;background:var(--gray-mid);border:1px solid #333;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.07em;cursor:pointer;">✎ Rename</button>
+        <button onclick="showEditExercises('${pid}')" style="flex:1;padding:11px 0;background:var(--gray-mid);border:1px solid #333;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.07em;cursor:pointer;">Exercises →</button>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid #1a1a1a;">
         <span style="font-family:var(--mono);font-size:.48rem;color:#666;text-transform:uppercase;letter-spacing:.06em;">Forced rest after</span>
@@ -5251,9 +5251,11 @@ function showEditExercises(passId){
   const removedExs = base.exercises.filter(ex => removed.includes(ex.id));
 
   let html = `<div class="edit-page">
-    <div class="edit-back" onclick="showEditAddRemove()">← Done</div>
-    <div class="edit-title">${escapeHTML(passName)}</div>
-    <div class="edit-section-sub">Drag ⠿ to reorder. Tap name to open tags.</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <div class="edit-title" style="margin-bottom:0;">${escapeHTML(passName)}</div>
+      <button class="btn-primary" style="padding:8px 20px;font-size:.8rem;" onclick="showEditAddRemove()">Done</button>
+    </div>
+    <div class="edit-sub">Drag ⠿ to reorder · Tap to expand tags</div>
     <div id="ex-sort-list">`;
 
   allActive.forEach(ex => {
