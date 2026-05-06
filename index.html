@@ -3709,14 +3709,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.14.1';
+const APP_VERSION = '3.15.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.14.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.15.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -3832,7 +3832,7 @@ function newCycle(){
 }
 function curCycle(){return state.cycles[state.cycles.length-1];}
 
-function nextPassId(){
+function nextSessionId(){
   const c=curCycle();
   const chain=getEffectiveChain();
   for(const p of chain){
@@ -4069,7 +4069,7 @@ function buildRemovedSection(passId){
   let h=`<div style="padding:10px 14px 4px;margin-top:6px;border-top:1px dashed #2a2a2a;font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;">Removed</div>`;
   removedItems.forEach(ex=>{
     const name=escapeHTML(state.exerciseOverrides?.[ex.id]||ex.name);
-    h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;font-family:var(--sans);"><span style="color:#666;font-size:.78rem;text-decoration:line-through;">${name}</span><button onclick="addExerciseToPass('${ex.id}','${passId}')" style="background:none;border:1px solid #3a3a3a;color:#888;font-family:var(--mono);font-size:.5rem;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">+ Restore</button></div>`;
+    h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;font-family:var(--sans);"><span style="color:#666;font-size:.78rem;text-decoration:line-through;">${name}</span><button onclick="addExerciseToSession('${ex.id}','${passId}')" style="background:none;border:1px solid #3a3a3a;color:#888;font-family:var(--mono);font-size:.5rem;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">+ Restore</button></div>`;
   });
   return h;
 }
@@ -4086,15 +4086,15 @@ function buildAddExRow(passId){
   return`<div class="add-ex-row"><button class="add-ex-btn" id="addbtn-${passId}" onclick="showAddEx('${passId}')"><span style="font-size:.85rem">+</span> Add exercise</button><div class="add-ex-form" id="addform-${passId}" style="display:none"><select class="add-ex-input" id="addinput-${passId}">${opts}</select><button class="add-ex-confirm" onclick="confirmAddEx('${passId}')">+</button></div></div>`;
 }
 
-function buildPassFooter(passId,savedExs,isDone,extras,passExercises){
+function buildSessionFooter(passId,savedExs,isDone,extras,passExercises){
   const extraIds=(extras||[]).map((_,i)=>'extra_'+passId+'_'+i);
   const allIds=[...(passExercises||[]).map(e=>e.id),...extraIds];
   const allResolved=allIds.length===0||allIds.every(id=>!!savedExs[id]);
   const savedCount=Object.values(savedExs).filter(e=>e&&!e.skipped).length;
   const skippedCount=Object.values(savedExs).filter(e=>e&&e.skipped).length;
   let h=`<div class="pass-actions">`;
-  if(!isDone){h+=`<button class="btn-primary" onclick="finishPass('${passId}')" ${!allResolved?'disabled':''}>Finish Session →</button><button class="btn-secondary" onclick="undoPass('${passId}')">↩</button>`;}
-  else{h+=`<button class="btn-secondary" onclick="undoPass('${passId}')">↩ Undo</button><button class="btn-secondary" onclick="copySessionToClipboard('${passId}')" style="margin-left:6px;">⎘ Copy</button>`;}
+  if(!isDone){h+=`<button class="btn-primary" onclick="finishSession('${passId}')" ${!allResolved?'disabled':''}>Finish Session →</button><button class="btn-secondary" onclick="undoSession('${passId}')">↩</button>`;}
+  else{h+=`<button class="btn-secondary" onclick="undoSession('${passId}')">↩ Undo</button><button class="btn-secondary" onclick="copySessionToClipboard('${passId}')" style="margin-left:6px;">⎘ Copy</button>`;}
   h+=`</div>`;
   if(!isDone&&(savedCount>0||skippedCount>0))h+=`<div class="draft-notice">☁ ${savedCount} saved · ${skippedCount} skipped · synced to cloud</div>`;
   return h;
@@ -4166,11 +4166,11 @@ function buildExtraBlock(ex,i,passId,isDone,savedExs,draftExtraSets,completedDat
 function renderChain(){
   const el=document.getElementById('view-chain');
   const cycle=curCycle();
-  const nextId=nextPassId();
+  const nextId=nextSessionId();
   const effectiveChain=getEffectiveChain();
-  const totalPasses=effectiveChain.filter(p=>!p.rest).length;
-  const donePasses=effectiveChain.filter(p=>!p.rest&&cycle.done[p.id]!==null&&cycle.done[p.id]!==undefined).length;
-  const pct=totalPasses>0?Math.round(donePasses/totalPasses*100):0;
+  const totalSessions=effectiveChain.filter(p=>!p.rest).length;
+  const doneSessions=effectiveChain.filter(p=>!p.rest&&cycle.done[p.id]!==null&&cycle.done[p.id]!==undefined).length;
+  const pct=totalSessions>0?Math.round(doneSessions/totalSessions*100):0;
   const todayWkg=getTodayWeight();
   const todayW = todayWkg ? toDisplay(todayWkg) : null;
 
@@ -4179,7 +4179,7 @@ function renderChain(){
     return;
   }
 
-  let html=`<div class="weight-banner"><span class="weight-banner-label">Morning Weight</span><div style="display:flex;align-items:center;gap:4px"><input class="weight-input" type="number" id="morningWeight" placeholder="${state.unit==='lbs'?'165.0':'75.0'}" step="${state.unit==='lbs'?'0.5':'0.1'}" min="${state.unit==='lbs'?'44':'20'}" max="${state.unit==='lbs'?'660':'300'}" value="${todayW||''}"><span class="weight-unit">${unitLabel()}</span></div><span id="weightBannerToday" class="weight-today">${todayW?todayW+' '+unitLabel()+' today':''}</span><button class="weight-log-btn" onclick="logWeight()">Log</button></div><div class="chain-intro"><div><div class="chain-intro-title">The Chain</div><div class="chain-intro-sub">${donePasses}/${totalPasses} sessions done · Round ${state.cycles.length}</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--mono);font-size:.52rem;color:var(--gray-mid)">${pct}%</span><button style="background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.7rem;padding:3px 9px;cursor:pointer;transition:all .15s;line-height:1;" title="Configure chain" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='#444';this.style.color='#888'" onclick="showEditPage()"><svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit</button></div></div><div class="chain-bar"><div class="chain-fill" style="width:${pct}%"></div></div>`;
+  let html=`<div class="weight-banner"><span class="weight-banner-label">Morning Weight</span><div style="display:flex;align-items:center;gap:4px"><input class="weight-input" type="number" id="morningWeight" placeholder="${state.unit==='lbs'?'165.0':'75.0'}" step="${state.unit==='lbs'?'0.5':'0.1'}" min="${state.unit==='lbs'?'44':'20'}" max="${state.unit==='lbs'?'660':'300'}" value="${todayW||''}"><span class="weight-unit">${unitLabel()}</span></div><span id="weightBannerToday" class="weight-today">${todayW?todayW+' '+unitLabel()+' today':''}</span><button class="weight-log-btn" onclick="logWeight()">Log</button></div><div class="chain-intro"><div><div class="chain-intro-title">The Chain</div><div class="chain-intro-sub">${doneSessions}/${totalSessions} sessions done · Round ${state.cycles.length}</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--mono);font-size:.52rem;color:var(--gray-mid)">${pct}%</span><button style="background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.7rem;padding:3px 9px;cursor:pointer;transition:all .15s;line-height:1;" title="Configure chain" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='#444';this.style.color='#888'" onclick="showEditPage()"><svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit</button></div></div><div class="chain-bar"><div class="chain-fill" style="width:${pct}%"></div></div>`;
 
 
   html += `<div class="chain-list">`;
@@ -4208,7 +4208,7 @@ function renderChain(){
     html+=`<div class="${cls}" id="card-${passId}"><div class="pass-top" onclick="toggleCard('${passId}')"><div class="pass-letter">${displayLetter}</div><div class="pass-info"><div class="pass-name">${pass.name}</div><div class="pass-preview">${preview}</div></div><div class="pass-done-info">${isDone?'✓ '+(completedData?.date||''):inProgress?'↓ draft':''}</div></div><div class="pass-body">`;
 
     if(isRest){
-      html+=`<div class="rest-content">Active rest. Light walk or dead hang at home.<br>No heavy lifting — recovery IS training.</div><div class="pass-actions">${isDone?`<button class="btn-ghost" onclick="undoPass('${passId}')">↩ Undo</button>`:`<button class="btn-ghost" onclick="doneRest('${passId}')">Mark Rest Done →</button>`}</div>`;
+      html+=`<div class="rest-content">Active rest. Light walk or dead hang at home.<br>No heavy lifting — recovery IS training.</div><div class="pass-actions">${isDone?`<button class="btn-ghost" onclick="undoSession('${passId}')">↩ Undo</button>`:`<button class="btn-ghost" onclick="doneRest('${passId}')">Mark Rest Done →</button>`}</div>`;
     }else{
       const draft=hasDraft?state.draft:null;
       const savedExs=draft?draft.savedExercises:{};
@@ -4298,7 +4298,7 @@ function renderChain(){
                 <button onclick="toggleSwap('${ex.id}','${passId}','temp');closeEditMenu('${ex.id}')">Swap (session)</button>
                 <button onclick="toggleSwap('${ex.id}','${passId}','perm');closeEditMenu('${ex.id}')">Swap (always)</button>
                 <button onclick="toggleTagEditor('${ex.id}');closeEditMenu('${ex.id}')">🏷 Tags</button>
-                <button onclick="removeExerciseFromPass('${ex.id}','${passId}');closeEditMenu('${ex.id}')" style="color:#c06060">Remove</button>
+                <button onclick="removeExerciseFromSession('${ex.id}','${passId}');closeEditMenu('${ex.id}')" style="color:#c06060">Remove</button>
               </div>
             </div>`;
           }
@@ -4494,7 +4494,7 @@ function renderChain(){
 
       if(!isDone) html+=buildAddExRow(passId);
 
-      html+=buildPassFooter(passId,savedExs,isDone,extras,pass.exercises);
+      html+=buildSessionFooter(passId,savedExs,isDone,extras,pass.exercises);
     }
     html+=`</div></div>`;
   });
@@ -4564,13 +4564,13 @@ function buildReorderUI(effectiveChain){
       <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1a1a;">
         <span style="font-family:var(--display);font-size:1rem;color:var(--red);min-width:18px;">${letter}</span>
         <span style="font-family:var(--mono);font-size:.56rem;flex:1;color:var(--white);">${escapedPassName}</span>
-        <button onclick="togglePassRename('${pid}')" style="background:none;border:1px solid #2a2a2a;color:var(--gray-light);font-family:var(--mono);font-size:.44rem;padding:3px 7px;cursor:pointer;text-transform:uppercase;">Rename</button>
-        ${passOrder.length>1?`<button onclick="removePassFromChain('${pid}')" style="background:none;border:1px solid #3a1a1a;color:#5a2a2a;font-family:var(--mono);font-size:.44rem;padding:3px 8px;cursor:pointer;text-transform:uppercase;">Remove</button>`:''}
+        <button onclick="toggleSessionRename('${pid}')" style="background:none;border:1px solid #2a2a2a;color:var(--gray-light);font-family:var(--mono);font-size:.44rem;padding:3px 7px;cursor:pointer;text-transform:uppercase;">Rename</button>
+        ${passOrder.length>1?`<button onclick="removeSessionFromChain('${pid}')" style="background:none;border:1px solid #3a1a1a;color:#5a2a2a;font-family:var(--mono);font-size:.44rem;padding:3px 8px;cursor:pointer;text-transform:uppercase;">Remove</button>`:''}
       </div>
       <div id="passrenamewrap-${pid}" style="display:none;padding:6px 0 4px;">
         <div style="display:flex;gap:4px;">
           <input class="add-ex-input" id="passrenameinput-${pid}" type="text" placeholder="${escapedPassName}" value="${escapedPassName}" style="flex:1;font-size:.6rem;padding:4px 6px;">
-          <button class="add-ex-confirm" onclick="doPassRename('${pid}')">✓</button>
+          <button class="add-ex-confirm" onclick="doSessionRename('${pid}')">✓</button>
         </div>
       </div>
     </div>`;
@@ -4582,7 +4582,7 @@ function buildReorderUI(effectiveChain){
     available.forEach(t=>{
       html+=`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1a1a;">
         <span style="font-family:var(--mono);font-size:.56rem;flex:1;color:var(--gray-light);">${t.name}</span>
-        <button onclick="addPassToChain('${t.id}')" style="background:none;border:1px solid #1a3a1a;color:#3a7a3a;font-family:var(--mono);font-size:.44rem;padding:3px 8px;cursor:pointer;text-transform:uppercase;">+ Add</button>
+        <button onclick="addSessionToChain('${t.id}')" style="background:none;border:1px solid #1a3a1a;color:#3a7a3a;font-family:var(--mono);font-size:.44rem;padding:3px 8px;cursor:pointer;text-transform:uppercase;">+ Add</button>
       </div>`;
     });
   }
@@ -4617,11 +4617,11 @@ const PASS_TEMPLATES=[
   {id:'M',name:'Upper Body Pull',exercises:[{id:'M1',name:'Pull-ups',detail:'1 set failure',bw:true},{id:'M2',name:'Seated Cable Row',detail:'1 set failure'},{id:'M3',name:'Face Pulls',detail:'1 set failure'},{id:'M4',name:'Barbell Curl',detail:'1 set failure'}]},
   {id:'N',name:'Custom Session',exercises:[{id:'N1',name:'Exercise 1',detail:'1 set failure'},{id:'N2',name:'Exercise 2',detail:'1 set failure'},{id:'N3',name:'Exercise 3',detail:'1 set failure'},{id:'N4',name:'Exercise 4',detail:'1 set failure'}]},
 ];
-function togglePassRename(pid){
+function toggleSessionRename(pid){
   const w=document.getElementById('passrenamewrap-'+pid);
   if(w) w.style.display=w.style.display==='none'?'block':'none';
 }
-function doPassRename(pid){
+function doSessionRename(pid){
   const inp=document.getElementById('passrenameinput-'+pid);
   const val=inp?.value.trim();
   if(!val)return;
@@ -4642,7 +4642,7 @@ function doPassRename(pid){
     if(np){np.style.display='block';panel.replaceWith(np);}
   }
 }
-function addPassToChain(templateId){
+function addSessionToChain(templateId){
   const tmpl=PASS_TEMPLATES.find(t=>t.id===templateId);
   if(!tmpl)return;
   // Add to BASE_PASSES if not there
@@ -4669,7 +4669,7 @@ function addPassToChain(templateId){
   showToast('Session added to chain ✓');
 }
 
-async function removePassFromChain(passId){
+async function removeSessionFromChain(passId){
   const ok = await askModalConfirm('Remove session?', 'This session will be removed from your chain. You can add it back later from the Edit menu.', {
     confirmLabel: 'Remove',
     danger: true
@@ -4834,13 +4834,13 @@ function showOnboarding(userId, step, answers){
       <div class="ob-title">How long?</div>
       <div class="ob-sub">Sessions in one full cycle.<br>Pick what fits your week.</div>
       <div class="ob-options cols3" style="margin-bottom:14px;">
-        ${[3,4,5].map(n=>`<button class="ob-option${a.numPasses===n?' selected':''}" onclick="obPickNum(${n})">
+        ${[3,4,5].map(n=>`<button class="ob-option${a.numSessions===n?' selected':''}" onclick="obPickNum(${n})">
           ${n} <span class="ob-checkmark">✓</span>
           <span class="ob-opt-label">${n===3?'Quick & focused':n===4?'Balanced load':'Full coverage'}</span>
         </button>`).join('')}
       </div>
       <div class="ob-options cols2" style="margin-bottom:24px;">
-        ${[6,7].map(n=>`<button class="ob-option${a.numPasses===n?' selected':''}" onclick="obPickNum(${n})">
+        ${[6,7].map(n=>`<button class="ob-option${a.numSessions===n?' selected':''}" onclick="obPickNum(${n})">
           ${n} <span class="ob-checkmark">✓</span>
           <span class="ob-opt-label">${n===6?'Classic HIT cycle':'High volume'}</span>
         </button>`).join('')}
@@ -4861,19 +4861,19 @@ function showOnboarding(userId, step, answers){
           <span class="ob-opt-label">Two leg-focused days</span>
         </button>
       </div>
-      ${(a.numPasses && a.focus) ? '<button class="btn-primary ob-next" onclick="showOnboarding(obUserId,4)">Next →</button>' : '<div class="ob-note">Pick both to continue.</div>'}
+      ${(a.numSessions && a.focus) ? '<button class="btn-primary ob-next" onclick="showOnboarding(obUserId,4)">Next →</button>' : '<div class="ob-note">Pick both to continue.</div>'}
       <div class="ob-back" onclick="showOnboarding(obUserId,2)">← Back</div>
     </div>`;
   }
   else if(step === 4){
     let preview = '';
-    if(a.numPasses && a.focus){
-      const gen = generateChain(a.numPasses, a.focus, a.restCount || 1);
-      const allPasses = [...BASE_PASSES, ...PASS_TEMPLATES.filter(t=>!BASE_PASSES.find(b=>b.id===t.id))];
+    if(a.numSessions && a.focus){
+      const gen = generateChain(a.numSessions, a.focus, a.restCount || 1);
+      const allSessions = [...BASE_PASSES, ...PASS_TEMPLATES.filter(t=>!BASE_PASSES.find(b=>b.id===t.id))];
       const restPositions = new Set(gen.restSlots);
       const items = [];
       gen.passOrder.forEach((pid,i)=>{
-        const p = allPasses.find(x=>x.id===pid);
+        const p = allSessions.find(x=>x.id===pid);
         items.push(`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1a1a;font-family:var(--mono);font-size:.55rem;color:#aaa;">
           <span style="color:var(--red);font-family:var(--display);font-size:.95rem;min-width:18px;">${'ABCDEFGHIJKLMN'[i]||pid}</span>
           <span style="flex:1;">${escapeHTML(p?.name||pid)}</span>
@@ -4925,7 +4925,7 @@ function obPickPath(path){
   } else if(path === 'import'){
     document.getElementById('obImportFile').click();
   } else if(path === 'skip'){
-    obAnswers = {unit:'kg', experience:'intermediate', numPasses:6, focus:'full', restCount:1, timerEnabled:true, timerDefault:120};
+    obAnswers = {unit:'kg', experience:'intermediate', numSessions:6, focus:'full', restCount:1, timerEnabled:true, timerDefault:120};
     finishOnboarding();
   }
 }
@@ -4952,7 +4952,7 @@ function obPickExperience(level){
   setTimeout(()=>showOnboarding(obUserId, 3), 180);
 }
 function obPickNum(n){
-  obAnswers.numPasses = n;
+  obAnswers.numSessions = n;
   setTimeout(()=>showOnboarding(obUserId, 3), 60);
 }
 function obPickFocus(focus){
@@ -5022,10 +5022,10 @@ function finishOnboarding(){
   state.timerDefault = a.timerDefault || 120;
   state.onboardingDone = true;
 
-  const numPasses = a.numPasses || 6;
+  const numSessions = a.numSessions || 6;
   const focus = a.focus || 'full';
   const restCount = a.restCount || 1;
-  const generated = generateChain(numPasses, focus, restCount);
+  const generated = generateChain(numSessions, focus, restCount);
   state.passOrder = generated.passOrder;
   state.restSlots = generated.restSlots;
 
@@ -5146,17 +5146,17 @@ function showEditAddRemove(){
       <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;">
         <span style="font-family:var(--display);font-size:1.4rem;color:var(--red);min-width:22px;">${letter}</span>
         <span style="font-family:var(--sans);font-size:.9rem;flex:1;color:var(--white);">${name}</span>
-        ${passOrder.length>1?`<button onclick="removePassFromChain('${pid}');showEditAddRemove();" style="background:none;border:1px solid #3a1a1a;color:#884444;font-family:var(--mono);font-size:.48rem;padding:6px 12px;cursor:pointer;text-transform:uppercase;letter-spacing:.05em;">Remove</button>`:''}
+        ${passOrder.length>1?`<button onclick="removeSessionFromChain('${pid}');showEditAddRemove();" style="background:none;border:1px solid #3a1a1a;color:#884444;font-family:var(--mono);font-size:.48rem;padding:6px 12px;cursor:pointer;text-transform:uppercase;letter-spacing:.05em;">Remove</button>`:''}
       </div>
       <div id="passrenamewrap-${pid}" style="display:none;padding:0 14px 12px;">
         <div style="display:flex;gap:6px;">
           <input class="add-ex-input" id="passrenameinput-${pid}" type="text" placeholder="${name}" value="${name}" style="flex:1;">
-          <button class="add-ex-confirm" onclick="doPassRename('${pid}');showEditAddRemove();">✓</button>
-          <button class="add-ex-confirm" style="background:#1a1a1a;" onclick="togglePassRename('${pid}')">✕</button>
+          <button class="add-ex-confirm" onclick="doSessionRename('${pid}');showEditAddRemove();">✓</button>
+          <button class="add-ex-confirm" style="background:#1a1a1a;" onclick="toggleSessionRename('${pid}')">✕</button>
         </div>
       </div>
       <div style="display:flex;gap:5px;padding:5px;background:var(--black);border-top:1px solid #1a1a1a;">
-        <button onclick="togglePassRename('${pid}')" style="flex:1;padding:11px 0;background:var(--gray-mid);border:1px solid #333;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.07em;cursor:pointer;">✎ Rename</button>
+        <button onclick="toggleSessionRename('${pid}')" style="flex:1;padding:11px 0;background:var(--gray-mid);border:1px solid #333;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.07em;cursor:pointer;">✎ Rename</button>
         <button onclick="showEditExercises('${pid}')" style="flex:1;padding:11px 0;background:var(--gray-mid);border:1px solid #333;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.07em;cursor:pointer;">Exercises →</button>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid #1a1a1a;">
@@ -5175,7 +5175,7 @@ function showEditAddRemove(){
     available.forEach(t=>{
       html+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #1a1a1a;">
         <div style="font-family:var(--sans);font-size:.84rem;color:#aaa;">${t.name}</div>
-        <button onclick="addPassToChain('${t.id}');showEditAddRemove();" style="background:none;border:1px solid #1a4a1a;color:#4a8a4a;font-family:var(--mono);font-size:.5rem;padding:6px 14px;cursor:pointer;text-transform:uppercase;">+ Add</button>
+        <button onclick="addSessionToChain('${t.id}');showEditAddRemove();" style="background:none;border:1px solid #1a4a1a;color:#4a8a4a;font-family:var(--mono);font-size:.5rem;padding:6px 14px;cursor:pointer;text-transform:uppercase;">+ Add</button>
       </div>`;
     });
   }
@@ -5219,7 +5219,7 @@ async function saveExtraToProgram(passId, extraIdx){
   const customEx = state.customExercises?.find(c => c.name === extra.name);
   addExerciseToSession(extra.name, passId, customEx || {});
   showToast('Added to program');
-  rerenderPass(passId);
+  rerenderSession(passId);
 }
 
 function showEditExercises(passId){
@@ -5287,7 +5287,7 @@ function showEditExercises(passId){
       const name = state.exerciseOverrides?.[ex.id] || ex.name;
       html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid #1a1a1a;margin-bottom:6px;opacity:.5;">
         <span style="font-family:var(--sans);font-size:.84rem;color:#666;text-decoration:line-through;">${escapeHTML(name)}</span>
-        <button onclick="addExerciseToPass('${ex.id}','${passId}');showEditExercises('${passId}');" style="background:none;border:1px solid #2a3a2a;color:#4a7a4a;font-family:var(--mono);font-size:.48rem;padding:5px 10px;cursor:pointer;text-transform:uppercase;">Restore</button>
+        <button onclick="addExerciseToSession('${ex.id}','${passId}');showEditExercises('${passId}');" style="background:none;border:1px solid #2a3a2a;color:#4a7a4a;font-family:var(--mono);font-size:.48rem;padding:5px 10px;cursor:pointer;text-transform:uppercase;">Restore</button>
       </div>`;
     });
   }
@@ -5544,7 +5544,7 @@ function toggleExTag(exId, passId, tagKey){
     delete state.draft.extraSets[exId];
   }
   save();
-  rerenderPass(passId);
+  rerenderSession(passId);
   // Re-open tag editor after rerender
   setTimeout(()=>{
     const w=document.getElementById('tagwrap-'+exId);
@@ -5639,7 +5639,7 @@ function saveExercise(passId,exId){
   if(state.draft.loggedSets) delete state.draft.loggedSets[exId];
   save(); showToast('Saved ✓');
   if(state.timerEnabled) startRestTimer();
-  rerenderPass(passId);
+  rerenderSession(passId);
 }
 function unsaveExercise(passId,exId){
   ensureDraft(passId);
@@ -5659,7 +5659,7 @@ function unsaveExercise(passId,exId){
   } else {
     delete state.draft.savedExercises[exId];
   }
-  save(); rerenderPass(passId);
+  save(); rerenderSession(passId);
 }
 
 // ── PER-SET LOGGING ───────────────────────────────────────────
@@ -5693,7 +5693,7 @@ function logSet(exId, origIdx, passId, isWarmup){
   state.draft.loggedSets[exId][origIdx] = {...buf, warmup: !!isWarmup, origIdx};
   
   save();
-  rerenderPass(passId);
+  rerenderSession(passId);
   
   // Start rest timer for work sets (not warmup), if timer is enabled
   if(!isWarmup && state.timerEnabled){
@@ -5708,7 +5708,7 @@ function unlogSet(exId, origIdx, passId){
     delete state.draft.loggedSets[exId];
   }
   save();
-  rerenderPass(passId);
+  rerenderSession(passId);
 }
 
 
@@ -5743,12 +5743,12 @@ function skipExercise(passId,exId){
   if(isExtra){const extraIdx=parseInt(exId.split('_').pop());displayName=state.draft?.extras?.[extraIdx]?.name||exId;}
   else{const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);const ex=pass.exercises.find(e=>e.id===exId);displayName=state.exerciseOverrides?.[exId]||state.draft.swaps[exId]||ex.name;}
   state.draft.savedExercises[exId]={id:exId,name:displayName,skipped:true};
-  save();rerenderPass(passId);
+  save();rerenderSession(passId);
 }
-function unskipExercise(passId,exId){ensureDraft(passId);delete state.draft.savedExercises[exId];save();rerenderPass(passId);}
+function unskipExercise(passId,exId){ensureDraft(passId);delete state.draft.savedExercises[exId];save();rerenderSession(passId);}
 
 // Permanently remove an exercise from a pass — survives across sessions
-async function removeExerciseFromPass(exId, passId){
+async function removeExerciseFromSession(exId, passId){
   // Get exercise name for confirmation
   const base = BASE_PASSES.find(p => p.id === passId);
   const ex = base?.exercises.find(e => e.id === exId);
@@ -5776,20 +5776,20 @@ async function removeExerciseFromPass(exId, passId){
   }
   
   save();
-  rerenderPass(passId);
+  rerenderSession(passId);
   showToast('Exercise removed');
 }
 
 // Add a previously-removed exercise back to a pass
-function addExerciseToPass(exId, passId){
+function addExerciseToSession(exId, passId){
   if(!state.removedExercises || !state.removedExercises[passId]) return;
   state.removedExercises[passId] = state.removedExercises[passId].filter(id => id !== exId);
   if(state.removedExercises[passId].length === 0) delete state.removedExercises[passId];
   save();
-  rerenderPass(passId);
+  rerenderSession(passId);
   showToast('Exercise restored');
 }
-function finishPass(passId){
+function finishSession(passId){
   const draft=state.draft;if(!draft||draft.passId!==passId)return;
   const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);const exercises=[];
   pass.exercises.forEach(ex=>{const d=draft.savedExercises[ex.id];if(d)exercises.push(d);});
@@ -5879,12 +5879,12 @@ function captureInputsToSetsBuffer(exId,passId){
 function addWorkSet(exId,passId){
   captureInputsToSetsBuffer(exId,passId);
   state.draft.extraSets[exId].push({warmup:false});
-  save();rerenderPass(passId);
+  save();rerenderSession(passId);
 }
 function addWarmupSet(exId,passId){
   captureInputsToSetsBuffer(exId,passId);
   state.draft.extraSets[exId].push({warmup:true});
-  save();rerenderPass(passId);
+  save();rerenderSession(passId);
 }
 function removeExtraSet(exId,idx,passId){
   ensureExtraSets(exId,passId);
@@ -5898,7 +5898,7 @@ function removeExtraSet(exId,idx,passId){
       state.draft.inputBuffer[exId].splice(idx,1);
     }
   }
-  save();rerenderPass(passId);
+  save();rerenderSession(passId);
 }
 
 // ── SWAP / ADD ────────────────────────────────────────────────
@@ -5947,7 +5947,7 @@ async function doSwap(exId,val,passId){
   }
   save();
   if(wrap)wrap.style.display='none';
-  rerenderPass(passId);
+  rerenderSession(passId);
 }
 function showAddEx(passId){document.getElementById('addbtn-'+passId).style.display='none';document.getElementById('addform-'+passId).style.display='flex';setTimeout(()=>document.getElementById('addinput-'+passId)?.focus(),50);}
 function confirmAddEx(passId){
@@ -5957,7 +5957,7 @@ function confirmAddEx(passId){
   if(name==='__CUSTOM__'){name=prompt('Exercise name:');if(!name||!name.trim())return;name=name.trim();}
   ensureDraft(passId);
   state.draft.extras.push({name});
-  save();rerenderPass(passId);
+  save();rerenderSession(passId);
   setTimeout(()=>{const card=document.getElementById('card-'+passId);const blocks=card?.querySelectorAll('.ex-block');if(blocks?.length)blocks[blocks.length-1].scrollIntoView({behavior:'smooth',block:'start'});},50);
 }
 function removeExtra(passId,idx){
@@ -5975,12 +5975,12 @@ function removeExtra(passId,idx){
     if(state.draft.loggedSets?.[oldId]){state.draft.loggedSets[newId]=state.draft.loggedSets[oldId];delete state.draft.loggedSets[oldId];}
     if(state.draft.inputBuffer?.[oldId]){state.draft.inputBuffer[newId]=state.draft.inputBuffer[oldId];delete state.draft.inputBuffer[oldId];}
   }
-  save();rerenderPass(passId);
+  save();rerenderSession(passId);
 }
 
 // ── PASS MANAGEMENT ───────────────────────────────────────────
 function doneRest(passId){const today=new Date().toLocaleDateString('en-GB',{month:'short',day:'numeric'});curCycle().done[passId]={date:today,exercises:[]};save();showToast('Rest logged ✓');renderChain();}
-function undoPass(passId){
+function undoSession(passId){
   const completed=curCycle().done[passId];
   curCycle().done[passId]=null;
   for(let i=state.log.length-1;i>=0;i--){if(state.log[i].passId===passId){state.log.splice(i,1);break;}}
@@ -6061,7 +6061,7 @@ function doNewCycle(){
   state.cycles.push(newC);
   save();renderChain();
 }
-function rerenderPass(passId){renderChain();setTimeout(()=>{const c=document.getElementById('card-'+passId);if(c)c.classList.add('open');},15);}
+function rerenderSession(passId){renderChain();setTimeout(()=>{const c=document.getElementById('card-'+passId);if(c)c.classList.add('open');},15);}
 function toggleCard(id){document.getElementById('card-'+id)?.classList.toggle('open');}
 
 // ── PR / BEST ─────────────────────────────────────────────────
