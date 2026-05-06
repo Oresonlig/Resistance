@@ -3613,14 +3613,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.5.0';
+const APP_VERSION = '3.6.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.5.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.6.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
 state.cycles=[newCycle()];
 
 
@@ -3749,6 +3749,11 @@ function ensureDraft(passId){if(!state.draft||state.draft.passId!==passId)state.
 
 // ── LOCAL STORAGE ─────────────────────────────────────────────
 function lsKey(uid){return 'thechain_'+uid;}
+
+// ── UTILS ─────────────────────────────────────────────────────
+function escapeHTML(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
 // ── UNIT CONVERSION ──────────────────────────────────────────
 function toDisplay(kg){
@@ -3967,7 +3972,7 @@ function buildRemovedSection(passId){
   if(!removedItems.length)return'';
   let h=`<div style="padding:10px 14px 4px;margin-top:6px;border-top:1px dashed #2a2a2a;font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;">Removed</div>`;
   removedItems.forEach(ex=>{
-    const name=state.exerciseOverrides?.[ex.id]||ex.name;
+    const name=escapeHTML(state.exerciseOverrides?.[ex.id]||ex.name);
     h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;font-family:var(--sans);"><span style="color:#666;font-size:.78rem;text-decoration:line-through;">${name}</span><button onclick="addExerciseToPass('${ex.id}','${passId}')" style="background:none;border:1px solid #3a3a3a;color:#888;font-family:var(--mono);font-size:.5rem;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">+ Restore</button></div>`;
   });
   return h;
@@ -3980,7 +3985,7 @@ function buildAddExRow(passId){
   if(customExes.length)grouped['Custom']=customExes.slice().sort();
   const catOrder=['Chest','Back','Shoulders','Arms','Legs','Traps','Core','Cardio','Custom'];
   let opts=`<option value="">— Select exercise —</option>`;
-  catOrder.forEach(cat=>{if(!grouped[cat])return;opts+=`<optgroup label="${cat}">`;grouped[cat].forEach(n=>{opts+=`<option value="${n}">${n}</option>`;});opts+=`</optgroup>`;});
+  catOrder.forEach(cat=>{if(!grouped[cat])return;opts+=`<optgroup label="${cat}">`;grouped[cat].forEach(n=>{const en=escapeHTML(n);opts+=`<option value="${en}">${en}</option>`;});opts+=`</optgroup>`;});
   opts+=`<option value="__CUSTOM__">+ Custom exercise...</option>`;
   return`<div class="add-ex-row"><button class="add-ex-btn" id="addbtn-${passId}" onclick="showAddEx('${passId}')"><span style="font-size:.85rem">+</span> Add exercise</button><div class="add-ex-form" id="addform-${passId}" style="display:none"><select class="add-ex-input" id="addinput-${passId}">${opts}</select><button class="add-ex-confirm" onclick="confirmAddEx('${passId}')">+</button></div></div>`;
 }
@@ -4009,7 +4014,7 @@ function buildExtraBlock(ex,i,passId,isDone,savedExs,draftExtraSets,completedDat
   const allWorkLoggedEx=workListEx.length>0&&workListEx.filter(s=>!!(state.draft?.loggedSets?.[extraId]?.[s.origIdx])).length>=workListEx.length;
   const unitL=unitLabel();
   let h=`<div class="${'ex-block'+(isSkippedEx?' skipped':'')+(isSavedEx?' saved':'')}" id="exblock-${extraId}">`;
-  h+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${ex.name} <span class="ex-tag" style="color:#446;border-color:#223">Extra</span></div></div><div class="ex-action-col"><div class="ex-mini-btns">`;
+  h+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(ex.name)} <span class="ex-tag" style="color:#446;border-color:#223">Extra</span></div></div><div class="ex-action-col"><div class="ex-mini-btns">`;
   if(!isDone&&!isSkippedEx){
     if(isSavedEx){
       h+=`<span class="ex-saved-badge">✓ Done</span><button class="ex-btn-edit" onclick="unsaveExercise('${passId}','${extraId}')"><svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit ▾</button>`;
@@ -4095,7 +4100,7 @@ function renderChain(){
     if(isRest)cls+=' rest-day';
     const preview=isRest?'Rest · Dead Hang · Walk':pass.exercises.map(e=>{
       const ovr = state.exerciseOverrides && state.exerciseOverrides[e.id];
-      return (ovr||e.name).split('/')[0].trim();
+      return escapeHTML((ovr||e.name).split('/')[0].trim());
     }).join(' · ');
 
     html+=`<div class="${cls}" id="card-${passId}"><div class="pass-top" onclick="toggleCard('${passId}')"><div class="pass-letter">${displayLetter}</div><div class="pass-info"><div class="pass-name">${pass.name}</div><div class="pass-preview">${preview}</div></div><div class="pass-done-info">${isDone?'✓ '+(completedData?.date||''):inProgress?'↓ draft':''}</div></div><div class="pass-body">`;
@@ -4161,14 +4166,15 @@ function renderChain(){
         }
 
         const existingNote = state.exerciseNotes?.[ex.id]||'';
+        const escapedNote = escapeHTML(existingNote);
         const noteBanner = !isDone
           ? existingNote
-            ? `<div class="ex-note-banner" onclick="toggleNote('${ex.id}')" title="Tap to edit">📝 ${existingNote}</div>`
+            ? `<div class="ex-note-banner" onclick="toggleNote('${ex.id}')" title="Tap to edit">📝 ${escapedNote}</div>`
             : `<div class="ex-note-add" onclick="toggleNote('${ex.id}')">+ note</div>`
           : existingNote
-            ? `<div class="ex-note-banner done-note">📝 ${existingNote}</div>` : '';
+            ? `<div class="ex-note-banner done-note">📝 ${escapedNote}</div>` : '';
         html+=`<div class="${'ex-block'+(isSkipped?' skipped':'')+(isSaved?' saved':'')}" id="exblock-${ex.id}">`;
-        html+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${customName}${tags}</div><div class="ex-detail">${ex.detail}</div>${prevText}${noteBanner}</div><div class="ex-action-col">`;
+        html+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(customName)}${tags}</div><div class="ex-detail">${ex.detail}</div>${prevText}${noteBanner}</div><div class="ex-action-col">`;
 
         if(!isDone&&!isSkipped){
           html+=`<div class="ex-mini-btns">`;
@@ -4217,7 +4223,7 @@ function renderChain(){
             html+=`<div id="tagwrap-${ex.id}" style="display:none;margin:6px 0;padding:8px;border:1px solid #2a2a2a;background:#0d0d0d;"><div style="font-family:var(--mono);font-size:.48rem;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Exercise Tags</div><div style="display:flex;gap:6px;flex-wrap:wrap;">${_tagBtns}</div><div style="font-family:var(--mono);font-size:.44rem;color:#444;margin-top:6px;">Tag changes affect set structure immediately.</div></div>`;
           }
           html+=`<div id="notewrap-${ex.id}" style="display:none" class="ex-note-wrap">
-            <textarea class="ex-note-input" id="noteinput-${ex.id}" placeholder="Note for next time...">${existingNote}</textarea>
+            <textarea class="ex-note-input" id="noteinput-${ex.id}" placeholder="Note for next time...">${escapedNote}</textarea>
             <div class="ex-note-actions">
               <button class="ex-note-save" onclick="saveNote('${ex.id}')">Save Note</button>
               ${existingNote?`<button class="ex-note-clear" onclick="clearNote('${ex.id}')">Clear</button>`:''}
@@ -4242,7 +4248,8 @@ function renderChain(){
               optsHtml += `<optgroup label="${cat}">`;
               grouped[cat].forEach(n=>{
                 const sel = (n===customName) ? ' selected' : '';
-                optsHtml += `<option value="${n}"${sel}>${n}</option>`;
+                const en = escapeHTML(n);
+                optsHtml += `<option value="${en}"${sel}>${en}</option>`;
               });
               optsHtml += `</optgroup>`;
             });
@@ -4445,16 +4452,17 @@ function buildReorderUI(effectiveChain){
     if(!p)return;
     const letter='ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i]||pid;
     const customName = state.passNameOverrides?.[pid] || p.name;
+    const escapedPassName = escapeHTML(customName);
     html+=`<div style="margin-bottom:4px;">
       <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1a1a;">
         <span style="font-family:var(--display);font-size:1rem;color:var(--red);min-width:18px;">${letter}</span>
-        <span style="font-family:var(--mono);font-size:.56rem;flex:1;color:var(--white);">${customName}</span>
+        <span style="font-family:var(--mono);font-size:.56rem;flex:1;color:var(--white);">${escapedPassName}</span>
         <button onclick="togglePassRename('${pid}')" style="background:none;border:1px solid #2a2a2a;color:var(--gray-light);font-family:var(--mono);font-size:.44rem;padding:3px 7px;cursor:pointer;text-transform:uppercase;">Rename</button>
         ${passOrder.length>1?`<button onclick="removePassFromChain('${pid}')" style="background:none;border:1px solid #3a1a1a;color:#5a2a2a;font-family:var(--mono);font-size:.44rem;padding:3px 8px;cursor:pointer;text-transform:uppercase;">Remove</button>`:''}
       </div>
       <div id="passrenamewrap-${pid}" style="display:none;padding:6px 0 4px;">
         <div style="display:flex;gap:4px;">
-          <input class="add-ex-input" id="passrenameinput-${pid}" type="text" placeholder="${customName}" value="${customName}" style="flex:1;font-size:.6rem;padding:4px 6px;">
+          <input class="add-ex-input" id="passrenameinput-${pid}" type="text" placeholder="${escapedPassName}" value="${escapedPassName}" style="flex:1;font-size:.6rem;padding:4px 6px;">
           <button class="add-ex-confirm" onclick="doPassRename('${pid}')">✓</button>
         </div>
       </div>
@@ -4846,7 +4854,7 @@ function showEditRest(){
     <div class="edit-section-sub">Add a rest day after any session. Changes take effect next cycle.</div>`;
   for(let pos=1;pos<=passOrder.length;pos++){
     const p=BASE_PASSES.find(x=>x.id===passOrder[pos-1]);
-    const label=p?`After ${state.passNameOverrides?.[p.id]||p.name}`:`After session ${pos}`;
+    const label=p?`After ${escapeHTML(state.passNameOverrides?.[p.id]||p.name)}`:`After session ${pos}`;
     const isActive=restSlots.includes(pos);
     html+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #222;">
       <div>
@@ -4874,7 +4882,7 @@ function showEditSort(){
     const p=BASE_PASSES.find(x=>x.id===pid);
     if(!p)return;
     const letter='ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i]||pid;
-    const name=state.passNameOverrides?.[pid]||p.name;
+    const name=escapeHTML(state.passNameOverrides?.[pid]||p.name);
     html+=`<div class="reorder-item" data-id="${pid}" draggable="true"
         ondragstart="dragStart(event,'${pid}')"
         ondragover="dragOver(event)"
@@ -4917,7 +4925,7 @@ function showEditAddRemove(){
     const p=BASE_PASSES.find(x=>x.id===pid);
     if(!p)return;
     const letter='ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i]||pid;
-    const name=state.passNameOverrides?.[pid]||p.name;
+    const name=escapeHTML(state.passNameOverrides?.[pid]||p.name);
     html+=`<div style="border:1px solid #2a2a2a;margin-bottom:6px;padding:12px 14px;">
       <div style="display:flex;align-items:center;gap:10px;">
         <span style="font-family:var(--display);font-size:1.4rem;color:var(--red);min-width:22px;">${letter}</span>
@@ -5983,10 +5991,10 @@ function renderData(){
     : `<div style="margin-bottom:16px;">${state.customExercises.map(c=>`
         <div style="border:1px solid #2a2a2a;padding:10px 12px;margin-bottom:6px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <input type="text" value="${c.name.replace(/"/g,'&quot;')}" id="custName-${c.id}"
+            <input type="text" value="${escapeHTML(c.name)}" id="custName-${c.id}"
               style="flex:1;background:#111;border:1px solid #333;color:var(--white);font-family:var(--sans);font-size:.82rem;padding:5px 8px;"
               onblur="updateCustomExercise('${c.id}',{name:this.value});renderData();">
-            <button onclick="confirmDeleteCustomEx('${c.id}','${c.name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')"
+            <button onclick="confirmDeleteCustomEx('${c.id}',${escapeHTML(JSON.stringify(c.name))})"
               style="background:none;border:1px solid #3a1a1a;color:#884444;font-family:var(--mono);font-size:.44rem;padding:4px 8px;cursor:pointer;text-transform:uppercase;">Delete</button>
           </div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;">
