@@ -3661,14 +3661,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.11.1';
+const APP_VERSION = '3.11.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.11.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.11.2',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
 state.cycles=[newCycle()];
 
 
@@ -4150,8 +4150,11 @@ function renderChain(){
     if(isDone)cls+=' done';else if(inProgress)cls+=' in-progress';else if(isNext)cls+=' next-up';
     if(isRest)cls+=' rest-day';
     const preview=isRest?'Rest · Dead Hang · Walk':pass.exercises.map(e=>{
-      const ovr = state.exerciseOverrides && state.exerciseOverrides[e.id];
-      return escapeHTML((ovr||e.name).split('/')[0].trim());
+      const doneEx=isDone&&completedData?.exercises?.find(d=>d.id===e.id);
+      const sessionSwap=hasDraft&&state.draft?.swaps?.[e.id];
+      const permSwap=state.permanentSwaps?.[e.id];
+      const ovr=sessionSwap||permSwap||(state.exerciseOverrides&&state.exerciseOverrides[e.id]);
+      return escapeHTML((doneEx?.name||ovr||e.name).split('/')[0].trim());
     }).join(' · ');
 
     html+=`<div class="${cls}" id="card-${passId}"><div class="pass-top" onclick="toggleCard('${passId}')"><div class="pass-letter">${displayLetter}</div><div class="pass-info"><div class="pass-name">${pass.name}</div><div class="pass-preview">${preview}</div></div><div class="pass-done-info">${isDone?'✓ '+(completedData?.date||''):inProgress?'↓ draft':''}</div></div><div class="pass-body">`;
@@ -4175,10 +4178,11 @@ function renderChain(){
         const isSaved=!isDone&&!!savedExs[ex.id]&&!savedExs[ex.id].skipped&&!savedExs[ex.id].editing;
         const isSkipped=!isDone&&savedExs[ex.id]?.skipped===true;
         // Swap resolution — done FIRST so flag detection can use custom exercise data
+        const savedData=isDone?completedData?.exercises?.find(e=>e.id===ex.id):savedExs[ex.id];
         const globalOverride = state.exerciseOverrides && state.exerciseOverrides[ex.id];
         const sessionSwap = draftSwaps[ex.id];
         const permSwap = state.permanentSwaps && state.permanentSwaps[ex.id];
-        const customName = sessionSwap || permSwap || globalOverride || ex.name;
+        const customName = (isDone&&savedData?.name)||sessionSwap||permSwap||globalOverride||ex.name;
         // If a custom exercise is swapped in, its flags override the original ex
         const swappedCustom = (sessionSwap || permSwap)
           ? state.customExercises?.find(c => c.name === (sessionSwap || permSwap))
@@ -4202,8 +4206,6 @@ function renderChain(){
             // lazy-init default warmups in draft
           }
         }
-                const savedData=isDone?completedData?.exercises?.find(e=>e.id===ex.id):savedExs[ex.id];
-
         let tags='';if(isRampEx)tags+=`<span class="ex-tag ramp">Ramp</span>`;if(isSingles)tags+=`<span class="ex-tag singles">Singles</span>`;if(isBW)tags+=`<span class="ex-tag bw">BW+</span>`;if(isUni)tags+=`<span class="ex-tag uni">Unilateral</span>`;if(isTimed)tags+=`<span class="ex-tag" style="border-color:#1a2a3a;background:#08101a;color:#7ab;">Timed</span>`;
         const lastSession=getLastSession(ex.id,isBW,isTimed);
         let prevText='';
