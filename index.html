@@ -3278,6 +3278,7 @@ async function loadStateForUser(){
   if(raw){
     try{
       state = JSON.parse(raw);
+      migratePassKeysToSession && migratePassKeysToSession();
       ensureStateDefaults && ensureStateDefaults();
       if(state.migrations && !state.migrations.exerciseSplit_v2)
         migrateExerciseNames && migrateExerciseNames();
@@ -3298,6 +3299,7 @@ async function loadStateForUser(){
       cloudReached = true;
       if(rows && rows.length && rows[0].data && rows[0].data.cycles){
         state = rows[0].data;
+        migratePassKeysToSession && migratePassKeysToSession();
         ensureStateDefaults && ensureStateDefaults();
         localStorage.setItem(lsKey(currentUser.id), JSON.stringify(state));
         showToast && showToast('Restored from cloud ✓');
@@ -3318,10 +3320,10 @@ async function loadStateForUser(){
       }, 500);
     }
   }
-  // Restore pass name overrides into BASE_PASSES
-  if(state.passNameOverrides){
-    Object.entries(state.passNameOverrides).forEach(([pid,name])=>{
-      const bp = BASE_PASSES.find(p=>p.id===pid);
+  // Restore pass name overrides into BASE_SESSIONS
+  if(state.sessionNameOverrides){
+    Object.entries(state.sessionNameOverrides).forEach(([pid,name])=>{
+      const bp = BASE_SESSIONS.find(p=>p.id===pid);
       if(bp) bp.name = name;
     });
   }
@@ -3338,11 +3340,11 @@ function ensureStateDefaults(){
   if(state.draft === undefined) state.draft = null;
   if(typeof state.restCount !== 'number') state.restCount = 1;
   if(!state.permanentSwaps) state.permanentSwaps = {};
-  if(state.passOrder === undefined) state.passOrder = null;
+  if(state.sessionOrder === undefined) state.sessionOrder = null;
   if(state.restSlots === undefined) state.restSlots = null;
   if(!state.unit) state.unit = 'kg';
   if(!state.exerciseOverrides) state.exerciseOverrides = {};
-  if(!state.passNameOverrides) state.passNameOverrides = {};
+  if(!state.sessionNameOverrides) state.sessionNameOverrides = {};
   if(typeof state.timerDefault !== 'number') state.timerDefault = 120;
   if(typeof state.timerEnabled !== 'boolean') state.timerEnabled = false;
   if(!state.exerciseNotes) state.exerciseNotes = {};
@@ -3381,8 +3383,8 @@ function freshState(){
   return {
     cycles:[newCycle()],
     log:[], weightLog:[], draft:null, restCount:1,
-    permanentSwaps:{}, passOrder:null, restSlots:null,
-    unit:'kg', exerciseOverrides:{}, passNameOverrides:{},
+    permanentSwaps:{}, sessionOrder:null, restSlots:null,
+    unit:'kg', exerciseOverrides:{}, sessionNameOverrides:{},
     timerDefault:120, timerEnabled:false, exerciseNotes:{},
     onboardingDone:false, theme:'iron',
     exerciseTagOverrides:{}, updatedAt:0,
@@ -3623,14 +3625,14 @@ const ALL_EXERCISES = EXERCISE_LIBRARY.map(e=>e.name);
 
 // ── IMPROVEMENT 3: Pass order is per-user, drag & drop reorderable ─
 // Default pass order (can be reordered per user)
-const DEFAULT_PASS_ORDER=['A','B','C','D','E','F'];
+const DEFAULT_SESSION_ORDER=['A','B','C','D','E','F'];
 
 // ── IMPROVEMENT 4: Rest days can be placed after any pass ─
 // Default rest slots: just after F (position 6 = end)
 // Each rest slot has a position index (0=before A, 1=after A, ..., 6=after F)
 const DEFAULT_REST_SLOTS=[6]; // after F by default
 
-const BASE_PASSES=[
+const BASE_SESSIONS=[
   {id:'A',name:'Chest + Tri',exercises:[{id:'A1',name:'Flat BB',detail:'Ramping → 1 set failure',ramp:true},{id:'A2',name:'Incline Smith Press',detail:'1 set failure'},{id:'A3',name:'Cable Flyes',detail:'Full ROM - Deep stretch · 1 set failure'},{id:'A4',name:'Tricep Pushdowns',detail:'1 set failure'}]},
   {id:'B',name:'Back Heavy + Biceps',exercises:[{id:'B1',name:'Dead Hang',detail:'Supinated or neutral · 1 set failure',bw:true,timed:true},{id:'B2',name:'Deadlift',detail:'Ramping → work sets to failure',ramp:true},{id:'B3',name:'Unilateral Cable Row',detail:'1 set failure',uni:true},{id:'B4',name:'Lat Prayers',detail:'1 set failure'}]},
   {id:'C',name:'Legs + Calfs',exercises:[{id:'C1',name:'Zercher Squat',detail:'Ramping → 1 set failure',ramp:true},{id:'C2',name:'Lying Leg Curl',detail:'1 set failure'},{id:'C3',name:'Leg Extension',detail:'1 set failure'},{id:'C4',name:'Seated Calf Raises',detail:'2 sets'}]},
@@ -3641,14 +3643,14 @@ const BASE_PASSES=[
 
 // Build the effective chain from user's pass order + rest slot positions
 // restSlots = array of positions (0-6) where 0=before first pass, 1=after 1st pass, etc.
-// passOrder = array of pass IDs in display order
-function buildEffectiveChain(passOrder, restSlots){
-  const po = passOrder || DEFAULT_PASS_ORDER;
+// sessionOrder = array of session IDs in display order
+function buildEffectiveChain(sessionOrder, restSlots){
+  const po = sessionOrder || DEFAULT_SESSION_ORDER;
   const rs = restSlots || DEFAULT_REST_SLOTS;
   const removed = state.removedExercises || {};
   const added = state.addedExercises || {};
   const passes = po.map(id => {
-    const base = BASE_PASSES.find(p => p.id === id);
+    const base = BASE_SESSIONS.find(p => p.id === id);
     if(!base) return null;
     const removedIds = removed[id] || [];
     const addedExs = added[id] || [];
@@ -3693,7 +3695,7 @@ function buildEffectiveChain(passOrder, restSlots){
 let __chainCache = {key:null, val:null};
 
 function getEffectiveChain(){
-  const po = state.passOrder || DEFAULT_PASS_ORDER;
+  const po = state.sessionOrder || DEFAULT_SESSION_ORDER;
   const rs = state.restSlots || DEFAULT_REST_SLOTS;
   const re = state.removedExercises || {};
   const ae = state.addedExercises || {};
@@ -3709,14 +3711,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.15.0';
+const APP_VERSION = '3.16.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.15.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.16.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -3825,6 +3827,19 @@ function migrateExerciseNames(){
   }
 }
 
+function migratePassKeysToSession(){
+  // One-time rename of state keys from Swedish-origin names to English.
+  // Safe: if sessionOrder already exists, migration was already applied.
+  if('passOrder' in state && !('sessionOrder' in state)){
+    state.sessionOrder = state['passOrder'];
+    delete state['passOrder'];
+  }
+  if('passNameOverrides' in state && !('sessionNameOverrides' in state)){
+    state.sessionNameOverrides = state['passNameOverrides'];
+    delete state['passNameOverrides'];
+  }
+}
+
 function newCycle(){
   const c={id:Date.now(),done:{}};
   getEffectiveChain().forEach(p=>c.done[p.id]=null);
@@ -3898,28 +3913,29 @@ async function syncFromCloud(userId){
         (cloudTime===localTime&&(cloud.log||[]).length>(state.log||[]).length);
       if(cloudNewer){
         state=cloud;
+        migratePassKeysToSession();
         if(!state.customExercises)state.customExercises=[];
         if(!state.migrations?.exerciseSplit_v2) migrateExerciseNames();
         if(!state.log)state.log=[];
         if(!state.weightLog)state.weightLog=[];
         if(!state.draft)state.draft=null;
         if(!state.permanentSwaps)state.permanentSwaps={};
-        if(!state.passOrder)state.passOrder=null;
+        if(!state.sessionOrder)state.sessionOrder=null;
         if(!state.restSlots)state.restSlots=null;
         if(!state.unit)state.unit='kg';
         if(!state.exerciseOverrides)state.exerciseOverrides={};
-        if(!state.passNameOverrides)state.passNameOverrides={};
+        if(!state.sessionNameOverrides)state.sessionNameOverrides={};
         if(!state.exerciseNotes)state.exerciseNotes={};
         if(!state.exerciseTagOverrides)state.exerciseTagOverrides={};
         if(state.timerEnabled===undefined)state.timerEnabled=false;
         if(!state.updatedAt)state.updatedAt=0;
         if(!state.theme)state.theme='iron';
-        // Reset BASE_PASSES name overrides so cloud's overrides apply cleanly
-        // (BASE_PASSES is module-level mutable, can carry stale local renames)
-        BASE_PASSES.forEach(p=>{ if(_BASE_PASS_NAMES[p.id]) p.name = _BASE_PASS_NAMES[p.id]; });
-        if(state.passNameOverrides){
-          Object.entries(state.passNameOverrides).forEach(([pid,name])=>{
-            const bp = BASE_PASSES.find(p=>p.id===pid);
+        // Reset BASE_SESSIONS name overrides so cloud's overrides apply cleanly
+        // (BASE_SESSIONS is module-level mutable, can carry stale local renames)
+        BASE_SESSIONS.forEach(p=>{ if(_BASE_SESSION_NAMES[p.id]) p.name = _BASE_SESSION_NAMES[p.id]; });
+        if(state.sessionNameOverrides){
+          Object.entries(state.sessionNameOverrides).forEach(([pid,name])=>{
+            const bp = BASE_SESSIONS.find(p=>p.id===pid);
             if(bp) bp.name = name;
           });
         }
@@ -4063,7 +4079,7 @@ function logWeight(){
 function buildRemovedSection(passId){
   const removedIds=state.removedExercises?.[passId]||[];
   if(!removedIds.length)return'';
-  const baseEx=BASE_PASSES.find(p=>p.id===passId)?.exercises||[];
+  const baseEx=BASE_SESSIONS.find(p=>p.id===passId)?.exercises||[];
   const removedItems=removedIds.map(id=>baseEx.find(e=>e.id===id)).filter(Boolean);
   if(!removedItems.length)return'';
   let h=`<div style="padding:10px 14px 4px;margin-top:6px;border-top:1px dashed #2a2a2a;font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;">Removed</div>`;
@@ -4505,7 +4521,7 @@ function renderChain(){
 
 // ── REORDER UI ──────────────────────────────────────────────
 function buildReorderUI(effectiveChain){
-  const passOrder = state.passOrder || DEFAULT_PASS_ORDER;
+  const passOrder = state.sessionOrder || DEFAULT_SESSION_ORDER;
   const restSlots = state.restSlots || DEFAULT_REST_SLOTS;
 
   let html=`<div id="reorder-panel" style="display:none;border:1px solid #2a2a2a;margin:0 11px 8px;padding:12px;max-width:560px;margin-left:auto;margin-right:auto;">
@@ -4514,7 +4530,7 @@ function buildReorderUI(effectiveChain){
     <div id="reorder-list" style="margin-bottom:12px;">`;
 
   passOrder.forEach((pid,i)=>{
-    const pass = BASE_PASSES.find(p=>p.id===pid);
+    const pass = BASE_SESSIONS.find(p=>p.id===pid);
     if(!pass)return;
     const letter = 'ABCDEF'[i]||pid;
     html+=`<div class="reorder-item" data-id="${pid}" draggable="true"
@@ -4540,7 +4556,7 @@ function buildReorderUI(effectiveChain){
   const maxPasses = passOrder.length;
   // Generate options: after pass 1, after pass 2, etc.
   for(let pos=1; pos<=maxPasses; pos++){
-    const passAtPos = BASE_PASSES.find(p=>p.id===passOrder[pos-1]);
+    const passAtPos = BASE_SESSIONS.find(p=>p.id===passOrder[pos-1]);
     const label = passAtPos ? `After ${passAtPos.name}` : `After position ${pos}`;
     const isActive = restSlots.includes(pos);
     html+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #1a1a1a;">
@@ -4555,10 +4571,10 @@ function buildReorderUI(effectiveChain){
     <div style="margin-bottom:10px;">`;
   // Show current passes with remove option
   passOrder.forEach((pid,i)=>{
-    const p=BASE_PASSES.find(x=>x.id===pid);
+    const p=BASE_SESSIONS.find(x=>x.id===pid);
     if(!p)return;
     const letter='ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i]||pid;
-    const customName = state.passNameOverrides?.[pid] || p.name;
+    const customName = state.sessionNameOverrides?.[pid] || p.name;
     const escapedPassName = escapeHTML(customName);
     html+=`<div style="margin-bottom:4px;">
       <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1a1a;">
@@ -4576,7 +4592,7 @@ function buildReorderUI(effectiveChain){
     </div>`;
   });
   // Show available passes to add
-  const available=PASS_TEMPLATES.filter(t=>!passOrder.includes(t.id));
+  const available=SESSION_TEMPLATES.filter(t=>!passOrder.includes(t.id));
   if(available.length>0){
     html+=`<div style="font-family:var(--mono);font-size:.48rem;color:#555;padding:8px 0 4px;text-transform:uppercase;letter-spacing:.08em;">Add a session:</div>`;
     available.forEach(t=>{
@@ -4599,9 +4615,9 @@ function buildReorderUI(effectiveChain){
 
 // ── PASS MANAGEMENT — add/remove passes ──────────────────────
 // Snapshot original pass names so we can restore them when overrides change
-const _BASE_PASS_NAMES = Object.fromEntries(BASE_PASSES.map(p => [p.id, p.name]));
+const _BASE_SESSION_NAMES = Object.fromEntries(BASE_SESSIONS.map(p => [p.id, p.name]));
 
-const PASS_TEMPLATES=[
+const SESSION_TEMPLATES=[
   {id:'A',name:'Chest + Tri',exercises:[{id:'A1',name:'Flat BB',detail:'Ramping → 1 set failure',ramp:true},{id:'A2',name:'Incline Smith Press',detail:'1 set failure'},{id:'A3',name:'Cable Flyes',detail:'Full ROM · 1 set failure'},{id:'A4',name:'Tricep Pushdowns',detail:'1 set failure'}]},
   {id:'B',name:'Back Heavy + Biceps',exercises:[{id:'B1',name:'Dead Hang',detail:'1 set failure',bw:true,timed:true},{id:'B2',name:'Deadlift',detail:'Ramping → work sets to failure',ramp:true},{id:'B3',name:'Unilateral Cable Row',detail:'1 set failure',uni:true},{id:'B4',name:'Lat Prayers',detail:'1 set failure'}]},
   {id:'C',name:'Legs + Calfs',exercises:[{id:'C1',name:'Zercher Squat',detail:'Ramping → 1 set failure',ramp:true},{id:'C2',name:'Lying Leg Curl',detail:'1 set failure'},{id:'C3',name:'Leg Extension',detail:'1 set failure'},{id:'C4',name:'Seated Calf Raises',detail:'2 sets'}]},
@@ -4625,10 +4641,10 @@ function doSessionRename(pid){
   const inp=document.getElementById('passrenameinput-'+pid);
   const val=inp?.value.trim();
   if(!val)return;
-  if(!state.passNameOverrides)state.passNameOverrides={};
-  state.passNameOverrides[pid]=val;
-  // Update the BASE_PASSES name for rendering
-  const bp=BASE_PASSES.find(p=>p.id===pid);
+  if(!state.sessionNameOverrides)state.sessionNameOverrides={};
+  state.sessionNameOverrides[pid]=val;
+  // Update the BASE_SESSIONS name for rendering
+  const bp=BASE_SESSIONS.find(p=>p.id===pid);
   if(bp) bp.name=val;
   save();
   showToast('Session renamed ✓');
@@ -4643,15 +4659,15 @@ function doSessionRename(pid){
   }
 }
 function addSessionToChain(templateId){
-  const tmpl=PASS_TEMPLATES.find(t=>t.id===templateId);
+  const tmpl=SESSION_TEMPLATES.find(t=>t.id===templateId);
   if(!tmpl)return;
-  // Add to BASE_PASSES if not there
-  if(!BASE_PASSES.find(p=>p.id===templateId)){
-    BASE_PASSES.push(tmpl);
+  // Add to BASE_SESSIONS if not there
+  if(!BASE_SESSIONS.find(p=>p.id===templateId)){
+    BASE_SESSIONS.push(tmpl);
   }
-  const order=[...(state.passOrder||DEFAULT_PASS_ORDER)];
+  const order=[...(state.sessionOrder||DEFAULT_SESSION_ORDER)];
   order.push(templateId);
-  state.passOrder=order;
+  state.sessionOrder=order;
   // Add to current cycle
   const cycle=curCycle();
   if(!(templateId in cycle.done)) cycle.done[templateId]=null;
@@ -4675,11 +4691,11 @@ async function removeSessionFromChain(passId){
     danger: true
   });
   if(!ok) return;
-  const order=[...(state.passOrder||DEFAULT_PASS_ORDER)];
+  const order=[...(state.sessionOrder||DEFAULT_SESSION_ORDER)];
   const idx=order.indexOf(passId);
   if(idx<0) return;
   order.splice(idx,1);
-  state.passOrder=order;
+  state.sessionOrder=order;
   save();
   const panel=document.getElementById('reorder-panel');
   if(panel){
@@ -4749,7 +4765,7 @@ function generateChain(numSessions, focus, restCount){
   }
   const restSlots = [...slots].sort((a,b)=>a-b);
 
-  return { passOrder: order, restSlots };
+  return { sessionOrder: order, restSlots };
 }
 
 // ── ONBOARDING WIZARD ─────────────────────────────────────────
@@ -4869,10 +4885,10 @@ function showOnboarding(userId, step, answers){
     let preview = '';
     if(a.numSessions && a.focus){
       const gen = generateChain(a.numSessions, a.focus, a.restCount || 1);
-      const allSessions = [...BASE_PASSES, ...PASS_TEMPLATES.filter(t=>!BASE_PASSES.find(b=>b.id===t.id))];
+      const allSessions = [...BASE_SESSIONS, ...SESSION_TEMPLATES.filter(t=>!BASE_SESSIONS.find(b=>b.id===t.id))];
       const restPositions = new Set(gen.restSlots);
       const items = [];
-      gen.passOrder.forEach((pid,i)=>{
+      gen.sessionOrder.forEach((pid,i)=>{
         const p = allSessions.find(x=>x.id===pid);
         items.push(`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1a1a;font-family:var(--mono);font-size:.55rem;color:#aaa;">
           <span style="color:var(--red);font-family:var(--display);font-size:.95rem;min-width:18px;">${'ABCDEFGHIJKLMN'[i]||pid}</span>
@@ -4979,9 +4995,9 @@ async function obImportFromOnboarding(e){
     const isV2 = d.version === 2 || (d.sessionOrder && !d.passOrder);
     const passOrder = isV2 ? d.sessionOrder : d.passOrder;
     if(!Array.isArray(passOrder)) throw new Error('Invalid template');
-    state.passOrder = passOrder;
+    state.sessionOrder = passOrder;
     state.restSlots = isV2 ? (d.restAfterSessions||[]) : (d.restSlots||[]);
-    state.passNameOverrides = isV2 ? (d.sessionNames||{}) : (d.passNameOverrides||{});
+    state.sessionNameOverrides = isV2 ? (d.sessionNames||{}) : (d.passNameOverrides||{});
     state.removedExercises = d.removedExercises || {};
     state.addedExercises = d.addedExercises || {};
     state.permanentSwaps = isV2 ? (d.exerciseSwaps||{}) : (d.permanentSwaps||{});
@@ -4997,9 +5013,9 @@ async function obImportFromOnboarding(e){
     state.timerDefault = 120;
     state.onboardingDone = true;
     passOrder.forEach(pid=>{
-      if(!BASE_PASSES.find(p=>p.id===pid)){
-        const tmpl = PASS_TEMPLATES.find(t=>t.id===pid);
-        if(tmpl) BASE_PASSES.push(tmpl);
+      if(!BASE_SESSIONS.find(p=>p.id===pid)){
+        const tmpl = SESSION_TEMPLATES.find(t=>t.id===pid);
+        if(tmpl) BASE_SESSIONS.push(tmpl);
       }
     });
     ensureStateDefaults();
@@ -5026,13 +5042,13 @@ function finishOnboarding(){
   const focus = a.focus || 'full';
   const restCount = a.restCount || 1;
   const generated = generateChain(numSessions, focus, restCount);
-  state.passOrder = generated.passOrder;
+  state.sessionOrder = generated.sessionOrder;
   state.restSlots = generated.restSlots;
 
-  generated.passOrder.forEach(pid=>{
-    if(!BASE_PASSES.find(p=>p.id===pid)){
-      const tmpl = PASS_TEMPLATES.find(t=>t.id===pid);
-      if(tmpl) BASE_PASSES.push(tmpl);
+  generated.sessionOrder.forEach(pid=>{
+    if(!BASE_SESSIONS.find(p=>p.id===pid)){
+      const tmpl = SESSION_TEMPLATES.find(t=>t.id===pid);
+      if(tmpl) BASE_SESSIONS.push(tmpl);
     }
   });
 
@@ -5085,7 +5101,7 @@ function removeRestSlot(pos){
 }
 
 function showEditSort(){
-  const passOrder=state.passOrder||DEFAULT_PASS_ORDER;
+  const passOrder=state.sessionOrder||DEFAULT_SESSION_ORDER;
   let html=`<div class="edit-page">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
       <div class="edit-title" style="margin-bottom:0;">Sort Sessions</div>
@@ -5094,10 +5110,10 @@ function showEditSort(){
     <div class="edit-section-sub" style="margin-bottom:16px;">On desktop: drag & drop. On mobile: hold & drag to reorder.</div>
     <div id="sort-list">`;
   passOrder.forEach((pid,i)=>{
-    const p=BASE_PASSES.find(x=>x.id===pid);
+    const p=BASE_SESSIONS.find(x=>x.id===pid);
     if(!p)return;
     const letter='ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i]||pid;
-    const name=escapeHTML(state.passNameOverrides?.[pid]||p.name);
+    const name=escapeHTML(state.sessionNameOverrides?.[pid]||p.name);
     html+=`<div class="reorder-item" data-id="${pid}" draggable="true"
         ondragstart="dragStart(event,'${pid}')"
         ondragover="dragOver(event)"
@@ -5125,9 +5141,9 @@ function touchEndAndRefreshSort(e,id){
 }
 
 function showEditAddRemove(){
-  const passOrder=state.passOrder||DEFAULT_PASS_ORDER;
+  const passOrder=state.sessionOrder||DEFAULT_SESSION_ORDER;
   const restSlots=state.restSlots||DEFAULT_REST_SLOTS;
-  const available=PASS_TEMPLATES.filter(t=>!passOrder.includes(t.id));
+  const available=SESSION_TEMPLATES.filter(t=>!passOrder.includes(t.id));
   let html=`<div class="edit-page">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
       <div class="edit-title" style="margin-bottom:0;">Add / Remove</div>
@@ -5136,12 +5152,12 @@ function showEditAddRemove(){
     <div class="edit-section-sub">Your current sessions:</div>`;
 
   passOrder.forEach((pid,i)=>{
-    const p=BASE_PASSES.find(x=>x.id===pid);
+    const p=BASE_SESSIONS.find(x=>x.id===pid);
     if(!p)return;
     const pos=i+1;
     const count=restSlots.filter(s=>s===pos).length;
     const letter='ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i]||pid;
-    const name=escapeHTML(state.passNameOverrides?.[pid]||p.name);
+    const name=escapeHTML(state.sessionNameOverrides?.[pid]||p.name);
     html+=`<div style="border:1px solid #2a2a2a;margin-bottom:8px;">
       <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;">
         <span style="font-family:var(--display);font-size:1.4rem;color:var(--red);min-width:22px;">${letter}</span>
@@ -5223,9 +5239,9 @@ async function saveExtraToProgram(passId, extraIdx){
 }
 
 function showEditExercises(passId){
-  const base = BASE_PASSES.find(p => p.id === passId);
+  const base = BASE_SESSIONS.find(p => p.id === passId);
   if(!base) return;
-  const passName = state.passNameOverrides?.[passId] || base.name;
+  const passName = state.sessionNameOverrides?.[passId] || base.name;
   const removed = state.removedExercises?.[passId] || [];
   const addedExs = state.addedExercises?.[passId] || [];
 
@@ -5323,7 +5339,7 @@ function saveExerciseOrder(passId){
 }
 
 async function removeExerciseFromEditPage(exId, passId){
-  const base = BASE_PASSES.find(p => p.id === passId);
+  const base = BASE_SESSIONS.find(p => p.id === passId);
   const ex = base?.exercises.find(e => e.id === exId);
   const name = state.exerciseOverrides?.[exId] || ex?.name || 'this exercise';
   const ok = await askModalConfirm('Remove exercise?',
@@ -5400,13 +5416,13 @@ function touchEnd(e, id){
   if(target && target.dataset.id && target.dataset.id !== touchDragId){
     const fromId = touchDragId;
     const toId = target.dataset.id;
-    const order = [...(state.passOrder||DEFAULT_PASS_ORDER)];
+    const order = [...(state.sessionOrder||DEFAULT_SESSION_ORDER)];
     const fromIdx = order.indexOf(fromId);
     const toIdx = order.indexOf(toId);
     if(fromIdx>=0 && toIdx>=0){
       order.splice(fromIdx,1);
       order.splice(toIdx,0,fromId);
-      state.passOrder = order;
+      state.sessionOrder = order;
       const effectiveChain = getEffectiveChain();
       const panel = document.getElementById('reorder-panel');
       if(panel){
@@ -5425,13 +5441,13 @@ function touchEnd(e, id){
 function dropPass(e, targetId){
   e.preventDefault();
   if(!draggedId||draggedId===targetId)return;
-  const order = [...(state.passOrder||DEFAULT_PASS_ORDER)];
+  const order = [...(state.sessionOrder||DEFAULT_SESSION_ORDER)];
   const fromIdx = order.indexOf(draggedId);
   const toIdx = order.indexOf(targetId);
   if(fromIdx<0||toIdx<0)return;
   order.splice(fromIdx,1);
   order.splice(toIdx,0,draggedId);
-  state.passOrder = order;
+  state.sessionOrder = order;
   // Re-render reorder UI
   const effectiveChain = getEffectiveChain();
   const panel = document.getElementById('reorder-panel');
@@ -5750,7 +5766,7 @@ function unskipExercise(passId,exId){ensureDraft(passId);delete state.draft.save
 // Permanently remove an exercise from a pass — survives across sessions
 async function removeExerciseFromSession(exId, passId){
   // Get exercise name for confirmation
-  const base = BASE_PASSES.find(p => p.id === passId);
+  const base = BASE_SESSIONS.find(p => p.id === passId);
   const ex = base?.exercises.find(e => e.id === exId);
   const exName = state.exerciseOverrides?.[exId] || ex?.name || 'this exercise';
   
@@ -6131,7 +6147,7 @@ function getLastSession(exId){
 }
 function getAllPRs(){
   const prs={};
-  const defs=BASE_PASSES.flatMap(p=>p.exercises).map(e=>({id:e.id,name:e.name,bw:!!e.bw}));
+  const defs=BASE_SESSIONS.flatMap(p=>p.exercises).map(e=>({id:e.id,name:e.name,bw:!!e.bw}));
   for(const entry of state.log){
     for(const ex of(entry.exercises||[])){
       if(ex.skipped||ex.extra)continue;
@@ -6352,7 +6368,7 @@ function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'
 // ── CHAIN TEMPLATE EXPORT / IMPORT ───────────────────────────
 function buildPRMap(){
   const prMap={};
-  const defs=BASE_PASSES.flatMap(p=>p.exercises).map(e=>({id:e.id,name:e.name,bw:!!e.bw}));
+  const defs=BASE_SESSIONS.flatMap(p=>p.exercises).map(e=>({id:e.id,name:e.name,bw:!!e.bw}));
   for(const entry of state.log){
     for(const ex of(entry.exercises||[])){
       if(ex.skipped||ex.extra)continue;
@@ -6377,8 +6393,8 @@ function exportTemplate(){
     version:2,
     exportedAt:todayStr(),
     author:currentUser?.name||'',
-    sessionOrder:state.passOrder||DEFAULT_PASS_ORDER,
-    sessionNames:state.passNameOverrides||{},
+    sessionOrder:state.sessionOrder||DEFAULT_SESSION_ORDER,
+    sessionNames:state.sessionNameOverrides||{},
     restAfterSessions:state.restSlots||DEFAULT_REST_SLOTS,
     removedExercises:state.removedExercises||{},
     addedExercises:state.addedExercises||{},
@@ -6440,7 +6456,7 @@ async function importTemplate(e){
       // Build confirmation text
       const sessionNames=passOrder.map(id=>{
         const ov=passNameOverrides[id];
-        const base=BASE_PASSES.find(p=>p.id===id);
+        const base=BASE_SESSIONS.find(p=>p.id===id);
         return ov||base?.name||id;
       });
       const restCount=restSlots.length;
@@ -6455,9 +6471,9 @@ async function importTemplate(e){
       );
       if(!ok)return;
       // Apply chain structure
-      state.passOrder=passOrder;
+      state.sessionOrder=passOrder;
       state.restSlots=restSlots;
-      state.passNameOverrides=passNameOverrides;
+      state.sessionNameOverrides=passNameOverrides;
       state.removedExercises=d.removedExercises||{};
       state.addedExercises=d.addedExercises||{};
       state.permanentSwaps=permanentSwaps;
@@ -6541,7 +6557,7 @@ async function resetAll(){
     { confirmLabel: 'Yes, erase all', danger: true }
   );
   if(!ok) return;
-  state={cycles:[newCycle()],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:state.passOrder,restSlots:state.restSlots,unit:state.unit||'kg',exerciseOverrides:{}};
+  state={cycles:[newCycle()],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:state.sessionOrder,restSlots:state.restSlots,unit:state.unit||'kg',exerciseOverrides:{}};
   save();
   showToast('Data reset');
   renderChain();
