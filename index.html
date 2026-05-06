@@ -960,6 +960,8 @@ body.theme-nightcity .toast{
   box-shadow:0 0 24px rgba(255,230,0,0.3);
   text-shadow:0 0 6px rgba(255,230,0,0.6);
 }
+body.theme-nightcity .auth-btn-primary{background:#ffe600;color:#08010f;}
+body.theme-nightcity .auth-btn-primary:hover{background:#ffd000;color:#08010f;}
 
 /* ─────────────────────────────────────────────────────────────
    3. ARCTIC TERMINAL — Cold precision
@@ -997,6 +999,8 @@ body.theme-arctic .user-btn{border-color:#0a2030;}
 body.theme-arctic .user-btn:hover{border-color:var(--red);box-shadow:0 0 12px rgba(0,200,255,.15);}
 body.theme-arctic .weight-banner{background:#010810;}
 body.theme-arctic .section-title{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.1em;}
+body.theme-arctic .auth-btn-primary{background:var(--red);color:#020c10;}
+body.theme-arctic .auth-btn-primary:hover{background:#00a8dd;color:#020c10;}
 
 /* ─────────────────────────────────────────────────────────────
    4. EMBER — Industrial forge
@@ -1534,6 +1538,8 @@ body.theme-ember .toast{
   box-shadow:0 0 20px rgba(255,106,0,0.3);
   text-shadow:0 0 4px rgba(255,106,0,0.5);
 }
+body.theme-ember .auth-btn-primary{background:linear-gradient(180deg,#ff8c1a 0%,#cc3300 100%);color:#ffe8cc;}
+body.theme-ember .auth-btn-primary:hover{background:linear-gradient(180deg,#ff6a00 0%,#aa2200 100%);}
 
 
 /* ─────────────────────────────────────────────────────────────
@@ -1580,6 +1586,10 @@ body.theme-void .ex-tag{border-color:#222;color:#444;}
 body.theme-void .pass-card.done{opacity:.4;}
 body.theme-void .section-title{font-family:'Playfair Display',serif;font-style:italic;}
 body.theme-void .sync-dot.ok{background:#888;}
+body.theme-void .auth-logo span{color:#aaa;}
+body.theme-void .auth-btn-primary{background:#fff;color:#000;}
+body.theme-void .auth-btn-primary:hover{background:#ddd;}
+body.theme-void .btn-primary:disabled{background:#1a1a1a;color:#444;}
 
 
 
@@ -1936,6 +1946,8 @@ body.theme-nanosuit .hist-pass{color:var(--red);font-family:'Orbitron',sans-seri
 body.theme-nanosuit::-webkit-scrollbar{width:6px;}
 body.theme-nanosuit::-webkit-scrollbar-track{background:#050810;}
 body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid #00d4ff;}
+body.theme-nanosuit .auth-btn-primary{background:linear-gradient(135deg,#00d4ff 0%,#0099cc 100%);color:#050810;}
+body.theme-nanosuit .auth-btn-primary:hover{background:linear-gradient(135deg,#00fff0 0%,#00d4ff 100%);}
 
 
 /* ── AUTH SCREEN ──────────────────────────────────────────────
@@ -2333,6 +2345,9 @@ body.theme-daylight .pass-card.in-progress{
   border-color:var(--green-bright);
   box-shadow:0 2px 8px rgba(42,122,58,0.1);
 }
+body.theme-daylight .pass-card.in-progress::before{background:#2a7a3a;color:#ffffff;}
+body.theme-daylight .ex-block.saved{background:#f0f7ec;}
+body.theme-daylight .btn-primary:disabled{background:#f0e8e8;color:#c0a0a0;}
 
 body.theme-daylight .pass-letter{
   font-family:var(--display);
@@ -2601,6 +2616,9 @@ body.theme-daylight .ex-done-primary{border-color:#e0dcd0;color:#d0ccc0;}
 body.theme-daylight .ex-done-primary.ready{background:var(--red);border-color:var(--red);color:#fff;}
 body.theme-ember .ex-done-primary.ready{background:#c0392b;border-color:#c0392b;color:#ffe8cc;}
 body.theme-nightcity .ex-done-primary.ready{background:#c0392b;border-color:#c0392b;color:#ffe020;}
+body.theme-void .ex-done-primary.ready{background:#fff;border-color:#fff;color:#000;}
+body.theme-arctic .ex-done-primary.ready{background:var(--red);border-color:var(--red);color:#020c10;}
+body.theme-nanosuit .ex-done-primary.ready{background:linear-gradient(135deg,#00d4ff 0%,#0099cc 100%);border-color:var(--red);color:#050810;}
 
 /* ── iOS SAFARI AUTO-ZOOM FIX ────────────────────────────────
    Safari zooms in when input font-size < 16px.
@@ -2781,6 +2799,9 @@ body.theme-crusader .pass-card.in-progress{
   border-color:#2a6624;
   box-shadow:0 2px 10px rgba(42,102,36,0.1);
 }
+body.theme-crusader .pass-card.in-progress::before{background:#2a6624;color:#ede6d4;}
+body.theme-crusader .ex-block.saved{background:#eef4e8;}
+body.theme-crusader .btn-primary:disabled{background:#d8ceb8;color:#9a8e7a;}
 body.theme-crusader .pass-card.done{
   background:#e8e0cc !important;border-color:#cfc5ae !important;
   filter:saturate(0.4) !important;opacity:1 !important;
@@ -3661,14 +3682,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.11.4';
+const APP_VERSION = '3.12.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.11.4',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.12.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
 state.cycles=[newCycle()];
 
 
