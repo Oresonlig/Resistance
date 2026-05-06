@@ -3661,14 +3661,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.10.0';
+const APP_VERSION = '3.11.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.10.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.11.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
 state.cycles=[newCycle()];
 
 
@@ -4159,8 +4159,14 @@ function renderChain(){
       const draft=hasDraft?state.draft:null;
       const savedExs=draft?draft.savedExercises:{};
       const draftSwaps=draft?draft.swaps:{};
-      const draftExtraSets=draft?draft.extraSets:{};
-      const extras=draft?draft.extras:[];
+      const completedExs=completedData?.exercises||[];
+      const draftExtraSets=draft?draft.extraSets:Object.fromEntries(
+        completedExs.filter(e=>e.id&&e.id.startsWith('extra_'+passId+'_'))
+          .map(e=>[e.id,(e.sets||[]).map(s=>({warmup:!!s.warmup}))])
+      );
+      const extras=draft?draft.extras:completedExs
+        .filter(e=>e.id&&e.id.startsWith('extra_'+passId+'_'))
+        .map(e=>({name:e.name}));
 
       pass.exercises.forEach(ex=>{
         const isSaved=!isDone&&!!savedExs[ex.id]&&!savedExs[ex.id].skipped&&!savedExs[ex.id].editing;
@@ -5796,6 +5802,7 @@ function copySessionToClipboard(passId){
   const u=unitLabel();
   let lines=['💪 The Chain — '+(pass?.name||passId),'📅 '+data.date,''];
   (data.exercises||[]).forEach(ex=>{
+    if(ex.skipped)return;
     lines.push(ex.name);
     let w=0,s=0;
     (ex.sets||[]).forEach(set=>{
