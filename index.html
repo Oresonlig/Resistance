@@ -2538,6 +2538,7 @@ body.theme-daylight .pr-card{
   background:#ffffff;
   border:1px solid #e0dcd0;
 }
+body.theme-daylight .pr-card::before{background:#f0ece4;color:var(--gold);}
 body.theme-daylight .pr-value{color:var(--red);font-weight:700;}
 
 body.theme-daylight .hist-entry{
@@ -2960,6 +2961,7 @@ body.theme-crusader .stat-box{background:#f5eed8;border:1px solid #d0c8b4;}
 body.theme-crusader .stat-num{color:#8b1a1a;font-family:'Cinzel',serif;}
 body.theme-crusader .stat-desc{color:#7a6e5e;}
 body.theme-crusader .pr-card{background:#f5eed8;border:1px solid #d0c8b4;}
+body.theme-crusader .pr-card::before{background:#e8dfc8;color:#b8930a;}
 body.theme-crusader .pr-value{color:#8b1a1a;font-weight:700;}
 
 /* HISTORY */
@@ -3682,14 +3684,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.12.0';
+const APP_VERSION = '3.12.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.12.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.12.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
 state.cycles=[newCycle()];
 
 
