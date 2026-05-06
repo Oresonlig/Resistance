@@ -3490,6 +3490,8 @@ function bindAuthHandlers(){
 // Logout
 async function logoutUser(){
   if(!window.sb) return;
+  const ok = await askModalConfirm('Log out?', 'You will be signed out of this device.', {confirmLabel:'Log out'});
+  if(!ok) return;
   await window.sb.auth.signOut();
   // onAuthStateChange will fire and handleSession(null) will show auth screen
 }
@@ -3691,14 +3693,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.13.0';
+const APP_VERSION = '3.13.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.13.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.13.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
 state.cycles=[newCycle()];
 
 
@@ -5138,8 +5140,8 @@ function showEditAddRemove(){
         </div>
       </div>
       <div style="display:flex;border-top:1px solid #1a1a1a;">
-        <button onclick="togglePassRename('${pid}')" style="flex:1;padding:11px 0;background:none;border:none;border-right:1px solid #1a1a1a;color:#777;font-family:var(--mono);font-size:.48rem;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;">Rename</button>
-        <button onclick="showEditExercises('${pid}')" style="flex:1;padding:11px 0;background:none;border:none;color:#777;font-family:var(--mono);font-size:.48rem;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;">Exercises →</button>
+        <button onclick="togglePassRename('${pid}')" style="flex:1;padding:12px 0;background:var(--gray-mid);border:none;border-right:1px solid #1a1a1a;color:var(--gray-light);font-family:var(--mono);font-size:.48rem;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;">✎ Rename</button>
+        <button onclick="showEditExercises('${pid}')" style="flex:1;padding:12px 0;background:var(--gray-mid);border:none;color:var(--gray-light);font-family:var(--mono);font-size:.48rem;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;">Exercises →</button>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid #1a1a1a;">
         <span style="font-family:var(--mono);font-size:.48rem;color:#666;text-transform:uppercase;letter-spacing:.06em;">Forced rest after</span>
