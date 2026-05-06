@@ -3661,14 +3661,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.11.0';
+const APP_VERSION = '3.11.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.11.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.11.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
 state.cycles=[newCycle()];
 
 
@@ -4038,11 +4038,14 @@ function buildAddExRow(passId){
   return`<div class="add-ex-row"><button class="add-ex-btn" id="addbtn-${passId}" onclick="showAddEx('${passId}')"><span style="font-size:.85rem">+</span> Add exercise</button><div class="add-ex-form" id="addform-${passId}" style="display:none"><select class="add-ex-input" id="addinput-${passId}">${opts}</select><button class="add-ex-confirm" onclick="confirmAddEx('${passId}')">+</button></div></div>`;
 }
 
-function buildPassFooter(passId,savedExs,isDone){
+function buildPassFooter(passId,savedExs,isDone,extras,passExercises){
+  const extraIds=(extras||[]).map((_,i)=>'extra_'+passId+'_'+i);
+  const allIds=[...(passExercises||[]).map(e=>e.id),...extraIds];
+  const allResolved=allIds.length===0||allIds.every(id=>!!savedExs[id]);
   const savedCount=Object.values(savedExs).filter(e=>e&&!e.skipped).length;
   const skippedCount=Object.values(savedExs).filter(e=>e&&e.skipped).length;
   let h=`<div class="pass-actions">`;
-  if(!isDone){h+=`<button class="btn-primary" onclick="finishPass('${passId}')" ${savedCount===0?'disabled':''}>Finish Session →</button><button class="btn-secondary" onclick="undoPass('${passId}')">↩</button>`;}
+  if(!isDone){h+=`<button class="btn-primary" onclick="finishPass('${passId}')" ${!allResolved?'disabled':''}>Finish Session →</button><button class="btn-secondary" onclick="undoPass('${passId}')">↩</button>`;}
   else{h+=`<button class="btn-secondary" onclick="undoPass('${passId}')">↩ Undo</button><button class="btn-secondary" onclick="copySessionToClipboard('${passId}')" style="margin-left:6px;">⎘ Copy</button>`;}
   h+=`</div>`;
   if(!isDone&&(savedCount>0||skippedCount>0))h+=`<div class="draft-notice">☁ ${savedCount} saved · ${skippedCount} skipped · synced to cloud</div>`;
@@ -4441,7 +4444,7 @@ function renderChain(){
 
       if(!isDone) html+=buildAddExRow(passId);
 
-      html+=buildPassFooter(passId,savedExs,isDone);
+      html+=buildPassFooter(passId,savedExs,isDone,extras,pass.exercises);
     }
     html+=`</div></div>`;
   });
