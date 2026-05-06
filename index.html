@@ -14,6 +14,7 @@
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230a0a0a'/><text y='68' x='50' text-anchor='middle' font-size='38' font-family='serif' fill='%23c0392b'>TC</text></svg>">
 <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22The%20Chain%20%E2%80%94%20Resistance%20Training%22,%22short_name%22:%22The%20Chain%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%230a0a0a%22,%22theme_color%22:%22%230a0a0a%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Crect%20width='100'%20height='100'%20fill='%230a0a0a'/%3E%3Ctext%20y='68'%20x='50'%20text-anchor='middle'%20font-size='38'%20font-family='serif'%20fill='%23c0392b'%3ETC%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22any%22,%22type%22:%22image/svg+xml%22}]}">
 <title>The Chain — Resistance Training</title>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&family=Orbitron:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Space+Grotesk:wght@300;400;700&family=Crimson+Pro:ital,wght@0,300;1,300&family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 
@@ -219,6 +220,9 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 @media(min-width:600px){
   .ob-next{min-width:200px;padding:14px 40px;font-size:.9rem;}
 }
+.drag-handle{display:flex;align-items:center;padding:0 10px;cursor:grab;color:#444;font-size:1.1rem;line-height:1;touch-action:none;user-select:none;}
+.drag-handle:active{cursor:grabbing;}
+.sortable-ghost{opacity:.35;}
 .ob-path-list{display:flex;flex-direction:column;gap:10px;width:100%;margin-top:8px;}
 .ob-path-btn{display:flex;flex-direction:column;align-items:flex-start;gap:4px;background:none;border:1px solid #333;color:var(--white);padding:16px 18px;cursor:pointer;transition:all .2s;text-align:left;}
 .ob-path-btn:hover{border-color:var(--red);background:rgba(199,64,53,0.04);}
@@ -3351,6 +3355,7 @@ function ensureStateDefaults(){
   if(!Array.isArray(state.importedPRs)) state.importedPRs = [];
   if(typeof state.updatedAt !== 'number') state.updatedAt = 0;
   if(!Array.isArray(state.customExercises)) state.customExercises = [];
+  if(!state.exerciseOrder || typeof state.exerciseOrder !== 'object') state.exerciseOrder = {};
   if(!state.appVersion) state.appVersion = APP_VERSION;
   if(!state.migrations) state.migrations = {};
 }
@@ -3648,8 +3653,19 @@ function buildEffectiveChain(passOrder, restSlots){
     const removedIds = removed[id] || [];
     const addedExs = added[id] || [];
     const baseFiltered = removedIds.length === 0 ? base.exercises : base.exercises.filter(e => !removedIds.includes(e.id));
-    if(removedIds.length === 0 && addedExs.length === 0) return base;
-    return {...base, exercises: [...baseFiltered, ...addedExs]};
+    const combined = [...baseFiltered, ...addedExs];
+    const order = state.exerciseOrder?.[id];
+    if(order && order.length){
+      combined.sort((a,b)=>{
+        const ia=order.indexOf(a.id), ib=order.indexOf(b.id);
+        if(ia===-1&&ib===-1) return 0;
+        if(ia===-1) return 1;
+        if(ib===-1) return -1;
+        return ia-ib;
+      });
+    }
+    if(removedIds.length === 0 && addedExs.length === 0 && !order?.length) return base;
+    return {...base, exercises: combined};
   }).filter(Boolean);
   // Insert rest days at specified positions
   // Sort slots descending to insert from end without shifting earlier indices
@@ -3693,14 +3709,14 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.13.1';
+const APP_VERSION = '3.14.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.13.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[]};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},passOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},passNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.14.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -5222,45 +5238,54 @@ function showEditExercises(passId){
   catOrder.forEach(cat=>{ if(!grouped[cat])return; addOptsHtml+=`<optgroup label="${cat}">`; grouped[cat].forEach(n=>{ addOptsHtml+=`<option value="${n}">${n}</option>`; }); addOptsHtml+=`</optgroup>`; });
   addOptsHtml += `<option value="__CUSTOM__">+ Custom exercise...</option>`;
 
+  // Build unified ordered active list + removed list
+  const activeBase = base.exercises.filter(ex => !removed.includes(ex.id));
+  const allActive = [...activeBase, ...addedExs];
+  const order = state.exerciseOrder?.[passId] || [];
+  if(order.length){
+    allActive.sort((a,b)=>{
+      const ia=order.indexOf(a.id), ib=order.indexOf(b.id);
+      if(ia===-1&&ib===-1) return 0; if(ia===-1) return 1; if(ib===-1) return -1; return ia-ib;
+    });
+  }
+  const removedExs = base.exercises.filter(ex => removed.includes(ex.id));
+
   let html = `<div class="edit-page">
     <div class="edit-back" onclick="showEditAddRemove()">← Done</div>
-    <div class="edit-title">${passName}</div>
-    <div class="edit-section-sub">Exercises in this session:</div>`;
+    <div class="edit-title">${escapeHTML(passName)}</div>
+    <div class="edit-section-sub">Drag ⠿ to reorder. Tap name to open tags.</div>
+    <div id="ex-sort-list">`;
 
-  base.exercises.forEach(ex => {
-    const isRemoved = removed.includes(ex.id);
+  allActive.forEach(ex => {
     const name = state.exerciseOverrides?.[ex.id] || ex.name;
-    if(isRemoved){
-      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid #1a1a1a;margin-bottom:6px;opacity:.5;">
-        <span style="font-family:var(--sans);font-size:.84rem;color:#666;text-decoration:line-through;">${name}</span>
-        <button onclick="addExerciseToPass('${ex.id}','${passId}');showEditExercises('${passId}');" style="background:none;border:1px solid #2a3a2a;color:#4a7a4a;font-family:var(--mono);font-size:.48rem;padding:5px 10px;cursor:pointer;text-transform:uppercase;">Restore</button>
-      </div>`;
-    } else {
-      html += `<div style="border:1px solid #2a2a2a;margin-bottom:6px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;" onclick="toggleTagEditor('${ex.id}')">
-          <span style="font-family:var(--sans);font-size:.84rem;color:var(--white);">${name}</span>
+    const isAdded = !!addedExs.find(a => a.id === ex.id);
+    const removeFn = isAdded
+      ? `removeAddedExercise('${ex.id}','${passId}');showEditExercises('${passId}');`
+      : `removeExerciseFromEditPage('${ex.id}','${passId}');`;
+    html += `<div data-exid="${ex.id}" style="border:1px solid #2a2a2a;margin-bottom:6px;">
+      <div style="display:flex;align-items:center;">
+        <span class="drag-handle">⠿</span>
+        <div style="flex:1;display:flex;align-items:center;justify-content:space-between;padding:10px 14px 10px 0;cursor:pointer;" onclick="toggleTagEditor('${ex.id}')">
+          <span style="font-family:var(--sans);font-size:.84rem;color:var(--white);">${escapeHTML(name)}</span>
           <div style="display:flex;align-items:center;gap:10px;">
             <span style="color:#555;font-size:1rem;">›</span>
-            <button onclick="event.stopPropagation();removeExerciseFromEditPage('${ex.id}','${passId}');" style="background:none;border:1px solid #3a1a1a;color:#884444;font-family:var(--mono);font-size:.48rem;padding:5px 10px;cursor:pointer;text-transform:uppercase;">Remove</button>
+            <button onclick="event.stopPropagation();${removeFn}" style="background:none;border:1px solid #3a1a1a;color:#884444;font-family:var(--mono);font-size:.48rem;padding:5px 10px;cursor:pointer;text-transform:uppercase;">Remove</button>
           </div>
         </div>
-        ${buildTagEditorHTML(ex, passId)}
-      </div>`;
-    }
+      </div>
+      ${buildTagEditorHTML(ex, passId)}
+    </div>`;
   });
 
-  if(addedExs.length > 0){
-    html += `<div style="font-family:var(--mono);font-size:.48rem;color:#666;text-transform:uppercase;letter-spacing:.08em;padding:10px 0 6px;border-top:1px dashed #2a2a2a;margin-top:4px;">Added by you:</div>`;
-    addedExs.forEach(ex => {
-      html += `<div style="border:1px solid #2a2a2a;margin-bottom:6px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;" onclick="toggleTagEditor('${ex.id}')">
-          <span style="font-family:var(--sans);font-size:.84rem;color:var(--white);">${ex.name}</span>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span style="color:#555;font-size:1rem;">›</span>
-            <button onclick="event.stopPropagation();removeAddedExercise('${ex.id}','${passId}');showEditExercises('${passId}');" style="background:none;border:1px solid #3a1a1a;color:#884444;font-family:var(--mono);font-size:.48rem;padding:5px 10px;cursor:pointer;text-transform:uppercase;">Remove</button>
-          </div>
-        </div>
-        ${buildTagEditorHTML(ex, passId)}
+  html += `</div>`;
+
+  if(removedExs.length > 0){
+    html += `<div style="font-family:var(--mono);font-size:.48rem;color:#555;text-transform:uppercase;letter-spacing:.08em;padding:10px 0 6px;border-top:1px dashed #2a2a2a;margin-top:8px;">Removed:</div>`;
+    removedExs.forEach(ex => {
+      const name = state.exerciseOverrides?.[ex.id] || ex.name;
+      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid #1a1a1a;margin-bottom:6px;opacity:.5;">
+        <span style="font-family:var(--sans);font-size:.84rem;color:#666;text-decoration:line-through;">${escapeHTML(name)}</span>
+        <button onclick="addExerciseToPass('${ex.id}','${passId}');showEditExercises('${passId}');" style="background:none;border:1px solid #2a3a2a;color:#4a7a4a;font-family:var(--mono);font-size:.48rem;padding:5px 10px;cursor:pointer;text-transform:uppercase;">Restore</button>
       </div>`;
     });
   }
@@ -5274,6 +5299,25 @@ function showEditExercises(passId){
   </div></div>`;
 
   document.getElementById('view-chain').innerHTML = html;
+
+  const listEl = document.getElementById('ex-sort-list');
+  if(listEl && typeof Sortable !== 'undefined'){
+    Sortable.create(listEl, {
+      animation: 150,
+      handle: '.drag-handle',
+      ghostClass: 'sortable-ghost',
+      onEnd: () => saveExerciseOrder(passId)
+    });
+  }
+}
+
+function saveExerciseOrder(passId){
+  const items = document.querySelectorAll('#ex-sort-list [data-exid]');
+  if(!items.length) return;
+  if(!state.exerciseOrder) state.exerciseOrder = {};
+  state.exerciseOrder[passId] = [...items].map(el => el.dataset.exid);
+  invalidateChainCache();
+  save();
 }
 
 async function removeExerciseFromEditPage(exId, passId){
