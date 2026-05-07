@@ -2607,7 +2607,6 @@ body.theme-crusader header{
   background:linear-gradient(180deg,#221d17 0%,#181410 100%);
   border-bottom:none;
   box-shadow:0 1px 0 rgba(138,112,72,0.35),0 3px 16px rgba(0,0,0,0.4);
-  position:relative;z-index:2;
 }
 body.theme-crusader header::after{
   content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;
@@ -2641,7 +2640,6 @@ body.theme-crusader nav{
   background:linear-gradient(0deg,#181410 0%,#221d17 100%);
   border-top:none;
   box-shadow:0 -1px 0 rgba(138,112,72,0.3),0 -4px 12px rgba(0,0,0,0.4);
-  position:relative;z-index:2;
 }
 body.theme-crusader nav::before{
   content:'';position:absolute;left:0;right:0;top:-1px;height:1px;
@@ -3605,7 +3603,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.20.0';
+const APP_VERSION = '3.20.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3613,7 +3611,7 @@ let lastSyncWrite = 0;
 
 let currentUser=null;
 let inPasswordRecovery=false;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.20.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.20.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
