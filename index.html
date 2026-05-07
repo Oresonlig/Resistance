@@ -2542,74 +2542,85 @@ body.theme-daylight .pass-card.done .pass-preview{color:#bbb !important;}
 
 
 /* ── CRUSADER ─────────────────────────────────────────────────
-   Palette: Aged parchment, crusader crimson, burnished gold, deep inkwood
-   Atmosphere: Illuminated manuscript, sacred warrior, stained glass light
+   Palette: Weathered parchment, blood red, aged bronze/steel, deep ink
+   Atmosphere: Templar warrior, battle-worn, the cross looms behind
    Fonts: Cinzel (display), Crimson Pro (body), DM Mono (data)
 ─────────────────────────────────────────────────────────────── */
 body.theme-crusader{
-  --black:#ede6d4;    /* semantic parchment — matches Daylight inversion pattern */
+  --black:#dcd0b8;    /* semantic weathered parchment */
   --white:#1c1208;    /* semantic inkwood — primary text */
   --red:#8b1a1a;
-  --gold:#b8930a;--green-bright:#2a6624;
-  --gray-mid:#e0d8c4;--gray-light:#9a8e7a;
+  --gold:#7a6440;     /* aged bronze, not bright gold */
+  --green-bright:#2a6624;
+  --gray-mid:#cabea4;--gray-light:#8a7e6a;
   --display:'Cinzel',serif;
   --sans:'Crimson Pro',serif;
   --mono:'DM Mono',monospace;
-  background-color:#ede6d4;
+  background-color:#dcd0b8;
   background-image:
-    radial-gradient(ellipse 80% 50% at 50% 0%,rgba(184,147,10,0.09) 0%,transparent 65%),
-    radial-gradient(ellipse 60% 40% at 80% 80%,rgba(139,26,26,0.04) 0%,transparent 70%),
-    linear-gradient(180deg,#f0e8d5 0%,#ede6d4 50%,#e8dfc8 100%);
+    radial-gradient(ellipse 110% 70% at 50% 100%,rgba(48,24,14,0.20) 0%,transparent 70%),
+    radial-gradient(ellipse 90% 50% at 50% 0%,rgba(48,24,14,0.12) 0%,transparent 65%),
+    radial-gradient(ellipse 60% 40% at 70% 50%,rgba(139,26,26,0.05) 0%,transparent 70%),
+    linear-gradient(180deg,#d4c8ac 0%,#dcd0b8 50%,#ccc0a4 100%);
   background-attachment:fixed;
   color:#1c1208;
 }
 
-/* Sacred motes drifting upward — gold & crimson on parchment */
-body.theme-crusader::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
-  background-image:
-    radial-gradient(3px 4px at 8% 78%,rgba(139,26,26,0.55) 50%,transparent 100%),
-    radial-gradient(4px 3px at 24% 62%,rgba(184,147,10,0.65) 50%,transparent 100%),
-    radial-gradient(3px 3px at 54% 85%,rgba(139,26,26,0.5) 50%,transparent 100%),
-    radial-gradient(4px 4px at 76% 70%,rgba(184,147,10,0.7) 50%,transparent 100%),
-    radial-gradient(3px 3px at 91% 55%,rgba(184,147,10,0.6) 50%,transparent 100%),
-    radial-gradient(2px 3px at 38% 40%,rgba(139,26,26,0.45) 50%,transparent 100%),
-    radial-gradient(3px 2px at 65% 25%,rgba(184,147,10,0.55) 50%,transparent 100%);
-  background-size:100% 200%;
-  animation:crusader-motes 18s linear infinite;
-  opacity:0.85;
-}
-@keyframes crusader-motes{
-  0%{background-position:0% 100%;}
-  100%{background-position:0% -100%;}
-}
-
-/* Crusader cross — ghosted in background of chain view */
-body.theme-crusader #view-chain{position:relative;}
-body.theme-crusader #view-chain::before{
-  content:'';
-  position:fixed;right:-35px;top:48%;
+/* Templar cross backdrop — large, off-center right, behind everything */
+#crusader-cross-bg{
+  display:none;
+  position:fixed;
+  top:50%;
+  right:-7%;
   transform:translateY(-50%);
-  width:220px;height:330px;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 120'%3E%3Crect x='33' y='0' width='14' height='120' fill='%238b1a1a'/%3E%3Crect x='0' y='25' width='80' height='14' fill='%238b1a1a'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-size:contain;
-  opacity:0.07;pointer-events:none;z-index:0;
+  height:72vh;
+  aspect-ratio:200 / 240;
+  z-index:0;
+  pointer-events:none;
+  opacity:0.34;
+}
+body.theme-crusader #crusader-cross-bg{display:block;}
+body.theme-crusader #crusader-cross-svg{width:100%;height:100%;display:block;}
+/* Lift content above the fixed cross */
+body.theme-crusader .view{position:relative;z-index:1;}
+body.theme-crusader .chain-list,
+body.theme-crusader .chain-intro,
+body.theme-crusader .chain-bar{position:relative;z-index:1;}
+
+/* Slow heartbeat — the red core breathes */
+body.theme-crusader .crusader-cross-body{
+  animation:crusader-cross-pulse 4.5s ease-in-out infinite;
+}
+@keyframes crusader-cross-pulse{
+  0%,100%{filter:brightness(1) drop-shadow(0 0 0 transparent);}
+  50%{filter:brightness(1.18) drop-shadow(0 0 10px rgba(170,30,30,0.55));}
 }
 
-/* HEADER */
+/* Faster heartbeat — the gem at the center */
+body.theme-crusader .crusader-cross-gem{
+  transform-box:fill-box;
+  transform-origin:50% 50%;
+  animation:crusader-cross-gem-pulse 2s ease-in-out infinite;
+}
+@keyframes crusader-cross-gem-pulse{
+  0%,100%{transform:scale(1);fill:#c82020;}
+  50%{transform:scale(1.18);fill:#e84040;}
+}
+
+/* HEADER — header sits above cross via z-index (positioned higher than 0) */
 body.theme-crusader header{
-  background:linear-gradient(180deg,#f5eed8 0%,#f0e8d0 100%);
+  background:linear-gradient(180deg,#e8dcc0 0%,#dcd0b4 100%);
   border-bottom:none;
-  box-shadow:0 1px 0 rgba(184,147,10,0.35),0 3px 16px rgba(0,0,0,0.06);
-  position:relative;
+  box-shadow:0 1px 0 rgba(58,38,20,0.35),0 3px 16px rgba(0,0,0,0.08);
+  position:relative;z-index:2;
 }
 body.theme-crusader header::after{
   content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;
-  background:linear-gradient(90deg,transparent 0%,#b8930a 20%,#8b1a1a 50%,#b8930a 80%,transparent 100%);
+  background:linear-gradient(90deg,transparent 0%,#7a6440 20%,#8b1a1a 50%,#7a6440 80%,transparent 100%);
   animation:crusader-line 7s ease-in-out infinite;
 }
 @keyframes crusader-line{
-  0%,100%{opacity:0.5;height:1px;}
+  0%,100%{opacity:0.55;height:1px;}
   50%{opacity:1;height:2px;filter:blur(0.5px);}
 }
 
@@ -2622,106 +2633,107 @@ body.theme-crusader .logo span{
   animation:crusader-logo 5s ease-in-out infinite;
 }
 @keyframes crusader-logo{
-  0%,100%{text-shadow:0 0 6px rgba(139,26,26,0.2);}
-  50%{text-shadow:0 0 16px rgba(139,26,26,0.5),0 0 28px rgba(184,147,10,0.25);}
+  0%,100%{text-shadow:0 0 6px rgba(139,26,26,0.25);}
+  50%{text-shadow:0 0 16px rgba(139,26,26,0.55),0 0 28px rgba(58,38,20,0.25);}
 }
-body.theme-crusader .header-user{color:#7a6e5e;}
+body.theme-crusader .header-user{color:#5a4e3a;}
 body.theme-crusader .header-user strong{color:#1c1208;font-family:'Cinzel',serif;}
-body.theme-crusader .header-logout{border-color:#c8bca4;color:#7a6e5e;}
+body.theme-crusader .header-logout{border-color:#a89a82;color:#5a4e3a;}
 body.theme-crusader .header-logout:hover{border-color:#8b1a1a;color:#8b1a1a;}
 
 /* NAV */
 body.theme-crusader nav{
-  background:linear-gradient(0deg,#f0e8d0 0%,#f5eed8 100%);
+  background:linear-gradient(0deg,#dcd0b4 0%,#e8dcc0 100%);
   border-top:none;
-  box-shadow:0 -1px 0 rgba(184,147,10,0.3),0 -4px 12px rgba(0,0,0,0.04);
+  box-shadow:0 -1px 0 rgba(58,38,20,0.3),0 -4px 12px rgba(0,0,0,0.06);
+  position:relative;z-index:2;
 }
 body.theme-crusader nav::before{
   content:'';position:absolute;left:0;right:0;top:-1px;height:1px;
-  background:linear-gradient(90deg,transparent 0%,#b8930a 30%,#8b1a1a 50%,#b8930a 70%,transparent 100%);
-  opacity:0.45;
+  background:linear-gradient(90deg,transparent 0%,#7a6440 30%,#8b1a1a 50%,#7a6440 70%,transparent 100%);
+  opacity:0.55;
 }
 body.theme-crusader nav button{
   font-family:'Cinzel',serif;font-weight:600;
-  letter-spacing:.1em;color:#9a8e7a;text-transform:uppercase;font-size:.46rem;
+  letter-spacing:.1em;color:#7a6e5a;text-transform:uppercase;font-size:.46rem;
 }
 body.theme-crusader nav button.active{
   border-top:2px solid #8b1a1a;color:#8b1a1a;
-  background:linear-gradient(180deg,rgba(139,26,26,0.06) 0%,transparent 60%);
+  background:linear-gradient(180deg,rgba(139,26,26,0.08) 0%,transparent 60%);
 }
 
-/* PASS CARDS */
+/* PASS CARDS — translucent so the templar cross shines through */
 body.theme-crusader .pass-card{
-  background:linear-gradient(150deg,#f5eed8 0%,#efe8d0 100%);
-  border:1px solid #d8ceb8;
-  box-shadow:0 1px 4px rgba(0,0,0,0.05);
-  position:relative;
+  background:linear-gradient(150deg,rgba(232,220,192,0.82) 0%,rgba(220,208,180,0.82) 100%);
+  border:1px solid rgba(176,164,140,0.85);
+  box-shadow:0 1px 4px rgba(0,0,0,0.06);
+  position:relative;z-index:1;
 }
 body.theme-crusader .pass-card::after{
   content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
-  background:linear-gradient(180deg,transparent 0%,rgba(184,147,10,0.25) 50%,transparent 100%);
+  background:linear-gradient(180deg,transparent 0%,rgba(122,100,64,0.3) 50%,transparent 100%);
   pointer-events:none;
 }
 body.theme-crusader .pass-card.next-up{
-  background:linear-gradient(150deg,#faf4e2 0%,#f5edda 100%);
-  border:2px solid #b8930a;
+  background:linear-gradient(150deg,rgba(238,224,184,0.85) 0%,rgba(228,212,168,0.85) 100%);
+  border:2px solid #7a6440;
   animation:crusader-beacon 4s ease-in-out infinite;
 }
 @keyframes crusader-beacon{
-  0%,100%{box-shadow:0 2px 16px rgba(184,147,10,0.18),0 0 32px rgba(184,147,10,0.06);}
-  50%{box-shadow:0 2px 26px rgba(184,147,10,0.32),0 0 52px rgba(184,147,10,0.14);}
+  0%,100%{box-shadow:0 2px 16px rgba(122,100,64,0.22),0 0 32px rgba(122,100,64,0.08);}
+  50%{box-shadow:0 2px 26px rgba(139,26,26,0.30),0 0 52px rgba(139,26,26,0.14);}
 }
 body.theme-crusader .pass-card.next-up::before{
-  background:linear-gradient(135deg,#b8930a 0%,#8b6a00 100%);
-  color:#f5eed8;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.12em;
-  box-shadow:0 0 10px rgba(184,147,10,0.4);
+  background:linear-gradient(135deg,#8b1a1a 0%,#5a0808 100%);
+  color:#e8dcc0;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.12em;
+  box-shadow:0 0 10px rgba(139,26,26,0.45);
 }
 body.theme-crusader .pass-card.next-up::after{
-  background:linear-gradient(180deg,transparent 0%,#b8930a 50%,transparent 100%);
-  opacity:0.9;width:3px;
+  background:linear-gradient(180deg,transparent 0%,#8b1a1a 50%,transparent 100%);
+  opacity:0.85;width:3px;
 }
 body.theme-crusader .pass-card.in-progress{
-  background:linear-gradient(150deg,#f0f7ec 0%,#eaf3e3 100%);
+  background:linear-gradient(150deg,rgba(225,236,210,0.85) 0%,rgba(215,228,200,0.85) 100%);
   border-color:#2a6624;
-  box-shadow:0 2px 10px rgba(42,102,36,0.1);
+  box-shadow:0 2px 10px rgba(42,102,36,0.12);
 }
-body.theme-crusader .pass-card.in-progress::before{background:#2a6624;color:#ede6d4;}
-body.theme-crusader .ex-block.saved{background:#eef4e8;}
-body.theme-crusader .btn-primary:disabled{background:#d8ceb8;color:#9a8e7a;}
+body.theme-crusader .pass-card.in-progress::before{background:#2a6624;color:#dcd0b8;}
+body.theme-crusader .ex-block.saved{background:rgba(225,236,210,0.92);}
+body.theme-crusader .btn-primary:disabled{background:#c4b89c;color:#7a6e5a;}
 body.theme-crusader .pass-card.done{
-  background:#e8e0cc !important;border-color:#cfc5ae !important;
+  background:rgba(196,184,156,0.88) !important;border-color:#a89a82 !important;
   filter:saturate(0.4) !important;opacity:1 !important;
 }
-body.theme-crusader .pass-card.done .pass-letter{color:#c0b8a8 !important;}
-body.theme-crusader .pass-card.done .pass-name{color:#b0a898 !important;}
-body.theme-crusader .pass-card.done .pass-preview{color:#c0b8a8 !important;}
+body.theme-crusader .pass-card.done .pass-letter{color:#9a8e7a !important;}
+body.theme-crusader .pass-card.done .pass-name{color:#8a7e6a !important;}
+body.theme-crusader .pass-card.done .pass-preview{color:#9a8e7a !important;}
 
 /* PASS LETTER */
 body.theme-crusader .pass-letter{
   font-family:'Cinzel',serif;font-weight:700;
   color:#8b1a1a;font-size:2.2rem;
-  text-shadow:0 0 8px rgba(139,26,26,0.1);
+  text-shadow:0 0 8px rgba(139,26,26,0.12);
 }
 body.theme-crusader .pass-card.next-up .pass-letter{
-  color:#b8930a;
+  color:#8b1a1a;
   animation:crusader-letter 4s ease-in-out infinite;
 }
 @keyframes crusader-letter{
-  0%,100%{color:#b8930a;text-shadow:0 0 6px rgba(184,147,10,0.2);}
-  50%{color:#c9a820;text-shadow:0 0 14px rgba(184,147,10,0.45);}
+  0%,100%{color:#7a1818;text-shadow:0 0 6px rgba(139,26,26,0.25);}
+  50%{color:#a82020;text-shadow:0 0 14px rgba(139,26,26,0.55);}
 }
 body.theme-crusader .pass-name{
   color:#1c1208;font-family:'Cinzel',serif;font-weight:600;letter-spacing:.05em;
 }
-body.theme-crusader .pass-preview{color:#9a8e7a;font-family:var(--mono);}
+body.theme-crusader .pass-preview{color:#7a6e5a;font-family:var(--mono);}
 
-/* CHAIN BAR */
-body.theme-crusader .chain-bar{background:#d8d0bc;}
+/* CHAIN BAR — blood red advance, no shiny gold */
+body.theme-crusader .chain-bar{background:rgba(196,184,156,0.6);}
 body.theme-crusader .chain-fill{
-  background:linear-gradient(90deg,#8b1a1a 0%,#b8930a 25%,#8b1a1a 50%,#b8930a 75%,#8b1a1a 100%);
+  background:linear-gradient(90deg,#5a0808 0%,#8b1a1a 25%,#a82020 50%,#8b1a1a 75%,#5a0808 100%);
   background-size:200% 100%;
   animation:crusader-march 5s linear infinite;
-  box-shadow:0 0 6px rgba(184,147,10,0.35);
+  box-shadow:0 0 6px rgba(139,26,26,0.4);
 }
 @keyframes crusader-march{
   0%{background-position:0% 50%;}
@@ -2753,7 +2765,7 @@ body.theme-crusader .ex-btn-done{
   transition:all .15s;
 }
 body.theme-crusader .ex-btn-done:hover{background:linear-gradient(180deg,#eef7e8 0%,#e4f0dc 100%);}
-body.theme-crusader .ex-btn-skip{border-color:#b8930a;color:#8a6408;}
+body.theme-crusader .ex-btn-skip{border-color:#7a6440;color:#5a4a28;}
 body.theme-crusader .ex-btn-edit{border-color:#c8bca4;color:#7a6e5e;}
 body.theme-crusader .ex-saved-badge{color:#2a6624;}
 body.theme-crusader .ex-done-primary{border-color:#d8ceb8;color:#c8bca4;}
@@ -2788,7 +2800,7 @@ body.theme-crusader .ex-name{
 body.theme-crusader .ex-detail{color:#7a6e5e;}
 body.theme-crusader .ex-prev .last-val{color:#2a6624;}
 body.theme-crusader .ex-prev .pr-val{color:#8b1a1a;}
-body.theme-crusader .ex-tag.ramp{background:#fef8e6;border-color:#b8930a;color:#8a6408;}
+body.theme-crusader .ex-tag.ramp{background:#ede0c0;border-color:#7a6440;color:#5a4a28;}
 body.theme-crusader .ex-tag.bw{background:#eef5ea;border-color:#2a6624;color:#2a6624;}
 body.theme-crusader .ex-tag.uni{background:#fdf0ec;border-color:#c05030;color:#a03a20;}
 
@@ -2824,12 +2836,12 @@ body.theme-crusader .auth-btn-secondary:hover{border-color:#8b1a1a;color:#1c1208
 body.theme-crusader .auth-footer a{color:#9a8e7a;}
 body.theme-crusader .auth-footer a:hover{color:#8b1a1a;}
 
-/* WEIGHT SCREEN */
-body.theme-crusader .weight-banner{background:#f0e8d0;border-bottom:1px solid #d0c8b4;}
-body.theme-crusader .weight-banner-label{color:#7a6e5e;}
-body.theme-crusader .weight-input{background:#faf4e8;border:1px solid #d0c8b4;color:#1c1208;}
-body.theme-crusader .weight-input:focus{border-color:#8b1a1a;box-shadow:0 0 0 2px rgba(139,26,26,0.12);}
-body.theme-crusader .weight-log-btn{background:#f5eed8;border:1px solid #d0c8b4;color:#7a6e5e;}
+/* WEIGHT SCREEN — banner translucent so cross still shows through on chain view */
+body.theme-crusader .weight-banner{background:rgba(220,208,180,0.86);border-bottom:1px solid rgba(176,164,140,0.6);position:relative;z-index:1;}
+body.theme-crusader .weight-banner-label{color:#5a4e3a;}
+body.theme-crusader .weight-input{background:rgba(232,220,192,0.9);border:1px solid #b0a48c;color:#1c1208;}
+body.theme-crusader .weight-input:focus{border-color:#8b1a1a;box-shadow:0 0 0 2px rgba(139,26,26,0.15);}
+body.theme-crusader .weight-log-btn{background:rgba(232,220,192,0.9);border:1px solid #b0a48c;color:#5a4e3a;}
 body.theme-crusader .weight-log-btn:hover{border-color:#2a6624;color:#2a6624;}
 body.theme-crusader .weight-today{color:#8b1a1a;}
 
@@ -2845,8 +2857,8 @@ body.theme-crusader .chain-intro-sub{color:#9a8e7a;}
 body.theme-crusader .stat-box{background:#f5eed8;border:1px solid #d0c8b4;}
 body.theme-crusader .stat-num{color:#8b1a1a;font-family:'Cinzel',serif;}
 body.theme-crusader .stat-desc{color:#7a6e5e;}
-body.theme-crusader .pr-card{background:#f5eed8;border:1px solid #d0c8b4;}
-body.theme-crusader .pr-card::before{background:#e8dfc8;color:#b8930a;}
+body.theme-crusader .pr-card{background:#e8dcc0;border:1px solid #b0a48c;}
+body.theme-crusader .pr-card::before{background:#d4c4a4;color:#7a6440;}
 body.theme-crusader .pr-value{color:#8b1a1a;font-weight:700;}
 
 /* HISTORY */
@@ -2867,7 +2879,7 @@ body.theme-crusader::-webkit-scrollbar-track{background:#e8e0cc;}
 body.theme-crusader::-webkit-scrollbar-thumb{background:#c0b8a8;}
 
 /* MODAL */
-body.theme-crusader .app-modal-card{background:#f5eed8;border-color:#b8930a;color:#1c1208;}
+body.theme-crusader .app-modal-card{background:#e8dcc0;border-color:#7a6440;color:#1c1208;}
 body.theme-crusader .app-modal-title{color:#1c1208;font-family:'Cinzel',serif;}
 body.theme-crusader .app-modal-body{color:#5a4e3a;}
 body.theme-crusader .app-modal-input,
@@ -3598,7 +3610,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.18.1';
+const APP_VERSION = '3.19.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3606,7 +3618,7 @@ let lastSyncWrite = 0;
 
 let currentUser=null;
 let inPasswordRecovery=false;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.18.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.19.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -6117,7 +6129,7 @@ const THEMES = [
   {id:'void',          name:'Void',          cat:'dark', desc:'Pure black & white · Playfair italic · Luxury minimal',class:'theme-void'},
   // LIGHT
   {id:'daylight',      name:'Daylight',      cat:'light', desc:'Clean white · Charcoal text · Bright sun-readable',   class:'theme-daylight'},
-  {id:'crusader',      name:'Crusader',      cat:'light', desc:'Aged parchment · Crimson & gold · Sacred warrior spirit', class:'theme-crusader'},
+  {id:'crusader',      name:'Crusader',      cat:'light', desc:'Weathered parchment · Blood red · Templar warrior', class:'theme-crusader'},
 ];
 
 function applyTheme(themeId){
@@ -6792,6 +6804,21 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 </script>
+<!-- Crusader theme: Templar cross backdrop (visible only when theme-crusader is active) -->
+<div id="crusader-cross-bg" aria-hidden="true">
+  <svg id="crusader-cross-svg" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <linearGradient id="crusaderRedGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#9a1818"/>
+        <stop offset="50%" stop-color="#7a1010"/>
+        <stop offset="100%" stop-color="#5a0606"/>
+      </linearGradient>
+    </defs>
+    <path d="M 50,0 L 75,8 L 100,0 L 125,8 L 150,0 L 135,70 L 200,70 L 192,95 L 200,120 L 192,145 L 200,170 L 135,170 L 150,240 L 125,232 L 100,240 L 75,232 L 50,240 L 65,170 L 0,170 L 8,145 L 0,120 L 8,95 L 0,70 L 65,70 Z"
+          fill="url(#crusaderRedGrad)" stroke="#1a0a08" stroke-width="3" stroke-linejoin="miter" class="crusader-cross-body"/>
+    <circle cx="100" cy="120" r="11" fill="#c82020" class="crusader-cross-gem"/>
+  </svg>
+</div>
 <!-- Reusable modal — controlled by JS, theme-aware via CSS vars -->
 <div id="appModal" class="app-modal" style="display:none">
   <div class="app-modal-backdrop"></div>
