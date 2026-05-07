@@ -3104,6 +3104,7 @@ async function doResetPassword(){
   const { error } = await window.sb.auth.updateUser({ password: pw });
   if(error){ msg.textContent=error.message; msg.className='error'; return; }
   msg.textContent='Password updated! Signing you in…'; msg.className='success';
+  inPasswordRecovery = false;
   setTimeout(async ()=>{
     const { data } = await window.sb.auth.getSession();
     handleSession(data.session);
@@ -3395,15 +3396,18 @@ whenSbReady(async () => {
   // Listen for auth state changes
   window.sb.auth.onAuthStateChange((event, session) => {
     if(event === 'PASSWORD_RECOVERY'){
+      inPasswordRecovery = true;
       showResetPasswordScreen();
       return;
     }
+    if(inPasswordRecovery) return; // ignore all events until recovery form completes
     handleSession(session);
   });
 
   // Initial check — do we already have a session?
+  // Skip if PASSWORD_RECOVERY event already fired above (race: getSession resolves after the event)
   const { data } = await window.sb.auth.getSession();
-  handleSession(data.session);
+  if(!inPasswordRecovery) handleSession(data.session);
 });
 
 
@@ -3594,14 +3598,15 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.17.0';
+const APP_VERSION = '3.17.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
 let lastSyncWrite = 0;
 
 let currentUser=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.17.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let inPasswordRecovery=false;
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.17.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
