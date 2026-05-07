@@ -3026,7 +3026,7 @@ body.theme-ember .set-logged-indicator{border-color:#5a7a2a;color:#a0cc40;}
     <button class="active" onclick="showView('chain',this)">The Chain</button>
     <button onclick="showView('progress',this)">Progress</button>
     <button onclick="showView('weight',this)">Weight</button>
-    <button onclick="showView('data',this)">Data</button>
+    <button onclick="showView('data',this)">Settings</button>
   </nav>
   <div id="view-chain" class="view active"></div>
   <div id="view-progress" class="view"></div>
@@ -3598,7 +3598,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.17.1';
+const APP_VERSION = '3.18.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3606,7 +3606,7 @@ let lastSyncWrite = 0;
 
 let currentUser=null;
 let inPasswordRecovery=false;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.17.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.18.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -4685,7 +4685,7 @@ function showOnboarding(userId, step, answers){
         </button>
         <button class="ob-path-btn" onclick="obPickPath('skip')">
           <span class="ob-path-title">Skip — I'll set it up myself</span>
-          <span class="ob-path-desc">Start with a default chain. Edit everything from the main screen.</span>
+          <span class="ob-path-desc">Start with a default chain. You can run this wizard again any time from <strong>Edit Program → Rebuild Chain</strong>.</span>
         </button>
       </div>
     </div>`;
@@ -4705,7 +4705,7 @@ function showOnboarding(userId, step, answers){
           <span class="ob-opt-label">Pounds</span>
         </button>
       </div>
-      <div class="ob-note">You can change this later in Data.</div>
+      <div class="ob-note">You can change this later in Settings.</div>
       <div class="ob-back" onclick="showOnboarding(obUserId,0)">← Back</div>
     </div>`;
   }
@@ -4923,6 +4923,12 @@ function finishOnboarding(){
   state.timerDefault = a.timerDefault || 120;
   state.onboardingDone = true;
 
+  // Clear chain-specific customisations so the new chain starts clean
+  state.sessionNameOverrides = {};
+  state.addedExercises = {};
+  state.removedExercises = {};
+  state.exerciseOrder = {};
+
   const numSessions = a.numSessions || 6;
   const focus = a.focus || 'full';
   const restCount = a.restCount || 1;
@@ -4965,6 +4971,11 @@ function showEditPage(){
           <div class="edit-card-title">Add / Remove</div>
           <div class="edit-card-desc">Add or remove sessions, rename them, manage exercises and forced rest days.</div>
         </div>
+        <div class="edit-card" onclick="startRebuildChain()">
+          <div class="edit-card-icon">↺</div>
+          <div class="edit-card-title">Rebuild Chain</div>
+          <div class="edit-card-desc">Answer a few questions to generate a new training cycle. Logs and custom exercises are kept.</div>
+        </div>
       </div>
     </div>`;
 }
@@ -4983,6 +4994,16 @@ function removeRestSlot(pos){
   state.restSlots=slots;
   invalidateChainCache();
   save();
+}
+
+async function startRebuildChain(){
+  const ok = await askModalConfirm(
+    'Rebuild Chain?',
+    'The setup wizard will generate a new training cycle.<br><br><strong>Replaced:</strong> session order, rest days, renamed sessions, added/removed exercises.<br><strong>Kept:</strong> training logs, custom exercises, weight history.',
+    {confirmLabel:'Rebuild Chain', danger:true}
+  );
+  if(!ok) return;
+  showOnboarding(currentUser.id, 0, {});
 }
 
 function showEditSort(){
@@ -6118,7 +6139,7 @@ function renderData(){
   // Async cloud version check (updates UI when done)
   checkCloudVersion();const size=(JSON.stringify(state).length/1024).toFixed(1);
   const unitBtn=(u)=>`<button onclick="state.unit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.unit===u?'var(--red)':'none'};border:1px solid ${state.unit===u?'var(--red)':'#2a2a2a'};color:${state.unit===u?'var(--white)':'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u.toUpperCase()}</button>`;
-  el.innerHTML=`<div class="section-title">Data</div>
+  el.innerHTML=`<div class="section-title">Settings</div>
   <div style="font-family:var(--mono);font-size:.58rem;color:#444;margin-bottom:18px">Supabase · ${currentUser?.name} · ${size} KB · ${state.log.length} sessions</div>
   <div class="section-sub">Rest Timer</div>
   <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border:1px solid #2a2a2a;padding:10px 12px;margin-bottom:10px;">
