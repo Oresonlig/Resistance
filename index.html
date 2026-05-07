@@ -3598,7 +3598,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.18.0';
+const APP_VERSION = '3.18.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3606,7 +3606,7 @@ let lastSyncWrite = 0;
 
 let currentUser=null;
 let inPasswordRecovery=false;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.18.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.18.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -3993,7 +3993,12 @@ function buildAddExRow(passId){
 function buildSessionFooter(passId,savedExs,isDone,extras,passExercises){
   const extraIds=(extras||[]).map((_,i)=>'extra_'+passId+'_'+i);
   const allIds=[...(passExercises||[]).map(e=>e.id),...extraIds];
-  const allResolved=allIds.length===0||allIds.every(id=>!!savedExs[id]);
+  // Require at least one active exercise, and each must be explicitly skipped
+  // or have logged sets. A bare truthy object in savedExs does not count.
+  const allResolved=allIds.length>0&&allIds.every(id=>{
+    const s=savedExs[id];
+    return s&&(s.skipped===true||(Array.isArray(s.sets)&&s.sets.length>0));
+  });
   const savedCount=Object.values(savedExs).filter(e=>e&&!e.skipped).length;
   const skippedCount=Object.values(savedExs).filter(e=>e&&e.skipped).length;
   let h=`<div class="pass-actions">`;
