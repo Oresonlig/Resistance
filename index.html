@@ -2674,47 +2674,108 @@ body.theme-crusader nav button.active{
   background:linear-gradient(180deg,rgba(168,40,40,0.12) 0%,transparent 60%);
 }
 
-/* PASS CARDS — translucent dark stone so the templar cross shines through */
+/* PASS CARDS — forged weathered metal plates with rust-stained corners.
+   Layered backgrounds: rust radial gradients in all 4 corners + edge darkening
+   + scratched diagonal texture + metallic gradient lit from above-left.
+   Heavy multi-axis shadows for weight. Sharp corners (border-radius:0). */
 body.theme-crusader .pass-card{
-  background:linear-gradient(150deg,rgba(38,32,24,0.78) 0%,rgba(28,24,18,0.82) 100%);
-  border:1px solid rgba(90,76,58,0.6);
-  box-shadow:0 1px 4px rgba(0,0,0,0.35);
+  background:
+    /* rust spots — corners */
+    radial-gradient(ellipse 32% 28% at 6% 8%,rgba(120,40,20,0.38) 0%,rgba(90,30,15,0.18) 35%,transparent 70%),
+    radial-gradient(ellipse 30% 26% at 94% 92%,rgba(120,40,20,0.34) 0%,rgba(90,30,15,0.16) 40%,transparent 72%),
+    radial-gradient(ellipse 22% 18% at 92% 6%,rgba(140,60,30,0.26) 0%,transparent 75%),
+    radial-gradient(ellipse 20% 16% at 8% 94%,rgba(100,30,15,0.30) 0%,transparent 75%),
+    /* edge wear vignette */
+    radial-gradient(ellipse 110% 110% at 50% 50%,transparent 45%,rgba(0,0,0,0.32) 100%),
+    /* scratched grain — diagonal */
+    repeating-linear-gradient(112deg,transparent 0px,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px),
+    /* base metal — lit from upper-left */
+    linear-gradient(155deg,rgba(62,52,40,0.94) 0%,rgba(46,38,28,0.95) 35%,rgba(34,28,20,0.96) 65%,rgba(24,20,14,0.97) 100%);
+  border:1px solid rgba(78,64,48,0.85);
+  border-radius:0;
   position:relative;z-index:1;
+  box-shadow:
+    /* top edge highlight (catches light from above) */
+    inset 0 1px 0 rgba(232,200,140,0.14),
+    inset 1px 0 0 rgba(140,116,80,0.10),
+    /* bottom + right shadow (deep recess) */
+    inset 0 -2px 0 rgba(0,0,0,0.55),
+    inset -1px 0 0 rgba(0,0,0,0.45),
+    /* heavy outer drop for weight */
+    0 5px 16px rgba(0,0,0,0.65),
+    0 2px 4px rgba(0,0,0,0.5),
+    /* faint red blood-rim at base */
+    0 1px 0 rgba(168,40,40,0.10);
 }
 body.theme-crusader .pass-card::after{
   content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
-  background:linear-gradient(180deg,transparent 0%,rgba(138,112,72,0.4) 50%,transparent 100%);
+  background:linear-gradient(180deg,rgba(168,40,40,0) 0%,rgba(168,40,40,0.55) 35%,rgba(232,180,80,0.4) 50%,rgba(168,40,40,0.55) 65%,rgba(168,40,40,0) 100%);
   pointer-events:none;
+  box-shadow:1px 0 2px rgba(0,0,0,0.4);
 }
 body.theme-crusader .pass-card.next-up{
-  background:linear-gradient(150deg,rgba(58,42,30,0.85) 0%,rgba(48,32,22,0.88) 100%);
-  border:2px solid #8a7048;
+  background:
+    radial-gradient(ellipse 36% 30% at 6% 8%,rgba(180,60,30,0.45) 0%,rgba(140,40,20,0.22) 38%,transparent 72%),
+    radial-gradient(ellipse 32% 28% at 94% 92%,rgba(180,60,30,0.40) 0%,rgba(140,40,20,0.20) 40%,transparent 74%),
+    radial-gradient(ellipse 22% 18% at 92% 6%,rgba(200,80,40,0.32) 0%,transparent 75%),
+    radial-gradient(ellipse 20% 16% at 8% 94%,rgba(160,50,25,0.36) 0%,transparent 75%),
+    radial-gradient(ellipse 110% 110% at 50% 50%,transparent 40%,rgba(40,8,8,0.4) 100%),
+    repeating-linear-gradient(112deg,transparent 0px,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px),
+    linear-gradient(155deg,rgba(82,52,38,0.95) 0%,rgba(64,40,28,0.96) 35%,rgba(48,28,20,0.97) 65%,rgba(36,20,14,0.97) 100%);
+  border:2px solid rgba(168,80,48,0.9);
   animation:crusader-beacon 4s ease-in-out infinite;
 }
 @keyframes crusader-beacon{
-  0%,100%{box-shadow:0 2px 16px rgba(138,112,72,0.32),0 0 32px rgba(138,112,72,0.14);}
-  50%{box-shadow:0 2px 26px rgba(168,40,40,0.45),0 0 52px rgba(168,40,40,0.22);}
+  0%,100%{box-shadow:
+    inset 0 1px 0 rgba(232,180,100,0.18),
+    inset 0 -2px 0 rgba(0,0,0,0.55),
+    0 5px 18px rgba(0,0,0,0.65),
+    0 0 22px rgba(168,40,40,0.22);}
+  50%{box-shadow:
+    inset 0 1px 0 rgba(255,200,120,0.28),
+    inset 0 -2px 0 rgba(0,0,0,0.55),
+    0 5px 24px rgba(0,0,0,0.7),
+    0 0 42px rgba(232,64,64,0.45);}
 }
 body.theme-crusader .pass-card.next-up::before{
-  background:linear-gradient(135deg,#a82828 0%,#5a0808 100%);
-  color:#e8d8b8;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.12em;
-  box-shadow:0 0 10px rgba(168,40,40,0.55);
+  background:linear-gradient(135deg,#c83838 0%,#7a1010 100%);
+  color:#f5e8c8;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.12em;
+  box-shadow:0 0 10px rgba(232,64,64,0.65),inset 0 1px 0 rgba(255,200,140,0.25);
 }
 body.theme-crusader .pass-card.next-up::after{
-  background:linear-gradient(180deg,transparent 0%,#a82828 50%,transparent 100%);
-  opacity:0.85;width:3px;
+  background:linear-gradient(180deg,rgba(168,40,40,0) 0%,rgba(232,64,64,0.85) 50%,rgba(168,40,40,0) 100%);
+  opacity:0.95;width:3px;
 }
 body.theme-crusader .pass-card.in-progress{
-  background:linear-gradient(150deg,rgba(34,42,28,0.85) 0%,rgba(28,36,22,0.88) 100%);
-  border-color:#6a8a3a;
-  box-shadow:0 2px 10px rgba(106,138,58,0.18);
+  background:
+    radial-gradient(ellipse 32% 28% at 6% 8%,rgba(80,100,40,0.34) 0%,transparent 70%),
+    radial-gradient(ellipse 30% 26% at 94% 92%,rgba(80,100,40,0.30) 0%,transparent 72%),
+    radial-gradient(ellipse 22% 18% at 92% 6%,rgba(100,120,50,0.22) 0%,transparent 75%),
+    radial-gradient(ellipse 20% 16% at 8% 94%,rgba(70,90,35,0.28) 0%,transparent 75%),
+    radial-gradient(ellipse 110% 110% at 50% 50%,transparent 45%,rgba(0,0,0,0.32) 100%),
+    repeating-linear-gradient(112deg,transparent 0px,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px),
+    linear-gradient(155deg,rgba(48,56,32,0.94) 0%,rgba(36,42,24,0.95) 50%,rgba(24,30,16,0.96) 100%);
+  border-color:rgba(106,138,58,0.85);
+  box-shadow:
+    inset 0 1px 0 rgba(180,210,120,0.14),
+    inset 0 -2px 0 rgba(0,0,0,0.55),
+    0 5px 16px rgba(0,0,0,0.55),
+    0 0 18px rgba(106,138,58,0.18);
 }
-body.theme-crusader .pass-card.in-progress::before{background:#6a8a3a;color:#1a1612;}
+body.theme-crusader .pass-card.in-progress::before{background:#6a8a3a;color:#1a1612;box-shadow:inset 0 1px 0 rgba(200,230,140,0.3);}
 body.theme-crusader .ex-block.saved{background:rgba(34,42,28,0.92);}
 body.theme-crusader .btn-primary:disabled{background:#3a322a;color:#7a6e58;}
 body.theme-crusader .pass-card.done{
-  background:rgba(36,30,24,0.82) !important;border-color:#3a322a !important;
-  filter:saturate(0.4) !important;opacity:0.85 !important;
+  background:
+    radial-gradient(ellipse 100% 100% at 50% 50%,transparent 40%,rgba(0,0,0,0.45) 100%),
+    repeating-linear-gradient(112deg,transparent 0px,transparent 3px,rgba(0,0,0,0.05) 3px,rgba(0,0,0,0.05) 4px),
+    linear-gradient(155deg,rgba(36,30,24,0.85) 0%,rgba(24,20,14,0.88) 100%) !important;
+  border-color:rgba(58,46,34,0.7) !important;
+  filter:saturate(0.35) !important;opacity:0.78 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(140,112,76,0.06),
+    inset 0 -1px 0 rgba(0,0,0,0.4),
+    0 3px 10px rgba(0,0,0,0.5) !important;
 }
 body.theme-crusader .pass-card.done .pass-letter{color:#5a4e3a !important;}
 body.theme-crusader .pass-card.done .pass-name{color:#6a5e48 !important;}
@@ -3622,7 +3683,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.20.2';
+const APP_VERSION = '3.21.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3630,7 +3691,7 @@ let lastSyncWrite = 0;
 
 let currentUser=null;
 let inPasswordRecovery=false;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.20.2',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.21.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
