@@ -2566,35 +2566,54 @@ body.theme-crusader{
   color:#d8c8a8;
 }
 
-/* Templar cross backdrop — large, off-center right, behind everything.
+/* Templar cross backdrop — off-center RIGHT, behind everything.
    crusader2.jpg has white background → mix-blend-mode:multiply drops it out
-   against the dark charcoal body so only the cross itself shows through. */
+   against the dark charcoal body. Sized so it doesn't overflow viewport
+   on mobile (which would visually shift the centered cross to the wrong side). */
 #crusader-cross-bg{
   display:none;
   position:fixed;
   top:50%;
-  right:-9%;
-  transform:translateY(-50%);
-  height:82vh;
-  width:auto;
+  right:0;
+  width:65vh;
+  max-width:75vw;
+  height:auto;
+  transform:translate(18%,-50%);
   z-index:0;
   pointer-events:none;
-  opacity:0.85;
+  opacity:0.9;
   mix-blend-mode:multiply;
 }
 body.theme-crusader #crusader-cross-bg{display:block;}
 body.theme-crusader #crusader-cross-img{
-  height:100%;
-  width:auto;
+  width:100%;
+  height:auto;
   display:block;
   user-select:none;
   -webkit-user-drag:none;
-  animation:crusader-cross-pulse 4.5s ease-in-out infinite;
 }
-/* Heartbeat: subtle brightness + red glow swell, repeats every 4.5s */
+/* Glow layer — separate fixed div with screen blend so red ADDS against
+   dark background (multiply on the cross would mute any brightness pulse).
+   Screen + opacity + scale = visible heartbeat that doesn't fight the cross blend. */
+#crusader-cross-glow{
+  display:none;
+  position:fixed;
+  top:50%;
+  right:0;
+  width:65vh;
+  max-width:75vw;
+  aspect-ratio:1;
+  transform:translate(18%,-50%);
+  z-index:0;
+  pointer-events:none;
+  background:radial-gradient(ellipse 45% 55% at 50% 50%,rgba(232,64,64,0.55) 0%,rgba(168,40,40,0.22) 38%,transparent 72%);
+  mix-blend-mode:screen;
+  animation:crusader-cross-pulse 3s ease-in-out infinite;
+}
+body.theme-crusader #crusader-cross-glow{display:block;}
 @keyframes crusader-cross-pulse{
-  0%,100%{filter:brightness(0.92) contrast(1.05) drop-shadow(0 0 0 transparent);}
-  50%{filter:brightness(1.18) contrast(1.12) drop-shadow(0 0 24px rgba(200,40,40,0.55));}
+  0%,100%{opacity:0.22;transform:translate(18%,-50%) scale(0.9);}
+  50%{opacity:0.95;transform:translate(18%,-50%) scale(1.08);}
 }
 /* Lift content above the fixed cross */
 body.theme-crusader .view{position:relative;z-index:1;}
@@ -3603,7 +3622,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.20.1';
+const APP_VERSION = '3.20.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3611,7 +3630,7 @@ let lastSyncWrite = 0;
 
 let currentUser=null;
 let inPasswordRecovery=false;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.20.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.20.2',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -6797,10 +6816,11 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 </script>
-<!-- Crusader theme: Templar cross backdrop (visible only when theme-crusader is active) -->
+<!-- Crusader theme: Templar cross backdrop + heartbeat glow layer (visible only when theme-crusader is active) -->
 <div id="crusader-cross-bg" aria-hidden="true">
   <img id="crusader-cross-img" src="crusader2.jpg" alt="" draggable="false">
 </div>
+<div id="crusader-cross-glow" aria-hidden="true"></div>
 <!-- Reusable modal — controlled by JS, theme-aware via CSS vars -->
 <div id="appModal" class="app-modal" style="display:none">
   <div class="app-modal-backdrop"></div>
