@@ -2542,81 +2542,76 @@ body.theme-daylight .pass-card.done .pass-preview{color:#bbb !important;}
 
 
 /* ── CRUSADER ─────────────────────────────────────────────────
-   Palette: Weathered parchment, blood red, aged bronze/steel, deep ink
-   Atmosphere: Templar warrior, battle-worn, the cross looms behind
-   Fonts: Cinzel (display), Crimson Pro (body), DM Mono (data)
+   Palette: Dark warm charcoal, blood red, aged bronze, weathered ash
+   Atmosphere: Templar warrior, battle-worn, cross looms in the shadow
+   Cross via crusader2.jpg + mix-blend-mode:multiply (white background drops out)
 ─────────────────────────────────────────────────────────────── */
 body.theme-crusader{
-  --black:#dcd0b8;    /* semantic weathered parchment */
-  --white:#1c1208;    /* semantic inkwood — primary text */
-  --red:#8b1a1a;
-  --gold:#7a6440;     /* aged bronze, not bright gold */
-  --green-bright:#2a6624;
-  --gray-mid:#cabea4;--gray-light:#8a7e6a;
+  --black:#1a1612;            /* semantic dark warm charcoal */
+  --white:#d8c8a8;            /* semantic warm parchment text */
+  --red:#a82828;
+  --gold:#8a7048;             /* aged bronze */
+  --green-bright:#6a8a3a;
+  --gray-mid:#3a322a;--gray-light:#7a6e58;
   --display:'Cinzel',serif;
   --sans:'Crimson Pro',serif;
   --mono:'DM Mono',monospace;
-  background-color:#dcd0b8;
+  background-color:#1a1612;
   background-image:
-    radial-gradient(ellipse 110% 70% at 50% 100%,rgba(48,24,14,0.20) 0%,transparent 70%),
-    radial-gradient(ellipse 90% 50% at 50% 0%,rgba(48,24,14,0.12) 0%,transparent 65%),
-    radial-gradient(ellipse 60% 40% at 70% 50%,rgba(139,26,26,0.05) 0%,transparent 70%),
-    linear-gradient(180deg,#d4c8ac 0%,#dcd0b8 50%,#ccc0a4 100%);
+    radial-gradient(ellipse 110% 70% at 50% 100%,rgba(0,0,0,0.45) 0%,transparent 70%),
+    radial-gradient(ellipse 90% 50% at 50% 0%,rgba(0,0,0,0.30) 0%,transparent 65%),
+    radial-gradient(ellipse 60% 40% at 70% 50%,rgba(168,40,40,0.06) 0%,transparent 70%),
+    linear-gradient(180deg,#211c16 0%,#1a1612 50%,#13100c 100%);
   background-attachment:fixed;
-  color:#1c1208;
+  color:#d8c8a8;
 }
 
-/* Templar cross backdrop — large, off-center right, behind everything */
+/* Templar cross backdrop — large, off-center right, behind everything.
+   crusader2.jpg has white background → mix-blend-mode:multiply drops it out
+   against the dark charcoal body so only the cross itself shows through. */
 #crusader-cross-bg{
   display:none;
   position:fixed;
   top:50%;
-  right:-7%;
+  right:-9%;
   transform:translateY(-50%);
-  height:72vh;
-  aspect-ratio:200 / 240;
+  height:82vh;
+  width:auto;
   z-index:0;
   pointer-events:none;
-  opacity:0.34;
+  opacity:0.85;
+  mix-blend-mode:multiply;
 }
 body.theme-crusader #crusader-cross-bg{display:block;}
-body.theme-crusader #crusader-cross-svg{width:100%;height:100%;display:block;}
+body.theme-crusader #crusader-cross-img{
+  height:100%;
+  width:auto;
+  display:block;
+  user-select:none;
+  -webkit-user-drag:none;
+  animation:crusader-cross-pulse 4.5s ease-in-out infinite;
+}
+/* Heartbeat: subtle brightness + red glow swell, repeats every 4.5s */
+@keyframes crusader-cross-pulse{
+  0%,100%{filter:brightness(0.92) contrast(1.05) drop-shadow(0 0 0 transparent);}
+  50%{filter:brightness(1.18) contrast(1.12) drop-shadow(0 0 24px rgba(200,40,40,0.55));}
+}
 /* Lift content above the fixed cross */
 body.theme-crusader .view{position:relative;z-index:1;}
 body.theme-crusader .chain-list,
 body.theme-crusader .chain-intro,
 body.theme-crusader .chain-bar{position:relative;z-index:1;}
 
-/* Slow heartbeat — the red core breathes */
-body.theme-crusader .crusader-cross-body{
-  animation:crusader-cross-pulse 4.5s ease-in-out infinite;
-}
-@keyframes crusader-cross-pulse{
-  0%,100%{filter:brightness(1) drop-shadow(0 0 0 transparent);}
-  50%{filter:brightness(1.18) drop-shadow(0 0 10px rgba(170,30,30,0.55));}
-}
-
-/* Faster heartbeat — the gem at the center */
-body.theme-crusader .crusader-cross-gem{
-  transform-box:fill-box;
-  transform-origin:50% 50%;
-  animation:crusader-cross-gem-pulse 2s ease-in-out infinite;
-}
-@keyframes crusader-cross-gem-pulse{
-  0%,100%{transform:scale(1);fill:#c82020;}
-  50%{transform:scale(1.18);fill:#e84040;}
-}
-
-/* HEADER — header sits above cross via z-index (positioned higher than 0) */
+/* HEADER — sits above cross via z-index */
 body.theme-crusader header{
-  background:linear-gradient(180deg,#e8dcc0 0%,#dcd0b4 100%);
+  background:linear-gradient(180deg,#221d17 0%,#181410 100%);
   border-bottom:none;
-  box-shadow:0 1px 0 rgba(58,38,20,0.35),0 3px 16px rgba(0,0,0,0.08);
+  box-shadow:0 1px 0 rgba(138,112,72,0.35),0 3px 16px rgba(0,0,0,0.4);
   position:relative;z-index:2;
 }
 body.theme-crusader header::after{
   content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;
-  background:linear-gradient(90deg,transparent 0%,#7a6440 20%,#8b1a1a 50%,#7a6440 80%,transparent 100%);
+  background:linear-gradient(90deg,transparent 0%,#8a7048 20%,#a82828 50%,#8a7048 80%,transparent 100%);
   animation:crusader-line 7s ease-in-out infinite;
 }
 @keyframes crusader-line{
@@ -2626,114 +2621,114 @@ body.theme-crusader header::after{
 
 body.theme-crusader .logo{
   font-family:'Cinzel',serif;font-weight:700;
-  color:#1c1208;letter-spacing:.2em;text-transform:uppercase;
+  color:#d8c8a8;letter-spacing:.2em;text-transform:uppercase;
 }
 body.theme-crusader .logo span{
-  color:#8b1a1a;
+  color:#c83838;
   animation:crusader-logo 5s ease-in-out infinite;
 }
 @keyframes crusader-logo{
-  0%,100%{text-shadow:0 0 6px rgba(139,26,26,0.25);}
-  50%{text-shadow:0 0 16px rgba(139,26,26,0.55),0 0 28px rgba(58,38,20,0.25);}
+  0%,100%{text-shadow:0 0 6px rgba(200,56,56,0.35);}
+  50%{text-shadow:0 0 16px rgba(200,56,56,0.7),0 0 28px rgba(138,112,72,0.35);}
 }
-body.theme-crusader .header-user{color:#5a4e3a;}
-body.theme-crusader .header-user strong{color:#1c1208;font-family:'Cinzel',serif;}
-body.theme-crusader .header-logout{border-color:#a89a82;color:#5a4e3a;}
-body.theme-crusader .header-logout:hover{border-color:#8b1a1a;color:#8b1a1a;}
+body.theme-crusader .header-user{color:#9a8e72;}
+body.theme-crusader .header-user strong{color:#d8c8a8;font-family:'Cinzel',serif;}
+body.theme-crusader .header-logout{border-color:#4a3e30;color:#9a8e72;}
+body.theme-crusader .header-logout:hover{border-color:#a82828;color:#c83838;}
 
 /* NAV */
 body.theme-crusader nav{
-  background:linear-gradient(0deg,#dcd0b4 0%,#e8dcc0 100%);
+  background:linear-gradient(0deg,#181410 0%,#221d17 100%);
   border-top:none;
-  box-shadow:0 -1px 0 rgba(58,38,20,0.3),0 -4px 12px rgba(0,0,0,0.06);
+  box-shadow:0 -1px 0 rgba(138,112,72,0.3),0 -4px 12px rgba(0,0,0,0.4);
   position:relative;z-index:2;
 }
 body.theme-crusader nav::before{
   content:'';position:absolute;left:0;right:0;top:-1px;height:1px;
-  background:linear-gradient(90deg,transparent 0%,#7a6440 30%,#8b1a1a 50%,#7a6440 70%,transparent 100%);
+  background:linear-gradient(90deg,transparent 0%,#8a7048 30%,#a82828 50%,#8a7048 70%,transparent 100%);
   opacity:0.55;
 }
 body.theme-crusader nav button{
   font-family:'Cinzel',serif;font-weight:600;
-  letter-spacing:.1em;color:#7a6e5a;text-transform:uppercase;font-size:.46rem;
+  letter-spacing:.1em;color:#7a6e58;text-transform:uppercase;font-size:.46rem;
 }
 body.theme-crusader nav button.active{
-  border-top:2px solid #8b1a1a;color:#8b1a1a;
-  background:linear-gradient(180deg,rgba(139,26,26,0.08) 0%,transparent 60%);
+  border-top:2px solid #a82828;color:#c83838;
+  background:linear-gradient(180deg,rgba(168,40,40,0.12) 0%,transparent 60%);
 }
 
-/* PASS CARDS — translucent so the templar cross shines through */
+/* PASS CARDS — translucent dark stone so the templar cross shines through */
 body.theme-crusader .pass-card{
-  background:linear-gradient(150deg,rgba(232,220,192,0.82) 0%,rgba(220,208,180,0.82) 100%);
-  border:1px solid rgba(176,164,140,0.85);
-  box-shadow:0 1px 4px rgba(0,0,0,0.06);
+  background:linear-gradient(150deg,rgba(38,32,24,0.78) 0%,rgba(28,24,18,0.82) 100%);
+  border:1px solid rgba(90,76,58,0.6);
+  box-shadow:0 1px 4px rgba(0,0,0,0.35);
   position:relative;z-index:1;
 }
 body.theme-crusader .pass-card::after{
   content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
-  background:linear-gradient(180deg,transparent 0%,rgba(122,100,64,0.3) 50%,transparent 100%);
+  background:linear-gradient(180deg,transparent 0%,rgba(138,112,72,0.4) 50%,transparent 100%);
   pointer-events:none;
 }
 body.theme-crusader .pass-card.next-up{
-  background:linear-gradient(150deg,rgba(238,224,184,0.85) 0%,rgba(228,212,168,0.85) 100%);
-  border:2px solid #7a6440;
+  background:linear-gradient(150deg,rgba(58,42,30,0.85) 0%,rgba(48,32,22,0.88) 100%);
+  border:2px solid #8a7048;
   animation:crusader-beacon 4s ease-in-out infinite;
 }
 @keyframes crusader-beacon{
-  0%,100%{box-shadow:0 2px 16px rgba(122,100,64,0.22),0 0 32px rgba(122,100,64,0.08);}
-  50%{box-shadow:0 2px 26px rgba(139,26,26,0.30),0 0 52px rgba(139,26,26,0.14);}
+  0%,100%{box-shadow:0 2px 16px rgba(138,112,72,0.32),0 0 32px rgba(138,112,72,0.14);}
+  50%{box-shadow:0 2px 26px rgba(168,40,40,0.45),0 0 52px rgba(168,40,40,0.22);}
 }
 body.theme-crusader .pass-card.next-up::before{
-  background:linear-gradient(135deg,#8b1a1a 0%,#5a0808 100%);
-  color:#e8dcc0;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.12em;
-  box-shadow:0 0 10px rgba(139,26,26,0.45);
+  background:linear-gradient(135deg,#a82828 0%,#5a0808 100%);
+  color:#e8d8b8;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.12em;
+  box-shadow:0 0 10px rgba(168,40,40,0.55);
 }
 body.theme-crusader .pass-card.next-up::after{
-  background:linear-gradient(180deg,transparent 0%,#8b1a1a 50%,transparent 100%);
+  background:linear-gradient(180deg,transparent 0%,#a82828 50%,transparent 100%);
   opacity:0.85;width:3px;
 }
 body.theme-crusader .pass-card.in-progress{
-  background:linear-gradient(150deg,rgba(225,236,210,0.85) 0%,rgba(215,228,200,0.85) 100%);
-  border-color:#2a6624;
-  box-shadow:0 2px 10px rgba(42,102,36,0.12);
+  background:linear-gradient(150deg,rgba(34,42,28,0.85) 0%,rgba(28,36,22,0.88) 100%);
+  border-color:#6a8a3a;
+  box-shadow:0 2px 10px rgba(106,138,58,0.18);
 }
-body.theme-crusader .pass-card.in-progress::before{background:#2a6624;color:#dcd0b8;}
-body.theme-crusader .ex-block.saved{background:rgba(225,236,210,0.92);}
-body.theme-crusader .btn-primary:disabled{background:#c4b89c;color:#7a6e5a;}
+body.theme-crusader .pass-card.in-progress::before{background:#6a8a3a;color:#1a1612;}
+body.theme-crusader .ex-block.saved{background:rgba(34,42,28,0.92);}
+body.theme-crusader .btn-primary:disabled{background:#3a322a;color:#7a6e58;}
 body.theme-crusader .pass-card.done{
-  background:rgba(196,184,156,0.88) !important;border-color:#a89a82 !important;
-  filter:saturate(0.4) !important;opacity:1 !important;
+  background:rgba(36,30,24,0.82) !important;border-color:#3a322a !important;
+  filter:saturate(0.4) !important;opacity:0.85 !important;
 }
-body.theme-crusader .pass-card.done .pass-letter{color:#9a8e7a !important;}
-body.theme-crusader .pass-card.done .pass-name{color:#8a7e6a !important;}
-body.theme-crusader .pass-card.done .pass-preview{color:#9a8e7a !important;}
+body.theme-crusader .pass-card.done .pass-letter{color:#5a4e3a !important;}
+body.theme-crusader .pass-card.done .pass-name{color:#6a5e48 !important;}
+body.theme-crusader .pass-card.done .pass-preview{color:#5a4e3a !important;}
 
 /* PASS LETTER */
 body.theme-crusader .pass-letter{
   font-family:'Cinzel',serif;font-weight:700;
-  color:#8b1a1a;font-size:2.2rem;
-  text-shadow:0 0 8px rgba(139,26,26,0.12);
+  color:#c83838;font-size:2.2rem;
+  text-shadow:0 0 8px rgba(200,56,56,0.25);
 }
 body.theme-crusader .pass-card.next-up .pass-letter{
-  color:#8b1a1a;
+  color:#c83838;
   animation:crusader-letter 4s ease-in-out infinite;
 }
 @keyframes crusader-letter{
-  0%,100%{color:#7a1818;text-shadow:0 0 6px rgba(139,26,26,0.25);}
-  50%{color:#a82020;text-shadow:0 0 14px rgba(139,26,26,0.55);}
+  0%,100%{color:#a82828;text-shadow:0 0 6px rgba(168,40,40,0.35);}
+  50%{color:#e84040;text-shadow:0 0 14px rgba(232,64,64,0.7);}
 }
 body.theme-crusader .pass-name{
-  color:#1c1208;font-family:'Cinzel',serif;font-weight:600;letter-spacing:.05em;
+  color:#d8c8a8;font-family:'Cinzel',serif;font-weight:600;letter-spacing:.05em;
 }
-body.theme-crusader .pass-preview{color:#7a6e5a;font-family:var(--mono);}
+body.theme-crusader .pass-preview{color:#9a8e72;font-family:var(--mono);}
 
 /* CHAIN BAR — blood red advance, no shiny gold */
-body.theme-crusader .chain-bar{background:rgba(196,184,156,0.6);}
+body.theme-crusader .chain-bar{background:rgba(36,30,24,0.7);}
 body.theme-crusader .chain-fill{
-  background:linear-gradient(90deg,#5a0808 0%,#8b1a1a 25%,#a82020 50%,#8b1a1a 75%,#5a0808 100%);
+  background:linear-gradient(90deg,#5a0808 0%,#a82828 25%,#c83838 50%,#a82828 75%,#5a0808 100%);
   background-size:200% 100%;
   animation:crusader-march 5s linear infinite;
-  box-shadow:0 0 6px rgba(139,26,26,0.4);
+  box-shadow:0 0 8px rgba(168,40,40,0.55);
 }
 @keyframes crusader-march{
   0%{background-position:0% 50%;}
@@ -2742,167 +2737,167 @@ body.theme-crusader .chain-fill{
 
 /* BUTTONS */
 body.theme-crusader .btn-primary{
-  background:linear-gradient(180deg,#a02020 0%,#7a1515 100%);
+  background:linear-gradient(180deg,#a82828 0%,#7a1515 100%);
   color:#f5eed8;font-family:'Cinzel',serif;font-weight:700;
   letter-spacing:.14em;text-transform:uppercase;border:none;
-  box-shadow:0 2px 10px rgba(139,26,26,0.25),inset 0 1px 0 rgba(255,200,100,0.1);
+  box-shadow:0 2px 10px rgba(168,40,40,0.35),inset 0 1px 0 rgba(255,200,100,0.15);
   transition:all .2s;
 }
 body.theme-crusader .btn-primary:hover{
-  background:linear-gradient(180deg,#b02424 0%,#8b1a1a 100%);
-  box-shadow:0 4px 18px rgba(139,26,26,0.38);transform:translateY(-1px);
+  background:linear-gradient(180deg,#c03030 0%,#8b1a1a 100%);
+  box-shadow:0 4px 18px rgba(168,40,40,0.5);transform:translateY(-1px);
 }
-body.theme-crusader .btn-secondary{background:none;border:1px solid #c8bca4;color:#7a6e5e;}
-body.theme-crusader .btn-secondary:hover{border-color:#8b1a1a;color:#8b1a1a;}
-body.theme-crusader .data-btn{background:none;border:1px solid #c8bca4;color:#7a6e5e;}
-body.theme-crusader .data-btn:hover{border-color:#8b1a1a;color:#8b1a1a;}
+body.theme-crusader .btn-secondary{background:none;border:1px solid #4a3e30;color:#9a8e72;}
+body.theme-crusader .btn-secondary:hover{border-color:#a82828;color:#c83838;}
+body.theme-crusader .data-btn{background:none;border:1px solid #4a3e30;color:#9a8e72;}
+body.theme-crusader .data-btn:hover{border-color:#a82828;color:#c83838;}
 
 /* EX BUTTONS */
 body.theme-crusader .ex-btn-done{
-  background:linear-gradient(180deg,#f5eed8 0%,#efe8d0 100%);
-  border:1px solid #2a6624;color:#2a6624;
+  background:linear-gradient(180deg,#2a3622 0%,#1f2a18 100%);
+  border:1px solid #6a8a3a;color:#9ab06a;
   font-family:'Cinzel',serif;font-weight:700;letter-spacing:.08em;
   transition:all .15s;
 }
-body.theme-crusader .ex-btn-done:hover{background:linear-gradient(180deg,#eef7e8 0%,#e4f0dc 100%);}
-body.theme-crusader .ex-btn-skip{border-color:#7a6440;color:#5a4a28;}
-body.theme-crusader .ex-btn-edit{border-color:#c8bca4;color:#7a6e5e;}
-body.theme-crusader .ex-saved-badge{color:#2a6624;}
-body.theme-crusader .ex-done-primary{border-color:#d8ceb8;color:#c8bca4;}
+body.theme-crusader .ex-btn-done:hover{background:linear-gradient(180deg,#344028 0%,#28341f 100%);}
+body.theme-crusader .ex-btn-skip{border-color:#8a7048;color:#a89668;}
+body.theme-crusader .ex-btn-edit{border-color:#4a3e30;color:#9a8e72;}
+body.theme-crusader .ex-saved-badge{color:#9ab06a;}
+body.theme-crusader .ex-done-primary{border-color:#3a322a;color:#5a4e3a;}
 body.theme-crusader .ex-done-primary.ready{
-  background:linear-gradient(180deg,#a02020 0%,#7a1515 100%);
-  border-color:#8b1a1a;color:#f5eed8;
+  background:linear-gradient(180deg,#a82828 0%,#7a1515 100%);
+  border-color:#a82828;color:#f5eed8;
 }
 
 /* SET INPUTS */
 body.theme-crusader .set-input{
-  background:#faf4e8;border:1px solid #d0c8b4;
-  color:#8b1a1a;font-family:var(--mono);font-weight:700;
+  background:#2a241c;border:1px solid #4a3e30;
+  color:#e84040;font-family:var(--mono);font-weight:700;
 }
 body.theme-crusader .set-input:focus{
-  border-color:#8b1a1a;box-shadow:0 0 0 2px rgba(139,26,26,0.12);outline:none;
+  border-color:#a82828;box-shadow:0 0 0 2px rgba(168,40,40,0.25);outline:none;
 }
-body.theme-crusader .set-input.work-set{border-color:#c4baa6;}
-body.theme-crusader .set-input.warmup{border-color:#e0d8c4;color:#9a8e7a;}
-body.theme-crusader .set-unit{color:#8b1a1a;font-weight:600;}
-body.theme-crusader .set-num{color:#8b1a1a;font-family:'Cinzel',serif;font-weight:700;}
+body.theme-crusader .set-input.work-set{border-color:#5a4a36;}
+body.theme-crusader .set-input.warmup{border-color:#3a322a;color:#7a6e58;}
+body.theme-crusader .set-unit{color:#c83838;font-weight:600;}
+body.theme-crusader .set-num{color:#c83838;font-family:'Cinzel',serif;font-weight:700;}
 body.theme-crusader .sets-group-label{
-  color:#7a6e5e;border-top:1px dashed #d0c8b4;
+  color:#9a8e72;border-top:1px dashed #4a3e30;
   font-family:'Cinzel',serif;font-weight:600;
 }
-body.theme-crusader .sets-group-label.work-group{color:#8b1a1a;}
+body.theme-crusader .sets-group-label.work-group{color:#c83838;}
 
 /* EXERCISE NAMES */
 body.theme-crusader .ex-name{
-  color:#1c1208;font-family:'Cinzel',serif;font-weight:600;
+  color:#d8c8a8;font-family:'Cinzel',serif;font-weight:600;
   letter-spacing:.03em;font-size:.88rem;
 }
-body.theme-crusader .ex-detail{color:#7a6e5e;}
-body.theme-crusader .ex-prev .last-val{color:#2a6624;}
-body.theme-crusader .ex-prev .pr-val{color:#8b1a1a;}
-body.theme-crusader .ex-tag.ramp{background:#ede0c0;border-color:#7a6440;color:#5a4a28;}
-body.theme-crusader .ex-tag.bw{background:#eef5ea;border-color:#2a6624;color:#2a6624;}
-body.theme-crusader .ex-tag.uni{background:#fdf0ec;border-color:#c05030;color:#a03a20;}
+body.theme-crusader .ex-detail{color:#9a8e72;}
+body.theme-crusader .ex-prev .last-val{color:#9ab06a;}
+body.theme-crusader .ex-prev .pr-val{color:#e84040;}
+body.theme-crusader .ex-tag.ramp{background:#2a241c;border-color:#8a7048;color:#a89668;}
+body.theme-crusader .ex-tag.bw{background:#1f2a18;border-color:#6a8a3a;color:#9ab06a;}
+body.theme-crusader .ex-tag.uni{background:#2a1c18;border-color:#c05030;color:#d86a48;}
 
 /* AUTH SCREEN */
-body.theme-crusader #userScreen{background:#f0e8d5;}
+body.theme-crusader #userScreen{background:#13100c;}
 body.theme-crusader .auth-bg{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%238b1a1a' stroke-width='1' stroke-opacity='0.07'%3E%3Cline x1='30' y1='0' x2='30' y2='60'/%3E%3Cline x1='0' y1='30' x2='60' y2='30'/%3E%3Crect x='4' y='4' width='52' height='52'/%3E%3C/g%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23a82828' stroke-width='1' stroke-opacity='0.10'%3E%3Cline x1='30' y1='0' x2='30' y2='60'/%3E%3Cline x1='0' y1='30' x2='60' y2='30'/%3E%3Crect x='4' y='4' width='52' height='52'/%3E%3C/g%3E%3C/svg%3E");
 }
-body.theme-crusader .auth-logo{color:#1c1208;font-family:'Cinzel',serif;font-weight:700;}
-body.theme-crusader .auth-logo span{color:#8b1a1a;}
-body.theme-crusader .auth-tagline{color:#7a6e5e;}
-body.theme-crusader .auth-btn-google{background:#f5eed8;border:1px solid #d0c8b4;color:#1c1208;}
-body.theme-crusader .auth-btn-google:hover{background:#ede6d0;border-color:#8b1a1a;}
-body.theme-crusader .auth-divider{color:#9a8e7a;}
+body.theme-crusader .auth-logo{color:#d8c8a8;font-family:'Cinzel',serif;font-weight:700;}
+body.theme-crusader .auth-logo span{color:#c83838;}
+body.theme-crusader .auth-tagline{color:#9a8e72;}
+body.theme-crusader .auth-btn-google{background:#221d17;border:1px solid #4a3e30;color:#d8c8a8;}
+body.theme-crusader .auth-btn-google:hover{background:#2a241c;border-color:#a82828;}
+body.theme-crusader .auth-divider{color:#7a6e58;}
 body.theme-crusader .auth-divider::before,
-body.theme-crusader .auth-divider::after{background:#d0c8b4;}
+body.theme-crusader .auth-divider::after{background:#4a3e30;}
 body.theme-crusader #auth-email-form input,
 body.theme-crusader #auth-signup-fields input,
-body.theme-crusader #reset-password-form input{background:#faf4e8;border:1px solid #d0c8b4;color:#1c1208;}
+body.theme-crusader #reset-password-form input{background:#2a241c;border:1px solid #4a3e30;color:#d8c8a8;}
 body.theme-crusader #auth-email-form input:focus,
 body.theme-crusader #auth-signup-fields input:focus,
-body.theme-crusader #reset-password-form input:focus{border-color:#8b1a1a;box-shadow:0 0 0 1px #8b1a1a;}
+body.theme-crusader #reset-password-form input:focus{border-color:#a82828;box-shadow:0 0 0 1px #a82828;}
 body.theme-crusader .auth-stay,
-body.theme-crusader .auth-checkbox-row{color:#7a6e5e;}
-body.theme-crusader .auth-disclaimer{background:#f0e8d5;border-left-color:#d0c8b4;color:#7a6e5e;}
+body.theme-crusader .auth-checkbox-row{color:#9a8e72;}
+body.theme-crusader .auth-disclaimer{background:#221d17;border-left-color:#4a3e30;color:#9a8e72;}
 body.theme-crusader .auth-btn-primary{
-  background:linear-gradient(180deg,#a02020 0%,#7a1515 100%);
+  background:linear-gradient(180deg,#a82828 0%,#7a1515 100%);
   color:#f5eed8;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.1em;
 }
-body.theme-crusader .auth-btn-primary:hover{background:linear-gradient(180deg,#b02424 0%,#8b1a1a 100%);}
-body.theme-crusader .auth-btn-secondary{background:none;border-color:#d0c8b4;color:#7a6e5e;}
-body.theme-crusader .auth-btn-secondary:hover{border-color:#8b1a1a;color:#1c1208;}
-body.theme-crusader .auth-footer a{color:#9a8e7a;}
-body.theme-crusader .auth-footer a:hover{color:#8b1a1a;}
+body.theme-crusader .auth-btn-primary:hover{background:linear-gradient(180deg,#c03030 0%,#8b1a1a 100%);}
+body.theme-crusader .auth-btn-secondary{background:none;border-color:#4a3e30;color:#9a8e72;}
+body.theme-crusader .auth-btn-secondary:hover{border-color:#a82828;color:#d8c8a8;}
+body.theme-crusader .auth-footer a{color:#7a6e58;}
+body.theme-crusader .auth-footer a:hover{color:#c83838;}
 
 /* WEIGHT SCREEN — banner translucent so cross still shows through on chain view */
-body.theme-crusader .weight-banner{background:rgba(220,208,180,0.86);border-bottom:1px solid rgba(176,164,140,0.6);position:relative;z-index:1;}
-body.theme-crusader .weight-banner-label{color:#5a4e3a;}
-body.theme-crusader .weight-input{background:rgba(232,220,192,0.9);border:1px solid #b0a48c;color:#1c1208;}
-body.theme-crusader .weight-input:focus{border-color:#8b1a1a;box-shadow:0 0 0 2px rgba(139,26,26,0.15);}
-body.theme-crusader .weight-log-btn{background:rgba(232,220,192,0.9);border:1px solid #b0a48c;color:#5a4e3a;}
-body.theme-crusader .weight-log-btn:hover{border-color:#2a6624;color:#2a6624;}
-body.theme-crusader .weight-today{color:#8b1a1a;}
+body.theme-crusader .weight-banner{background:rgba(28,24,18,0.78);border-bottom:1px solid rgba(90,76,58,0.5);position:relative;z-index:1;}
+body.theme-crusader .weight-banner-label{color:#9a8e72;}
+body.theme-crusader .weight-input{background:rgba(38,32,24,0.9);border:1px solid #5a4a36;color:#d8c8a8;}
+body.theme-crusader .weight-input:focus{border-color:#a82828;box-shadow:0 0 0 2px rgba(168,40,40,0.25);}
+body.theme-crusader .weight-log-btn{background:rgba(38,32,24,0.9);border:1px solid #5a4a36;color:#9a8e72;}
+body.theme-crusader .weight-log-btn:hover{border-color:#6a8a3a;color:#9ab06a;}
+body.theme-crusader .weight-today{color:#c83838;}
 
 /* SECTION TITLES */
 body.theme-crusader .section-title,
 body.theme-crusader .chain-intro-title{
-  color:#1c1208;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.06em;
+  color:#d8c8a8;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.06em;
 }
 body.theme-crusader .section-sub,
-body.theme-crusader .chain-intro-sub{color:#9a8e7a;}
+body.theme-crusader .chain-intro-sub{color:#7a6e58;}
 
 /* STATS & PRs */
-body.theme-crusader .stat-box{background:#f5eed8;border:1px solid #d0c8b4;}
-body.theme-crusader .stat-num{color:#8b1a1a;font-family:'Cinzel',serif;}
-body.theme-crusader .stat-desc{color:#7a6e5e;}
-body.theme-crusader .pr-card{background:#e8dcc0;border:1px solid #b0a48c;}
-body.theme-crusader .pr-card::before{background:#d4c4a4;color:#7a6440;}
-body.theme-crusader .pr-value{color:#8b1a1a;font-weight:700;}
+body.theme-crusader .stat-box{background:#221d17;border:1px solid #4a3e30;}
+body.theme-crusader .stat-num{color:#c83838;font-family:'Cinzel',serif;}
+body.theme-crusader .stat-desc{color:#9a8e72;}
+body.theme-crusader .pr-card{background:#221d17;border:1px solid #4a3e30;}
+body.theme-crusader .pr-card::before{background:#3a2e22;color:#a89668;}
+body.theme-crusader .pr-value{color:#e84040;font-weight:700;}
 
 /* HISTORY */
-body.theme-crusader .hist-entry{background:#f5eed8;border:1px solid #d0c8b4;border-left:3px solid #8b1a1a;}
-body.theme-crusader .hist-date{color:#1c1208;font-family:'Cinzel',serif;font-weight:600;}
-body.theme-crusader .hist-pass{color:#8b1a1a;}
-body.theme-crusader .hist-ex strong{color:#1c1208;}
-body.theme-crusader .hist-set{color:#7a6e5e;}
+body.theme-crusader .hist-entry{background:#221d17;border:1px solid #4a3e30;border-left:3px solid #a82828;}
+body.theme-crusader .hist-date{color:#d8c8a8;font-family:'Cinzel',serif;font-weight:600;}
+body.theme-crusader .hist-pass{color:#c83838;}
+body.theme-crusader .hist-ex strong{color:#d8c8a8;}
+body.theme-crusader .hist-set{color:#9a8e72;}
 
 /* TOAST */
 body.theme-crusader .toast{
-  background:#f5eed8;border:1px solid #8b1a1a;color:#8b1a1a;
-  box-shadow:0 4px 20px rgba(0,0,0,0.1);font-family:'Cinzel',serif;
+  background:#221d17;border:1px solid #a82828;color:#e84040;
+  box-shadow:0 4px 20px rgba(0,0,0,0.6);font-family:'Cinzel',serif;
 }
 
 /* SCROLLBAR */
-body.theme-crusader::-webkit-scrollbar-track{background:#e8e0cc;}
-body.theme-crusader::-webkit-scrollbar-thumb{background:#c0b8a8;}
+body.theme-crusader::-webkit-scrollbar-track{background:#1a1612;}
+body.theme-crusader::-webkit-scrollbar-thumb{background:#3a322a;}
 
 /* MODAL */
-body.theme-crusader .app-modal-card{background:#e8dcc0;border-color:#7a6440;color:#1c1208;}
-body.theme-crusader .app-modal-title{color:#1c1208;font-family:'Cinzel',serif;}
-body.theme-crusader .app-modal-body{color:#5a4e3a;}
+body.theme-crusader .app-modal-card{background:#221d17;border-color:#8a7048;color:#d8c8a8;}
+body.theme-crusader .app-modal-title{color:#d8c8a8;font-family:'Cinzel',serif;}
+body.theme-crusader .app-modal-body{color:#9a8e72;}
 body.theme-crusader .app-modal-input,
-body.theme-crusader .app-modal-btn{background:#f0e8d0;border-color:#d0c8b4;color:#7a6e5e;}
-body.theme-crusader .app-modal-btn:hover{border-color:#8b1a1a;color:#1c1208;}
+body.theme-crusader .app-modal-btn{background:#2a241c;border-color:#4a3e30;color:#9a8e72;}
+body.theme-crusader .app-modal-btn:hover{border-color:#a82828;color:#d8c8a8;}
 body.theme-crusader .app-modal-btn-primary{
-  background:linear-gradient(180deg,#a02020 0%,#7a1515 100%);
-  border-color:#8b1a1a;color:#f5eed8;
+  background:linear-gradient(180deg,#a82828 0%,#7a1515 100%);
+  border-color:#a82828;color:#f5eed8;
 }
-body.theme-crusader .app-modal-btn-primary:hover{background:linear-gradient(180deg,#b02424 0%,#8b1a1a 100%);}
-body.theme-crusader .app-modal-btn-danger{background:#f5eed8;border-color:#8b1a1a;color:#8b1a1a;}
-body.theme-crusader .app-modal-btn-danger:hover{background:#8b1a1a;color:#f5eed8;}
+body.theme-crusader .app-modal-btn-primary:hover{background:linear-gradient(180deg,#c03030 0%,#8b1a1a 100%);}
+body.theme-crusader .app-modal-btn-danger{background:#2a1c18;border-color:#a82828;color:#e84040;}
+body.theme-crusader .app-modal-btn-danger:hover{background:#a82828;color:#f5eed8;}
 
-/* SELECT FIX (light theme) */
+/* SELECT FIX (dark theme — needs explicit dark surfaces) */
 body.theme-crusader select,
 body.theme-crusader .swap-select,
 body.theme-crusader .app-modal-select{
-  background:#faf4e8 !important;color:#1c1208 !important;border-color:#d0c8b4 !important;
+  background:#2a241c !important;color:#d8c8a8 !important;border-color:#4a3e30 !important;
 }
 body.theme-crusader select option,
-body.theme-crusader .swap-select option{background:#f5eed8;color:#1c1208;}
+body.theme-crusader .swap-select option{background:#221d17;color:#d8c8a8;}
 body.theme-crusader select optgroup,
-body.theme-crusader .swap-select optgroup{background:#efe8d0;color:#5a4e3a;}
+body.theme-crusader .swap-select optgroup{background:#1a1612;color:#a89668;}
 
 /* ── SET LOG BUTTON ──────────────────────────────────────────*/
 .set-log-btn{
@@ -3610,7 +3605,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.19.0';
+const APP_VERSION = '3.20.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3618,7 +3613,7 @@ let lastSyncWrite = 0;
 
 let currentUser=null;
 let inPasswordRecovery=false;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.19.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.20.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -6806,18 +6801,7 @@ document.addEventListener('visibilitychange',()=>{
 </script>
 <!-- Crusader theme: Templar cross backdrop (visible only when theme-crusader is active) -->
 <div id="crusader-cross-bg" aria-hidden="true">
-  <svg id="crusader-cross-svg" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
-    <defs>
-      <linearGradient id="crusaderRedGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#9a1818"/>
-        <stop offset="50%" stop-color="#7a1010"/>
-        <stop offset="100%" stop-color="#5a0606"/>
-      </linearGradient>
-    </defs>
-    <path d="M 50,0 L 75,8 L 100,0 L 125,8 L 150,0 L 135,70 L 200,70 L 192,95 L 200,120 L 192,145 L 200,170 L 135,170 L 150,240 L 125,232 L 100,240 L 75,232 L 50,240 L 65,170 L 0,170 L 8,145 L 0,120 L 8,95 L 0,70 L 65,70 Z"
-          fill="url(#crusaderRedGrad)" stroke="#1a0a08" stroke-width="3" stroke-linejoin="miter" class="crusader-cross-body"/>
-    <circle cx="100" cy="120" r="11" fill="#c82020" class="crusader-cross-gem"/>
-  </svg>
+  <img id="crusader-cross-img" src="crusader2.jpg" alt="" draggable="false">
 </div>
 <!-- Reusable modal — controlled by JS, theme-aware via CSS vars -->
 <div id="appModal" class="app-modal" style="display:none">
