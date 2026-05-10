@@ -93,29 +93,29 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .pass-card.open .pass-body{display:block;}
 .chain-strip-outer{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:10px 11px 0;}
 .chain-strip-outer::-webkit-scrollbar{display:none;}
-.chain-strip-inner{display:flex;align-items:flex-end;min-width:max-content;padding-bottom:8px;}
-.chain-tab{display:flex;flex-direction:column;align-items:center;padding:4px 3px;cursor:pointer;opacity:.28;transition:opacity .22s,padding .22s ease-out;flex-shrink:0;background:none;border:none;}
-.chain-tab.active{opacity:1;padding:4px 8px;}
-.chain-tab.done{opacity:.14;}
-.chain-tab-letter{font-family:var(--mono);font-weight:700;color:var(--red);display:flex;align-items:center;justify-content:center;border:1px solid #1e1e1e;transition:width .22s ease-out,height .22s ease-out,font-size .22s ease-out,border-color .22s,box-shadow .22s;width:24px;height:24px;font-size:.75rem;}
-.chain-tab.active .chain-tab-letter{width:44px;height:44px;font-size:1.45rem;border-color:var(--red);box-shadow:0 0 0 2px rgba(180,30,30,.15);}
-.chain-tab.done .chain-tab-letter{color:#1c1c1c;border-color:#161616;}
-.chain-tab.rest-day .chain-tab-letter{color:#333;border-color:#1a1a1a;}
-.chain-tab.active.rest-day .chain-tab-letter{color:#666;border-color:#444;box-shadow:none;}
-.chain-tab-name{font-family:var(--mono);font-size:0;color:#777;max-height:0;overflow:hidden;white-space:nowrap;transition:font-size .22s ease-out,max-height .22s ease-out,margin-top .2s;margin-top:0;text-align:center;max-width:72px;}
-.chain-tab.active .chain-tab-name{font-size:.4rem;max-height:20px;margin-top:4px;}
-.chain-link-icon{flex-shrink:0;padding-bottom:6px;display:flex;align-items:center;opacity:.35;}
-.chain-ex-area{padding:0 11px 90px;transition:opacity .18s ease-out,transform .18s ease-out;}
-.chain-ex-area.fade-out{opacity:0;transform:translateY(-5px);}
-.pass-ex-header{display:flex;align-items:center;gap:10px;padding:12px 0 8px;border-bottom:1px solid #1c1c1c;margin-bottom:6px;}
-.pass-ex-letter{font-family:var(--mono);font-size:1.1rem;font-weight:700;color:var(--red);}
-.pass-ex-info{display:flex;flex-direction:column;}
-.pass-ex-name{font-family:var(--mono);font-size:.65rem;color:var(--white);line-height:1.3;}
-.session-ex-status{font-family:var(--mono);font-size:.4rem;color:#555;text-transform:uppercase;letter-spacing:.07em;margin-top:2px;}
+.chain-strip-inner{display:flex;align-items:center;min-width:max-content;padding-bottom:10px;gap:5px;}
+.chain-tab{display:flex;flex-direction:row;align-items:center;cursor:pointer;background:none;border:none;padding:0;flex-shrink:0;}
+.chain-tab-letter{font-family:var(--mono);font-weight:700;color:var(--red);width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid #1f1f1f;font-size:1.15rem;flex-shrink:0;transition:border-color .22s,box-shadow .22s,opacity .22s,color .22s;opacity:.3;}
+.chain-tab.adjacent .chain-tab-letter{opacity:.62;border-color:#2a2a2a;}
+.chain-tab.active .chain-tab-letter{opacity:1;border-color:var(--red);box-shadow:0 0 0 2px rgba(180,30,30,.18);}
+.chain-tab.rest-day .chain-tab-letter{color:#444;}
+.chain-tab.active.rest-day .chain-tab-letter{color:#888;border-color:#555;box-shadow:none;}
+.chain-tab.done .chain-tab-letter{opacity:.16;}
+.chain-tab-name-full,.chain-tab-name-short{font-family:var(--mono);font-weight:600;color:var(--white);max-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;opacity:0;font-size:.62rem;letter-spacing:.04em;transition:max-width .25s ease-out,opacity .2s,padding .25s ease-out;padding:0;text-transform:uppercase;}
+.chain-tab-name-short{color:#888;font-size:.55rem;font-weight:500;}
+.chain-tab.active .chain-tab-name-full{max-width:140px;opacity:1;padding:0 8px;}
+.chain-tab.adjacent .chain-tab-name-short{max-width:42px;opacity:.7;padding:0 6px 0 7px;}
+.chain-tab.rest-day.active .chain-tab-name-full{color:#999;}
+.chain-ex-area{padding:0 11px 90px;}
+.pass-ex-header{display:flex;align-items:center;gap:8px;padding:14px 0 10px;border-bottom:1px solid #1c1c1c;margin-bottom:8px;}
+.pass-ex-letter{font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--red);}
+.pass-ex-name{font-family:var(--mono);font-size:.7rem;color:var(--white);text-transform:uppercase;letter-spacing:.04em;}
+.session-ex-status{font-family:var(--mono);font-size:.4rem;color:#555;text-transform:uppercase;letter-spacing:.08em;margin-left:2px;}
+.session-ex-status::before{content:'· ';color:#333;}
 .session-ex-status.done{color:#3a3a3a;}
 .session-ex-status.progress{color:var(--green-bright);}
 .session-ex-status.next-up{color:var(--red);}
-.pass-ex-header.rest-day .pass-ex-letter{color:#555;}
+.pass-ex-header.rest-day .pass-ex-letter{color:#666;}
 
 /* EXERCISES */
 .ex-block{border-bottom:1px solid #141414;padding:8px 0 6px;}
@@ -3709,7 +3709,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.23.0';
+const APP_VERSION = '3.24.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3718,7 +3718,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.23.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.24.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -4196,11 +4196,11 @@ function buildPassBodyHTML(pass,cycle,nextId){
   const todayWkg=getTodayWeight();
 
   let statusBadge='';
-  if(isDone)statusBadge=`<span class="session-ex-status done">✓ Done${completedData?.date?' · '+completedData.date:''}</span>`;
-  else if(inProgress)statusBadge=`<span class="session-ex-status progress">↓ Draft</span>`;
+  if(isDone)statusBadge=`<span class="session-ex-status done">Done${completedData?.date?' · '+completedData.date:''}</span>`;
+  else if(inProgress)statusBadge=`<span class="session-ex-status progress">Draft</span>`;
   else if(isNext)statusBadge=`<span class="session-ex-status next-up">Next up</span>`;
 
-  let html=`<div class="pass-ex-header${isRest?' rest-day':''}"><div class="pass-ex-letter">${displayLetter}</div><div class="pass-ex-info"><div class="pass-ex-name">${escapeHTML(pass.name)}</div>${statusBadge}</div></div>`;
+  let html=`<div class="pass-ex-header${isRest?' rest-day':''}"><div class="pass-ex-letter">${displayLetter}</div><div class="pass-ex-name">${escapeHTML(pass.name)}</div>${statusBadge}</div>`;
 
     if(isRest){
       html+=`<div class="rest-content">Active rest. Light walk or dead hang at home.<br>No heavy lifting — recovery IS training.</div><div class="pass-actions">${isDone?`<button class="btn-ghost" onclick="undoSession('${passId}')">↩ Undo</button>`:`<button class="btn-ghost" onclick="doneRest('${passId}')">Mark Rest Done →</button>`}</div>`;
@@ -4515,24 +4515,23 @@ function renderChain(){
 
   let html=`<div class="weight-banner"><span class="weight-banner-label">Morning Weight</span><div style="display:flex;align-items:center;gap:4px"><input class="weight-input" type="number" id="morningWeight" placeholder="${state.unit==='lbs'?'165.0':'75.0'}" step="${state.unit==='lbs'?'0.5':'0.1'}" min="${state.unit==='lbs'?'44':'20'}" max="${state.unit==='lbs'?'660':'300'}" value="${todayW||''}"><span class="weight-unit">${unitLabel()}</span></div><span id="weightBannerToday" class="weight-today">${todayW?todayW+' '+unitLabel()+' today':''}</span><button class="weight-log-btn" onclick="logWeight()">Log</button></div><div class="chain-intro"><div><div class="chain-intro-title">The Chain</div><div class="chain-intro-sub">${doneSessions}/${totalSessions} sessions done · Round ${state.cycles.length}</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--mono);font-size:.52rem;color:var(--gray-mid)">${pct}%</span><button style="background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.7rem;padding:3px 9px;cursor:pointer;transition:all .15s;line-height:1;" title="Configure chain" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='#444';this.style.color='#888'" onclick="showEditPage()"><svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit</button></div></div><div class="chain-bar"><div class="chain-fill" style="width:${pct}%"></div></div>`;
 
-  // Horizontal session strip
+  // Horizontal session strip — spotlight design (active expanded, neighbours ajar, rest closed)
+  const activeIdx=effectiveChain.findIndex(p=>p.id===_chainSelectedId);
   html+=`<div class="chain-strip-outer"><div class="chain-strip-inner">`;
   effectiveChain.forEach((pass,chainIdx)=>{
     const passId=pass.id;
     const isDone=(cycle.done[passId]!==null&&cycle.done[passId]!==undefined);
     const isRest=!!pass.rest;
-    const hasDraft=state.draft&&state.draft.passId===passId;
-    const inProgress=hasDraft&&Object.keys(state.draft.savedExercises).length>0;
     const isSelected=passId===_chainSelectedId;
+    const distance=Math.abs(chainIdx-activeIdx);
     const displayLetter=isRest?'V':(pass.displayLetter||passId);
-    if(chainIdx>0){
-      html+=`<div class="chain-link-icon"><svg width="11" height="12" viewBox="0 0 11 12" fill="none"><ellipse cx="3.5" cy="6" rx="2.8" ry="4.5" stroke="#2c2c2c" stroke-width="1.1"/><ellipse cx="7.5" cy="6" rx="2.8" ry="4.5" stroke="#2c2c2c" stroke-width="1.1"/></svg></div>`;
-    }
+    const shortName=pass.name.replace(/[^A-Za-z]/g,'').substring(0,3).toUpperCase();
     let tabCls='chain-tab';
     if(isSelected)tabCls+=' active';
-    else if(isDone)tabCls+=' done';
+    else if(distance===1)tabCls+=' adjacent';
+    if(isDone&&!isSelected)tabCls+=' done';
     if(isRest)tabCls+=' rest-day';
-    html+=`<div class="${tabCls}" id="chain-tab-${passId}" onclick="selectSession('${passId}')"><div class="chain-tab-letter">${displayLetter}</div><div class="chain-tab-name">${escapeHTML(pass.name)}</div></div>`;
+    html+=`<div class="${tabCls}" id="chain-tab-${passId}" onclick="selectSession('${passId}')"><div class="chain-tab-letter">${displayLetter}</div><div class="chain-tab-name-full">${escapeHTML(pass.name)}</div><div class="chain-tab-name-short">${escapeHTML(shortName)}</div></div>`;
   });
   html+=`</div></div>`;
 
@@ -6128,20 +6127,32 @@ function rerenderSession(passId){
 function toggleCard(id){selectSession(id);}
 function selectSession(passId){
   if(_chainSelectedId===passId)return;
-  document.querySelectorAll('.chain-tab').forEach(t=>t.classList.remove('active'));
+  _chainSelectedId=passId;
+  const cycle=curCycle();const nextId=nextSessionId();const ec=getEffectiveChain();
+  const activeIdx=ec.findIndex(p=>p.id===passId);
+  // Update strip tab states (active / adjacent / distant) — CSS handles the slide-out animation
+  ec.forEach((p,idx)=>{
+    const tab=document.getElementById('chain-tab-'+p.id);
+    if(!tab)return;
+    const distance=Math.abs(idx-activeIdx);
+    const isDone=(cycle.done[p.id]!==null&&cycle.done[p.id]!==undefined);
+    const isRest=!!p.rest;
+    let cls='chain-tab';
+    if(idx===activeIdx)cls+=' active';
+    else if(distance===1)cls+=' adjacent';
+    if(isDone&&idx!==activeIdx)cls+=' done';
+    if(isRest)cls+=' rest-day';
+    tab.className=cls;
+  });
+  // Scroll active into view (centered)
   const newTab=document.getElementById('chain-tab-'+passId);
-  if(newTab){newTab.classList.add('active');newTab.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});}
+  if(newTab) newTab.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+  // Swap exercise area content immediately — no fade, no studs
   const area=document.getElementById('chain-ex-area');
-  if(!area){_chainSelectedId=passId;renderChain();return;}
-  area.classList.add('fade-out');
-  setTimeout(()=>{
-    _chainSelectedId=passId;
-    const cycle=curCycle();const nextId=nextSessionId();const ec=getEffectiveChain();
-    const pass=ec.find(p=>p.id===passId);
-    if(!pass){renderChain();return;}
-    area.innerHTML=buildPassBodyHTML(pass,cycle,nextId);
-    area.classList.remove('fade-out');
-  },200);
+  if(!area){renderChain();return;}
+  const pass=ec.find(p=>p.id===passId);
+  if(!pass){renderChain();return;}
+  area.innerHTML=buildPassBodyHTML(pass,cycle,nextId);
 }
 
 // ── PR / BEST ─────────────────────────────────────────────────
