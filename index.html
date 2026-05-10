@@ -91,18 +91,20 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .pass-done-info{font-family:var(--mono);font-size:.5rem;color:#666;text-align:right;white-space:nowrap;}
 .pass-body{display:none;border-top:1px solid #181818;padding:0 12px 12px;}
 .pass-card.open .pass-body{display:block;}
-.chain-strip-outer{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:8px 11px 2px;}
+.chain-strip-outer{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:10px 11px 0;}
 .chain-strip-outer::-webkit-scrollbar{display:none;}
-.chain-strip-inner{display:flex;align-items:flex-end;min-width:max-content;padding-bottom:4px;}
-.chain-tab{display:flex;flex-direction:column;align-items:center;padding:6px 6px;cursor:pointer;opacity:.42;transition:opacity .2s;flex-shrink:0;background:none;border:none;}
+.chain-strip-inner{display:flex;align-items:flex-end;min-width:max-content;padding-bottom:8px;}
+.chain-tab{display:flex;flex-direction:column;align-items:center;padding:4px 5px;cursor:pointer;opacity:.32;transition:opacity .22s;flex-shrink:0;background:none;border:none;}
 .chain-tab.active{opacity:1;}
-.chain-tab.done{opacity:.26;}
-.chain-tab-letter{font-family:var(--mono);font-size:1.4rem;font-weight:700;color:var(--red);width:42px;height:42px;display:flex;align-items:center;justify-content:center;border:1px solid #2a2a2a;transition:border-color .2s,box-shadow .2s;}
-.chain-tab.active .chain-tab-letter{border-color:var(--red);box-shadow:0 0 0 2px rgba(180,30,30,.18);}
-.chain-tab.done .chain-tab-letter{color:#282828;border-color:#1e1e1e;}
-.chain-tab-name{font-family:var(--mono);font-size:.38rem;color:#444;max-width:56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:4px;text-align:center;}
-.chain-tab.active .chain-tab-name{color:#777;}
-.chain-link-icon{flex-shrink:0;margin:0;padding-bottom:14px;display:flex;align-items:center;}
+.chain-tab.done{opacity:.18;}
+.chain-tab-letter{font-family:var(--mono);font-weight:700;color:var(--red);display:flex;align-items:center;justify-content:center;border:1px solid #222;transition:width .22s ease-out,height .22s ease-out,font-size .22s ease-out,border-color .22s,box-shadow .22s;width:32px;height:32px;font-size:1rem;}
+.chain-tab.active .chain-tab-letter{width:46px;height:46px;font-size:1.5rem;border-color:var(--red);box-shadow:0 0 0 2px rgba(180,30,30,.15);}
+.chain-tab.done .chain-tab-letter{color:#202020;border-color:#181818;}
+.chain-tab.rest-day .chain-tab-letter{color:#3a3a3a;border-color:#1e1e1e;}
+.chain-tab.active.rest-day .chain-tab-letter{color:#666;border-color:#444;box-shadow:none;}
+.chain-tab-name{font-family:var(--mono);font-size:0;color:#777;max-height:0;overflow:hidden;white-space:nowrap;transition:font-size .22s ease-out,max-height .22s ease-out,margin-top .2s;margin-top:0;text-align:center;max-width:72px;text-overflow:ellipsis;}
+.chain-tab.active .chain-tab-name{font-size:.42rem;max-height:20px;margin-top:5px;}
+.chain-link-icon{flex-shrink:0;padding-bottom:10px;display:flex;align-items:center;opacity:.5;}
 .chain-ex-area{padding:0 11px 90px;transition:opacity .18s ease-out,transform .18s ease-out;}
 .chain-ex-area.fade-out{opacity:0;transform:translateY(-5px);}
 .pass-ex-header{display:flex;align-items:center;gap:10px;padding:12px 0 8px;border-bottom:1px solid #1c1c1c;margin-bottom:6px;}
@@ -113,6 +115,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .session-ex-status.done{color:#3a3a3a;}
 .session-ex-status.progress{color:var(--green-bright);}
 .session-ex-status.next-up{color:var(--red);}
+.pass-ex-header.rest-day .pass-ex-letter{color:#555;}
 
 /* EXERCISES */
 .ex-block{border-bottom:1px solid #141414;padding:8px 0 6px;}
@@ -4197,7 +4200,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
   else if(inProgress)statusBadge=`<span class="session-ex-status progress">↓ Draft</span>`;
   else if(isNext)statusBadge=`<span class="session-ex-status next-up">Next up</span>`;
 
-  let html=`<div class="pass-ex-header"><div class="pass-ex-letter">${displayLetter}</div><div class="pass-ex-info"><div class="pass-ex-name">${escapeHTML(pass.name)}</div>${statusBadge}</div></div>`;
+  let html=`<div class="pass-ex-header${isRest?' rest-day':''}"><div class="pass-ex-letter">${displayLetter}</div><div class="pass-ex-info"><div class="pass-ex-name">${escapeHTML(pass.name)}</div>${statusBadge}</div></div>`;
 
     if(isRest){
       html+=`<div class="rest-content">Active rest. Light walk or dead hang at home.<br>No heavy lifting — recovery IS training.</div><div class="pass-actions">${isDone?`<button class="btn-ghost" onclick="undoSession('${passId}')">↩ Undo</button>`:`<button class="btn-ghost" onclick="doneRest('${passId}')">Mark Rest Done →</button>`}</div>`;
@@ -4523,7 +4526,7 @@ function renderChain(){
     const isSelected=passId===_chainSelectedId;
     const displayLetter=isRest?'V':(pass.displayLetter||passId);
     if(chainIdx>0){
-      html+=`<div class="chain-link-icon"><svg width="14" height="9" viewBox="0 0 14 9" fill="none"><rect x="0.75" y="1.25" width="5.5" height="6.5" rx="3.25" stroke="#252525" stroke-width="1.3"/><rect x="7.75" y="1.25" width="5.5" height="6.5" rx="3.25" stroke="#252525" stroke-width="1.3"/></svg></div>`;
+      html+=`<div class="chain-link-icon"><svg width="15" height="14" viewBox="0 0 15 14" fill="none"><ellipse cx="5" cy="7" rx="3.8" ry="5.5" stroke="#2c2c2c" stroke-width="1.3"/><ellipse cx="10" cy="7" rx="3.8" ry="5.5" stroke="#2c2c2c" stroke-width="1.3"/></svg></div>`;
     }
     let tabCls='chain-tab';
     if(isSelected)tabCls+=' active';
