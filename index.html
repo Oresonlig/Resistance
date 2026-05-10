@@ -94,18 +94,21 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .chain-strip-outer{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:10px 11px 0;}
 .chain-strip-outer::-webkit-scrollbar{display:none;}
 .chain-strip-inner{display:flex;align-items:center;min-width:max-content;padding-bottom:10px;gap:5px;}
-.chain-tab{display:flex;flex-direction:row;align-items:center;cursor:pointer;background:none;border:none;padding:0;flex-shrink:0;}
-.chain-tab-letter{font-family:var(--mono);font-weight:700;color:var(--red);width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid #1f1f1f;font-size:1.15rem;flex-shrink:0;transition:border-color .22s,box-shadow .22s,opacity .22s,color .22s;opacity:.3;}
-.chain-tab.adjacent .chain-tab-letter{opacity:.62;border-color:#2a2a2a;}
-.chain-tab.active .chain-tab-letter{opacity:1;border-color:var(--red);box-shadow:0 0 0 2px rgba(180,30,30,.18);}
-.chain-tab.rest-day .chain-tab-letter{color:#444;}
-.chain-tab.active.rest-day .chain-tab-letter{color:#888;border-color:#555;box-shadow:none;}
-.chain-tab.done .chain-tab-letter{opacity:.16;}
-.chain-tab-name-full,.chain-tab-name-short{font-family:var(--mono);font-weight:600;color:var(--white);max-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;opacity:0;font-size:.62rem;letter-spacing:.04em;transition:max-width .25s ease-out,opacity .2s,padding .25s ease-out;padding:0;text-transform:uppercase;}
-.chain-tab-name-short{color:#888;font-size:.55rem;font-weight:500;}
-.chain-tab.active .chain-tab-name-full{max-width:140px;opacity:1;padding:0 8px;}
-.chain-tab.adjacent .chain-tab-name-short{max-width:42px;opacity:.7;padding:0 6px 0 7px;}
-.chain-tab.rest-day.active .chain-tab-name-full{color:#999;}
+.chain-tab{display:flex;flex-direction:row;align-items:stretch;cursor:pointer;border:none;padding:0;flex-shrink:0;height:40px;background:none;clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 50%,calc(100% - 8px) 100%,8px 100%,0 50%);transition:opacity .22s;}
+.chain-tab-letter{font-family:var(--mono);font-weight:700;color:var(--red);width:40px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;background:rgba(22,16,16,.55);border:none;transition:background .22s,color .22s,opacity .22s;opacity:.42;}
+.chain-tab.adjacent .chain-tab-letter{opacity:.78;background:rgba(40,24,24,.6);}
+.chain-tab.active .chain-tab-letter{opacity:1;background:rgba(115,30,30,.4);}
+.chain-tab.rest-day .chain-tab-letter{color:#4a4a4a;background:rgba(20,20,20,.45);}
+.chain-tab.adjacent.rest-day .chain-tab-letter{color:#666;background:rgba(28,28,28,.55);}
+.chain-tab.active.rest-day .chain-tab-letter{color:#999;background:rgba(50,50,50,.55);}
+.chain-tab.done .chain-tab-letter{opacity:.2;background:rgba(15,12,12,.45);}
+.chain-tab-name-full,.chain-tab-name-short{font-family:var(--mono);font-weight:600;color:var(--white);max-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;opacity:0;letter-spacing:.05em;transition:max-width .25s ease-out,opacity .2s,padding .25s ease-out;padding:0;text-transform:uppercase;display:flex;align-items:center;background:rgba(42,28,28,.6);}
+.chain-tab-name-full{font-size:.6rem;}
+.chain-tab-name-short{color:#9a9a9a;font-size:.52rem;font-weight:500;background:rgba(30,22,22,.5);}
+.chain-tab.active .chain-tab-name-full{max-width:140px;opacity:1;padding:0 13px 0 10px;}
+.chain-tab.adjacent .chain-tab-name-short{max-width:44px;opacity:.85;padding:0 10px 0 8px;}
+.chain-tab.active.rest-day .chain-tab-name-full{color:#bbb;background:rgba(55,55,55,.55);}
+.chain-tab.adjacent.rest-day .chain-tab-name-short{color:#888;background:rgba(34,34,34,.5);}
 .chain-ex-area{padding:0 11px 90px;}
 .pass-ex-header{display:flex;align-items:center;gap:8px;padding:14px 0 10px;border-bottom:1px solid #1c1c1c;margin-bottom:8px;}
 .pass-ex-letter{font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--red);}
@@ -3709,7 +3712,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.24.0';
+const APP_VERSION = '3.24.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3718,7 +3721,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.24.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.24.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
