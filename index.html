@@ -94,10 +94,10 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .chain-strip-outer{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:10px 11px 0;}
 .chain-strip-outer::-webkit-scrollbar{display:none;}
 .chain-strip-inner{display:flex;align-items:center;min-width:max-content;padding-bottom:10px;gap:4px;}
-.chain-tab{display:flex;flex-direction:row;align-items:stretch;cursor:pointer;border:none;padding:0;flex-shrink:0;height:40px;background:none;clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 50%,calc(100% - 8px) 100%,8px 100%,0 50%);transition:opacity .22s;}
-.chain-tab-letter{font-family:var(--mono);font-weight:700;color:var(--red);width:38px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;background:color-mix(in srgb,var(--red) 7%,transparent);border:none;transition:background .22s,color .22s,opacity .22s;opacity:.5;}
+.chain-tab{display:flex;flex-direction:row;align-items:stretch;cursor:pointer;border:none;padding:0;flex-shrink:0;height:44px;background:none;clip-path:polygon(9px 0,calc(100% - 9px) 0,100% 50%,calc(100% - 9px) 100%,9px 100%,0 50%);transition:opacity .22s;}
+.chain-tab-letter{font-family:var(--mono);font-weight:700;color:var(--red);width:42px;display:flex;align-items:center;justify-content:center;font-size:1.32rem;flex-shrink:0;background:color-mix(in srgb,var(--red) 7%,transparent);border:none;transition:background .22s,color .22s,opacity .22s;opacity:.5;}
 .chain-tab.adjacent .chain-tab-letter{opacity:.82;background:color-mix(in srgb,var(--red) 18%,transparent);}
-.chain-tab.active .chain-tab-letter{opacity:1;background:color-mix(in srgb,var(--red) 36%,transparent);}
+.chain-tab.active .chain-tab-letter{opacity:1;background:color-mix(in srgb,var(--red) 52%,transparent);}
 .chain-tab.rest-day .chain-tab-letter{color:color-mix(in srgb,var(--gold) 50%,#666);background:color-mix(in srgb,var(--gold) 6%,transparent);}
 .chain-tab.adjacent.rest-day .chain-tab-letter{color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent);}
 .chain-tab.active.rest-day .chain-tab-letter{color:var(--gold);background:color-mix(in srgb,var(--gold) 32%,transparent);}
@@ -110,10 +110,9 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .chain-tab.active.rest-day .chain-tab-name-full{color:var(--gold);background:color-mix(in srgb,var(--gold) 18%,transparent);}
 .chain-tab.adjacent.rest-day .chain-tab-name-short{color:color-mix(in srgb,var(--gold) 70%,transparent);background:color-mix(in srgb,var(--gold) 9%,transparent);}
 @media(max-width:480px){
-  .chain-tab.adjacent .chain-tab-name-short{max-width:0;opacity:0;padding:0;}
   .chain-tab.active .chain-tab-name-full{max-width:110px;}
-  .chain-tab-letter{width:34px;font-size:1.05rem;}
-  .chain-tab{height:36px;}
+  .chain-tab-letter{width:38px;font-size:1.16rem;}
+  .chain-tab{height:40px;}
 }
 .chain-ex-area{padding:0 11px 90px;}
 .pass-ex-header{display:flex;align-items:center;gap:8px;padding:14px 0 10px;border-bottom:1px solid #1c1c1c;margin-bottom:8px;}
@@ -3718,7 +3717,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.24.3';
+const APP_VERSION = '3.24.4';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3727,7 +3726,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.24.3',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.24.4',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
