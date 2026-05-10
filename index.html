@@ -3540,6 +3540,7 @@ const EXERCISE_LIBRARY = [
   {name:'Lateral Raises', cat:'Shoulders'},
   {name:'Light Face Pulls', cat:'Shoulders'},
   {name:'Military Press (barbell)', cat:'Shoulders'},
+  {name:'Military Press - Smith', cat:'Shoulders'},
   {name:'Rear Delt Flyes', cat:'Shoulders'},
   {name:'Upright Row', cat:'Shoulders'},
   // ARMS
@@ -3683,7 +3684,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.21.0';
+const APP_VERSION = '3.22.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3691,7 +3692,7 @@ let lastSyncWrite = 0;
 
 let currentUser=null;
 let inPasswordRecovery=false;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.21.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.22.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -4249,7 +4250,7 @@ function renderChain(){
           }
         }
         let tags='';if(isRampEx)tags+=`<span class="ex-tag ramp">Ramp</span>`;if(isSingles)tags+=`<span class="ex-tag singles">Singles</span>`;if(isBW)tags+=`<span class="ex-tag bw">BW+</span>`;if(isUni)tags+=`<span class="ex-tag uni">Unilateral</span>`;if(isTimed)tags+=`<span class="ex-tag" style="border-color:#1a2a3a;background:#08101a;color:#7ab;">Timed</span>`;
-        const lastSession=getLastSession(ex.id,isBW,isTimed);
+        const lastSession=getLastSession(ex.id, sessionSwap||permSwap||null);
         let prevText='';
         if(lastSession){
           // Show only the last work set (most recent, highest index)
@@ -4370,7 +4371,7 @@ function renderChain(){
             : ex.bw
               ? [{warmup:false}]
               : [{warmup:true},{warmup:true},{warmup:false}];
-          const rawSets = draftExtraSets[ex.id] !== undefined
+          const rawSets = (draftExtraSets[ex.id] !== undefined && draftExtraSets[ex.id].length > 0)
             ? draftExtraSets[ex.id]
             : defaultSets;
           // Sort: warmups first, work sets after — stable sort preserving relative order
@@ -5627,7 +5628,7 @@ function saveExercise(passId,exId){
       const domR = document.getElementById('r-'+exId+'-'+origIdx)?.value;
       const extraDisp = (domBw && domBw !== '') ? parseFloat(domBw) : null;
       const extraKg = extraDisp !== null && !isNaN(extraDisp) ? toKg(extraDisp) : (b.extra ?? 0);
-      const repsOrSecs = (domR && domR !== '') ? (parseInt(domR)||null) : (isTimed ? (b.secs ?? null) : (b.reps ?? null));
+      const repsOrSecs = (domR && domR !== '') ? (n=>isNaN(n)?null:n)(parseInt(domR)) : (isTimed ? (b.secs ?? null) : (b.reps ?? null));
       return isTimed ? {extra:extraKg, bwSnap:todayWkg||0, secs:repsOrSecs, forced, warmup}
                      : {extra:extraKg, bwSnap:todayWkg||0, reps:repsOrSecs, forced, warmup};
     }else{
@@ -5635,7 +5636,7 @@ function saveExercise(passId,exId){
       const domR = document.getElementById('r-'+exId+'-'+origIdx)?.value;
       const weightDisp = (domW && domW !== '') ? parseFloat(domW) : null;
       const weightKg = weightDisp !== null && !isNaN(weightDisp) ? toKg(weightDisp) : (b.weight ?? null);
-      const repsOrSecs = (domR && domR !== '') ? (parseInt(domR)||null) : (isTimed ? (b.secs ?? null) : (b.reps ?? null));
+      const repsOrSecs = (domR && domR !== '') ? (n=>isNaN(n)?null:n)(parseInt(domR)) : (isTimed ? (b.secs ?? null) : (b.reps ?? null));
       const sideBtn = document.getElementById('side-'+exId+'-'+origIdx);
       const side = sideBtn ? sideBtn.textContent.trim() : null;
       const sideVal = (side && side !== '—') ? side : (b.side ?? null);
@@ -5787,7 +5788,12 @@ function restoreExerciseToSession(exId, passId){
 }
 function finishSession(passId){
   const draft=state.draft;if(!draft||draft.passId!==passId)return;
-  const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);const exercises=[];
+  const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);
+  const _extraIds=(draft.extras||[]).map((_,i)=>'extra_'+passId+'_'+i);
+  const _allIds=[...pass.exercises.map(e=>e.id),..._extraIds];
+  const _allResolved=_allIds.length>0&&_allIds.every(id=>{const s=draft.savedExercises[id];return s&&(s.skipped===true||(Array.isArray(s.sets)&&s.sets.length>0));});
+  if(!_allResolved){showToast('Markera alla övningar som klara eller skippa dem först');return;}
+  const exercises=[];
   pass.exercises.forEach(ex=>{const d=draft.savedExercises[ex.id];if(d)exercises.push(d);});
   Object.keys(draft.savedExercises).filter(k=>k.startsWith('extra_'+passId+'_')).forEach(extraId=>{const d=draft.savedExercises[extraId];if(d)exercises.push(d);});
   const today=new Date().toLocaleDateString('en-GB',{month:'short',day:'numeric'});
@@ -5812,7 +5818,7 @@ function ensureExtraSets(exId, passId){
   const chain=getEffectiveChain();
   const pass=chain.find(p=>p.id===passId);
   const ex=isExtra?null:pass?.exercises.find(e=>e.id===exId);
-  if(state.draft.extraSets[exId]===undefined){
+  if(state.draft.extraSets[exId]===undefined||state.draft.extraSets[exId].length===0){
     state.draft.extraSets[exId]=ex?getDefaultSets(ex):[{warmup:true},{warmup:true},{warmup:false}];
   }
   if(!isExtra){
@@ -5845,7 +5851,7 @@ function captureInputsToSetsBuffer(exId,passId){
       const domR = document.getElementById('r-'+exId+'-'+origIdx)?.value;
       const extraDisp = (domBw && domBw !== '') ? parseFloat(domBw) : null;
       const extraKg = extraDisp!==null && !isNaN(extraDisp) ? toKg(extraDisp) : (p.extra ?? null);
-      const repsOrSecs2 = (domR && domR !== '') ? (parseInt(domR)||null) : null;
+      const repsOrSecs2 = (domR && domR !== '') ? (n=>isNaN(n)?null:n)(parseInt(domR)) : null;
       const isTimed3=!!(state.exerciseTagOverrides?.[exId]?.timed ?? ex?.timed);
       return isTimed3
         ? {extra:extraKg, bwSnap:p.bwSnap||0, secs: repsOrSecs2 ?? (p.secs ?? null), forced}
@@ -5855,7 +5861,7 @@ function captureInputsToSetsBuffer(exId,passId){
       const domR = document.getElementById('r-'+exId+'-'+origIdx)?.value;
       const weightDisp = (domW && domW !== '') ? (parseFloat(domW)||null) : null;
       const weightKg = weightDisp !== null ? toKg(weightDisp) : (p.weight ?? null);
-      const repsOrSecs = (domR && domR !== '') ? (parseInt(domR)||null) : null;
+      const repsOrSecs = (domR && domR !== '') ? (n=>isNaN(n)?null:n)(parseInt(domR)) : null;
       const isTimed2=!!(state.exerciseTagOverrides?.[exId]?.timed ?? ex?.timed);
       return isTimed2
         ? {weight:weightKg, secs: repsOrSecs ?? (p.secs ?? null), forced}
@@ -6061,33 +6067,33 @@ function rerenderSession(passId){renderChain();setTimeout(()=>{const c=document.
 function toggleCard(id){document.getElementById('card-'+id)?.classList.toggle('open');}
 
 // ── PR / BEST ─────────────────────────────────────────────────
-function getLastSession(exId){
-  // Find the exercise's current name (in any pass it appears in) for cross-pass matching
-  // Same exercise can have different IDs (e.g. D1 Military Press vs L1 Military Press)
+function getLastSession(exId, swappedName){
   const chain = getEffectiveChain();
   const targetNames = new Set();
-  // Direct override for this ID
-  if(state.exerciseOverrides?.[exId]) targetNames.add(state.exerciseOverrides[exId]);
-  // The current name in the chain
-  for(const p of chain){
-    const found = p.exercises?.find(e=>e.id===exId);
-    if(found){
-      targetNames.add(state.exerciseOverrides?.[exId] || found.name);
-      // Also collect names of OTHER exercises in chain that share this name
-      // so we can find logged data that used a different ID for the same exercise
-      const myName = state.exerciseOverrides?.[exId] || found.name;
-      for(const p2 of chain){
-        for(const e2 of (p2.exercises||[])){
-          const n2 = state.exerciseOverrides?.[e2.id] || e2.name;
-          if(n2===myName) targetNames.add(n2);
+  if(swappedName){
+    // Exercise is swapped — search only by the swapped name so we don't bleed
+    // the original exercise's history into the swapped-to exercise's preview
+    targetNames.add(swappedName);
+  } else {
+    if(state.exerciseOverrides?.[exId]) targetNames.add(state.exerciseOverrides[exId]);
+    for(const p of chain){
+      const found = p.exercises?.find(e=>e.id===exId);
+      if(found){
+        targetNames.add(state.exerciseOverrides?.[exId] || found.name);
+        const myName = state.exerciseOverrides?.[exId] || found.name;
+        for(const p2 of chain){
+          for(const e2 of (p2.exercises||[])){
+            const n2 = state.exerciseOverrides?.[e2.id] || e2.name;
+            if(n2===myName) targetNames.add(n2);
+          }
         }
+        break;
       }
-      break;
     }
   }
   function matchExercise(ex){
     if(ex.skipped) return false;
-    if(ex.id===exId) return true;
+    if(!swappedName && ex.id===exId) return true;
     const loggedName = state.exerciseOverrides?.[ex.id] || ex.name;
     return targetNames.has(loggedName);
   }
