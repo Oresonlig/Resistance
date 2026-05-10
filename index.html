@@ -5940,6 +5940,11 @@ async function doSwap(exId,val,passId){
   const mode=wrap?.dataset?.mode||'temp';
   ensureDraft(passId);
   state.draft.swaps[exId]=val;
+  // Clear any previously saved data for this exercise — the swapped exercise
+  // needs to be logged fresh, otherwise old data counts toward allResolved
+  delete state.draft.savedExercises[exId];
+  if(state.draft.loggedSets) delete state.draft.loggedSets[exId];
+  if(state.draft.inputBuffer) delete state.draft.inputBuffer[exId];
   if(mode==='perm'){
     if(!state.permanentSwaps)state.permanentSwaps={};
     state.permanentSwaps[exId]=val;
