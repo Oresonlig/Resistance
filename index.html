@@ -999,11 +999,13 @@ body.theme-arctic::after{
 /* Cracked ice banner behind "The Chain" title */
 body.theme-arctic .chain-intro{
   background:
-    linear-gradient(135deg, rgba(150,208,234,0.60) 0%, rgba(220,242,252,0.30) 50%, rgba(150,208,234,0.55) 100%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='120'%3E%3Cpath d='M60,10 L95,38 L80,70 L110,55 L145,80 L130,110' fill='none' stroke='%2300a8d8' stroke-opacity='0.55' stroke-width='1.5'/%3E%3Cpath d='M200,0 L185,30 L210,50 L190,85 L220,100' fill='none' stroke='%230090c0' stroke-opacity='0.45' stroke-width='1.2'/%3E%3Cpath d='M310,15 L340,40 L320,65 L355,85 L370,115' fill='none' stroke='%2300a8d8' stroke-opacity='0.50' stroke-width='1.5'/%3E%3Cpath d='M40,60 L75,45 L100,70 L140,50' fill='none' stroke='%230078b0' stroke-opacity='0.38' stroke-width='1'/%3E%3Cpath d='M240,20 L265,55 L245,80 L280,105' fill='none' stroke='%2300a8d8' stroke-opacity='0.42' stroke-width='1.2'/%3E%3Cpath d='M0,40 L30,25 L55,50 L25,75 L50,100' fill='none' stroke='%230090c0' stroke-opacity='0.40' stroke-width='1'/%3E%3Cpath d='M150,5 L165,35 L145,55 L175,75 L160,110' fill='none' stroke='%2300a8d8' stroke-opacity='0.35' stroke-width='1'/%3E%3Cpath d='M280,30 L310,15 L325,50 L300,70' fill='none' stroke='%230078b0' stroke-opacity='0.40' stroke-width='1.2'/%3E%3Cpath d='M380,5 L365,40 L390,60 L375,90 L400,110' fill='none' stroke='%2300a8d8' stroke-opacity='0.45' stroke-width='1.5'/%3E%3C/svg%3E") 0 0/cover no-repeat;
+    linear-gradient(to bottom, rgba(10,50,80,0.28) 0%, rgba(0,30,60,0.18) 100%),
+    url('design1/designice.png') center/cover no-repeat;
   border:1px solid rgba(0,168,216,0.30);
-  box-shadow:0 2px 16px rgba(0,168,216,0.15),inset 0 1px 0 rgba(255,255,255,0.6);
+  box-shadow:0 2px 16px rgba(0,168,216,0.15);
 }
+body.theme-arctic .chain-intro-title{color:#fff;text-shadow:0 1px 10px rgba(0,80,140,0.70);}
+body.theme-arctic .chain-intro-sub{color:rgba(200,232,255,0.90);}
 
 body.theme-arctic header{
   background:rgba(234,244,248,0.82);
@@ -3830,7 +3832,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.26.3';
+const APP_VERSION = '3.26.4';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3839,7 +3841,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.26.3',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.26.4',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
