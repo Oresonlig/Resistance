@@ -948,41 +948,130 @@ body.theme-nightcity .auth-btn-primary{background:#ffe600;color:#08010f;}
 body.theme-nightcity .auth-btn-primary:hover{background:#ffd000;color:#08010f;}
 
 /* ─────────────────────────────────────────────────────────────
-   3. ARCTIC TERMINAL — Cold precision
-   Font: Rajdhani (military/tech), DM Mono
-   Palette: Near-black with electric cyan, white text, clinical
+   3. ARCTIC TERMINAL — Frozen lake · Liquid nitrogen · Glassmorphism
+   Font: Rajdhani + DM Mono
+   Palette: Ice-white background, deep navy text, electric cyan accent
 ───────────────────────────────────────────────────────────── */
 body.theme-arctic{
-  --black:#020c10;--white:#d8f4ff;--red:#00c8ff;
-  --gold:#00ffcc;--green-bright:#00ffcc;
-  --gray-mid:#0a2030;--gray-light:#4a8aa0;
+  --black:#eaf4f8;          /* ice-white background (semantic inversion) */
+  --white:#1a2e3a;          /* deep arctic navy text (semantic inversion) */
+  --red:#00a8d8;            /* nitrogen cyan accent */
+  --gold:#5ac8e8;           /* frost-blue highlight */
+  --green-bright:#00c8a0;   /* mint frost (success) */
+  --gray-mid:#c8dde5;       /* light frost grey */
+  --gray-light:#5a7a88;     /* medium navy */
   --display:'Rajdhani',sans-serif;
   --sans:'Rajdhani',sans-serif;
   --mono:'DM Mono',monospace;
+  color:#1a2e3a;
+  background:#eaf4f8;
 }
-body.theme-arctic header{background:#020c10;border-bottom:1px solid #00c8ff;box-shadow:0 0 15px rgba(0,200,255,.1);}
-body.theme-arctic .logo{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.2em;}
+
+/* Frost halos in the four corners — ::before */
+body.theme-arctic::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 55% 65% at 0% 0%,    rgba(120,200,235,0.4)  0%, transparent 60%),
+    radial-gradient(ellipse 55% 65% at 100% 0%,  rgba(120,200,235,0.4)  0%, transparent 60%),
+    radial-gradient(ellipse 60% 55% at 0% 100%,  rgba(140,210,240,0.35) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 55% at 100% 100%,rgba(140,210,240,0.35) 0%, transparent 60%);
+}
+
+/* Liquid nitrogen vapor — slow drift along bottom edge — ::after */
+body.theme-arctic::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(circle 90px at 18% 96%, rgba(190,230,248,0.7) 0%, transparent 70%),
+    radial-gradient(circle 70px at 42% 100%, rgba(200,235,250,0.6) 0%, transparent 70%),
+    radial-gradient(circle 100px at 68% 94%, rgba(180,225,245,0.65) 0%, transparent 70%),
+    radial-gradient(circle 80px at 88% 99%, rgba(195,232,248,0.6) 0%, transparent 70%);
+  background-size:100% 220%;
+  animation:nitrogenFlow 18s ease-in-out infinite;
+}
+@keyframes nitrogenFlow{
+  0%,100%{background-position:0% 100%;opacity:.65;}
+  50%    {background-position:0% 55%; opacity:1;}
+}
+
+body.theme-arctic header{
+  background:rgba(234,244,248,0.72);
+  backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  border-bottom:1px solid rgba(0,168,216,0.35);
+  box-shadow:0 1px 14px rgba(0,168,216,0.08);
+}
+body.theme-arctic .logo{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.2em;color:#1a2e3a;}
 body.theme-arctic .logo span{color:var(--red);}
-body.theme-arctic nav{border-top:1px solid #00c8ff;background:#020c10;}
-body.theme-arctic nav button{font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:.12em;}
+body.theme-arctic nav{
+  border-top:1px solid rgba(0,168,216,0.3);
+  background:rgba(234,244,248,0.85);
+  backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+}
+body.theme-arctic nav button{font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:.12em;color:#5a7a88;}
 body.theme-arctic nav button.active{border-top-color:var(--red);color:var(--red);}
-body.theme-arctic .pass-card{border-color:#0a2030;}
-body.theme-arctic .pass-card.next-up{border-color:var(--red);box-shadow:0 0 10px rgba(0,200,255,.15);}
-body.theme-arctic .pass-card.next-up::before{background:var(--red);color:#020c10;font-family:'Rajdhani',sans-serif;letter-spacing:.15em;}
+
+/* Glassmorphic pass-cards — full glass treatment when open, lighter when closed */
+body.theme-arctic .pass-card{
+  background:rgba(255,255,255,0.55);
+  border:1px solid rgba(0,168,216,0.18);
+  box-shadow:0 4px 14px rgba(0,168,216,0.08),inset 0 1px 0 rgba(255,255,255,0.5);
+}
+body.theme-arctic .pass-card.open{
+  background:rgba(255,255,255,0.62);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  box-shadow:0 6px 22px rgba(0,168,216,0.14),inset 0 1px 0 rgba(255,255,255,0.6);
+}
+body.theme-arctic .pass-card.next-up{
+  border:1px solid rgba(0,168,216,0.55);
+  box-shadow:0 0 18px rgba(0,168,216,0.22),0 4px 14px rgba(0,168,216,0.1);
+}
+body.theme-arctic .pass-card.next-up::before{
+  background:var(--red);color:#fff;font-family:'Rajdhani',sans-serif;letter-spacing:.15em;
+}
+body.theme-arctic .pass-card.in-progress::before{background:#00c8a0;color:#fff;}
+body.theme-arctic .pass-card.done{opacity:.55;}
+
 body.theme-arctic .pass-letter{font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--red);}
-body.theme-arctic .pass-name{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.1em;}
-body.theme-arctic .chain-fill{background:linear-gradient(90deg,#00c8ff,#00ffcc);}
-body.theme-arctic .chain-bar{background:#0a2030;}
-body.theme-arctic .btn-primary{background:var(--red);color:#020c10;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.15em;}
-body.theme-arctic .btn-primary:hover{background:#00a8dd;}
-body.theme-arctic .btn-primary:disabled{background:#051018;color:#0a2830;cursor:not-allowed;}
-body.theme-arctic .ex-btn-done{background:#001820;border-color:var(--red);color:var(--red);font-family:'Rajdhani',sans-serif;font-weight:600;}
-body.theme-arctic .set-input{background:#010810;border-color:#0a2030;}
-body.theme-arctic .set-input:focus{border-color:var(--red);box-shadow:0 0 6px rgba(0,200,255,.2);}
-body.theme-arctic .weight-banner{background:#010810;}
-body.theme-arctic .section-title{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.1em;}
-body.theme-arctic .auth-btn-primary{background:var(--red);color:#020c10;}
-body.theme-arctic .auth-btn-primary:hover{background:#00a8dd;color:#020c10;}
+body.theme-arctic .pass-name{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.1em;color:#1a2e3a;}
+
+body.theme-arctic .chain-fill{background:linear-gradient(90deg,#00a8d8,#00c8a0);}
+body.theme-arctic .chain-bar{background:#c8dde5;}
+
+body.theme-arctic .btn-primary{
+  background:linear-gradient(135deg,#00a8d8 0%,#0088b8 100%);
+  color:#fff;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.15em;
+  box-shadow:0 2px 10px rgba(0,168,216,0.32);border:none;
+}
+body.theme-arctic .btn-primary:hover{background:linear-gradient(135deg,#00c8e8 0%,#0099c8 100%);}
+body.theme-arctic .btn-primary:disabled{background:#c8dde5;color:#8aacb8;cursor:not-allowed;box-shadow:none;}
+
+body.theme-arctic .ex-block{background:rgba(255,255,255,0.55);border:1px solid rgba(0,168,216,0.1);}
+body.theme-arctic .ex-block.saved{background:rgba(220,240,235,0.6);}
+body.theme-arctic .ex-btn-done{background:rgba(255,255,255,0.45);border-color:var(--red);color:var(--red);font-family:'Rajdhani',sans-serif;font-weight:600;}
+body.theme-arctic .set-input{background:rgba(255,255,255,0.72);border-color:rgba(0,168,216,0.22);color:#1a2e3a;}
+body.theme-arctic .set-input:focus{border-color:var(--red);box-shadow:0 0 8px rgba(0,168,216,0.32);}
+body.theme-arctic .weight-banner{background:rgba(255,255,255,0.5);}
+body.theme-arctic .section-title{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.1em;color:#1a2e3a;}
+body.theme-arctic .auth-btn-primary{background:linear-gradient(135deg,#00a8d8 0%,#0088b8 100%);color:#fff;}
+body.theme-arctic .auth-btn-primary:hover{background:linear-gradient(135deg,#00c8e8 0%,#0099c8 100%);color:#fff;}
+body.theme-arctic .draft-notice{color:#1a8a8a;border-color:rgba(0,168,216,0.3);background:rgba(255,255,255,0.4);}
+
+/* Chain strip — frost glass tabs, cyan active */
+body.theme-arctic .chain-tab-letter{color:#5a7a88;background:rgba(0,168,216,0.06);}
+body.theme-arctic .chain-tab.adjacent .chain-tab-letter{color:#00a8d8;background:rgba(0,168,216,0.14);}
+body.theme-arctic .chain-tab.active .chain-tab-letter{color:#fff;background:rgba(0,168,216,0.85);}
+body.theme-arctic .chain-tab.done .chain-tab-letter{color:#aaccd8;background:rgba(0,168,216,0.03);}
+body.theme-arctic .chain-tab-name-full{color:#1a2e3a;background:rgba(0,168,216,0.14);}
+body.theme-arctic .chain-tab.active .chain-tab-name-full{color:#fff;background:rgba(0,168,216,0.85);}
+body.theme-arctic .chain-tab-name-short{color:rgba(26,46,58,0.7);background:rgba(0,168,216,0.08);}
+
+/* Z-index lift so content sits above frost/vapor layers */
+body.theme-arctic header,
+body.theme-arctic nav,
+body.theme-arctic #appShell,
+body.theme-arctic .auth-wrap{position:relative;z-index:2;}
 
 /* ─────────────────────────────────────────────────────────────
    4. EMBER — Industrial forge
@@ -2548,7 +2637,7 @@ body.theme-daylight .ex-done-primary.ready{background:var(--red);border-color:va
 body.theme-ember .ex-done-primary.ready{background:#c0392b;border-color:#c0392b;color:#ffe8cc;}
 body.theme-nightcity .ex-done-primary.ready{background:#c0392b;border-color:#c0392b;color:#ffe020;}
 body.theme-void .ex-done-primary.ready{background:#fff;border-color:#fff;color:#000;}
-body.theme-arctic .ex-done-primary.ready{background:var(--red);border-color:var(--red);color:#020c10;}
+body.theme-arctic .ex-done-primary.ready{background:var(--red);border-color:var(--red);color:#fff;}
 body.theme-nanosuit .ex-done-primary.ready{background:linear-gradient(135deg,#00d4ff 0%,#0099cc 100%);border-color:var(--red);color:#050810;}
 
 /* ── iOS SAFARI AUTO-ZOOM FIX ────────────────────────────────
@@ -3729,7 +3818,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.25.0';
+const APP_VERSION = '3.26.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3738,7 +3827,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.25.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.26.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -6311,10 +6400,10 @@ const THEMES = [
   {id:'iron',          name:'Iron',          cat:'dark', desc:'Dark red on black · Bebas Neue · The original',        class:''},
   {id:'nanosuit',      name:'Nanosuit',      cat:'dark', desc:'Hexagonal · Morphing cyan · Adaptive armor',           class:'theme-nanosuit'},
   {id:'nightcity',     name:'Night City',    cat:'dark', desc:'Acid yellow + magenta · Orbitron · Cyberpunk homage',  class:'theme-nightcity'},
-  {id:'arctic',        name:'Arctic Terminal · WIP',cat:'dark',desc:'Electric cyan · Rajdhani · Cold precision',            class:'theme-arctic'},
   {id:'ember',         name:'Ember',         cat:'dark', desc:'Molten orange · Rajdhani · Industrial forge',          class:'theme-ember'},
   {id:'void',          name:'Void · WIP',    cat:'dark', desc:'Pure black & white · Playfair italic · Luxury minimal',class:'theme-void'},
   // LIGHT
+  {id:'arctic',        name:'Arctic Terminal · WIP',cat:'light',desc:'Frozen lake · Liquid nitrogen · Frosted glass',  class:'theme-arctic'},
   {id:'daylight',      name:'Daylight · WIP',cat:'light', desc:'Clean white · Charcoal text · Bright sun-readable',   class:'theme-daylight'},
   {id:'crusader',      name:'Crusader · WIP',cat:'light', desc:'Weathered parchment · Blood red · Templar warrior', class:'theme-crusader'},
 ];
