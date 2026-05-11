@@ -953,72 +953,74 @@ body.theme-nightcity .auth-btn-primary:hover{background:#ffd000;color:#08010f;}
    Palette: Ice-white background, deep navy text, electric cyan accent
 ───────────────────────────────────────────────────────────── */
 body.theme-arctic{
-  --black:#eaf4f8;          /* ice-white background (semantic inversion) */
-  --white:#1a2e3a;          /* deep arctic navy text (semantic inversion) */
-  --red:#00a8d8;            /* nitrogen cyan accent */
-  --gold:#5ac8e8;           /* frost-blue highlight */
-  --green-bright:#00c8a0;   /* mint frost (success) */
-  --gray-mid:#c8dde5;       /* light frost grey */
-  --gray-light:#5a7a88;     /* medium navy */
+  --black:#eaf4f8;
+  --white:#1a2e3a;
+  --red:#00a8d8;
+  --gold:#5ac8e8;
+  --green-bright:#00c8a0;
+  --gray-mid:#c8dde5;
+  --gray-light:#5a7a88;
   --display:'Rajdhani',sans-serif;
   --sans:'Rajdhani',sans-serif;
   --mono:'DM Mono',monospace;
   color:#1a2e3a;
-  background:#eaf4f8;
+  background-color:#eaf4f8;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='49'%3E%3Cpolygon points='28,2 52,15 52,35 28,48 4,35 4,15' fill='none' stroke='rgb(0,168,216)' stroke-width='1.5' opacity='.16'/%3E%3C/svg%3E");
+  background-size:56px 49px;
 }
 
-/* Frost halos in the four corners — ::before */
+/* Strong frost halos in all four corners */
 body.theme-arctic::before{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background:
-    radial-gradient(ellipse 55% 65% at 0% 0%,    rgba(120,200,235,0.4)  0%, transparent 60%),
-    radial-gradient(ellipse 55% 65% at 100% 0%,  rgba(120,200,235,0.4)  0%, transparent 60%),
-    radial-gradient(ellipse 60% 55% at 0% 100%,  rgba(140,210,240,0.35) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 55% at 100% 100%,rgba(140,210,240,0.35) 0%, transparent 60%);
+    radial-gradient(ellipse 70% 70% at 0% 0%,    rgba(100,190,230,0.78) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 70% at 100% 0%,  rgba(100,190,230,0.78) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 65% at 0% 100%,  rgba(120,205,238,0.72) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 65% at 100% 100%,rgba(120,205,238,0.72) 0%, transparent 65%);
 }
 
-/* Liquid nitrogen vapor — slow drift along bottom edge — ::after */
+/* Liquid nitrogen mist — billows down from the top */
 body.theme-arctic::after{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  content:'';position:fixed;top:0;left:0;right:0;height:45%;
+  pointer-events:none;z-index:1;
   background:
-    radial-gradient(circle 90px at 18% 96%, rgba(190,230,248,0.7) 0%, transparent 70%),
-    radial-gradient(circle 70px at 42% 100%, rgba(200,235,250,0.6) 0%, transparent 70%),
-    radial-gradient(circle 100px at 68% 94%, rgba(180,225,245,0.65) 0%, transparent 70%),
-    radial-gradient(circle 80px at 88% 99%, rgba(195,232,248,0.6) 0%, transparent 70%);
-  background-size:100% 220%;
-  animation:nitrogenFlow 18s ease-in-out infinite;
+    radial-gradient(ellipse 55% 80% at 10% -20%, rgba(185,228,248,0.92) 0%, transparent 65%),
+    radial-gradient(ellipse 45% 70% at 52% -10%, rgba(200,235,252,0.82) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 75% at 90% -15%, rgba(190,230,250,0.88) 0%, transparent 65%);
+  animation:arcticMist 22s ease-in-out infinite;
 }
-@keyframes nitrogenFlow{
-  0%,100%{background-position:0% 100%;opacity:.65;}
-  50%    {background-position:0% 55%; opacity:1;}
+@keyframes arcticMist{
+  0%,100%{transform:translateY(0px); opacity:.70;}
+  40%    {transform:translateY(14px);opacity:.96;}
+  70%    {transform:translateY(7px); opacity:.83;}
 }
 
 body.theme-arctic header{
-  background:rgba(234,244,248,0.72);
+  background:rgba(234,244,248,0.82);
   backdrop-filter:blur(14px) saturate(140%);
   -webkit-backdrop-filter:blur(14px) saturate(140%);
   border-bottom:1px solid rgba(0,168,216,0.35);
-  box-shadow:0 1px 14px rgba(0,168,216,0.08);
+  box-shadow:0 1px 14px rgba(0,168,216,0.10);
 }
 body.theme-arctic .logo{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.2em;color:#1a2e3a;}
 body.theme-arctic .logo span{color:var(--red);}
 body.theme-arctic nav{
   border-top:1px solid rgba(0,168,216,0.3);
-  background:rgba(234,244,248,0.85);
+  background:rgba(234,244,248,0.92);
   backdrop-filter:blur(14px) saturate(140%);
   -webkit-backdrop-filter:blur(14px) saturate(140%);
 }
 body.theme-arctic nav button{font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:.12em;color:#5a7a88;}
 body.theme-arctic nav button.active{border-top-color:var(--red);color:var(--red);}
 
-/* Glassmorphic pass-cards — full glass treatment when open, lighter when closed */
+/* Pass cards — glassmorphic */
 body.theme-arctic .pass-card{
   background:rgba(255,255,255,0.55);
   border:1px solid rgba(0,168,216,0.18);
   box-shadow:0 4px 14px rgba(0,168,216,0.08),inset 0 1px 0 rgba(255,255,255,0.5);
 }
 body.theme-arctic .pass-card.open{
-  background:rgba(255,255,255,0.62);
+  background:rgba(255,255,255,0.65);
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
   box-shadow:0 6px 22px rgba(0,168,216,0.14),inset 0 1px 0 rgba(255,255,255,0.6);
@@ -1027,9 +1029,7 @@ body.theme-arctic .pass-card.next-up{
   border:1px solid rgba(0,168,216,0.55);
   box-shadow:0 0 18px rgba(0,168,216,0.22),0 4px 14px rgba(0,168,216,0.1);
 }
-body.theme-arctic .pass-card.next-up::before{
-  background:var(--red);color:#fff;font-family:'Rajdhani',sans-serif;letter-spacing:.15em;
-}
+body.theme-arctic .pass-card.next-up::before{background:var(--red);color:#fff;font-family:'Rajdhani',sans-serif;letter-spacing:.15em;}
 body.theme-arctic .pass-card.in-progress::before{background:#00c8a0;color:#fff;}
 body.theme-arctic .pass-card.done{opacity:.55;}
 
@@ -1050,26 +1050,29 @@ body.theme-arctic .btn-primary:disabled{background:#c8dde5;color:#8aacb8;cursor:
 body.theme-arctic .ex-block{background:rgba(255,255,255,0.55);border:1px solid rgba(0,168,216,0.1);}
 body.theme-arctic .ex-block.saved{background:rgba(220,240,235,0.6);}
 body.theme-arctic .ex-btn-done{background:rgba(255,255,255,0.45);border-color:var(--red);color:var(--red);font-family:'Rajdhani',sans-serif;font-weight:600;}
-body.theme-arctic .set-input{background:rgba(255,255,255,0.72);border-color:rgba(0,168,216,0.22);color:#1a2e3a;}
+body.theme-arctic .set-input{background:rgba(255,255,255,0.75);border-color:rgba(0,168,216,0.22);color:#1a2e3a;}
 body.theme-arctic .set-input:focus{border-color:var(--red);box-shadow:0 0 8px rgba(0,168,216,0.32);}
-body.theme-arctic .weight-banner{background:rgba(255,255,255,0.5);}
+body.theme-arctic .weight-banner{background:rgba(225,242,250,0.78);}
+body.theme-arctic .weight-input{background:rgba(255,255,255,0.82);border-color:rgba(0,168,216,0.3);color:#1a2e3a;}
+body.theme-arctic .weight-input:focus{border-color:var(--red);}
+body.theme-arctic .weight-log-btn{border-color:rgba(0,168,216,0.3);color:#5a7a88;}
 body.theme-arctic .section-title{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.1em;color:#1a2e3a;}
 body.theme-arctic .auth-btn-primary{background:linear-gradient(135deg,#00a8d8 0%,#0088b8 100%);color:#fff;}
 body.theme-arctic .auth-btn-primary:hover{background:linear-gradient(135deg,#00c8e8 0%,#0099c8 100%);color:#fff;}
 body.theme-arctic .draft-notice{color:#1a8a8a;border-color:rgba(0,168,216,0.3);background:rgba(255,255,255,0.4);}
 
-/* Chain strip — frost glass tabs, cyan active */
-body.theme-arctic .chain-tab-letter{color:#5a7a88;background:rgba(0,168,216,0.06);}
-body.theme-arctic .chain-tab.adjacent .chain-tab-letter{color:#00a8d8;background:rgba(0,168,216,0.14);}
-body.theme-arctic .chain-tab.active .chain-tab-letter{color:#fff;background:rgba(0,168,216,0.85);}
-body.theme-arctic .chain-tab.done .chain-tab-letter{color:#aaccd8;background:rgba(0,168,216,0.03);}
-body.theme-arctic .chain-tab-name-full{color:#1a2e3a;background:rgba(0,168,216,0.14);}
-body.theme-arctic .chain-tab.active .chain-tab-name-full{color:#fff;background:rgba(0,168,216,0.85);}
-body.theme-arctic .chain-tab-name-short{color:rgba(26,46,58,0.7);background:rgba(0,168,216,0.08);}
+/* Chain strip — frosted ice hexagons */
+body.theme-arctic .chain-tab-letter{color:#5a7a88;background:rgba(180,220,240,0.58);}
+body.theme-arctic .chain-tab.adjacent .chain-tab-letter{color:#00a8d8;background:rgba(160,210,235,0.72);}
+body.theme-arctic .chain-tab.active .chain-tab-letter{color:#fff;background:rgba(0,168,216,0.88);box-shadow:0 0 10px rgba(0,168,216,0.4);}
+body.theme-arctic .chain-tab.done .chain-tab-letter{color:#aaccd8;background:rgba(200,230,245,0.35);}
+body.theme-arctic .chain-tab-name-full{color:#1a2e3a;background:rgba(160,210,235,0.72);}
+body.theme-arctic .chain-tab.active .chain-tab-name-full{color:#fff;background:rgba(0,168,216,0.88);}
+body.theme-arctic .chain-tab-name-short{color:rgba(26,46,58,0.75);background:rgba(180,220,240,0.52);}
+body.theme-arctic .chain-tab.adjacent .chain-tab-name-short{color:rgba(26,46,58,0.75);background:rgba(160,210,235,0.62);}
 
-/* Z-index lift so content sits above frost/vapor layers */
+/* Z-index: content above frost layers, nav keeps its fixed position */
 body.theme-arctic header,
-body.theme-arctic nav,
 body.theme-arctic #appShell,
 body.theme-arctic .auth-wrap{position:relative;z-index:2;}
 
@@ -3818,7 +3821,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.26.0';
+const APP_VERSION = '3.26.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3827,7 +3830,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.26.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.26.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
