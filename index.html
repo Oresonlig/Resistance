@@ -969,38 +969,38 @@ body.theme-arctic{
   background-size:60px 70px;
 }
 
-/* Strong frost halos in all four corners — blend over all content */
+/* Strong frost halos in all four corners — behind content, shows through glass cards */
 body.theme-arctic::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;mix-blend-mode:multiply;
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background:
-    radial-gradient(ellipse 70% 70% at 0% 0%,    rgba(100,190,230,0.78) 0%, transparent 65%),
-    radial-gradient(ellipse 70% 70% at 100% 0%,  rgba(100,190,230,0.78) 0%, transparent 65%),
-    radial-gradient(ellipse 65% 65% at 0% 100%,  rgba(120,205,238,0.72) 0%, transparent 65%),
-    radial-gradient(ellipse 65% 65% at 100% 100%,rgba(120,205,238,0.72) 0%, transparent 65%);
+    radial-gradient(ellipse 70% 70% at 0% 0%,    rgba(80,175,218,0.85) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 70% at 100% 0%,  rgba(80,175,218,0.85) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 65% at 0% 100%,  rgba(100,192,232,0.80) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 65% at 100% 100%,rgba(100,192,232,0.80) 0%, transparent 65%);
 }
 
 /* Liquid nitrogen mist — billows down from the top */
 body.theme-arctic::after{
-  content:'';position:fixed;top:0;left:0;right:0;height:45%;
-  pointer-events:none;z-index:9998;mix-blend-mode:multiply;
+  content:'';position:fixed;top:0;left:0;right:0;height:55%;
+  pointer-events:none;z-index:0;
   background:
-    radial-gradient(ellipse 55% 80% at 10% -20%, rgba(120,192,228,0.60) 0%, transparent 65%),
-    radial-gradient(ellipse 45% 70% at 52% -10%, rgba(140,205,240,0.55) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 75% at 90% -15%, rgba(130,198,235,0.58) 0%, transparent 65%);
-  animation:arcticMist 22s ease-in-out infinite;
+    radial-gradient(ellipse 60% 90% at 15% 5%,  rgba(100,178,218,0.88) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 80% at 50% 0%,  rgba(130,200,238,0.82) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 85% at 85% 5%,  rgba(110,188,228,0.85) 0%, transparent 65%);
+  animation:arcticMist 18s ease-in-out infinite;
 }
 @keyframes arcticMist{
-  0%,100%{transform:translateY(0px); opacity:.70;}
-  40%    {transform:translateY(14px);opacity:.96;}
-  70%    {transform:translateY(7px); opacity:.83;}
+  0%  {transform:translateY(0px);  opacity:.48;}
+  35% {transform:translateY(55px); opacity:.92;}
+  65% {transform:translateY(28px); opacity:.72;}
+  100%{transform:translateY(0px);  opacity:.48;}
 }
 
 /* Cracked ice banner behind "The Chain" title */
 body.theme-arctic .chain-intro{
   background:
-    linear-gradient(135deg, rgba(150,208,234,0.60) 0%, rgba(220,242,252,0.40) 50%, rgba(150,208,234,0.55) 100%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='120'%3E%3Cpath d='M60,10 L95,38 L80,70 L110,55 L145,80 L130,110' fill='none' stroke='rgba(0,168,216,0.55)' stroke-width='1.5'/%3E%3Cpath d='M200,0 L185,30 L210,50 L190,85 L220,100' fill='none' stroke='rgba(0,148,200,0.45)' stroke-width='1.2'/%3E%3Cpath d='M310,15 L340,40 L320,65 L355,85 L370,115' fill='none' stroke='rgba(0,168,216,0.50)' stroke-width='1.5'/%3E%3Cpath d='M40,60 L75,45 L100,70 L140,50' fill='none' stroke='rgba(0,128,180,0.38)' stroke-width='1'/%3E%3Cpath d='M240,20 L265,55 L245,80 L280,105' fill='none' stroke='rgba(0,168,216,0.42)' stroke-width='1.2'/%3E%3Cpath d='M0,40 L30,25 L55,50 L25,75 L50,100' fill='none' stroke='rgba(0,148,200,0.40)' stroke-width='1'/%3E%3Cpath d='M150,5 L165,35 L145,55 L175,75 L160,110' fill='none' stroke='rgba(0,168,216,0.35)' stroke-width='1'/%3E%3Cpath d='M280,30 L310,15 L325,50 L300,70' fill='none' stroke='rgba(0,128,180,0.40)' stroke-width='1.2'/%3E%3Cpath d='M380,5 L365,40 L390,60 L375,90 L400,110' fill='none' stroke='rgba(0,168,216,0.45)' stroke-width='1.5'/%3E%3C/svg%3E");
-  background-size:auto, 400px 120px;
+    linear-gradient(135deg, rgba(150,208,234,0.60) 0%, rgba(220,242,252,0.30) 50%, rgba(150,208,234,0.55) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='120'%3E%3Cpath d='M60,10 L95,38 L80,70 L110,55 L145,80 L130,110' fill='none' stroke='%2300a8d8' stroke-opacity='0.55' stroke-width='1.5'/%3E%3Cpath d='M200,0 L185,30 L210,50 L190,85 L220,100' fill='none' stroke='%230090c0' stroke-opacity='0.45' stroke-width='1.2'/%3E%3Cpath d='M310,15 L340,40 L320,65 L355,85 L370,115' fill='none' stroke='%2300a8d8' stroke-opacity='0.50' stroke-width='1.5'/%3E%3Cpath d='M40,60 L75,45 L100,70 L140,50' fill='none' stroke='%230078b0' stroke-opacity='0.38' stroke-width='1'/%3E%3Cpath d='M240,20 L265,55 L245,80 L280,105' fill='none' stroke='%2300a8d8' stroke-opacity='0.42' stroke-width='1.2'/%3E%3Cpath d='M0,40 L30,25 L55,50 L25,75 L50,100' fill='none' stroke='%230090c0' stroke-opacity='0.40' stroke-width='1'/%3E%3Cpath d='M150,5 L165,35 L145,55 L175,75 L160,110' fill='none' stroke='%2300a8d8' stroke-opacity='0.35' stroke-width='1'/%3E%3Cpath d='M280,30 L310,15 L325,50 L300,70' fill='none' stroke='%230078b0' stroke-opacity='0.40' stroke-width='1.2'/%3E%3Cpath d='M380,5 L365,40 L390,60 L375,90 L400,110' fill='none' stroke='%2300a8d8' stroke-opacity='0.45' stroke-width='1.5'/%3E%3C/svg%3E") 0 0/cover no-repeat;
   border:1px solid rgba(0,168,216,0.30);
   box-shadow:0 2px 16px rgba(0,168,216,0.15),inset 0 1px 0 rgba(255,255,255,0.6);
 }
@@ -3830,7 +3830,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.26.2';
+const APP_VERSION = '3.26.3';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3839,7 +3839,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.26.2',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.26.3',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -6447,12 +6447,12 @@ function renderData(){
   el.innerHTML=`<div class="section-title">Settings</div>
   <div style="font-family:var(--mono);font-size:.58rem;color:#444;margin-bottom:18px">Supabase · ${currentUser?.name} · ${size} KB · ${state.log.length} sessions</div>
   <div class="section-sub">Rest Timer</div>
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border:1px solid #2a2a2a;padding:10px 12px;margin-bottom:10px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border:1px solid var(--gray-mid);padding:10px 12px;margin-bottom:10px;">
     <div>
       <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);margin-bottom:2px;">Rest Timer</div>
-      <div style="font-family:var(--mono);font-size:.5rem;color:#888;">Counts down after each Done. Slide-up popup.</div>
+      <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);">Counts down after each Done. Slide-up popup.</div>
     </div>
-    <button onclick="state.timerEnabled=!state.timerEnabled;save();renderData();" style="background:${state.timerEnabled?'var(--green-bright)':'#1a1a1a'};border:1px solid ${state.timerEnabled?'var(--green-bright)':'#444'};color:${state.timerEnabled?'var(--black)':'#888'};font-family:var(--mono);font-size:.54rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:all .2s;">${state.timerEnabled?'ON':'OFF'}</button>
+    <button onclick="state.timerEnabled=!state.timerEnabled;save();renderData();" style="background:${state.timerEnabled?'var(--green-bright)':'var(--gray-mid)'};border:1px solid ${state.timerEnabled?'var(--green-bright)':'var(--gray-mid)'};color:${state.timerEnabled?'var(--black)':'var(--gray-light)'};font-family:var(--mono);font-size:.54rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:all .2s;">${state.timerEnabled?'ON':'OFF'}</button>
   </div>
   <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);margin-bottom:8px;">Rest duration</div>
   <div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;">${[60,90,120,180,240,300].map(s=>`<button onclick="state.timerDefault=${s};save();renderData();" style="background:${state.timerDefault===s?'var(--red)':'none'};border:1px solid ${state.timerDefault===s?'var(--red)':'#444'};color:${state.timerDefault===s?'var(--white)':'#888'};font-family:var(--mono);font-size:.5rem;padding:6px 10px;cursor:pointer;transition:all .15s;">${s<60?s+'s':Math.floor(s/60)+(s%60?':'+String(s%60).padStart(2,'0'):'')+' min'}</button>`).join('')}</div>
@@ -6513,23 +6513,23 @@ function renderData(){
     }).join('')}
   </div>
   <div class="section-sub">Sync Status</div>
-  <div id="sync-status-card" style="border:1px solid #2a2a2a;padding:12px 14px;margin-bottom:18px;font-family:var(--mono);font-size:.55rem;color:#888;line-height:1.9;">
+  <div id="sync-status-card" style="border:1px solid var(--gray-mid);padding:12px 14px;margin-bottom:18px;font-family:var(--mono);font-size:.55rem;color:var(--gray-light);line-height:1.9;">
     <div>App version: <span style="color:var(--white);">${APP_VERSION}</span></div>
-    <div id="sync-cloud-version">Cloud version: <span style="color:#666;">checking…</span></div>
-    <div>Last sync (read): <span id="sync-read-time" style="color:#aaa;">${formatSyncAgo(lastSyncRead)}</span></div>
-    <div>Last sync (write): <span id="sync-write-time" style="color:#aaa;">${formatSyncAgo(lastSyncWrite)}</span></div>
+    <div id="sync-cloud-version">Cloud version: <span style="color:var(--gray-light);">checking…</span></div>
+    <div>Last sync (read): <span id="sync-read-time" style="color:var(--gray-light);">${formatSyncAgo(lastSyncRead)}</span></div>
+    <div>Last sync (write): <span id="sync-write-time" style="color:var(--gray-light);">${formatSyncAgo(lastSyncWrite)}</span></div>
     <div style="display:flex;gap:6px;margin-top:8px;">
-      <button onclick="manualSyncNow()" style="background:none;border:1px solid #444;color:#aaa;font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;">Sync Now</button>
+      <button onclick="manualSyncNow()" style="background:none;border:1px solid var(--gray-mid);color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;">Sync Now</button>
     </div>
   </div>
 
   <div class="section-sub">Training Settings</div>
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;margin-bottom:8px;border-bottom:1px solid #1e1e1e;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;margin-bottom:8px;border-bottom:1px solid var(--gray-mid);">
     <div>
       <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);">Weight step</div>
-      <div style="font-family:var(--mono);font-size:.5rem;color:#666;margin-top:2px;">Used by +/− steppers on set inputs</div>
+      <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);margin-top:2px;">Used by +/− steppers on set inputs</div>
     </div>
-    <select onchange="state.weightStep=parseFloat(this.value);save();" style="background:#111;border:1px solid #2a2a2a;color:var(--white);font-family:var(--mono);font-size:.7rem;padding:6px 10px;cursor:pointer;">
+    <select onchange="state.weightStep=parseFloat(this.value);save();" style="background:var(--black);border:1px solid var(--gray-mid);color:var(--white);font-family:var(--mono);font-size:.7rem;padding:6px 10px;cursor:pointer;">
       <option value="1.25" ${(state.weightStep||2.5)===1.25?"selected":""}>1.25 kg</option>
       <option value="2.5"  ${(state.weightStep||2.5)===2.5?"selected":""}>2.5 kg</option>
       <option value="5"    ${(state.weightStep||2.5)===5?"selected":""}>5 kg</option>
