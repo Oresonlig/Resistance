@@ -965,13 +965,13 @@ body.theme-arctic{
   --mono:'DM Mono',monospace;
   color:#1a2e3a;
   background-color:#eaf4f8;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='49'%3E%3Cpolygon points='28,2 52,15 52,35 28,48 4,35 4,15' fill='none' stroke='rgb(0,168,216)' stroke-width='1.5' opacity='.16'/%3E%3C/svg%3E");
-  background-size:56px 49px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='70'%3E%3Cpolygon points='0,17.5 10,0 30,0 40,17.5 30,35 10,35' fill='none' stroke='rgb(0,168,216)' stroke-width='1.5' opacity='.18'/%3E%3Cpolygon points='20,52.5 30,35 50,35 60,52.5 50,70 30,70' fill='none' stroke='rgb(0,168,216)' stroke-width='1.5' opacity='.18'/%3E%3C/svg%3E");
+  background-size:60px 70px;
 }
 
-/* Strong frost halos in all four corners */
+/* Strong frost halos in all four corners — blend over all content */
 body.theme-arctic::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;mix-blend-mode:multiply;
   background:
     radial-gradient(ellipse 70% 70% at 0% 0%,    rgba(100,190,230,0.78) 0%, transparent 65%),
     radial-gradient(ellipse 70% 70% at 100% 0%,  rgba(100,190,230,0.78) 0%, transparent 65%),
@@ -982,17 +982,27 @@ body.theme-arctic::before{
 /* Liquid nitrogen mist — billows down from the top */
 body.theme-arctic::after{
   content:'';position:fixed;top:0;left:0;right:0;height:45%;
-  pointer-events:none;z-index:1;
+  pointer-events:none;z-index:9998;mix-blend-mode:multiply;
   background:
-    radial-gradient(ellipse 55% 80% at 10% -20%, rgba(185,228,248,0.92) 0%, transparent 65%),
-    radial-gradient(ellipse 45% 70% at 52% -10%, rgba(200,235,252,0.82) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 75% at 90% -15%, rgba(190,230,250,0.88) 0%, transparent 65%);
+    radial-gradient(ellipse 55% 80% at 10% -20%, rgba(120,192,228,0.60) 0%, transparent 65%),
+    radial-gradient(ellipse 45% 70% at 52% -10%, rgba(140,205,240,0.55) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 75% at 90% -15%, rgba(130,198,235,0.58) 0%, transparent 65%);
   animation:arcticMist 22s ease-in-out infinite;
 }
 @keyframes arcticMist{
   0%,100%{transform:translateY(0px); opacity:.70;}
   40%    {transform:translateY(14px);opacity:.96;}
   70%    {transform:translateY(7px); opacity:.83;}
+}
+
+/* Cracked ice banner behind "The Chain" title */
+body.theme-arctic .chain-intro{
+  background:
+    linear-gradient(135deg, rgba(150,208,234,0.60) 0%, rgba(220,242,252,0.40) 50%, rgba(150,208,234,0.55) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='120'%3E%3Cpath d='M60,10 L95,38 L80,70 L110,55 L145,80 L130,110' fill='none' stroke='rgba(0,168,216,0.55)' stroke-width='1.5'/%3E%3Cpath d='M200,0 L185,30 L210,50 L190,85 L220,100' fill='none' stroke='rgba(0,148,200,0.45)' stroke-width='1.2'/%3E%3Cpath d='M310,15 L340,40 L320,65 L355,85 L370,115' fill='none' stroke='rgba(0,168,216,0.50)' stroke-width='1.5'/%3E%3Cpath d='M40,60 L75,45 L100,70 L140,50' fill='none' stroke='rgba(0,128,180,0.38)' stroke-width='1'/%3E%3Cpath d='M240,20 L265,55 L245,80 L280,105' fill='none' stroke='rgba(0,168,216,0.42)' stroke-width='1.2'/%3E%3Cpath d='M0,40 L30,25 L55,50 L25,75 L50,100' fill='none' stroke='rgba(0,148,200,0.40)' stroke-width='1'/%3E%3Cpath d='M150,5 L165,35 L145,55 L175,75 L160,110' fill='none' stroke='rgba(0,168,216,0.35)' stroke-width='1'/%3E%3Cpath d='M280,30 L310,15 L325,50 L300,70' fill='none' stroke='rgba(0,128,180,0.40)' stroke-width='1.2'/%3E%3Cpath d='M380,5 L365,40 L390,60 L375,90 L400,110' fill='none' stroke='rgba(0,168,216,0.45)' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-size:auto, 400px 120px;
+  border:1px solid rgba(0,168,216,0.30);
+  box-shadow:0 2px 16px rgba(0,168,216,0.15),inset 0 1px 0 rgba(255,255,255,0.6);
 }
 
 body.theme-arctic header{
@@ -1011,7 +1021,7 @@ body.theme-arctic nav{
   -webkit-backdrop-filter:blur(14px) saturate(140%);
 }
 body.theme-arctic nav button{font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:.12em;color:#5a7a88;}
-body.theme-arctic nav button.active{border-top-color:var(--red);color:var(--red);}
+body.theme-arctic nav button.active{background:rgba(0,168,216,0.14);color:var(--red);border-top-color:var(--red);}
 
 /* Pass cards — glassmorphic */
 body.theme-arctic .pass-card{
@@ -1071,9 +1081,8 @@ body.theme-arctic .chain-tab.active .chain-tab-name-full{color:#fff;background:r
 body.theme-arctic .chain-tab-name-short{color:rgba(26,46,58,0.75);background:rgba(180,220,240,0.52);}
 body.theme-arctic .chain-tab.adjacent .chain-tab-name-short{color:rgba(26,46,58,0.75);background:rgba(160,210,235,0.62);}
 
-/* Z-index: content above frost layers, nav keeps its fixed position */
+/* Z-index: header and auth above frost layers */
 body.theme-arctic header,
-body.theme-arctic #appShell,
 body.theme-arctic .auth-wrap{position:relative;z-index:2;}
 
 /* ─────────────────────────────────────────────────────────────
@@ -3821,7 +3830,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.26.1';
+const APP_VERSION = '3.26.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3830,7 +3839,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.26.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.26.2',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
