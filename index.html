@@ -293,6 +293,8 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .stat-desc{font-family:var(--mono);font-size:.46rem;color:var(--gray-light);text-transform:uppercase;letter-spacing:.07em;margin-top:3px;}
 .pr-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;}
 .pr-card{border:1px solid #2c2c2c;padding:9px 11px;position:relative;overflow:hidden;}
+.pr-delete{position:absolute;top:4px;right:4px;background:none;border:1px solid transparent;color:#444;cursor:pointer;font-size:.7rem;width:22px;height:22px;line-height:1;padding:0;transition:all .15s;}
+.pr-delete:hover{color:#884444;border-color:#3a1a1a;}
 .pr-card::before{content:'PR';position:absolute;top:0;right:0;background:#1a1400;color:var(--gold);font-family:var(--mono);font-size:.42rem;letter-spacing:.12em;padding:2px 5px;}
 .pr-ex-name{font-size:.72rem;font-weight:500;margin-bottom:2px;margin-right:18px;}
 .pr-value{font-family:var(--display);font-size:1.4rem;color:var(--gold);line-height:1;}
@@ -314,8 +316,8 @@ canvas#weightChart{width:100%!important;display:block;}
 .wlog-row{font-family:var(--mono);font-size:.61rem;padding:6px 0;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;color:var(--gray-light);}
 .wlog-row:last-child{border-bottom:none;}
 .wlog-row strong{color:var(--white);font-size:.74rem;}
-.wlog-delete{background:none;border:none;color:#555;cursor:pointer;font-size:.72rem;padding:0 2px;transition:color .15s;}
-.wlog-delete:hover{color:var(--red);}
+.wlog-delete{background:none;border:1px solid #3a1a1a;color:#884444;cursor:pointer;font-family:var(--mono);font-size:.5rem;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;transition:all .15s;}
+.wlog-delete:hover{border-color:var(--red);color:var(--red);}
 .data-row{display:flex;gap:6px;margin-top:10px;}
 .data-btn{flex:1;background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;transition:all .15s;}
 .data-btn:hover{border-color:#555;color:var(--white);}
@@ -3466,6 +3468,9 @@ function ensureStateDefaults(){
   if(!state.exerciseOrder || typeof state.exerciseOrder !== 'object') state.exerciseOrder = {};
   if(!state.appVersion) state.appVersion = APP_VERSION;
   if(!state.migrations) state.migrations = {};
+  if(!state.lastSessionSetCount || typeof state.lastSessionSetCount !== 'object') state.lastSessionSetCount = {};
+  if(!state.lastSessionNotes || typeof state.lastSessionNotes !== 'object') state.lastSessionNotes = {};
+  if(!Array.isArray(state.ignoredPRs)) state.ignoredPRs = [];
 }
 
 // Default state for a fresh user
@@ -3825,7 +3830,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.27.1';
+const APP_VERSION = '3.28.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3834,7 +3839,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.27.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.28.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -4369,11 +4374,15 @@ function buildPassBodyHTML(pass,cycle,nextId){
         }
 
         const existingNote = state.exerciseNotes?.[ex.id]||'';
+        const lastNote = !existingNote ? (state.lastSessionNotes?.[ex.id]||'') : '';
         const escapedNote = escapeHTML(existingNote);
+        const escapedLastNote = escapeHTML(lastNote);
         const noteBanner = !isDone
           ? existingNote
             ? `<div class="ex-note-banner" onclick="toggleNote('${ex.id}')" title="Tap to edit">📝 ${escapedNote}</div>`
-            : `<div class="ex-note-add" onclick="toggleNote('${ex.id}')">+ note</div>`
+            : lastNote
+              ? `<div class="ex-note-banner" onclick="toggleNote('${ex.id}')" title="Tap to edit" style="opacity:.72;">📝 From last session: ${escapedLastNote}</div>`
+              : `<div class="ex-note-add" onclick="toggleNote('${ex.id}')">+ note</div>`
           : existingNote
             ? `<div class="ex-note-banner done-note">📝 ${escapedNote}</div>` : '';
         html+=`<div class="${'ex-block'+(isSkipped?' skipped':'')+(isSaved?' saved':'')}" id="exblock-${ex.id}">`;
@@ -5154,7 +5163,21 @@ async function obImportFromOnboarding(e){
   }
 }
 
-function finishOnboarding(){
+async function finishOnboarding(){
+  // Safety-net: if state already has real training data, confirm before
+  // overwriting chain. Triggered if onboarding somehow runs on existing state.
+  if(!isFreshState(state)){
+    const ok = await askModalConfirm('Replace your chain?',
+      'You already have training data. Continuing will replace your chain structure with a new generated one. Your training logs and custom exercises are kept, but session order, names, swaps and added/removed exercises will be reset.',
+      {confirmLabel:'Replace chain', danger:true});
+    if(!ok){
+      // User cancelled — close onboarding without changes
+      const el=document.getElementById('view-chain');
+      if(el) el.innerHTML='';
+      renderChain();
+      return;
+    }
+  }
   const a = obAnswers;
   state.unit = a.unit || 'kg';
   state.timerEnabled = !!a.timerEnabled;
@@ -5941,6 +5964,24 @@ function finishSession(passId){
   const exercises=[];
   pass.exercises.forEach(ex=>{const d=draft.savedExercises[ex.id];if(d)exercises.push(d);});
   Object.keys(draft.savedExercises).filter(k=>k.startsWith('extra_'+passId+'_')).forEach(extraId=>{const d=draft.savedExercises[extraId];if(d)exercises.push(d);});
+  // Propagate work-set count + carry notes one session forward, attach notes to log entry
+  if(!state.lastSessionSetCount) state.lastSessionSetCount={};
+  if(!state.lastSessionNotes) state.lastSessionNotes={};
+  exercises.forEach(ex=>{
+    if(!ex.skipped && Array.isArray(ex.sets)){
+      const workCount=ex.sets.filter(s=>!s.warmup).length;
+      if(workCount>0) state.lastSessionSetCount[ex.id]=workCount;
+    }
+    const note=state.exerciseNotes?.[ex.id];
+    if(note){
+      ex.note=note; // freeze note in log entry for history
+      state.lastSessionNotes[ex.id]=note;
+      delete state.exerciseNotes[ex.id];
+    } else if(state.lastSessionNotes[ex.id]){
+      // Previous-session note was shown but not refreshed — drop it after this session
+      delete state.lastSessionNotes[ex.id];
+    }
+  });
   const today=new Date().toLocaleDateString('en-GB',{month:'short',day:'numeric'});
   curCycle().done[passId]={date:today,exercises};
   state.log.push({passId,passName:pass.name,timestamp:Date.now(),exercises});
@@ -5953,9 +5994,18 @@ function getDefaultSets(ex){
   const ovr=state.exerciseTagOverrides?.[ex.id];
   const r=ovr?!!ovr.ramp:!!ex.ramp;
   const b=ovr?!!ovr.bw:!!ex.bw;
-  if(r) return [{warmup:false},{warmup:false},{warmup:false}];
-  if(b) return [{warmup:false}];
-  return [{warmup:true},{warmup:true},{warmup:false}];
+  // Carry forward work-set count from last completed session (cap 8 for sanity)
+  const lastWork=Math.min(state.lastSessionSetCount?.[ex.id]||0,8);
+  if(r){
+    const n=lastWork||3;
+    return Array.from({length:n},()=>({warmup:false}));
+  }
+  if(b){
+    const n=lastWork||1;
+    return Array.from({length:n},()=>({warmup:false}));
+  }
+  const n=lastWork||1;
+  return [{warmup:true},{warmup:true},...Array.from({length:n},()=>({warmup:false}))];
 }
 function ensureExtraSets(exId, passId){
   ensureDraft(passId);
@@ -6337,7 +6387,21 @@ function getAllPRs(){
   for(const pr of (state.importedPRs||[])){
     if(!loggedNames.has(pr.name.toLowerCase())) prs['imp_'+pr.name]=pr;
   }
-  return Object.values(prs);
+  // Filter out user-ignored PRs (matched by name, case-insensitive)
+  const ignored=new Set((state.ignoredPRs||[]).map(n=>n.toLowerCase()));
+  return Object.values(prs).filter(p=>!ignored.has(p.name.toLowerCase()));
+}
+
+async function ignorePR(name){
+  const ok=await askModalConfirm('Remove PR?',
+    `<strong>${escapeHTML(name)}</strong> will no longer show as a personal record. Future PRs from training are unaffected — you can re-show it later by clearing ignoredPRs.`,
+    {confirmLabel:'Remove', danger:true});
+  if(!ok) return;
+  if(!state.ignoredPRs) state.ignoredPRs=[];
+  if(!state.ignoredPRs.includes(name)) state.ignoredPRs.push(name);
+  save();
+  renderProgress();
+  showToast('PR removed');
 }
 
 // ── PROGRESS ──────────────────────────────────────────────────
@@ -6347,7 +6411,7 @@ function renderProgress(){
   const last=state.log[state.log.length-1];const days=Math.floor((Date.now()-last.timestamp)/86400000);
   let html=`<div class="section-title">Progress</div><div class="stats-grid"><div class="stat-box"><div class="stat-num">${state.log.length}</div><div class="stat-desc">Sessions</div></div><div class="stat-box"><div class="stat-num">${state.cycles.length}</div><div class="stat-desc">Rounds</div></div><div class="stat-box"><div class="stat-num">${days}d</div><div class="stat-desc">Since last</div></div></div>`;
   const prs=getAllPRs();
-  if(prs.length){html+=`<div class="section-sub">★ Personal Records</div><div class="pr-grid">`;prs.forEach(pr=>{const val=pr.bw?`BW+${toDisplay(pr.extra)||0}${unitLabel()}`:`${toDisplay(pr.weight)}${unitLabel()}`;const sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${unitLabel()} · ${pr.reps||'?'}r`:`${pr.reps||'?'} reps`;html+=`<div class="pr-card"><div class="pr-ex-name">${escapeHTML(pr.name)}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;});html+=`</div>`;}
+  if(prs.length){html+=`<div class="section-sub">★ Personal Records</div><div class="pr-grid">`;prs.forEach(pr=>{const val=pr.bw?`BW+${toDisplay(pr.extra)||0}${unitLabel()}`:`${toDisplay(pr.weight)}${unitLabel()}`;const sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${unitLabel()} · ${pr.reps||'?'}r`:`${pr.reps||'?'} reps`;const safeName=escapeHTML(pr.name);const jsName=JSON.stringify(pr.name);html+=`<div class="pr-card"><button class="pr-delete" onclick="ignorePR(${escapeHTML(jsName)})" title="Remove this PR" aria-label="Remove ${safeName}">✕</button><div class="pr-ex-name">${safeName}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;});html+=`</div>`;}
   html+=`<div class="section-sub">History</div>`;
   [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW(${toDisplay(s.bwSnap)||0})+${toDisplay(s.extra)||0}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
   el.innerHTML=html;
@@ -6362,7 +6426,7 @@ function renderWeight(){
   const latestDisp=toDisplay(latest.weight);const firstDisp=toDisplay(first.weight);
   const diff=(latestDisp-firstDisp).toFixed(1);
   let html=`<div class="section-title">Weight Curve</div><div class="stats-grid"><div class="stat-box"><div class="stat-num">${latestDisp}</div><div class="stat-desc">Latest (${unitLabel()})</div></div><div class="stat-box"><div class="stat-num">${diff>0?'+':''}${diff}</div><div class="stat-desc">Change (${unitLabel()})</div></div><div class="stat-box"><div class="stat-num">${sorted.length}</div><div class="stat-desc">Entries</div></div></div><div class="weight-chart-wrap"><canvas id="weightChart" height="190"></canvas></div><div class="section-sub">Log</div><div class="wlog-list">`;
-  [...sorted].reverse().forEach(e=>{html+=`<div class="wlog-row"><span>${e.date}</span><strong>${toDisplay(e.weight)} ${unitLabel()}</strong><button class="wlog-delete" onclick="deleteWeight('${e.date}')">✕</button></div>`;});
+  [...sorted].reverse().forEach(e=>{html+=`<div class="wlog-row"><span>${e.date}</span><strong>${toDisplay(e.weight)} ${unitLabel()}</strong><button class="wlog-delete" onclick="deleteWeight('${e.date}')">Delete</button></div>`;});
   html+=`</div>`;el.innerHTML=html;
   drawChart(sorted.map(e=>({...e,weight:toDisplay(e.weight)})));
 }
