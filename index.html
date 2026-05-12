@@ -3162,11 +3162,15 @@ body.theme-ember .set-logged-indicator{border-color:#5a7a2a;color:#a0cc40;}
 .ex-note-add:hover{color:#888;}
 
 </style>
+<script>
+  window.SB_CFG = {
+    url: 'https://qjmjqideqrgozexudaqr.supabase.co',
+    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbWpxaWRlcXJnb3pleHVkYXFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwOTIwODQsImV4cCI6MjA5MTY2ODA4NH0.byRwDswpbfMWDoln4n7Opp0ntrNis_du4EnLVMFuIp8'
+  };
+</script>
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-  const SB_URL = 'https://qjmjqideqrgozexudaqr.supabase.co'
-  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbWpxaWRlcXJnb3pleHVkYXFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwOTIwODQsImV4cCI6MjA5MTY2ODA4NH0.byRwDswpbfMWDoln4n7Opp0ntrNis_du4EnLVMFuIp8'
-  window.sb = createClient(SB_URL, SB_KEY, {
+  window.sb = createClient(window.SB_CFG.url, window.SB_CFG.key, {
     auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
   })
   // Notify the rest of the app once client is ready
@@ -3255,8 +3259,8 @@ body.theme-ember .set-logged-indicator{border-color:#5a7a2a;color:#a0cc40;}
 <!-- rest timer injected dynamically -->
 <script>
 
-const SB_URL='https://qjmjqideqrgozexudaqr.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbWpxaWRlcXJnb3pleHVkYXFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwOTIwODQsImV4cCI6MjA5MTY2ODA4NH0.byRwDswpbfMWDoln4n7Opp0ntrNis_du4EnLVMFuIp8';
+const SB_URL=window.SB_CFG.url;
+const SB_KEY=window.SB_CFG.key;
 const HDRS={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
 // USERS array removed — auth handled by Supabase
 
@@ -3726,9 +3730,6 @@ const EXERCISE_LIBRARY = [
   {name:'Walk', cat:'Cardio'},
 ];
 
-// Backward-compat: flat list still exported for any code reading ALL_EXERCISES
-const ALL_EXERCISES = EXERCISE_LIBRARY.map(e=>e.name);
-
 // ── IMPROVEMENT 3: Pass order is per-user, drag & drop reorderable ─
 // Default pass order (can be reordered per user)
 const DEFAULT_SESSION_ORDER=['A','B','C','D','E','F'];
@@ -3786,11 +3787,17 @@ function buildEffectiveChain(sessionOrder, restSlots){
     result.splice(clampedPos, 0, {id:restId, name:'Forced Rest', rest:true, exercises:[], restSlotPos:pos});
     restIdx++;
   }
-  // Assign display letters A-Z to workout passes
+  // Assign display letters A-Z to workout passes, and V/V2/V3... to rest days
   let letterIdx = 0;
+  let restNum = 0;
+  const totalRests = result.filter(p=>p.rest).length;
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   return result.map((p,i) => {
-    if(p.rest) return {...p, displayId:'V'+(p.restSlotPos!==undefined?'':'')}; // keep rest id
+    if(p.rest){
+      restNum++;
+      const displayLetter = totalRests>1 ? 'V'+restNum : 'V';
+      return {...p, displayLetter, displayId:'V'};
+    }
     const letter = letters[letterIdx++];
     return {...p, displayLetter: letter};
   });
@@ -3805,7 +3812,8 @@ function getEffectiveChain(){
   const rs = state.restSlots || DEFAULT_REST_SLOTS;
   const re = state.removedExercises || {};
   const ae = state.addedExercises || {};
-  const key = JSON.stringify([po, rs, re, ae]);
+  const eo = state.exerciseOrder || {};
+  const key = JSON.stringify([po, rs, re, ae, eo]);
   if(__chainCache.key === key) return __chainCache.val;
   const val = buildEffectiveChain(po, rs);
   __chainCache = {key, val};
@@ -3815,9 +3823,9 @@ function getEffectiveChain(){
 // Call this when chain structure changes (reorder, add/remove pass)
 function invalidateChainCache(){ __chainCache.key = null; }
 
-// Get all cycle done keys based on current chain// ── APP VERSION ──────────────────────────────────────────────
+// ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.26.5';
+const APP_VERSION = '3.27.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3826,7 +3834,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.26.5',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.27.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -3867,8 +3875,8 @@ function deleteCustomExercise(id){
 
 // Modal-based confirm for deleting custom exercise (replaces inline confirm())
 async function confirmDeleteCustomEx(id, name){
-  const ok = await askModalConfirm('Delete custom exercise?', 
-    `"${name}" will be removed. Existing log entries are kept, but you cannot add it to new sessions.`, {
+  const ok = await askModalConfirm('Delete custom exercise?',
+    `"${escapeHTML(name)}" will be removed. Existing log entries are kept, but you cannot add it to new sessions.`, {
     confirmLabel: 'Delete',
     danger: true
   });
@@ -3964,7 +3972,7 @@ function nextSessionId(){
   }
   return null;
 }
-function ensureDraft(passId){if(!state.draft||state.draft.passId!==passId)state.draft={passId,savedExercises:{},extras:[],swaps:{},extraSets:{}};}
+function ensureDraft(passId){if(!state.draft||state.draft.passId!==passId)state.draft={passId,savedExercises:{},extras:[],swaps:{},extraSets:{},inputBuffer:{},loggedSets:{}};}
 
 // ── LOCAL STORAGE ─────────────────────────────────────────────
 function lsKey(uid){return 'thechain_'+uid;}
@@ -4022,22 +4030,8 @@ async function syncFromCloud(userId){
       if(cloudNewer){
         state=cloud;
         migratePassKeysToSession();
-        if(!state.customExercises)state.customExercises=[];
+        ensureStateDefaults();
         if(!state.migrations?.exerciseSplit_v2) migrateExerciseNames();
-        if(!state.log)state.log=[];
-        if(!state.weightLog)state.weightLog=[];
-        if(!state.draft)state.draft=null;
-        if(!state.permanentSwaps)state.permanentSwaps={};
-        if(!state.sessionOrder)state.sessionOrder=null;
-        if(!state.restSlots)state.restSlots=null;
-        if(!state.unit)state.unit='kg';
-        if(!state.exerciseOverrides)state.exerciseOverrides={};
-        if(!state.sessionNameOverrides)state.sessionNameOverrides={};
-        if(!state.exerciseNotes)state.exerciseNotes={};
-        if(!state.exerciseTagOverrides)state.exerciseTagOverrides={};
-        if(state.timerEnabled===undefined)state.timerEnabled=false;
-        if(!state.updatedAt)state.updatedAt=0;
-        if(!state.theme)state.theme='iron';
         // Reset BASE_SESSIONS name overrides so cloud's overrides apply cleanly
         // (BASE_SESSIONS is module-level mutable, can carry stale local renames)
         BASE_SESSIONS.forEach(p=>{ if(_BASE_SESSION_NAMES[p.id]) p.name = _BASE_SESSION_NAMES[p.id]; });
@@ -4299,7 +4293,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
   const hasDraft=state.draft&&state.draft.passId===passId;
   const inProgress=hasDraft&&Object.keys(state.draft.savedExercises).length>0;
   const completedData=isDone?cycle.done[passId]:null;
-  const displayLetter=isRest?'V':(pass.displayLetter||passId);
+  const displayLetter=pass.displayLetter||(isRest?'V':passId);
   const todayWkg=getTodayWeight();
 
   let statusBadge='';
@@ -4631,7 +4625,7 @@ function renderChain(){
     const isRest=!!pass.rest;
     const isSelected=passId===_chainSelectedId;
     const distance=Math.abs(chainIdx-activeIdx);
-    const displayLetter=isRest?'V':(pass.displayLetter||passId);
+    const displayLetter=pass.displayLetter||(isRest?'V':passId);
     const shortName=pass.name.replace(/[^A-Za-z]/g,'').substring(0,3).toUpperCase();
     let tabCls='chain-tab';
     if(isSelected)tabCls+=' active';
@@ -4674,7 +4668,7 @@ function buildReorderUI(effectiveChain){
       ontouchend="touchEnd(event,'${pid}')"
       style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #3a3a3a;margin-bottom:6px;cursor:grab;background:#1a1a1a;touch-action:none;-webkit-user-select:none;user-select:none;">
       <span style="font-family:var(--display);font-size:1.3rem;color:var(--red);min-width:20px;">${letter}</span>
-      <span style="font-family:var(--sans);font-size:.82rem;flex:1;color:var(--white);">${pass.name}</span>
+      <span style="font-family:var(--sans);font-size:.82rem;flex:1;color:var(--white);">${escapeHTML(pass.name)}</span>
       <span style="color:var(--gray-light);font-size:1.1rem;letter-spacing:2px;">⠿</span>
     </div>`;
   });
@@ -5378,7 +5372,7 @@ async function saveExtraToProgram(passId, extraIdx){
   const extra = state.draft?.extras?.[extraIdx];
   if(!extra) return;
   const ok = await askModalConfirm('Save to program?',
-    `<strong>${extra.name}</strong> will be added permanently to this session.`,
+    `<strong>${escapeHTML(extra.name)}</strong> will be added permanently to this session.`,
     {confirmLabel:'Save to program'}
   );
   if(!ok) return;
@@ -5493,7 +5487,7 @@ async function removeExerciseFromEditPage(exId, passId){
   const ex = base?.exercises.find(e => e.id === exId);
   const name = state.exerciseOverrides?.[exId] || ex?.name || 'this exercise';
   const ok = await askModalConfirm('Remove exercise?',
-    `<strong>${name}</strong> will be removed from this session. You can restore it here.`,
+    `<strong>${escapeHTML(name)}</strong> will be removed from this session. You can restore it here.`,
     {confirmLabel:'Remove', danger:true}
   );
   if(!ok) return;
@@ -5819,10 +5813,8 @@ function unsaveExercise(passId,exId){
       }));
     }
     // Clear logged state — user needs to re-log after editing
-    if(state.draft.loggedSets) delete state.draft.loggedSets[exId];
+    delete state.draft.loggedSets[exId];
     // Remove the saved exercise so it renders as editable again
-    delete state.draft.savedExercises[exId];
-  } else {
     delete state.draft.savedExercises[exId];
   }
   save(); rerenderSession(passId);
@@ -5905,13 +5897,12 @@ async function removeExerciseFromSession(exId, passId){
   const exName = state.exerciseOverrides?.[exId] || ex?.name || 'this exercise';
   
   const ok = await askModalConfirm('Remove exercise?',
-    `<strong>${exName}</strong> will be removed from this session permanently. You can add it back later from the Edit menu. Existing log history is kept.`,
+    `<strong>${escapeHTML(exName)}</strong> will be removed from this session permanently. You can add it back later from the Edit menu. Existing log history is kept.`,
     { confirmLabel: 'Remove', danger: true }
   );
   if(!ok) return;
   
   if(!state.removedExercises) state.removedExercises = {};
-  if(!state.weightStep) state.weightStep = 2.5;
   if(!state.removedExercises[passId]) state.removedExercises[passId] = [];
   if(!state.removedExercises[passId].includes(exId)){
     state.removedExercises[passId].push(exId);
@@ -5942,6 +5933,7 @@ function restoreExerciseToSession(exId, passId){
 function finishSession(passId){
   const draft=state.draft;if(!draft||draft.passId!==passId)return;
   const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);
+  if(!pass){showToast('Session not found in chain');return;}
   const _extraIds=(draft.extras||[]).map((_,i)=>'extra_'+passId+'_'+i);
   const _allIds=[...pass.exercises.map(e=>e.id),..._extraIds];
   const _allResolved=_allIds.length>0&&_allIds.every(id=>{const s=draft.savedExercises[id];return s&&(s.skipped===true||(Array.isArray(s.sets)&&s.sets.length>0));});
@@ -6355,9 +6347,9 @@ function renderProgress(){
   const last=state.log[state.log.length-1];const days=Math.floor((Date.now()-last.timestamp)/86400000);
   let html=`<div class="section-title">Progress</div><div class="stats-grid"><div class="stat-box"><div class="stat-num">${state.log.length}</div><div class="stat-desc">Sessions</div></div><div class="stat-box"><div class="stat-num">${state.cycles.length}</div><div class="stat-desc">Rounds</div></div><div class="stat-box"><div class="stat-num">${days}d</div><div class="stat-desc">Since last</div></div></div>`;
   const prs=getAllPRs();
-  if(prs.length){html+=`<div class="section-sub">★ Personal Records</div><div class="pr-grid">`;prs.forEach(pr=>{const val=pr.bw?`BW+${toDisplay(pr.extra)||0}${unitLabel()}`:`${toDisplay(pr.weight)}${unitLabel()}`;const sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${unitLabel()} · ${pr.reps||'?'}r`:`${pr.reps||'?'} reps`;html+=`<div class="pr-card"><div class="pr-ex-name">${pr.name}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;});html+=`</div>`;}
+  if(prs.length){html+=`<div class="section-sub">★ Personal Records</div><div class="pr-grid">`;prs.forEach(pr=>{const val=pr.bw?`BW+${toDisplay(pr.extra)||0}${unitLabel()}`:`${toDisplay(pr.weight)}${unitLabel()}`;const sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${unitLabel()} · ${pr.reps||'?'}r`:`${pr.reps||'?'} reps`;html+=`<div class="pr-card"><div class="pr-ex-name">${escapeHTML(pr.name)}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;});html+=`</div>`;}
   html+=`<div class="section-sub">History</div>`;
-  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${entry.passId} — ${entry.passName}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${ex.name}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW(${toDisplay(s.bwSnap)||0})+${toDisplay(s.extra)||0}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${ex.name}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
+  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW(${toDisplay(s.bwSnap)||0})+${toDisplay(s.extra)||0}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
   el.innerHTML=html;
 }
 
@@ -6432,7 +6424,7 @@ function renderData(){
   checkCloudVersion();const size=(JSON.stringify(state).length/1024).toFixed(1);
   const unitBtn=(u)=>`<button onclick="state.unit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.unit===u?'var(--red)':'none'};border:1px solid ${state.unit===u?'var(--red)':'#2a2a2a'};color:${state.unit===u?'var(--white)':'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u.toUpperCase()}</button>`;
   el.innerHTML=`<div class="section-title">Settings</div>
-  <div style="font-family:var(--mono);font-size:.58rem;color:#444;margin-bottom:18px">Supabase · ${currentUser?.name} · ${size} KB · ${state.log.length} sessions</div>
+  <div style="font-family:var(--mono);font-size:.58rem;color:#444;margin-bottom:18px">Supabase · ${escapeHTML(currentUser?.name||'')} · ${size} KB · ${state.log.length} sessions</div>
   <div class="section-sub">Rest Timer</div>
   <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border:1px solid var(--gray-mid);padding:10px 12px;margin-bottom:10px;">
     <div>
@@ -6646,9 +6638,10 @@ async function importTemplate(e){
       const authorText=d.author?`<br><span style="font-size:.9em;opacity:.8;">by ${escapeHTML(d.author)}</span>`:'';
       const restText=restCount?` + ${restCount} rest day${restCount>1?'s':''}`:'';
       const prText=prCount?`<br><span style="font-size:.9em;opacity:.8;">${prCount} PR${prCount>1?'s':''} included</span>`:'';
+      const escapedNames=sessionNames.map(n=>escapeHTML(n)).join(' · ');
       const ok=await askModalConfirm(
         'Import program?',
-        `<strong>${sessionNames.length} session${sessionNames.length>1?'s':''}${restText}:</strong><br>${sessionNames.join(' · ')}${authorText}${prText}<br><br>This will replace your current chain structure. Your training history will be kept.`,
+        `<strong>${sessionNames.length} session${sessionNames.length>1?'s':''}${restText}:</strong><br>${escapedNames}${authorText}${prText}<br><br>This will replace your current chain structure. Your training history will be kept.`,
         {confirmLabel:'Import'}
       );
       if(!ok)return;
@@ -7003,8 +6996,8 @@ function showOldVersionBanner(cloudVersion){
   banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#8b1a2a;color:#fff;font-family:var(--mono);font-size:.6rem;text-align:center;padding:8px 12px;z-index:9999;letter-spacing:.05em;line-height:1.5;cursor:pointer;border-bottom:1px solid #c8960c;';
   banner.innerHTML = '<strong>Update available</strong> — your app: v' + APP_VERSION + ' · cloud: v' + cloudVersion + '<br><span style="font-size:.55rem;opacity:.85;">Tap here to reload (or close tab and reopen)</span>';
   banner.onclick = ()=>{
-    // Force reload bypassing cache
-    location.reload(true);
+    // Cache-bust via query string — location.reload(true) is deprecated
+    location.href = location.pathname + '?v=' + Date.now();
   };
   document.body.appendChild(banner);
 }
