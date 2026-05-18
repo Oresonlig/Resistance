@@ -3830,7 +3830,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.28.0';
+const APP_VERSION = '3.28.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3839,7 +3839,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.28.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.28.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -5816,7 +5816,7 @@ function saveExercise(passId,exId){
   });
   let displayName;
   if(isExtra){const extraIdx=parseInt(exId.split('_').pop());displayName=state.draft?.extras?.[extraIdx]?.name||exId;}
-  else{displayName=state.exerciseOverrides?.[exId]||state.draft?.swaps?.[exId]||ex.name;}
+  else{displayName=state.draft?.swaps?.[exId]||state.permanentSwaps?.[exId]||state.exerciseOverrides?.[exId]||ex.name;}
   state.draft.savedExercises[exId]={id:exId,name:displayName,sets,bw:isBW,...(isExtra?{extra:true}:{})};
   // Clear logged sets after saving — they're now in savedExercises
   if(state.draft.loggedSets) delete state.draft.loggedSets[exId];
@@ -5906,7 +5906,7 @@ function skipExercise(passId,exId){
   const isExtra=exId.startsWith('extra_');
   let displayName;
   if(isExtra){const extraIdx=parseInt(exId.split('_').pop());displayName=state.draft?.extras?.[extraIdx]?.name||exId;}
-  else{const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);const ex=pass.exercises.find(e=>e.id===exId);displayName=state.exerciseOverrides?.[exId]||state.draft.swaps[exId]||ex.name;}
+  else{const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);const ex=pass.exercises.find(e=>e.id===exId);displayName=state.draft.swaps[exId]||state.permanentSwaps?.[exId]||state.exerciseOverrides?.[exId]||ex.name;}
   state.draft.savedExercises[exId]={id:exId,name:displayName,skipped:true};
   save();rerenderSession(passId);
 }
@@ -6747,7 +6747,7 @@ async function importTemplate(e){
 }
 
 // ── FEEDBACK & BUG REPORTS ────────────────────────────────────
-const SUPPORT_EMAIL = 'oresonlig@gmail.com'; // TODO: change to support@thechain.training when SMTP is set up
+const SUPPORT_EMAIL = 'niklgron@gmail.com'; // TODO: change to support@thechain.training when SMTP is set up
 
 function reportBug(){
   const subject = encodeURIComponent('[The Chain] Bug report');
