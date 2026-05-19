@@ -3832,7 +3832,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.28.2';
+const APP_VERSION = '3.28.3';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3841,7 +3841,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.28.2',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.28.3',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -6711,6 +6711,23 @@ async function importTemplate(e){
         {confirmLabel:'Import'}
       );
       if(!ok)return;
+      // PM4: Pre-import state snapshot — rollback-möjlighet om import var fel.
+      // 7-dagars retention. Tyst fail vid quota (snapshot är safety-net, inte gating).
+      try{
+        localStorage.setItem(`state_before_import_${Date.now()}`, JSON.stringify(state));
+        const SEVEN_DAYS = 7*24*60*60*1000;
+        const cutoff = Date.now() - SEVEN_DAYS;
+        const stale = [];
+        for(let i=0;i<localStorage.length;i++){
+          const k = localStorage.key(i);
+          if(!k || !k.startsWith('state_before_import_')) continue;
+          const ts = parseInt(k.slice('state_before_import_'.length), 10);
+          if(Number.isFinite(ts) && ts < cutoff) stale.push(k);
+        }
+        stale.forEach(k => localStorage.removeItem(k));
+      }catch(snapErr){
+        console.warn('Pre-import snapshot failed:', snapErr);
+      }
       // Apply chain structure
       state.sessionOrder=passOrder;
       state.restSlots=restSlots;
