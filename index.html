@@ -131,6 +131,16 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .ex-block:last-of-type{border-bottom:none;}
 .ex-block.skipped{opacity:.28;}
 .ex-block.saved{background:#0a120a;}
+/* V1 Collapse: kollapsade övningar visar bara summary-raden */
+.ex-block .ex-collapsed-summary{display:none;}
+.ex-block.collapsed{padding:0;}
+.ex-block.collapsed > *:not(.ex-collapsed-summary){display:none;}
+.ex-block.collapsed .ex-collapsed-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 8px;cursor:pointer;transition:background .15s;}
+.ex-block.collapsed .ex-collapsed-summary:hover{background:rgba(255,255,255,0.03);}
+.ex-block.collapsed.saved .ex-collapsed-summary{background:#0a120a;}
+.ex-collapsed-name{font-family:var(--mono);font-size:.62rem;letter-spacing:.04em;color:var(--white);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ex-collapsed-name .ex-tag{margin-left:6px;}
+.ex-collapsed-status{font-family:var(--mono);font-size:.5rem;color:var(--gray-light);letter-spacing:.04em;flex-shrink:0;}
 .ex-header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;}
 .ex-label-col{flex:1;min-width:0;}
 .ex-name{font-size:.82rem;font-weight:500;}
@@ -3834,7 +3844,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.29.2';
+const APP_VERSION = '3.30.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3843,7 +3853,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.29.2',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -3981,7 +3991,7 @@ function nextSessionId(){
   }
   return null;
 }
-function ensureDraft(passId){if(!state.draft||state.draft.passId!==passId)state.draft={passId,savedExercises:{},extras:[],swaps:{},extraSets:{},inputBuffer:{},loggedSets:{}};}
+function ensureDraft(passId){if(!state.draft||state.draft.passId!==passId)state.draft={passId,savedExercises:{},extras:[],swaps:{},extraSets:{},inputBuffer:{},loggedSets:{},activeExerciseId:null};}
 
 // ── LOCAL STORAGE ─────────────────────────────────────────────
 function lsKey(uid){return 'thechain_'+uid;}
@@ -4371,6 +4381,17 @@ function buildPassBodyHTML(pass,cycle,nextId){
       const draft=hasDraft?state.draft:null;
       const savedExs=draft?draft.savedExercises:{};
       const draftSwaps=draft?draft.swaps:{};
+      // V1 Collapse: lazy-resolve activeExerciseId. Om null eller pekar på en
+      // stängd övning → hitta första öppna. Allt stängt → null (Finish-knappen tar över).
+      if(draft && !isDone){
+        const cur = draft.activeExerciseId;
+        const curIsOpen = cur && pass.exercises.some(e=>e.id===cur) && !savedExs[cur];
+        if(!curIsOpen){
+          const firstOpen = pass.exercises.find(e=>!savedExs[e.id]);
+          draft.activeExerciseId = firstOpen ? firstOpen.id : null;
+        }
+      }
+      const activeExId = draft?.activeExerciseId;
       const completedExs=completedData?.exercises||[];
       const draftExtraSets=draft?draft.extraSets:Object.fromEntries(
         completedExs.filter(e=>e.id&&e.id.startsWith('extra_'+passId+'_'))
@@ -4442,7 +4463,22 @@ function buildPassBodyHTML(pass,cycle,nextId){
               : `<div class="ex-note-add" onclick="toggleNote('${ex.id}')">+ note</div>`
           : existingNote
             ? `<div class="ex-note-banner done-note">📝 ${escapedNote}</div>` : '';
-        html+=`<div class="${'ex-block'+(isSkipped?' skipped':'')+(isSaved?' saved':'')}" id="exblock-${ex.id}">`;
+        // V1 Collapse: kollapsa om Done-pass eller om denna ej är aktiv övning
+        const isCollapsed = !isDone && draft && activeExId !== ex.id;
+        // Kompakt status-text för kollapsade rader
+        let collapsedStatus = '';
+        if(isSaved){
+          const workSetCount = (savedExs[ex.id].sets||[]).filter(s=>!s.warmup).length;
+          collapsedStatus = `✓ ${workSetCount} set${workSetCount===1?'':'s'}`;
+        } else if(isSkipped){
+          collapsedStatus = 'Skipped';
+        } else {
+          // Ej börjat — visa kort detail eller "—"
+          collapsedStatus = '—';
+        }
+        html+=`<div class="${'ex-block'+(isSkipped?' skipped':'')+(isSaved?' saved':'')+(isCollapsed?' collapsed':'')}" id="exblock-${ex.id}">`;
+        // Kollapsad summary-rad (visas bara via CSS när .collapsed aktiv)
+        html+=`<div class="ex-collapsed-summary" onclick="setActiveExercise('${passId}','${ex.id}')"><div class="ex-collapsed-name">${escapeHTML(customName)}${tags}</div><div class="ex-collapsed-status">${collapsedStatus}</div></div>`;
         html+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(customName)}${tags}</div><div class="ex-detail">${ex.detail}</div>${prevText}${noteBanner}</div><div class="ex-action-col">`;
 
         if(!isDone&&!isSkipped){
@@ -5877,6 +5913,8 @@ function saveExercise(passId,exId){
   state.draft.savedExercises[exId]={id:exId,name:displayName,sets,bw:isBW,...(isExtra?{extra:true}:{})};
   // Clear logged sets after saving — they're now in savedExercises
   if(state.draft.loggedSets) delete state.draft.loggedSets[exId];
+  // V1 Collapse: auto-promote nästa öppna övning som aktiv
+  state.draft.activeExerciseId = findNextOpenExercise(passId, exId);
   save(); showToast('Saved ✓');
   if(state.timerEnabled) startRestTimer();
   rerenderSession(passId);
@@ -5897,6 +5935,8 @@ function unsaveExercise(passId,exId){
     // Remove the saved exercise so it renders as editable again
     delete state.draft.savedExercises[exId];
   }
+  // V1 Collapse: openad övning blir aktiv
+  state.draft.activeExerciseId = exId;
   save(); rerenderSession(passId);
 }
 
@@ -5965,9 +6005,11 @@ function skipExercise(passId,exId){
   if(isExtra){const extraIdx=parseInt(exId.split('_').pop());displayName=state.draft?.extras?.[extraIdx]?.name||exId;}
   else{const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);const ex=pass.exercises.find(e=>e.id===exId);displayName=state.draft.swaps[exId]||state.permanentSwaps?.[exId]||state.exerciseOverrides?.[exId]||ex.name;}
   state.draft.savedExercises[exId]={id:exId,name:displayName,skipped:true};
+  // V1 Collapse: auto-promote nästa öppna övning som aktiv
+  state.draft.activeExerciseId = findNextOpenExercise(passId, exId);
   save();rerenderSession(passId);
 }
-function unskipExercise(passId,exId){ensureDraft(passId);delete state.draft.savedExercises[exId];save();rerenderSession(passId);}
+function unskipExercise(passId,exId){ensureDraft(passId);delete state.draft.savedExercises[exId];state.draft.activeExerciseId=exId;save();rerenderSession(passId);}
 
 // Permanently remove an exercise from a pass — survives across sessions
 async function removeExerciseFromSession(exId, passId){
@@ -6320,6 +6362,38 @@ function doNewCycle(){
   state.cycles.push(newC);
   save();renderChain();
 }
+// V1 Collapse: aktiv övning expanderas, andra kollapsar till en rad.
+// Stängd = saved (done) eller skipped. Open = ingen entry i savedExercises.
+function isExerciseClosed(exId){
+  const s = state.draft?.savedExercises?.[exId];
+  return !!s; // har saved/skipped entry → stängd
+}
+
+// Sätt en specifik övning som aktiv (expanderad). Andra kollapsar automatiskt.
+function setActiveExercise(passId, exId){
+  if(!state.draft || state.draft.passId !== passId) return;
+  state.draft.activeExerciseId = exId;
+  save();
+  rerenderSession(passId);
+}
+
+// Hitta nästa "öppna" övning efter exId i pass-ordningen.
+// Wrap från början om inget hittas framåt. Returnera null om allt stängt.
+function findNextOpenExercise(passId, afterExId){
+  const ec = getEffectiveChain();
+  const pass = ec.find(p => p.id === passId);
+  if(!pass || !pass.exercises) return null;
+  const exs = pass.exercises;
+  const startIdx = afterExId ? exs.findIndex(e => e.id === afterExId) : -1;
+  for(let i = startIdx + 1; i < exs.length; i++){
+    if(!isExerciseClosed(exs[i].id)) return exs[i].id;
+  }
+  for(let i = 0; i <= startIdx && i < exs.length; i++){
+    if(!isExerciseClosed(exs[i].id)) return exs[i].id;
+  }
+  return null;
+}
+
 function rerenderSession(passId){
   const area=document.getElementById('chain-ex-area');
   if(!area||passId!==_chainSelectedId){renderChain();return;}
