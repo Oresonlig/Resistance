@@ -3832,7 +3832,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.29.0';
+const APP_VERSION = '3.29.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3841,7 +3841,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.29.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.29.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -7209,6 +7209,16 @@ document.addEventListener('visibilitychange',()=>{
     syncFromCloud(currentUser.id);
   }
 });
+
+// PM3: Service Worker — offline-stöd + cache-bust per APP_VERSION.
+// SW:n cache:ar index.html och övriga statiska resurser, skippar Supabase.
+// Vid ny app-version aktiveras ny SW med ny cache-key och rensar den gamla.
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js?v=' + APP_VERSION)
+      .catch(err => console.warn('SW registration failed:', err));
+  });
+}
 
 </script>
 <!-- Crusader theme: Templar cross backdrop + heartbeat glow layer (visible only when theme-crusader is active) -->
