@@ -3832,7 +3832,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.28.3';
+const APP_VERSION = '3.29.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3841,7 +3841,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.28.3',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.29.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -4018,6 +4018,29 @@ function setSyncDot(cls){
   if(cls) dot.classList.add(cls);
 }
 
+// PM1: Merge log-entries från två källor (lokal + cloud) utan dataförlust.
+// Dedup-nyckel = passId|timestamp (en användare loggar inte två pass av
+// samma typ vid exakt samma millisekund). Lokala värden vinner vid kollision.
+function mergeLogEntries(localLog, cloudLog){
+  const seen = new Map();
+  for(const e of localLog||[]) seen.set(`${e.passId}|${e.timestamp}`, e);
+  for(const e of cloudLog||[]){
+    const k = `${e.passId}|${e.timestamp}`;
+    if(!seen.has(k)) seen.set(k, e);
+  }
+  return Array.from(seen.values()).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));
+}
+
+// PM1: Merge weight-entries. Unik per datum. Lokala värden vinner vid kollision.
+function mergeWeightEntries(localWL, cloudWL){
+  const seen = new Map();
+  for(const e of localWL||[]) seen.set(e.date, e);
+  for(const e of cloudWL||[]){
+    if(!seen.has(e.date)) seen.set(e.date, e);
+  }
+  return Array.from(seen.values()).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+}
+
 async function syncFromCloud(userId){
   setSyncDot('syncing');
   try{
@@ -4030,17 +4053,28 @@ async function syncFromCloud(userId){
       if(cloudVersion && compareVersions(cloudVersion, APP_VERSION) > 0){
         showOldVersionBanner(cloudVersion);
       }
-      const cloudTime=cloud.updatedAt||new Date(rows[0].updated_at||0).getTime()||0;
-      const localTime=state.updatedAt||0;
-      const cloudNewer=cloudTime>localTime||
-        (cloudTime===localTime&&(cloud.log||[]).length>(state.log||[]).length);
-      if(cloudNewer){
+      // PM1: Använd Supabase server-timestamp som auktoritativ tid.
+      // Klient-clock-skew gjorde att en enhet med fel-ställd klocka kunde "vinna"
+      // mot en annan enhet trots att den skrev tidigare. Servern är monoton.
+      const cloudServerTime = new Date(rows[0].updated_at||0).getTime() || 0;
+      const lastSyncedTime = state.lastSyncedCloudTime || 0;
+      const cloudHasNewerState = cloudServerTime > lastSyncedTime;
+
+      // Alltid merga log/weightLog — även om cloud inte är "nyare". Detta är
+      // det som löser split-brain: två enheter som loggat parallellt offline
+      // får båda sina entries i unionen istället för att en sida förloras.
+      const mergedLog = mergeLogEntries(state.log, cloud.log);
+      const mergedWeight = mergeWeightEntries(state.weightLog, cloud.weightLog);
+      const logsChanged = mergedLog.length !== (state.log||[]).length
+                       || mergedWeight.length !== (state.weightLog||[]).length;
+
+      if(cloudHasNewerState){
+        // Cloud har skrivits sedan vi senast var i synk → cloud's metadata vinner
+        // (sessionOrder, themes, swaps, etc.), men loggarna är redan mergade.
         state=cloud;
         migratePassKeysToSession();
         ensureStateDefaults();
         if(!state.migrations?.exerciseSplit_v2) migrateExerciseNames();
-        // Reset BASE_SESSIONS name overrides so cloud's overrides apply cleanly
-        // (BASE_SESSIONS is module-level mutable, can carry stale local renames)
         BASE_SESSIONS.forEach(p=>{ if(_BASE_SESSION_NAMES[p.id]) p.name = _BASE_SESSION_NAMES[p.id]; });
         if(state.sessionNameOverrides){
           Object.entries(state.sessionNameOverrides).forEach(([pid,name])=>{
@@ -4048,13 +4082,27 @@ async function syncFromCloud(userId){
             if(bp) bp.name = name;
           });
         }
+        state.log = mergedLog;
+        state.weightLog = mergedWeight;
+        state.lastSyncedCloudTime = cloudServerTime;
         localStorage.setItem(lsKey(userId),JSON.stringify(state));
-        // CSS-only theme apply (no save side-effect, since state is fresh from cloud)
         const theme = THEMES.find(t=>t.id===state.theme) || THEMES[0];
         THEMES.forEach(t=>{ if(t.class) document.body.classList.remove(t.class); });
         if(theme.class) document.body.classList.add(theme.class);
         renderChain();
         showToast('Updated from cloud ✓');
+      } else if(logsChanged){
+        // Cloud's resterande state är inte nyare, men loggarna mergades →
+        // uppdatera bara loggarna lokalt så vi inte tappar entries.
+        state.log = mergedLog;
+        state.weightLog = mergedWeight;
+        state.lastSyncedCloudTime = cloudServerTime;
+        localStorage.setItem(lsKey(userId),JSON.stringify(state));
+        renderChain();
+      } else {
+        // Inget att merga, men uppdatera ändå last-synced så vi inte
+        // anropar merge i onödan vid varje tick.
+        state.lastSyncedCloudTime = cloudServerTime;
       }
     }
     setSyncDot('ok');
@@ -4149,6 +4197,11 @@ async function pushState(){
     state.appVersion = APP_VERSION;
     await sbUpsert('app_state',{id:currentUser.id,data:state,updated_at:new Date().toISOString()});
     lastSyncWrite = Date.now();
+    // PM1: Flytta fram lastSyncedCloudTime så att nästa syncFromCloud inte
+    // tror att vår egen push representerar någon annans skrivning. Klient-clock
+    // är en uppskattning — servern kan ha satt en marginellt senare timestamp,
+    // men det rätar ut sig vid nästa fullständiga GET.
+    state.lastSyncedCloudTime = Date.now();
     setSyncDot('ok');setTimeout(()=>setSyncDot(''),3000);
   }catch(e){console.error('Cloud push error:',e);setSyncDot('err');}
 }
