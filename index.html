@@ -151,7 +151,9 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .ex-block .ex-collapsed-summary{display:none;}
 .ex-block.collapsed{padding:0;}
 .ex-block.collapsed > *:not(.ex-collapsed-summary){display:none;}
-.ex-block.collapsed .ex-collapsed-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 10px;cursor:pointer;transition:background .15s;}
+.ex-block.collapsed .ex-collapsed-summary{display:flex;align-items:center;gap:10px;padding:11px 10px;cursor:pointer;transition:background .15s;}
+.ex-collapsed-chevron{color:#555;font-size:.65rem;width:10px;flex-shrink:0;opacity:.7;line-height:1;}
+.ex-block.collapsed .ex-collapsed-name{flex:1;min-width:0;}
 .ex-block.collapsed .ex-collapsed-summary:hover{background:rgba(255,255,255,0.03);}
 .ex-block.collapsed.saved .ex-collapsed-summary{background:#0a120a;}
 .ex-block.collapsed.done .ex-collapsed-summary{cursor:default;}
@@ -3278,7 +3280,7 @@ body.theme-ember .set-logged-indicator{border-color:#5a7a2a;color:#a0cc40;}
       <div class="header-bottom-row">
         <div class="am-pill missing" id="amPill" onclick="expandAmPill(event)" title="Morning weight">
           <span class="am-pill-icon">⚖</span>
-          <span class="am-pill-value" id="amPillValue">+ AM</span>
+          <span class="am-pill-value" id="amPillValue">+ BW</span>
           <input class="am-pill-input" id="morningWeight" type="number" step="0.1" min="20" max="660" style="display:none" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){logWeight();}else if(event.key==='Escape'){collapseAmPill();}">
           <span class="am-pill-unit" id="amPillUnit" style="display:none">kg</span>
           <button class="am-pill-log" id="amPillLog" style="display:none" onclick="event.stopPropagation();logWeight();">Log</button>
@@ -3874,7 +3876,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.30.8';
+const APP_VERSION = '3.30.9';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3883,7 +3885,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.8',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.9',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -4291,12 +4293,12 @@ function refreshAmPill(){
   const today=getTodayWeight();
   if(today){
     const disp=toDisplay(today);
-    if(valEl) valEl.textContent=disp+' '+unitLabel();
+    if(valEl) valEl.textContent='BW '+disp+' '+unitLabel();
     if(inp) inp.value=disp;
     pill.classList.add('logged');
     pill.classList.remove('missing');
   } else {
-    if(valEl) valEl.textContent='+ AM';
+    if(valEl) valEl.textContent='+ BW';
     if(inp) inp.value='';
     pill.classList.add('missing');
     pill.classList.remove('logged');
@@ -4590,14 +4592,16 @@ function buildPassBodyHTML(pass,cycle,nextId){
         } else if(isSkipped){
           collapsedStatus = 'Skipped';
         } else {
-          // Ej börjat — visa kort detail eller "—"
-          collapsedStatus = '—';
+          // Ej börjat — chevron förklarar att raden är expanderbar, ingen text behövs
+          collapsedStatus = '';
         }
         html+=`<div class="${'ex-block'+(isSkipped?' skipped':'')+(isSaved?' saved':'')+(isCollapsed?' collapsed':'')+(isDone?' done':'')}" id="exblock-${ex.id}">`;
         // Kollapsad summary-rad (visas bara via CSS när .collapsed aktiv)
         // Done-rader: ingen tap-to-expand (read-only) — använd Undo Session för att redigera.
         const _collapseAttr = isDone ? '' : ` onclick="setActiveExercise('${passId}','${ex.id}')"`;
-        html+=`<div class="ex-collapsed-summary"${_collapseAttr}><div class="ex-collapsed-name">${escapeHTML(customName)}${tags}</div><div class="ex-collapsed-status">${collapsedStatus}</div></div>`;
+        // Chevron som expand-affordans på vänster kant (utelämnas för done-rader som är read-only)
+        const _chevron = isDone ? '' : '<span class="ex-collapsed-chevron">▸</span>';
+        html+=`<div class="ex-collapsed-summary"${_collapseAttr}>${_chevron}<div class="ex-collapsed-name">${escapeHTML(customName)}${tags}</div><div class="ex-collapsed-status">${collapsedStatus}</div></div>`;
         html+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(customName)}${tags}</div><div class="ex-detail">${ex.detail}</div>${prevText}${noteBanner}</div><div class="ex-action-col">`;
 
         if(!isDone&&!isSkipped){
