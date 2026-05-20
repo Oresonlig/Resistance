@@ -138,6 +138,8 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .ex-block.collapsed .ex-collapsed-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 8px;cursor:pointer;transition:background .15s;}
 .ex-block.collapsed .ex-collapsed-summary:hover{background:rgba(255,255,255,0.03);}
 .ex-block.collapsed.saved .ex-collapsed-summary{background:#0a120a;}
+.ex-block.collapsed.done .ex-collapsed-summary{cursor:default;}
+.ex-block.collapsed.done .ex-collapsed-summary:hover{background:transparent;}
 .ex-collapsed-name{font-family:var(--mono);font-size:.62rem;letter-spacing:.04em;color:var(--white);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ex-collapsed-name .ex-tag{margin-left:6px;}
 .ex-collapsed-status{font-family:var(--mono);font-size:.5rem;color:var(--gray-light);letter-spacing:.04em;flex-shrink:0;}
@@ -3844,7 +3846,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.30.5';
+const APP_VERSION = '3.30.6';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3853,7 +3855,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.5',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.6',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -4474,10 +4476,21 @@ function buildPassBodyHTML(pass,cycle,nextId){
           : existingNote
             ? `<div class="ex-note-banner done-note">📝 ${escapedNote}</div>` : '';
         // V1 Collapse: kollapsa om denna inte är aktiv övning (funkar både med/utan draft)
-        const isCollapsed = !isDone && activeExId && activeExId !== ex.id;
+        // Done-sessioner: alla kollapsade. Pågående session där alla saved/skipped: alla kollapsade.
+        const allClosed = pass.exercises.length > 0 && pass.exercises.every(e => !!savedExs[e.id]);
+        const isCollapsed = isDone || (activeExId ? activeExId !== ex.id : allClosed);
         // Kompakt status-text för kollapsade rader
         let collapsedStatus = '';
-        if(isSaved){
+        if(isDone){
+          if(savedData?.skipped){
+            collapsedStatus = 'Skipped';
+          } else if(savedData){
+            const wsc = (savedData.sets||[]).filter(s=>!s.warmup).length;
+            collapsedStatus = wsc > 0 ? `✓ ${wsc} set${wsc===1?'':'s'}` : '✓ Done';
+          } else {
+            collapsedStatus = '—';
+          }
+        } else if(isSaved){
           const workSetCount = (savedExs[ex.id].sets||[]).filter(s=>!s.warmup).length;
           collapsedStatus = `✓ ${workSetCount} set${workSetCount===1?'':'s'}`;
         } else if(isSkipped){
@@ -4486,9 +4499,11 @@ function buildPassBodyHTML(pass,cycle,nextId){
           // Ej börjat — visa kort detail eller "—"
           collapsedStatus = '—';
         }
-        html+=`<div class="${'ex-block'+(isSkipped?' skipped':'')+(isSaved?' saved':'')+(isCollapsed?' collapsed':'')}" id="exblock-${ex.id}">`;
+        html+=`<div class="${'ex-block'+(isSkipped?' skipped':'')+(isSaved?' saved':'')+(isCollapsed?' collapsed':'')+(isDone?' done':'')}" id="exblock-${ex.id}">`;
         // Kollapsad summary-rad (visas bara via CSS när .collapsed aktiv)
-        html+=`<div class="ex-collapsed-summary" onclick="setActiveExercise('${passId}','${ex.id}')"><div class="ex-collapsed-name">${escapeHTML(customName)}${tags}</div><div class="ex-collapsed-status">${collapsedStatus}</div></div>`;
+        // Done-rader: ingen tap-to-expand (read-only) — använd Undo Session för att redigera.
+        const _collapseAttr = isDone ? '' : ` onclick="setActiveExercise('${passId}','${ex.id}')"`;
+        html+=`<div class="ex-collapsed-summary"${_collapseAttr}><div class="ex-collapsed-name">${escapeHTML(customName)}${tags}</div><div class="ex-collapsed-status">${collapsedStatus}</div></div>`;
         html+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(customName)}${tags}</div><div class="ex-detail">${ex.detail}</div>${prevText}${noteBanner}</div><div class="ex-action-col">`;
 
         if(!isDone&&!isSkipped){
