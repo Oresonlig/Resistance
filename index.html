@@ -3844,7 +3844,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.30.4';
+const APP_VERSION = '3.30.5';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3853,7 +3853,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.4',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.5',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -5490,9 +5490,29 @@ async function saveExtraToProgram(passId, extraIdx){
   );
   if(!ok) return;
   const customEx = state.customExercises?.find(c => c.name === extra.name);
+  const oldExtraId = 'extra_' + passId + '_' + extraIdx;
   addExerciseToSession(extra.name, passId, customEx || {});
+  // Find the just-added permanent exercise id (last one pushed)
+  const addedList = state.addedExercises?.[passId] || [];
+  const newId = addedList.length ? addedList[addedList.length-1].id : null;
+  // Migrate any in-progress draft state from the extra to the new permanent id
+  if(newId && state.draft){
+    if(state.draft.savedExercises?.[oldExtraId]){
+      state.draft.savedExercises[newId] = {...state.draft.savedExercises[oldExtraId], id:newId};
+    }
+    if(state.draft.extraSets?.[oldExtraId]){
+      state.draft.extraSets[newId] = state.draft.extraSets[oldExtraId];
+    }
+    if(state.draft.loggedSets?.[oldExtraId]){
+      state.draft.loggedSets[newId] = state.draft.loggedSets[oldExtraId];
+    }
+    if(state.draft.inputBuffer?.[oldExtraId]){
+      state.draft.inputBuffer[newId] = state.draft.inputBuffer[oldExtraId];
+    }
+  }
+  // Remove from extras list (this also deletes oldExtraId draft entries and re-indexes the rest)
+  removeExtra(passId, extraIdx);
   showToast('Added to program');
-  rerenderSession(passId);
 }
 
 function showEditExercises(passId){
