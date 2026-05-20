@@ -199,7 +199,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .set-input.work-set{border-color:#1a2a1a;}
 .set-input.forced{border-color:#2a1a2a;color:#9a6a9a;}
 .set-input.timed{border-color:#1a2a3a;color:#7ab;}
-.set-unit{font-family:var(--mono);font-size:.55rem;color:#666;text-transform:uppercase;text-align:center;margin-top:2px;}
+.set-unit{font-family:var(--mono);font-size:.65rem;color:#666;text-transform:uppercase;text-align:center;margin-top:2px;}
 .set-unit.forced-unit{color:#5a3a5a;}
 .set-unit.time-unit{color:#3a5a5a;}
 .side-btn{background:none;border:1px solid #3a2a00;color:#c89030;font-family:var(--mono);font-size:.6rem;font-weight:600;padding:3px 6px;cursor:pointer;transition:all .15s;width:100%;text-align:center;}
@@ -374,7 +374,7 @@ canvas#weightChart{width:100%!important;display:block;}
 @media(max-width:360px){
   .set-row.normal-set,.set-row.bw-set,.set-row.uni-set{gap:3px;}
   .set-input{font-size:.68rem;padding:4px 3px;}
-  .set-unit{font-size:.38rem;}
+  .set-unit{font-size:.55rem;}
   .set-num{font-size:.38rem;}
 }
 
@@ -3131,7 +3131,7 @@ body.theme-crusader .swap-select optgroup{background:#1a1612;color:#a89668;}
   color:var(--green-bright);
   cursor:pointer;
   font-family:var(--mono);
-  font-size:.5rem;
+  font-size:.7rem;
   letter-spacing:.05em;
   text-transform:uppercase;
   cursor:default;
@@ -3844,7 +3844,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.30.2';
+const APP_VERSION = '3.30.3';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3853,7 +3853,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.2',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.3',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
