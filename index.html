@@ -135,11 +135,13 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .ex-block .ex-collapsed-summary{display:none;}
 .ex-block.collapsed{padding:0;}
 .ex-block.collapsed > *:not(.ex-collapsed-summary){display:none;}
-.ex-block.collapsed .ex-collapsed-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 8px;cursor:pointer;transition:background .15s;}
+.ex-block.collapsed .ex-collapsed-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 10px;cursor:pointer;transition:background .15s;}
 .ex-block.collapsed .ex-collapsed-summary:hover{background:rgba(255,255,255,0.03);}
 .ex-block.collapsed.saved .ex-collapsed-summary{background:#0a120a;}
 .ex-block.collapsed.done .ex-collapsed-summary{cursor:default;}
 .ex-block.collapsed.done .ex-collapsed-summary:hover{background:transparent;}
+/* #2 — separator mellan kollapsade rader för tydligare gruppering */
+.ex-block.collapsed + .ex-block.collapsed{border-top:1px solid #232323;}
 .ex-collapsed-name{font-family:var(--mono);font-size:.62rem;letter-spacing:.04em;color:var(--white);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ex-collapsed-name .ex-tag{margin-left:6px;}
 .ex-collapsed-status{font-family:var(--mono);font-size:.5rem;color:var(--gray-light);letter-spacing:.04em;flex-shrink:0;}
@@ -3846,7 +3848,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.30.6';
+const APP_VERSION = '3.30.7';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3855,7 +3857,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.6',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.7',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -4255,13 +4257,14 @@ function logWeight(){
 function buildRemovedSection(passId){
   const removedIds=state.removedExercises?.[passId]||[];
   if(!removedIds.length)return'';
+  const hidden=state.hiddenRemoved?.[passId]||[];
   const baseEx=BASE_SESSIONS.find(p=>p.id===passId)?.exercises||[];
-  const removedItems=removedIds.map(id=>baseEx.find(e=>e.id===id)).filter(Boolean);
+  const removedItems=removedIds.map(id=>baseEx.find(e=>e.id===id)).filter(Boolean).filter(ex=>!hidden.includes(ex.id));
   if(!removedItems.length)return'';
   let h=`<div style="padding:10px 14px 4px;margin-top:6px;border-top:1px dashed #2a2a2a;font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;">Removed</div>`;
   removedItems.forEach(ex=>{
     const name=escapeHTML(state.exerciseOverrides?.[ex.id]||ex.name);
-    h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;font-family:var(--sans);"><span style="color:#666;font-size:.78rem;text-decoration:line-through;">${name}</span><button onclick="restoreExerciseToSession('${ex.id}','${passId}')" style="background:none;border:1px solid #3a3a3a;color:#888;font-family:var(--mono);font-size:.5rem;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">+ Restore</button></div>`;
+    h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;font-family:var(--sans);gap:6px;"><span style="color:#666;font-size:.78rem;text-decoration:line-through;flex:1;">${name}</span><div style="display:flex;gap:6px;"><button onclick="permanentlyDeleteRemoved('${ex.id}','${passId}')" style="background:none;border:1px solid #6a2a2a;color:#c06060;font-family:var(--mono);font-size:.5rem;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">✕ Delete</button><button onclick="restoreExerciseToSession('${ex.id}','${passId}')" style="background:none;border:1px solid #3a3a3a;color:#888;font-family:var(--mono);font-size:.5rem;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">+ Restore</button></div></div>`;
   });
   return h;
 }
@@ -5802,11 +5805,11 @@ function toggleSide(exId, origIdx){
 function buildTagEditorHTML(ex, passId){
   const tagOvr = state.exerciseTagOverrides?.[ex.id]||{};
   const TAGS = [
-    {key:'ramp',    label:'Ramp',       color:'#d4a030', bg:'#1a1000'},
-    {key:'bw',      label:'BW+',        color:'#5aaa5a', bg:'#0a140a'},
-    {key:'uni',     label:'Unilateral', color:'#c89030', bg:'#120e00'},
-    {key:'timed',   label:'Timed',      color:'#7ab',    bg:'#08101a'},
-    {key:'singles', label:'Singles',    color:'#c07060', bg:'#140a0a'},
+    {key:'ramp',    label:'Ramp',       desc:'Öka vikten på varje set (ramping upp)',     color:'#d4a030', bg:'#1a1000'},
+    {key:'bw',      label:'BW+',        desc:'Kroppsvikt + extra last (t.ex. viktbälte)', color:'#5aaa5a', bg:'#0a140a'},
+    {key:'uni',     label:'Unilateral', desc:'En sida i taget (vänster/höger separat)',   color:'#c89030', bg:'#120e00'},
+    {key:'timed',   label:'Timed',      desc:'Tidsbaserat i sekunder, inte reps',         color:'#7ab',    bg:'#08101a'},
+    {key:'singles', label:'Singles',    desc:'1-rep sets med tung vikt, lång vila',       color:'#c07060', bg:'#140a0a'},
   ];
   const eid=ex.id, pid=passId;
   const btnHtml = TAGS.map(function(t){
@@ -5822,10 +5825,17 @@ function buildTagEditorHTML(ex, passId){
       ';font-family:var(--mono);font-size:.46rem;letter-spacing:.06em;text-transform:uppercase;',
       'padding:4px 10px;cursor:pointer;border-radius:2px;transition:all .15s;">',t.label,'</button>'].join('');
   }).join('');
+  const legendHtml = TAGS.map(function(t){
+    return ['<div style="display:flex;gap:6px;align-items:baseline;font-family:var(--mono);font-size:.5rem;line-height:1.4;">',
+      '<span style="color:',t.color,';min-width:64px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;">',t.label,'</span>',
+      '<span style="color:#888;">',t.desc,'</span>',
+      '</div>'].join('');
+  }).join('');
   const user=currentUser?.name||'you';
   return ['<div id="tagwrap-',eid,'" style="display:none;margin:6px 0;padding:8px;border:1px solid #1a2a3a;background:#080e18;">',
     '<div style="font-family:var(--mono);font-size:.48rem;color:#7ab;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Exercise Tags</div>',
-    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">',btnHtml,'</div>',
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">',btnHtml,'</div>',
+    '<div style="display:flex;flex-direction:column;gap:4px;padding:8px;background:#050a12;border:1px solid #14202c;margin-bottom:8px;">',legendHtml,'</div>',
     '<div style="font-family:var(--mono);font-size:.44rem;color:#444;">Changes apply for ',user,' only.</div>',
     '</div>'].join('');
 }
@@ -6045,23 +6055,31 @@ function unskipExercise(passId,exId){ensureDraft(passId);delete state.draft.save
 
 // Permanently remove an exercise from a pass — survives across sessions
 async function removeExerciseFromSession(exId, passId){
-  // Get exercise name for confirmation
+  // Get exercise name for confirmation — handle both base and added exercises
+  const isAdded = exId.startsWith('added_');
   const base = BASE_SESSIONS.find(p => p.id === passId);
-  const ex = base?.exercises.find(e => e.id === exId);
+  const ex = isAdded
+    ? state.addedExercises?.[passId]?.find(e => e.id === exId)
+    : base?.exercises.find(e => e.id === exId);
   const exName = state.exerciseOverrides?.[exId] || ex?.name || 'this exercise';
-  
+
   const ok = await askModalConfirm('Remove exercise?',
     `<strong>${escapeHTML(exName)}</strong> will be removed from this session permanently. You can add it back later from the Edit menu. Existing log history is kept.`,
     { confirmLabel: 'Remove', danger: true }
   );
   if(!ok) return;
-  
-  if(!state.removedExercises) state.removedExercises = {};
-  if(!state.removedExercises[passId]) state.removedExercises[passId] = [];
-  if(!state.removedExercises[passId].includes(exId)){
-    state.removedExercises[passId].push(exId);
+
+  if(isAdded){
+    // Added exercise: remove from addedExercises (removedExercises is for base only)
+    removeAddedExercise(exId, passId);
+  } else {
+    if(!state.removedExercises) state.removedExercises = {};
+    if(!state.removedExercises[passId]) state.removedExercises[passId] = [];
+    if(!state.removedExercises[passId].includes(exId)){
+      state.removedExercises[passId].push(exId);
+    }
   }
-  
+
   // Also clean up any draft state for this exercise so the UI updates properly
   if(state.draft && state.draft.passId === passId){
     delete state.draft.savedExercises[exId];
@@ -6069,10 +6087,29 @@ async function removeExerciseFromSession(exId, passId){
     if(state.draft.inputBuffer) delete state.draft.inputBuffer[exId];
     if(state.draft.swaps) delete state.draft.swaps[exId];
   }
-  
+
   save();
   rerenderSession(passId);
   showToast('Exercise removed');
+}
+
+// #6 — Permanent delete from the "Removed" list (hides it from the Removed UI).
+// Exercise stays in BASE_SESSIONS so it can still be re-added via Add Exercise.
+async function permanentlyDeleteRemoved(exId, passId){
+  const baseEx = BASE_SESSIONS.find(p=>p.id===passId)?.exercises||[];
+  const ex = baseEx.find(e=>e.id===exId);
+  const exName = state.exerciseOverrides?.[exId]||ex?.name||'this exercise';
+  const ok = await askModalConfirm('Delete permanently?',
+    `<strong>${escapeHTML(exName)}</strong> försvinner från Removed-listan. Den finns kvar i Add Exercise-bilbioteket om du vill lägga tillbaka den senare.`,
+    {confirmLabel:'Delete', danger:true}
+  );
+  if(!ok) return;
+  if(!state.hiddenRemoved) state.hiddenRemoved = {};
+  if(!state.hiddenRemoved[passId]) state.hiddenRemoved[passId] = [];
+  if(!state.hiddenRemoved[passId].includes(exId)) state.hiddenRemoved[passId].push(exId);
+  save();
+  rerenderSession(passId);
+  showToast('Removed permanently');
 }
 
 // Add a previously-removed exercise back to a pass
