@@ -3844,7 +3844,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.30.3';
+const APP_VERSION = '3.30.4';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3853,7 +3853,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.3',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.4',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -4524,19 +4524,6 @@ function buildPassBodyHTML(pass,cycle,nextId){
 
         if(!isDone){
           html+=buildTagEditorHTML(ex, passId);
-          {
-            const _ovr=state.exerciseTagOverrides?.[ex.id];
-            const _cur={ramp:_ovr?!!_ovr.ramp:!!ex.ramp,bw:_ovr?!!_ovr.bw:!!ex.bw,uni:_ovr?!!_ovr.uni:!!ex.uni,timed:_ovr?!!_ovr.timed:!!ex.timed,singles:_ovr?!!_ovr.singles:!!ex.singles};
-            const _tDefs={ramp:'Ramp',bw:'BW+',uni:'Unilateral',timed:'Timed',singles:'Singles'};
-            const _tCols={ramp:'#d4a030',bw:'#5aaa5a',uni:'#c89030',timed:'#6090c0',singles:'#c07060'};
-            let _tagBtns='';
-            ['ramp','bw','uni','timed','singles'].forEach(tag=>{
-              const on=_cur[tag];
-              _tagBtns+=`<button onclick="toggleExTag('${ex.id}','${passId}','${tag.replace("'","\'")}' )"
-                style="background:${on?'#1a1a0d':'none'};border:1px solid ${on?_tCols[tag]:'#333'};color:${on?_tCols[tag]:'#555'};font-family:var(--mono);font-size:.48rem;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;cursor:pointer;">${_tDefs[tag]}</button>`;
-            });
-            html+=`<div id="tagwrap-${ex.id}" style="display:none;margin:6px 0;padding:8px;border:1px solid #2a2a2a;background:#0d0d0d;"><div style="font-family:var(--mono);font-size:.48rem;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Exercise Tags</div><div style="display:flex;gap:6px;flex-wrap:wrap;">${_tagBtns}</div><div style="font-family:var(--mono);font-size:.44rem;color:#444;margin-top:6px;">Tag changes affect set structure immediately.</div></div>`;
-          }
           html+=`<div id="notewrap-${ex.id}" style="display:none" class="ex-note-wrap">
             <textarea class="ex-note-input" id="noteinput-${ex.id}" placeholder="Note for next time...">${escapedNote}</textarea>
             <div class="ex-note-actions">
