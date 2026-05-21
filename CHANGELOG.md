@@ -6,6 +6,15 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.30.10 — 2026-05-21
+**Custom exercise add-bugg (LT), Tags-klick + engelska, Arctic textfärg, kollapsade rader polish.** Lawrence Thompson rapporterade två buggar; Niklas tre punkter från dagen:
+
+- **Custom exercise add fungerade inte (kritisk regression — LT).** Rotorsak: `confirmAddEx` använde browser-`prompt()` som blockeras av Android Chrome (och desktop Chrome om sajten visat "för många" dialogs). Bytt till `askModalText`-modal med category-selector, samma mönster som `doSwap`. Plus en latent crash-bug i `confirmAddPermEx` (rad 5762) där `result.trim()` anropades på ett object — fixad i samma svep. Båda flöden skapar nu även en permanent custom exercise via `addCustomExercise()` så den faktiskt syns i Custom Exercises-listan (LT's "doesn't show up in my list").
+- **Tags-klick fungerade inte (Niklas).** `buildTagEditorHTML` använde `JSON.stringify(eid)` för att bygga `onclick`-strängen — det genererar `"foo"` med dubbla quotes som krockar med `onclick="..."`-attributets egna quotes och bryter HTML-parsningen. Bytt till manuell single-quote-bygge.
+- **Tags-legenda på engelska (Niklas).** Desc-strängar i TAGS-arrayen översatta (Öka vikten → Increase weight, etc.).
+- **Arctic textfärg för ljus (Niklas).** `--gray-light` i Arctic-temat: `#5a7a88` → `#2a4a58`. Secondary text via `var(--gray-light)` (`+ note`, `Ramping → ...`, status, m.fl. — 56 användningar totalt) får nu tydlig kontrast mot den ljusa cyan-vita bakgrunden. WCAG AA-kompatibelt.
+- **Kollapsade rader — tydligare distinktion (Niklas).** Chevron `▸` upplevdes som "minus-tecken på andra sidan". Bytt till `▼` (solid down-triangle, font-size .78rem, opacity 1, tema-färg). Text `.62rem` → `.72rem`, padding `11px 10px` → `13px 12px`, separator-border `#232323` → `#303030`. Status `.5rem` → `.56rem`.
+
 ## 3.30.9 — 2026-05-20
 **AM-pill label + chevron-affordans på kollapsade övningar.** Två kvälls-fynd från Niklas + polare:
 

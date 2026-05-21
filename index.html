@@ -151,18 +151,18 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .ex-block .ex-collapsed-summary{display:none;}
 .ex-block.collapsed{padding:0;}
 .ex-block.collapsed > *:not(.ex-collapsed-summary){display:none;}
-.ex-block.collapsed .ex-collapsed-summary{display:flex;align-items:center;gap:10px;padding:11px 10px;cursor:pointer;transition:background .15s;}
-.ex-collapsed-chevron{color:#555;font-size:.65rem;width:10px;flex-shrink:0;opacity:.7;line-height:1;}
+.ex-block.collapsed .ex-collapsed-summary{display:flex;align-items:center;gap:12px;padding:13px 12px;cursor:pointer;transition:background .15s;}
+.ex-collapsed-chevron{color:var(--gray-light);font-size:.78rem;width:14px;flex-shrink:0;opacity:1;line-height:1;}
 .ex-block.collapsed .ex-collapsed-name{flex:1;min-width:0;}
 .ex-block.collapsed .ex-collapsed-summary:hover{background:rgba(255,255,255,0.03);}
 .ex-block.collapsed.saved .ex-collapsed-summary{background:#0a120a;}
 .ex-block.collapsed.done .ex-collapsed-summary{cursor:default;}
 .ex-block.collapsed.done .ex-collapsed-summary:hover{background:transparent;}
 /* #2 — separator mellan kollapsade rader för tydligare gruppering */
-.ex-block.collapsed + .ex-block.collapsed{border-top:1px solid #232323;}
-.ex-collapsed-name{font-family:var(--mono);font-size:.62rem;letter-spacing:.04em;color:var(--white);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ex-block.collapsed + .ex-block.collapsed{border-top:1px solid #303030;}
+.ex-collapsed-name{font-family:var(--mono);font-size:.72rem;letter-spacing:.05em;color:var(--white);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ex-collapsed-name .ex-tag{margin-left:6px;}
-.ex-collapsed-status{font-family:var(--mono);font-size:.5rem;color:var(--gray-light);letter-spacing:.04em;flex-shrink:0;}
+.ex-collapsed-status{font-family:var(--mono);font-size:.56rem;color:var(--gray-light);letter-spacing:.04em;flex-shrink:0;}
 .ex-header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;}
 .ex-label-col{flex:1;min-width:0;}
 .ex-name{font-size:.82rem;font-weight:500;}
@@ -994,7 +994,7 @@ body.theme-arctic{
   --gold:#5ac8e8;
   --green-bright:#00c8a0;
   --gray-mid:#c8dde5;
-  --gray-light:#5a7a88;
+  --gray-light:#2a4a58;
   --display:'Rajdhani',sans-serif;
   --sans:'Rajdhani',sans-serif;
   --mono:'DM Mono',monospace;
@@ -3876,7 +3876,7 @@ function invalidateChainCache(){ __chainCache.key = null; }
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.30.9';
+const APP_VERSION = '3.30.10';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3885,7 +3885,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.9',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.10',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -4600,7 +4600,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
         // Done-rader: ingen tap-to-expand (read-only) — använd Undo Session för att redigera.
         const _collapseAttr = isDone ? '' : ` onclick="setActiveExercise('${passId}','${ex.id}')"`;
         // Chevron som expand-affordans på vänster kant (utelämnas för done-rader som är read-only)
-        const _chevron = isDone ? '' : '<span class="ex-collapsed-chevron">▸</span>';
+        const _chevron = isDone ? '' : '<span class="ex-collapsed-chevron">▼</span>';
         html+=`<div class="ex-collapsed-summary"${_collapseAttr}>${_chevron}<div class="ex-collapsed-name">${escapeHTML(customName)}${tags}</div><div class="ex-collapsed-status">${collapsedStatus}</div></div>`;
         html+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(customName)}${tags}</div><div class="ex-detail">${ex.detail}</div>${prevText}${noteBanner}</div><div class="ex-action-col">`;
 
@@ -5759,9 +5759,28 @@ async function confirmAddPermEx(passId){
   let val = sel?.value;
   if(!val) return;
   if(val === '__CUSTOM__'){
-    const result = await askModalText('Custom exercise name', {placeholder:'Exercise name', confirmLabel:'Add'});
-    if(!result || !result.trim()) return;
-    val = result.trim();
+    if(sel) sel.value = '';
+    const result = await askModalText('Add custom exercise', {
+      placeholder: 'e.g. Cable Lateral Raises',
+      maxLength: 60,
+      confirmLabel: 'Add',
+      selectLabel: 'Category',
+      selectOptions: [
+        {value:'Chest', label:'Chest'},
+        {value:'Back', label:'Back'},
+        {value:'Shoulders', label:'Shoulders'},
+        {value:'Arms', label:'Arms'},
+        {value:'Legs', label:'Legs'},
+        {value:'Traps', label:'Traps'},
+        {value:'Core', label:'Core'},
+        {value:'Cardio', label:'Cardio'},
+        {value:'Custom', label:'Custom (no category)'}
+      ],
+      selectDefault: 'Custom'
+    });
+    if(!result || !result.text) return;
+    const newId = addCustomExercise(result.text, {cat: result.select});
+    val = state.customExercises.find(e=>e.id===newId)?.name || result.text;
   }
   const libEx = EXERCISE_LIBRARY.find(e => e.name === val);
   const customEx = state.customExercises?.find(e => e.name === val);
@@ -5902,11 +5921,11 @@ function toggleSide(exId, origIdx){
 function buildTagEditorHTML(ex, passId){
   const tagOvr = state.exerciseTagOverrides?.[ex.id]||{};
   const TAGS = [
-    {key:'ramp',    label:'Ramp',       desc:'Öka vikten på varje set (ramping upp)',     color:'#d4a030', bg:'#1a1000'},
-    {key:'bw',      label:'BW+',        desc:'Kroppsvikt + extra last (t.ex. viktbälte)', color:'#5aaa5a', bg:'#0a140a'},
-    {key:'uni',     label:'Unilateral', desc:'En sida i taget (vänster/höger separat)',   color:'#c89030', bg:'#120e00'},
-    {key:'timed',   label:'Timed',      desc:'Tidsbaserat i sekunder, inte reps',         color:'#7ab',    bg:'#08101a'},
-    {key:'singles', label:'Singles',    desc:'1-rep sets med tung vikt, lång vila',       color:'#c07060', bg:'#140a0a'},
+    {key:'ramp',    label:'Ramp',       desc:'Increase weight each set (ramping up)',     color:'#d4a030', bg:'#1a1000'},
+    {key:'bw',      label:'BW+',        desc:'Bodyweight + added load (e.g. weight belt)', color:'#5aaa5a', bg:'#0a140a'},
+    {key:'uni',     label:'Unilateral', desc:'One side at a time (left/right separately)', color:'#c89030', bg:'#120e00'},
+    {key:'timed',   label:'Timed',      desc:'Time-based in seconds, not reps',           color:'#7ab',    bg:'#08101a'},
+    {key:'singles', label:'Singles',    desc:'1-rep sets with heavy weight, long rest',   color:'#c07060', bg:'#140a0a'},
   ];
   const eid=ex.id, pid=passId;
   const btnHtml = TAGS.map(function(t){
@@ -5916,7 +5935,7 @@ function buildTagEditorHTML(ex, passId){
     const bg=active?t.bg:'none';
     const bc=active?t.color:'#333';
     const tc=active?t.color:'#555';
-    const call=['toggleExTag(',JSON.stringify(eid),',',JSON.stringify(pid),',',JSON.stringify(t.key),')'].join('');
+    const call="toggleExTag('"+eid+"','"+pid+"','"+t.key+"')";
     return ['<button onclick="',call,'"',
       ' style="background:',bg,';border:1px solid ',bc,';color:',tc,
       ';font-family:var(--mono);font-size:.46rem;letter-spacing:.06em;text-transform:uppercase;',
@@ -6417,11 +6436,34 @@ async function doSwap(exId,val,passId){
   rerenderSession(passId);
 }
 function showAddEx(passId){document.getElementById('addbtn-'+passId).style.display='none';document.getElementById('addform-'+passId).style.display='flex';setTimeout(()=>document.getElementById('addinput-'+passId)?.focus(),50);}
-function confirmAddEx(passId){
+async function confirmAddEx(passId){
   const inp=document.getElementById('addinput-'+passId);
   let name=inp?.value.trim();
   if(!name)return;
-  if(name==='__CUSTOM__'){name=prompt('Exercise name:');if(!name||!name.trim())return;name=name.trim();}
+  if(name==='__CUSTOM__'){
+    if(inp) inp.value='';
+    const result = await askModalText('Add custom exercise', {
+      placeholder: 'e.g. Cable Lateral Raises',
+      maxLength: 60,
+      confirmLabel: 'Add',
+      selectLabel: 'Category',
+      selectOptions: [
+        {value:'Chest', label:'Chest'},
+        {value:'Back', label:'Back'},
+        {value:'Shoulders', label:'Shoulders'},
+        {value:'Arms', label:'Arms'},
+        {value:'Legs', label:'Legs'},
+        {value:'Traps', label:'Traps'},
+        {value:'Core', label:'Core'},
+        {value:'Cardio', label:'Cardio'},
+        {value:'Custom', label:'Custom (no category)'}
+      ],
+      selectDefault: 'Custom'
+    });
+    if(!result || !result.text) return;
+    const newId = addCustomExercise(result.text, {cat: result.select});
+    name = state.customExercises.find(e=>e.id===newId)?.name || result.text;
+  }
   ensureDraft(passId);
   state.draft.extras.push({name});
   save();rerenderSession(passId);
