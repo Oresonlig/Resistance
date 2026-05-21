@@ -3401,6 +3401,8 @@ async function handleSession(session){
     showAppShell();
     initTheme();
     const hv=document.getElementById('headerVersion');if(hv)hv.textContent=APP_VERSION;
+    // PM12: varna om Private Browsing efter app-shell renderats
+    if(detectStorageQuotaIssue()) showPrivateModeBanner();
     refreshAmPill();
     requestNotificationPermission && requestNotificationPermission();
     if(!state.onboardingDone){
@@ -3882,7 +3884,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.30.12';
+const APP_VERSION = '3.30.13';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3891,7 +3893,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.12',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.13',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -6436,6 +6438,31 @@ function ensureExtraSets(exId, passId){
     }
   }
 }
+// PM11: Iterera ALLA exercises i nuvarande draft och fånga deras DOM-input-värden
+// till state.draft.inputBuffer. Används av pagehide/visibilitychange/beforeunload
+// så halvloggade sets inte förloras vid iOS Safari background-tab-purge.
+function captureAllDraftInputs(){
+  if(!state.draft) return;
+  const passId = state.draft.passId;
+  if(!passId) return;
+  const chain = getEffectiveChain();
+  const pass = chain.find(p => p.id === passId);
+  if(!pass) return;
+  // Base + added exercises (alla har egna id:n)
+  for(const ex of (pass.exercises || [])){
+    if(state.draft.extraSets?.[ex.id]){
+      try{ captureInputsToSetsBuffer(ex.id, passId); }catch(e){ /* skip broken row, continue */ }
+    }
+  }
+  // Extras (session-only, id-format: extra_<passId>_<idx>)
+  for(let i = 0; i < (state.draft.extras||[]).length; i++){
+    const exId = 'extra_' + passId + '_' + i;
+    if(state.draft.extraSets?.[exId]){
+      try{ captureInputsToSetsBuffer(exId, passId); }catch(e){ /* skip */ }
+    }
+  }
+}
+
 function captureInputsToSetsBuffer(exId,passId){
   ensureExtraSets(exId,passId);
   const isExtra=exId.startsWith('extra_');
@@ -7552,6 +7579,29 @@ function showOldVersionBanner(cloudVersion){
   document.body.appendChild(banner);
 }
 
+// PM12: Detektera iOS Safari Private Browsing (eller annan localStorage-blockering).
+// Private Mode sätter quota till 0 → varje setItem kastar QuotaExceededError omedelbart.
+// Användaren förlorar ALL data vid tab-stängning utan att veta om det.
+function detectStorageQuotaIssue(){
+  try{
+    const probe = '__quota_probe_' + Date.now();
+    localStorage.setItem(probe, '1');
+    localStorage.removeItem(probe);
+    return false;
+  }catch(e){
+    return true;
+  }
+}
+
+function showPrivateModeBanner(){
+  if(document.getElementById('private-mode-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'private-mode-banner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#8b1a2a;color:#fff;font-family:var(--mono);font-size:.6rem;text-align:center;padding:8px 12px;z-index:9999;letter-spacing:.05em;line-height:1.5;border-bottom:1px solid #c8960c;';
+  banner.innerHTML = '<strong>Private Browsing detected</strong> — your training data WILL NOT be saved between sessions.<br><span style="font-size:.55rem;opacity:.85;">Open thechain.training in a regular tab to keep your data.</span>';
+  document.body.appendChild(banner);
+}
+
 // Also pull on window focus (covers cases where visibilitychange doesn't fire)
 window.addEventListener('focus',()=>{
   // Throttle: skip if synced within last 5 seconds
@@ -7571,13 +7621,15 @@ function startPeriodicSync(){
     }
   }, 30000);
 }
-window.addEventListener('beforeunload',()=>{
+// PM11: konsoliderad keepalive-push använd av beforeunload + pagehide.
+// fetch med keepalive:true överlever page close och kan skicka auth-headers
+// (sendBeacon kan inte sätta headers, så Supabase rejectade tyst).
+function keepaliveCloudPush(){
   if(!currentUser) return;
-  // Try to get the active session token synchronously from Supabase client
-  // (it stores the session in localStorage as a known key)
+  if(isFreshState(state)) return;
+  // Hämta auth-token synkront från Supabase-clients localStorage-nyckel
   let authToken = SB_KEY;
   try{
-    // Supabase v2 stores session in localStorage with this key pattern
     const lsKeys = Object.keys(localStorage);
     const sbKey = lsKeys.find(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
     if(sbKey){
@@ -7585,19 +7637,14 @@ window.addEventListener('beforeunload',()=>{
       if(session?.access_token) authToken = session.access_token;
     }
   }catch(e){ /* fall back to anon */ }
-  
-  // Skip push if state is fresh (safety guard)
-  if(isFreshState(state)) return;
 
-  // SL6: exclude draft från beforeunload-payload också
+  // SL6: exclude draft från payload
   const _payloadState = {...state};
   delete _payloadState.draft;
-  // fetch with keepalive survives page close AND sends auth headers
-  // (sendBeacon can't set custom headers, so Supabase rejected it silently)
-  const payload=JSON.stringify({
-    id:currentUser.id,
-    data:_payloadState,
-    updated_at:new Date().toISOString()
+  const payload = JSON.stringify({
+    id: currentUser.id,
+    data: _payloadState,
+    updated_at: new Date().toISOString()
   });
   try{
     fetch(SB_URL+'/rest/v1/app_state',{
@@ -7611,12 +7658,31 @@ window.addEventListener('beforeunload',()=>{
       body:payload,
       keepalive:true
     }).catch(()=>{});
-  }catch(e){/* best-effort */}
+  }catch(e){ /* best-effort */ }
+}
+
+window.addEventListener('beforeunload',()=>{
+  if(!currentUser) return;
+  // PM11: fånga DOM-inputs innan keepalive-push så halvloggade sets bevaras
+  try{ captureAllDraftInputs(); }catch(e){}
+  try{ if(!isFreshState(state)) localStorage.setItem(lsKey(currentUser.id), JSON.stringify(state)); }catch(e){}
+  keepaliveCloudPush();
+});
+
+// PM11: pagehide är mer reliabel än beforeunload på iOS Safari (fires vid background-tab-purge).
+// Capture + lokal save + keepalive-push så halvloggade kg/reps överlever även när tab killas.
+window.addEventListener('pagehide',()=>{
+  if(!currentUser) return;
+  try{ captureAllDraftInputs(); }catch(e){}
+  try{ if(!isFreshState(state)) localStorage.setItem(lsKey(currentUser.id), JSON.stringify(state)); }catch(e){}
+  keepaliveCloudPush();
 });
 
 // Push on hide, pull on show (more reliable than beforeunload on mobile/desktop)
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'&&currentUser&&!isLoading&&!isFreshState(state)){
+    // PM11: fånga DOM-inputs innan push så halvloggade sets inte tappas
+    try{ captureAllDraftInputs(); }catch(e){}
     clearTimeout(saveTimer);
     saveTimer = null;
     pushState();

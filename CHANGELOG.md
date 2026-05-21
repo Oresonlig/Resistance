@@ -6,6 +6,16 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.30.13 — 2026-05-21
+**PM11 + PM12 — iOS Safari background tab purge och Private Mode.** Två iOS-specifika dataförlust-vägar som tidigare var tysta.
+
+- **PM12 — Private Browsing-varning.** iOS Safari Private Mode sätter `localStorage`-quota till 0 (`setItem` kastar `QuotaExceededError` omedelbart). Användaren förlorade all sin data vid tab-stängning utan att veta om det. Ny `detectStorageQuotaIssue()` (quota-probe via `localStorage.setItem('__quota_probe__', '1')` i try/catch) körs i `handleSession` efter `showAppShell`. Om probe failar visas permanent röd banner: *"Private Browsing detected — your training data WILL NOT be saved between sessions. Open thechain.training in a regular tab to keep your data."* PM8-fixen (toast vid quota-fel) finns kvar som backup.
+- **PM11 — Background tab purge.** iOS Safari kan kill background-tabbar för att frigöra minne. Halvloggade kg/reps/forced i DOM-inputs som inte hunnit synkas till `state.draft.inputBuffer` försvinner. Ny `captureAllDraftInputs()` itererar alla aktiva exercises i `state.draft` och anropar `captureInputsToSetsBuffer(exId, passId)` för varje. Hookat in i tre paths:
+  - Ny `pagehide`-handler (mer reliabel än `beforeunload` på iOS-purge) → capture + lokal save + `keepaliveCloudPush()`
+  - `beforeunload` uppdaterad med samma capture + lokal save innan keepalive-push
+  - `visibilitychange` hidden uppdaterad att capture innan `pushState()`
+- **Refaktor:** beforeunload-handlerns inline payload-bygge + fetch extraherad till `keepaliveCloudPush()`-helper. Återanvänds av nya pagehide-handler. Inga funktionella ändringar i beforeunload utöver capture-tillägg.
+
 ## 3.30.12 — 2026-05-21
 **PM6/PM7/PM8 — slutför premortem-tail som var samma kategori som SL-fynden.** Niklas påpekade att jag missade att bunche dessa med 3.30.11 trots att de hör hemma i samma audit.
 
