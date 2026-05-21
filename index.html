@@ -3472,13 +3472,8 @@ async function loadStateForUser(){
       }, 500);
     }
   }
-  // Restore pass name overrides into BASE_SESSIONS
-  if(state.sessionNameOverrides){
-    Object.entries(state.sessionNameOverrides).forEach(([pid,name])=>{
-      const bp = BASE_SESSIONS.find(p=>p.id===pid);
-      if(bp) bp.name = name;
-    });
-  }
+  // PM7: BASE_SESSIONS muteras inte längre vid load — render-funktioner använder
+  // getSessionName(passId) som resolve:ar overrides vid läsning istället.
 }
 
 // Ensure all expected state fields exist with sensible defaults.
@@ -3875,9 +3870,19 @@ function getEffectiveChain(){
 // Call this when chain structure changes (reorder, add/remove pass)
 function invalidateChainCache(){ __chainCache.key = null; }
 
+// PM7: Resolve session-namn vid läsning istället för att mutera BASE_SESSIONS[i].name.
+// Tidigare arkitektur muterade BASE_SESSIONS vid load + sync vilket var en global
+// mutable-bugg (race-risk + svår att resonera om). Render-funktioner använder nu
+// denna helper för att alltid få aktuellt namn utan att kräva mutation.
+function getSessionName(passId){
+  if(state.sessionNameOverrides && state.sessionNameOverrides[passId]) return state.sessionNameOverrides[passId];
+  const base = BASE_SESSIONS.find(p => p.id === passId);
+  return base?.name || passId;
+}
+
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.30.11';
+const APP_VERSION = '3.30.12';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3886,7 +3891,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.11',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.12',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -4194,13 +4199,8 @@ async function syncFromCloud(userId){
         // SL6: draft är device-lokal
         state.draft = _local.draft;
 
-        BASE_SESSIONS.forEach(p=>{ if(_BASE_SESSION_NAMES[p.id]) p.name = _BASE_SESSION_NAMES[p.id]; });
-        if(state.sessionNameOverrides){
-          Object.entries(state.sessionNameOverrides).forEach(([pid,name])=>{
-            const bp = BASE_SESSIONS.find(p=>p.id===pid);
-            if(bp) bp.name = name;
-          });
-        }
+        // PM7: BASE_SESSIONS muteras inte längre — getSessionName(passId) resolve:ar
+        // overrides vid läsning. Tidigare reset + re-apply hade race-potential.
         state.log = mergedLog;
         state.weightLog = mergedWeight;
         state.lastSyncedCloudTime = cloudServerTime;
@@ -4349,9 +4349,25 @@ async function pushState(opts={}){
 }
 function save(){
   if(isLoading) return; // never write during load phase — prevents mobile overwriting cloud
+  // PM6: vägra skriva freshState till localStorage — analog till pushState's safety guard.
+  // Race-conditions kunde annars permanent skriva över real data med tom state.
+  if(currentUser && isFreshState(state)){
+    console.warn('Refusing to save fresh state to localStorage (safety guard)');
+    return;
+  }
   invalidateChainCache(); // chain may have changed
   state.updatedAt=Date.now();
-  if(currentUser){try{localStorage.setItem(lsKey(currentUser.id),JSON.stringify(state));}catch(e){console.warn('localStorage write failed',e);}}
+  if(currentUser){
+    try{
+      localStorage.setItem(lsKey(currentUser.id),JSON.stringify(state));
+    }catch(e){
+      console.warn('localStorage write failed',e);
+      // PM8: visa toast vid quota-fel istället för bara tyst console.warn
+      if(e && (e.name === 'QuotaExceededError' || e.code === 22 || /quota/i.test(e.message||''))){
+        try{ showToast('Local storage full — recent changes may not be saved offline', 5000); }catch(_){}
+      }
+    }
+  }
   scheduleSave();
 }
 
@@ -4583,7 +4599,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
   else if(inProgress)statusBadge=`<span class="session-ex-status progress">Draft</span>`;
   else if(isNext)statusBadge=`<span class="session-ex-status next-up">Next up</span>`;
 
-  let html=`<div class="pass-ex-header${isRest?' rest-day':''}"><div class="pass-ex-letter">${displayLetter}</div><div class="pass-ex-name">${escapeHTML(pass.name)}</div>${statusBadge}</div>`;
+  let html=`<div class="pass-ex-header${isRest?' rest-day':''}"><div class="pass-ex-letter">${displayLetter}</div><div class="pass-ex-name">${escapeHTML(getSessionName(pass.id))}</div>${statusBadge}</div>`;
 
     if(isRest){
       html+=`<div class="rest-content">Active rest. Light walk or dead hang at home.<br>No heavy lifting — recovery IS training.</div><div class="pass-actions">${isDone?`<button class="btn-ghost" onclick="undoSession('${passId}')">↩ Undo</button>`:`<button class="btn-ghost" onclick="doneRest('${passId}')">Mark Rest Done →</button>`}</div>`;
@@ -4952,13 +4968,14 @@ function renderChain(){
     const isSelected=passId===_chainSelectedId;
     const distance=Math.abs(chainIdx-activeIdx);
     const displayLetter=pass.displayLetter||(isRest?'V':passId);
-    const shortName=pass.name.replace(/[^A-Za-z]/g,'').substring(0,3).toUpperCase();
+    const sessName=getSessionName(pass.id);
+    const shortName=sessName.replace(/[^A-Za-z]/g,'').substring(0,3).toUpperCase();
     let tabCls='chain-tab';
     if(isSelected)tabCls+=' active';
     else if(distance===1)tabCls+=' adjacent';
     if(isDone&&!isSelected)tabCls+=' done';
     if(isRest)tabCls+=' rest-day';
-    html+=`<div class="${tabCls}" id="chain-tab-${passId}" onclick="selectSession('${passId}')"><div class="chain-tab-letter">${displayLetter}</div><div class="chain-tab-name-full">${escapeHTML(pass.name)}</div><div class="chain-tab-name-short">${escapeHTML(shortName)}</div></div>`;
+    html+=`<div class="${tabCls}" id="chain-tab-${passId}" onclick="selectSession('${passId}')"><div class="chain-tab-letter">${displayLetter}</div><div class="chain-tab-name-full">${escapeHTML(sessName)}</div><div class="chain-tab-name-short">${escapeHTML(shortName)}</div></div>`;
   });
   html+=`</div></div>`;
 
@@ -4994,7 +5011,7 @@ function buildReorderUI(effectiveChain){
       ontouchend="touchEnd(event,'${pid}')"
       style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #3a3a3a;margin-bottom:6px;cursor:grab;background:#1a1a1a;touch-action:none;-webkit-user-select:none;user-select:none;">
       <span style="font-family:var(--display);font-size:1.3rem;color:var(--red);min-width:20px;">${letter}</span>
-      <span style="font-family:var(--sans);font-size:.82rem;flex:1;color:var(--white);">${escapeHTML(pass.name)}</span>
+      <span style="font-family:var(--sans);font-size:.82rem;flex:1;color:var(--white);">${escapeHTML(getSessionName(pid))}</span>
       <span style="color:var(--gray-light);font-size:1.1rem;letter-spacing:2px;">⠿</span>
     </div>`;
   });
@@ -5066,9 +5083,6 @@ function buildReorderUI(effectiveChain){
 
 
 // ── PASS MANAGEMENT — add/remove passes ──────────────────────
-// Snapshot original pass names so we can restore them when overrides change
-const _BASE_SESSION_NAMES = Object.fromEntries(BASE_SESSIONS.map(p => [p.id, p.name]));
-
 const SESSION_TEMPLATES=[
   {id:'A',name:'Chest + Tri',exercises:[{id:'A1',name:'Flat BB',detail:'Ramping → 1 set failure',ramp:true},{id:'A2',name:'Incline Smith Press',detail:'1 set failure'},{id:'A3',name:'Cable Flyes',detail:'Full ROM · 1 set failure'},{id:'A4',name:'Tricep Pushdowns',detail:'1 set failure'}]},
   {id:'B',name:'Back Heavy + Biceps',exercises:[{id:'B1',name:'Dead Hang',detail:'1 set failure',bw:true,timed:true},{id:'B2',name:'Deadlift',detail:'Ramping → work sets to failure',ramp:true},{id:'B3',name:'Unilateral Cable Row',detail:'1 set failure',uni:true},{id:'B4',name:'Lat Prayers',detail:'1 set failure'}]},
@@ -6380,7 +6394,7 @@ function finishSession(passId){
   });
   const today=new Date().toLocaleDateString('en-GB',{month:'short',day:'numeric'});
   curCycle().done[passId]={date:today,exercises};
-  state.log.push({passId,passName:pass.name,timestamp:Date.now(),exercises});
+  state.log.push({passId,passName:getSessionName(pass.id),timestamp:Date.now(),exercises});
   state.draft=null;
   save();pushState();showToast('Session done! 💪');renderChain();
 }

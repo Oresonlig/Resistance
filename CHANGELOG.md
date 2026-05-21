@@ -6,6 +6,13 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.30.12 — 2026-05-21
+**PM6/PM7/PM8 — slutför premortem-tail som var samma kategori som SL-fynden.** Niklas påpekade att jag missade att bunche dessa med 3.30.11 trots att de hör hemma i samma audit.
+
+- **PM6 — `save()` saknar `isFreshState`-guard.** `pushState` vägrade redan pusha fresh state till cloud, men `save()` kunde fortfarande skriva freshState till localStorage. Race kunde permanent korrumpera localStorage med tom data. Analog guard tillagd: `if(currentUser && isFreshState(state)) return;` innan localStorage-write.
+- **PM7 — `BASE_SESSIONS`-mutering borttagen (rotorsak).** Tidigare muterades `BASE_SESSIONS[i].name` vid load + syncFromCloud till `state.sessionNameOverrides[id]`. Global mutable är race-känslig och svår att resonera om. Ny helper `getSessionName(passId)` resolve:ar overrides vid läsning. Mutering borttagen från `loadUserData` och `syncFromCloud`. Direkt-läsningar (`pass.name`) i renderChain (pass-header + chain-strip), reorder-list (rad ~5013) och finishSession (log-entry `passName`) uppdaterade till `getSessionName(pass.id)`. `_BASE_SESSION_NAMES`-cachen borttagen (dead code efter). SL7-mutexen från 3.30.11 är fortfarande på plats som extra skydd.
+- **PM8 — localStorage quota-fel inte längre tyst.** `save()`-catch:en visar nu `showToast('Local storage full — recent changes may not be saved offline', 5000)` vid `QuotaExceededError`/code 22/quota-message. Detekterar via `e.name`, `e.code` eller regex på `e.message` (cross-browser varianter).
+
 ## 3.30.11 — 2026-05-21
 **Synk-audit — täpper SL1–SL9.** Niklas bad om proaktiv audit av synk-funktionen efter LT:s "desktop-modding försvinner på mobilen". Audit hittade 9 luckor i `syncFromCloud`/`pushState`/event-handlers. Alla fixade i denna release. Trade-off accepterad: deletes från andra enheten kan återuppstå om denna enhet hade gamla data — bättre än att tappa creates (vilket var nuvarande beteende).
 
