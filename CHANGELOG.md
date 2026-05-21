@@ -6,6 +6,18 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.30.11 — 2026-05-21
+**Synk-audit — täpper SL1–SL9.** Niklas bad om proaktiv audit av synk-funktionen efter LT:s "desktop-modding försvinner på mobilen". Audit hittade 9 luckor i `syncFromCloud`/`pushState`/event-handlers. Alla fixade i denna release. Trade-off accepterad: deletes från andra enheten kan återuppstå om denna enhet hade gamla data — bättre än att tappa creates (vilket var nuvarande beteende).
+
+- **SL2 — Merge per-id istället för `state=cloud`-overwrite.** Tidigare ersattes hela state med cloud när `cloudHasNewerState`, vilket utraderade lokala icke-loggade ändringar (custom, swaps, notes, tags). Nya merge-helpers (`mergeArrayById`, `mergeKeyedMap`, `mergeArrayUnion`, `mergeMapOfArrays`, `mergeMapOfArrayById`) mergar union per id/key med cloud-wins-vid-konflikt. Skyddar `customExercises`, `addedExercises`, `removedExercises`, `hiddenRemoved`, `exerciseOverrides`, `sessionNameOverrides`, `exerciseNotes`, `exerciseTagOverrides`, `permanentSwaps`, `exerciseOrder`, `ignoredPRs`, `importedPRs`, `lastSessionSetCount`, `lastSessionNotes`.
+- **SL1 + SL9 — Flush-before-sync.** `flushAndSync(userId)` flushar pending debounced push INNAN sync körs. Visibility-change-visible, window-focus och periodic 30s-sync använder den nu. Tidigare kunde 200ms-gamla lokala ändringar (inom 800ms-debounce-fönster) bli överskrivna av sync.
+- **SL3 — Pull-before-push i `pushState`.** Innan upsert: kör `syncFromCloud` så lokal state mergas med cloud's nya entries. Skyddar mot last-write-wins-overwrite när andra enheten just pushade. Skippas vid retry (vi har redan failed state att skicka) och om sync redan pågår.
+- **SL4 — `state.hiddenRemoved` defaults.** 3.30.7 introducerade fältet men glömde init i `ensureStateDefaults` och `freshState`. Krasch-risk vid cold load eller efter `state=cloud` med gammal cloud-data. Defaults tillagda.
+- **SL5 — Server-timestamp från upsert response.** `sbUpsert` använder nu `Prefer: return=representation` och returnerar `updated_at` från servern. `pushState` sätter `lastSyncedCloudTime` till server-tid istället för `Date.now()`. Eliminerar clock-skew-bug där klient med klockan framåt ignorerade legitima cloud-uppdateringar.
+- **SL6 — Exclude `draft` från cloud.** Drafts är device-lokala (pågående session med inputBuffer/loggedSets hör inte hemma i delad state). `pushState` klonar state utan draft, `syncFromCloud` bevarar lokal draft vid `state=cloud`. Beforeunload-fetch också uppdaterad.
+- **SL7 — Mutex på `syncFromCloud`.** `_syncInFlight`-flagga förhindrar två parallella sync-anrop som kunde lämna `BASE_SESSIONS` i halvuppdaterat tillstånd (PM7).
+- **SL8 — Retry vid push-fel.** Exponential backoff (2s, 4s, 8s × 3 retries) via `_pushRetryTimer`. Tidigare tystnade fel — om appen stängdes innan nästa save var cloud out-of-sync.
+
 ## 3.30.10 — 2026-05-21
 **Custom exercise add-bugg (LT), Tags-klick + engelska, Arctic textfärg, kollapsade rader polish.** Lawrence Thompson rapporterade två buggar; Niklas tre punkter från dagen:
 
