@@ -6,6 +6,15 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.30.14 — 2026-05-21
+**Data-säkerhetspaket: PM20 + PM17 + PM9 + delete-tombstones + PM10-verifiering.** Sista buntningen av premortem-tail.
+
+- **Delete-tombstones för icke-blob-fält.** Trade-offen från SL2 (3.30.11) där deletes kunde återuppstå om en enhet hade gamla data. Ny `state.deletions = { customExercises: {id: timestamp}, exerciseNotes: {id: timestamp} }` (TTL 30 dagar). `deleteCustomExercise()` och `saveNote()` (clear-path) registrerar tombstones. `mergeArrayById` och `mergeKeyedMap` accepterar optional `tombstones`-param och filtrerar bort items. `syncFromCloud` mergar deletions-maps själva (cloud-wins per id) och skickar relevanta sets till merge-helpers. TTL-cleanup i `ensureStateDefaults` (gamla tombstones rensas → eventuell resurrection accepteras efter 30 dagar offline). `src/merge-helpers.js` + tests synkade: 27/27 nu (+4 tombstone-tests).
+- **PM20 — Schema-versioning.** `state.schemaVersion` + `SCHEMA_VERSION`-konstant (= 1, baseline post-tombstones) + `SCHEMA_MIGRATIONS`-pipeline-objekt + `runSchemaMigrations()` med safety-cap. Anropas efter `ensureStateDefaults` i alla load-paths (loadStateForUser lokal + cloud + syncFromCloud cloudHasNewerState). Framtida breaking state-format-ändringar: bumpa SCHEMA_VERSION + registrera migration N → N+1.
+- **PM17 — Sync-dot tooltip.** `setSyncDot()` uppdaterar dynamiskt `title`-attribute med "Pull: Xm ago · Push: Ym ago · Last error: Z". `_lastSyncError` lagras vid catch i `syncFromCloud`/`pushState`, rensas vid lyckad sync. Mest värde på desktop (mobil-browsers visar inte title-attribute vid touch — där är klicka-till-Settings den primära affordans:en).
+- **PM9 — `safeHTML` template-tag (begränsad scope).** Ny utility-funktion som auto-escapar interpolerade `${expr}`. Användning: `safeHTML\`<div>${userInput}</div>\``. För framtida render-kod som rör user-data. Existing import-paths är redan escapade (audit visade att 3.6.0 + 3.27.0 stängde de uppenbara hålen). Full arkitektur-refaktor av `innerHTML`-paths är PM19 (kvarstår).
+- **PM10 — Password-reset-verifiering (manuell).** *Kräver Niklas: logga ut → trigga reset-mail från auth-skärmen → följ länken → verifiera att `inPasswordRecovery`-flaggan från 3.17.1 inte loggar in dig automatiskt utan visar reset-form. Inget koda ändras här — bara verifiering att existing fix fortfarande fungerar.*
+
 ## 3.30.13 — 2026-05-21
 **PM11 + PM12 — iOS Safari background tab purge och Private Mode.** Två iOS-specifika dataförlust-vägar som tidigare var tysta.
 

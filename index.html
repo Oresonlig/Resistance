@@ -3436,6 +3436,7 @@ async function loadStateForUser(){
       ensureStateDefaults && ensureStateDefaults();
       if(state.migrations && !state.migrations.exerciseSplit_v2)
         migrateExerciseNames && migrateExerciseNames();
+      runSchemaMigrations && runSchemaMigrations();
     }catch(e){
       console.warn('Local state parse failed', e);
       state = freshState();
@@ -3455,6 +3456,7 @@ async function loadStateForUser(){
         state = rows[0].data;
         migratePassKeysToSession && migratePassKeysToSession();
         ensureStateDefaults && ensureStateDefaults();
+        runSchemaMigrations && runSchemaMigrations();
         localStorage.setItem(lsKey(currentUser.id), JSON.stringify(state));
         showToast && showToast('Restored from cloud ✓');
       } else {
@@ -3513,6 +3515,21 @@ function ensureStateDefaults(){
   if(!state.lastSessionNotes || typeof state.lastSessionNotes !== 'object') state.lastSessionNotes = {};
   if(!Array.isArray(state.ignoredPRs)) state.ignoredPRs = [];
   if(!state.hiddenRemoved || typeof state.hiddenRemoved !== 'object') state.hiddenRemoved = {};
+  if(typeof state.schemaVersion !== 'number') state.schemaVersion = 0;
+  // PM20+tombstones: deletions för icke-blob-fält (per-id timestamps, TTL 30d)
+  if(!state.deletions || typeof state.deletions !== 'object') state.deletions = {};
+  if(!state.deletions.customExercises) state.deletions.customExercises = {};
+  if(!state.deletions.exerciseNotes) state.deletions.exerciseNotes = {};
+  // TTL cleanup: ta bort tombstones äldre än 30 dagar
+  const TOMBSTONE_TTL = 30 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  for(const field of Object.keys(state.deletions)){
+    const map = state.deletions[field];
+    if(!map || typeof map !== 'object') continue;
+    for(const id of Object.keys(map)){
+      if(typeof map[id] !== 'number' || (now - map[id]) > TOMBSTONE_TTL) delete map[id];
+    }
+  }
 }
 
 // Default state for a fresh user
@@ -3543,7 +3560,9 @@ function freshState(){
     exerciseTagOverrides:{}, updatedAt:0,
     customExercises:[], appVersion:APP_VERSION,
     removedExercises:{}, weightStep:2.5,
-    addedExercises:{}, hiddenRemoved:{}
+    addedExercises:{}, hiddenRemoved:{},
+    schemaVersion: SCHEMA_VERSION,
+    deletions: { customExercises:{}, exerciseNotes:{} }
   };
 }
 
@@ -3884,7 +3903,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.30.13';
+const APP_VERSION = '3.30.14';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3893,7 +3912,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.13',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.14',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -3929,6 +3948,10 @@ function deleteCustomExercise(id){
     if(!list) return;
     state.permanentSwaps[passKey] = list.filter(s=>s.toId!==id);
   });
+  // Tombstone: registrera delete så andra enheter inte resurrectar via merge
+  if(!state.deletions) state.deletions = {};
+  if(!state.deletions.customExercises) state.deletions.customExercises = {};
+  state.deletions.customExercises[id] = Date.now();
   save();
 }
 
@@ -4015,6 +4038,40 @@ function migratePassKeysToSession(){
   }
 }
 
+// PM20: Schema-versioning. Bumpa SCHEMA_VERSION när breaking state-format-ändring
+// görs, och registrera en migration i SCHEMA_MIGRATIONS som tar state från
+// version N → N+1. Migrations körs i ordning vid load + efter cloud-pull.
+//
+// Aktuell version 1 = post-3.30.14 baseline (post-CRDT-merge + tombstones).
+// Tidigare ad-hoc migrations (migrateExerciseNames, migratePassKeysToSession)
+// är inte en del av denna pipeline — de körs separat innan schema-pipeline för
+// bakåtkompatibilitet.
+const SCHEMA_VERSION = 1;
+
+const SCHEMA_MIGRATIONS = {
+  // Exempel:
+  // 1: (s) => { s.newField = s.oldField ?? 'default'; delete s.oldField; return s; },
+};
+
+function runSchemaMigrations(){
+  if(!state) return;
+  let cur = (typeof state.schemaVersion === 'number') ? state.schemaVersion : 0;
+  let safety = 50; // hård cap mot oändlig loop om migration glömmer bumpa
+  while(cur < SCHEMA_VERSION && safety-- > 0){
+    const migrate = SCHEMA_MIGRATIONS[cur];
+    if(typeof migrate === 'function'){
+      try{
+        state = migrate(state) || state;
+      }catch(e){
+        console.error('Schema migration failed at v'+cur, e);
+        break;
+      }
+    }
+    cur++;
+    state.schemaVersion = cur;
+  }
+}
+
 function newCycle(){
   const c={id:Date.now(),done:{}};
   getEffectiveChain().forEach(p=>c.done[p.id]=null);
@@ -4041,6 +4098,24 @@ function escapeHTML(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
+// PM9: safeHTML — template-tag som auto-escapar interpolerade värden.
+// Användning: safeHTML`<div>${userInput}</div>` istället för `<div>${escapeHTML(userInput)}</div>`.
+// All ${expr} escapas automatiskt. Använd för NY render-kod som rör user-data
+// (custom-namn, importerad data, etc.) så vi inte glömmer escape i framtida diff:ar.
+// Existing render-kod kan migreras vid behov — PM19 är full arkitektur-refaktor.
+function safeHTML(strings, ...values){
+  let result = strings[0];
+  for(let i = 0; i < values.length; i++){
+    const v = values[i];
+    // Markera explicit "trust this HTML" via {raw:string} object för fall där
+    // sub-rendering redan har escapat (sällsynt — undvik om möjligt)
+    if(v && typeof v === 'object' && typeof v.raw === 'string') result += v.raw;
+    else result += escapeHTML(v == null ? '' : v);
+    result += strings[i+1];
+  }
+  return result;
+}
+
 // ── UNIT CONVERSION ──────────────────────────────────────────
 function toDisplay(kg){
   if(kg===null||kg===undefined)return null;
@@ -4062,12 +4137,23 @@ function unitLabel(){return state.unit||'kg';}
 // (selectUser/switchUser removed — auth screen handles all login)
 // (setUnit also removed — replaced by inline state.unit assignment)
 
+// PM17: senaste sync-fel (för tooltip/status-visning)
+let _lastSyncError = '';
+
 // Update the sync indicator in the header
 function setSyncDot(cls){
   const dot = document.getElementById('syncDot');
   if(!dot) return;
   dot.classList.remove('ok','err','syncing');
   if(cls) dot.classList.add(cls);
+  // PM17: dynamiskt title-attribute med senaste push/pull/fel
+  try{
+    const lines = [];
+    lines.push('Pull: ' + (lastSyncRead ? formatSyncAgo(lastSyncRead) : 'never'));
+    lines.push('Push: ' + (lastSyncWrite ? formatSyncAgo(lastSyncWrite) : 'never'));
+    if(_lastSyncError) lines.push('Last error: ' + _lastSyncError);
+    dot.title = lines.join(' · ');
+  }catch(e){}
 }
 
 // PM1: Merge log-entries från två källor (lokal + cloud) utan dataförlust.
@@ -4097,14 +4183,21 @@ function mergeWeightEntries(localWL, cloudWL){
 // Strategi: union per id/nyckel, cloud vinner vid konflikt (eftersom cloud anses nyare
 // i kontexten där dessa anropas). Trade-off: deletes från andra enheten kan återuppstå
 // om denna enhet hade gamla data. Accepterat — bättre än att tappa creates.
-function mergeArrayById(local, cloud, idKey='id'){
+function mergeArrayById(local, cloud, idKey='id', tombstones){
   const out = new Map();
   for(const item of local||[]) if(item && item[idKey]!=null) out.set(item[idKey], item);
   for(const item of cloud||[]) if(item && item[idKey]!=null) out.set(item[idKey], item); // cloud wins per id
+  if(tombstones && typeof tombstones === 'object'){
+    for(const id of Object.keys(tombstones)) out.delete(id);
+  }
   return Array.from(out.values());
 }
-function mergeKeyedMap(local, cloud){
-  return {...(local||{}), ...(cloud||{})}; // cloud wins per key
+function mergeKeyedMap(local, cloud, tombstones){
+  const merged = {...(local||{}), ...(cloud||{})};
+  if(tombstones && typeof tombstones === 'object'){
+    for(const k of Object.keys(tombstones)) delete merged[k];
+  }
+  return merged;
 }
 function mergeArrayUnion(local, cloud){
   const s = new Set();
@@ -4173,24 +4266,34 @@ async function syncFromCloud(userId){
           importedPRs: state.importedPRs,
           lastSessionSetCount: state.lastSessionSetCount,
           lastSessionNotes: state.lastSessionNotes,
+          deletions: state.deletions,
         };
 
         state = cloud;
         migratePassKeysToSession();
         ensureStateDefaults();
         if(!state.migrations?.exerciseSplit_v2) migrateExerciseNames();
+        runSchemaMigrations();
+
+        // Tombstones FIRST — merga deletions så de kan filtrera bort återuppståndna items
+        // i merge-stegen nedan. Cloud vinner per id (senaste tombstone-skrivning).
+        const _ld = _local.deletions || {};
+        const _cd = state.deletions || {};
+        state.deletions = {
+          customExercises: mergeKeyedMap(_ld.customExercises, _cd.customExercises),
+          exerciseNotes: mergeKeyedMap(_ld.exerciseNotes, _cd.exerciseNotes),
+        };
 
         // SL2: merga in lokala fält. Cloud vinner per id/key vid konflikt, men lokala
-        // pending creates (id:n som inte finns i cloud) bevaras. Trade-off: explicit
-        // delete från andra enheten kan återuppstå om denna enhet hade gamla data —
-        // bättre än att tappa creates.
-        state.customExercises = mergeArrayById(_local.customExercises, state.customExercises);
+        // pending creates (id:n som inte finns i cloud) bevaras. Tombstones filtrerar
+        // bort items som någon enhet medvetet raderat (förhindrar resurrect-bug).
+        state.customExercises = mergeArrayById(_local.customExercises, state.customExercises, 'id', state.deletions.customExercises);
         state.addedExercises = mergeMapOfArrayById(_local.addedExercises, state.addedExercises);
         state.removedExercises = mergeMapOfArrays(_local.removedExercises, state.removedExercises);
         state.hiddenRemoved = mergeMapOfArrays(_local.hiddenRemoved, state.hiddenRemoved);
         state.exerciseOverrides = mergeKeyedMap(_local.exerciseOverrides, state.exerciseOverrides);
         state.sessionNameOverrides = mergeKeyedMap(_local.sessionNameOverrides, state.sessionNameOverrides);
-        state.exerciseNotes = mergeKeyedMap(_local.exerciseNotes, state.exerciseNotes);
+        state.exerciseNotes = mergeKeyedMap(_local.exerciseNotes, state.exerciseNotes, state.deletions.exerciseNotes);
         state.exerciseTagOverrides = mergeKeyedMap(_local.exerciseTagOverrides, state.exerciseTagOverrides);
         state.permanentSwaps = mergeKeyedMap(_local.permanentSwaps, state.permanentSwaps);
         state.exerciseOrder = mergeKeyedMap(_local.exerciseOrder, state.exerciseOrder);
@@ -4222,10 +4325,13 @@ async function syncFromCloud(userId){
         state.lastSyncedCloudTime = cloudServerTime;
       }
     }
+    // PM17: clear error vid lyckad pull
+    _lastSyncError = '';
     setSyncDot('ok');
     setTimeout(()=>setSyncDot(''),3000);
   }catch(e){
     console.warn('Background sync error:',e);
+    _lastSyncError = 'Pull failed: ' + (e?.message || 'unknown');
     setSyncDot('err');
   } finally {
     _syncInFlight = false;
@@ -4334,11 +4440,14 @@ async function pushState(opts={}){
       ? new Date(result[0].updated_at).getTime()
       : Date.now();
     state.lastSyncedCloudTime = serverTime;
+    // PM17: clear error vid lyckad push
+    _lastSyncError = '';
     setSyncDot('ok');setTimeout(()=>setSyncDot(''),3000);
     _pushRetries = 0;
     clearTimeout(_pushRetryTimer);
   }catch(e){
     console.error('Cloud push error:',e);
+    _lastSyncError = 'Push failed: ' + (e?.message || 'unknown');
     setSyncDot('err');
     // SL8: exponential backoff retry
     if(_pushRetries < 3){
@@ -6125,8 +6234,15 @@ function saveNote(exId){
   const inp=document.getElementById('noteinput-'+exId);
   const val=inp?.value.trim();
   if(!state.exerciseNotes)state.exerciseNotes={};
-  if(val)state.exerciseNotes[exId]=val;
-  else delete state.exerciseNotes[exId];
+  if(val){
+    state.exerciseNotes[exId]=val;
+  } else {
+    delete state.exerciseNotes[exId];
+    // Tombstone: cleared note (user-initiated delete)
+    if(!state.deletions) state.deletions = {};
+    if(!state.deletions.exerciseNotes) state.deletions.exerciseNotes = {};
+    state.deletions.exerciseNotes[exId] = Date.now();
+  }
   save();
   showToast(val?'Note saved':'Note cleared');
   const wrap=document.getElementById('notewrap-'+exId);

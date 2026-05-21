@@ -27,15 +27,22 @@ function mergeWeightEntries(localWL, cloudWL){
   return Array.from(seen.values()).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
 }
 
-function mergeArrayById(local, cloud, idKey='id'){
+function mergeArrayById(local, cloud, idKey='id', tombstones){
   const out = new Map();
   for(const item of local||[]) if(item && item[idKey]!=null) out.set(item[idKey], item);
   for(const item of cloud||[]) if(item && item[idKey]!=null) out.set(item[idKey], item);
+  if(tombstones && typeof tombstones === 'object'){
+    for(const id of Object.keys(tombstones)) out.delete(id);
+  }
   return Array.from(out.values());
 }
 
-function mergeKeyedMap(local, cloud){
-  return {...(local||{}), ...(cloud||{})};
+function mergeKeyedMap(local, cloud, tombstones){
+  const merged = {...(local||{}), ...(cloud||{})};
+  if(tombstones && typeof tombstones === 'object'){
+    for(const k of Object.keys(tombstones)) delete merged[k];
+  }
+  return merged;
 }
 
 function mergeArrayUnion(local, cloud){

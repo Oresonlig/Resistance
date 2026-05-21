@@ -114,12 +114,39 @@ describe('mergeArrayById', () => {
     expect(out[0].val).toBe(2); // cloud wins
   });
 
-  // Trade-off-test: dokumenterar att deletes kan återuppstå
-  it('TRADE-OFF: delete from other device återuppstår om lokal har gamla data', () => {
+  // Trade-off-test: dokumenterar att deletes kan återuppstå UTAN tombstones
+  it('TRADE-OFF: delete from other device återuppstår om lokal har gamla data UTAN tombstone', () => {
     const local = [{id:'will-be-deleted', name:'X'}, {id:'keep', name:'Y'}];
     const cloud = [{id:'keep', name:'Y'}]; // andra enheten har raderat X
     const out = mergeArrayById(local, cloud);
-    expect(out).toHaveLength(2); // X återuppstår — accepterad trade-off
+    expect(out).toHaveLength(2); // X återuppstår — accepterad trade-off utan tombstone
+  });
+
+  // Tombstone-tests (3.30.14 fix för delete-trade-off)
+  it('tombstone: filtrerar bort raderad item från local', () => {
+    const local = [{id:'deleted-id', name:'X'}, {id:'keep', name:'Y'}];
+    const cloud = [{id:'keep', name:'Y'}];
+    const tombstones = {'deleted-id': Date.now()};
+    const out = mergeArrayById(local, cloud, 'id', tombstones);
+    expect(out).toHaveLength(1);
+    expect(out[0].id).toBe('keep');
+  });
+
+  it('tombstone: filtrerar bort raderad item från cloud', () => {
+    const local = [{id:'keep', name:'Y'}];
+    const cloud = [{id:'deleted-id', name:'X'}, {id:'keep', name:'Y'}];
+    const tombstones = {'deleted-id': Date.now()};
+    const out = mergeArrayById(local, cloud, 'id', tombstones);
+    expect(out).toHaveLength(1);
+    expect(out[0].id).toBe('keep');
+  });
+
+  it('tombstone: ignorerar tombstones-param när null/undefined', () => {
+    const local = [{id:'a'}];
+    const cloud = [{id:'b'}];
+    expect(mergeArrayById(local, cloud, 'id', null)).toHaveLength(2);
+    expect(mergeArrayById(local, cloud, 'id', undefined)).toHaveLength(2);
+    expect(mergeArrayById(local, cloud, 'id', {})).toHaveLength(2);
   });
 });
 
@@ -135,6 +162,19 @@ describe('mergeKeyedMap', () => {
     expect(mergeKeyedMap(null, {a:1})).toEqual({a:1});
     expect(mergeKeyedMap({a:1}, null)).toEqual({a:1});
     expect(mergeKeyedMap(null, null)).toEqual({});
+  });
+
+  it('tombstone: filtrerar bort raderade keys', () => {
+    const local = {a:1, b:2};
+    const cloud = {b:99, c:3};
+    const tombstones = {b: Date.now()};
+    expect(mergeKeyedMap(local, cloud, tombstones)).toEqual({a:1, c:3});
+  });
+
+  it('tombstone: backwards-compat utan tombstones-param', () => {
+    expect(mergeKeyedMap({a:1}, {b:2})).toEqual({a:1, b:2});
+    expect(mergeKeyedMap({a:1}, {b:2}, null)).toEqual({a:1, b:2});
+    expect(mergeKeyedMap({a:1}, {b:2}, {})).toEqual({a:1, b:2});
   });
 });
 
