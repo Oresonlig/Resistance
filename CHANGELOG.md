@@ -6,6 +6,16 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.31.1 — 2026-05-22
+**Obsidian-hotfix: vit bakgrund + nav-flikar på fel plats.** Två rotorsaker:
+
+- **Nav-flikar hoppade till toppen.** Min CSS satte `position:relative; z-index:2` på `body.theme-obsidian nav` för att lyfta nav ovanför ember-canvas — men override:ade default `position:fixed; bottom:0`. Resultat: nav föll tillbaka till sin DOM-plats (efter header) istället för låst i botten. Fix: tog bort hela "lyft content"-regeln — `nav` behåller sin default `fixed; bottom:0`. Embers ligger på `z-index:0`, content render:ar default-stacking ovanpå.
+- **Bakgrund blev helt vit/ljus.** `mix-blend-mode:screen` på ember-canvas + parchment-noise + `isolation:isolate` på `<body>` skapade stacking-context-konflikt på Android Chrome (Samsung Internet). Browsern misslyckades att blanda mot mörk bg-color → blendade mot vit viewport-fallback istället. Fix: tog bort `mix-blend-mode:screen` (partiklar har egen alpha, klarar sig utan), tog bort `isolation:isolate` (krävdes bara för screen-blend).
+
+**Visuell skillnad:** Partiklarna är fortfarande gold/orange glow, bara via vanlig alpha-blending istället för screen-blend (mindre "additive bloom" — kan kännas lite mer dovt men stabilt på alla browsers).
+
+---
+
 ## 3.31.0 — 2026-05-22
 **NYTT TEMA: Obsidian** — Dark fantasy / gothic scriptorium med breathing gold embers. Designat i Claude Design (Niklas + Claude), porterat till single-file index.html.
 

@@ -3333,35 +3333,29 @@ body.theme-obsidian{
     radial-gradient(ellipse 90% 60% at 50% 110%, rgba(140,50,30,0.22),  transparent 60%),
     radial-gradient(ellipse 60% 40% at 80% 50%,  rgba(120,40,20,0.06),  transparent 70%);
   background-attachment:fixed;
-  isolation:isolate;
 }
-/* Ember-canvas — vanilla JS-driven. Sits below content, mix-blend screen for glow. */
+/* Ember-canvas — vanilla JS-driven. position:fixed bakom allt content via z-index:0.
+   OBS: mix-blend-mode och isolation:isolate togs bort i 3.31.1 (gav bugg där bakgrunden
+   blev helt vit på Android och nav-fliken hoppade till toppen pga stacking-context-konflikt).
+   Partiklarna har alpha själv → vanlig alpha-blending räcker. */
 #obsidianEmberCanvas{
   position:fixed; inset:0; pointer-events:none; z-index:0;
-  mix-blend-mode:screen;
   display:none;
 }
 body.theme-obsidian #obsidianEmberCanvas{display:block;}
-body.theme-obsidian.embers-off #obsidianEmberCanvas{display:none;}
 /* Parchment-noise overlay för texture (motsv. .ob-root::before) */
 body.theme-obsidian::before{
-  content:''; position:fixed; inset:0; pointer-events:none; z-index:1;
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
   background-image:
     radial-gradient(circle at 30% 40%, rgba(180,130,60,0.04) 0 1px, transparent 1px),
     radial-gradient(circle at 70% 60%, rgba(160,80,40,0.05)  0 1px, transparent 1px);
   background-size:19px 23px, 31px 27px;
-  mix-blend-mode:screen;
 }
-/* Vignette (motsv. .ob-root::after) */
+/* Vignette (motsv. .ob-root::after) — z-index:1 så det ligger över canvas men under content */
 body.theme-obsidian::after{
   content:''; position:fixed; inset:0; pointer-events:none; z-index:1;
   background:radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.55) 100%);
 }
-/* Lyft content ovanför ember+vignette */
-body.theme-obsidian header,
-body.theme-obsidian nav,
-body.theme-obsidian #appShell,
-body.theme-obsidian #userScreen{position:relative; z-index:2;}
 
 /* Header */
 body.theme-obsidian header{
@@ -4353,7 +4347,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.31.0';
+const APP_VERSION = '3.31.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4362,7 +4356,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.31.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.31.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
