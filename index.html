@@ -3443,11 +3443,12 @@ body.theme-obsidian .sync-dot.ok{background:#c9a35a;box-shadow:0 0 6px #c9a35a;a
 body.theme-obsidian .chain-intro{background:rgba(40,28,12,0.4);border:1px solid #2a2010;}
 body.theme-obsidian .chain-intro-title{
   font-family:'Cinzel',serif; font-size:2rem; font-weight:700; letter-spacing:.04em;
-  background:linear-gradient(110deg,#8a6d30 0%,#c9a35a 25%,#f8e6b0 45%,#ffe9a8 50%,#f8e6b0 55%,#c9a35a 75%,#8a6d30 100%);
-  background-size:250% 100%; background-position:0% 50%;
+  /* 3.32.1: dämpat shimmer — mid-tones mindre dramatiska, cycle långsammare, mindre drop-shadow */
+  background:linear-gradient(110deg,#8a6d30 0%,#a8893f 30%,#c9a35a 50%,#a8893f 70%,#8a6d30 100%);
+  background-size:220% 100%; background-position:0% 50%;
   -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
-  animation:obShimmer 8s ease-in-out infinite;
-  filter:drop-shadow(0 0 12px rgba(200,150,70,0.18));
+  animation:obShimmer 12s ease-in-out infinite;
+  filter:drop-shadow(0 0 6px rgba(200,150,70,0.10));
 }
 @keyframes obShimmer{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
 body.theme-obsidian .chain-intro-sub{font-family:'Cardo',serif;font-style:italic;color:#7a6a48;letter-spacing:.04em;}
@@ -3590,23 +3591,23 @@ body.theme-obsidian .set-num{color:#a8442e;font-family:'Cinzel',serif;font-weigh
 body.theme-obsidian .sets-group-label{color:#5a4a28;font-family:'Cinzel',serif;letter-spacing:.32em;font-weight:600;border-top:1px dashed #2a2010;}
 body.theme-obsidian .sets-group-label.work-group{color:#a8442e;}
 
-/* Log button — gold breath + shimmer sweep */
+/* Log button — gold breath + shimmer sweep (3.32.1: glow dämpad eftersom 3+ Log-knappar samtidigt blev för intensivt) */
 body.theme-obsidian .set-log-btn{
   background:linear-gradient(180deg,#c9a35a 0%,#8a6d30 100%);
   border:1px solid #f0d99c; border-bottom-color:#4a3a18;
   color:#1a0e04; font-family:'Cinzel',serif; font-weight:700; letter-spacing:.24em;
   position:relative; overflow:hidden;
-  box-shadow:0 0 14px rgba(200,150,70,0.22), inset 0 1px 0 rgba(255,230,180,0.5);
-  animation:obLogBreath 2.8s ease-in-out infinite;
+  box-shadow:0 0 6px rgba(200,150,70,0.12), inset 0 1px 0 rgba(255,230,180,0.35);
+  animation:obLogBreath 3.4s ease-in-out infinite;
 }
 @keyframes obLogBreath{
-  0%,100%{box-shadow:0 0 14px rgba(200,150,70,0.22), inset 0 1px 0 rgba(255,230,180,0.5);}
-  50%    {box-shadow:0 0 28px rgba(240,180,90,0.55), 0 0 4px rgba(240,200,130,0.5), inset 0 1px 0 rgba(255,240,200,0.7);}
+  0%,100%{box-shadow:0 0 6px rgba(200,150,70,0.12), inset 0 1px 0 rgba(255,230,180,0.35);}
+  50%    {box-shadow:0 0 12px rgba(240,180,90,0.28), inset 0 1px 0 rgba(255,240,200,0.45);}
 }
 body.theme-obsidian .set-log-btn::after{
   content:''; position:absolute; top:0; left:-60%; width:50%; height:100%;
-  background:linear-gradient(90deg, transparent, rgba(255,240,200,0.5), transparent);
-  animation:obLogShimmer 5.4s ease-in-out infinite; pointer-events:none;
+  background:linear-gradient(90deg, transparent, rgba(255,240,200,0.22), transparent);
+  animation:obLogShimmer 7s ease-in-out infinite; pointer-events:none;
 }
 @keyframes obLogShimmer{0%{left:-60%;}60%,100%{left:120%;}}
 body.theme-obsidian .set-log-btn.has-value{background:linear-gradient(180deg,#c9a35a 0%,#8a6d30 100%);color:#1a0e04;}
@@ -4460,7 +4461,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.32.0';
+const APP_VERSION = '3.32.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4469,7 +4470,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.32.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.32.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 

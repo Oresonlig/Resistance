@@ -6,6 +6,16 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.32.1 — 2026-05-22
+**Obsidian glow-dämpning.** Niklas-feedback: när 3+ Log-knappar visas samtidigt (W1, W2, S1) blev gold-glow för intensiv och dominerande.
+
+- **Log-button:** box-shadow peak från `0 0 28px rgba(...,0.55)` → `0 0 12px rgba(...,0.28)` (~50% mindre intensitet), cycle 2.8s → 3.4s (lugnare), shimmer-sweep alpha 0.5 → 0.22 + cycle 5.4s → 7s. Synlig men inte visuellt dominant vid flera samtidigt.
+- **THE CHAIN gold-shimmer:** mid-tones dämpade (var `#f8e6b0`/`#ffe9a8` ljusast, nu `#c9a35a` ljusast → mindre dramatisk "blixt"), drop-shadow `0 0 12px rgba(...,0.18)` → `0 0 6px rgba(...,0.10)`, cycle 8s → 12s (lugnare).
+
+Övriga animationer (sigil-breath, medal-breath, complete-button breath, tab-pulse, embers) orörda.
+
+---
+
 ## 3.32.0 — 2026-05-22
 **PM22 LÖST — Semantisk CSS-variabel-refaktor för bakgrunder.** Rotorsak till "svart blöder på ljusa teman" eliminerad.
 
