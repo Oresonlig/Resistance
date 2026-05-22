@@ -6,6 +6,19 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.33.3 — 2026-05-22
+**Obsidian-embers konsekvens + Void WIP-flagga bort.**
+
+- **Obsidian ember-canvas capad till 800px på desktop** (samma princip som Cosmic Horror vein-fix i 3.33.2). `position:fixed; top:0; bottom:0; left:50%; transform:translateX(-50%); max-width:800px` + JS `Math.min(window.innerWidth, 800)` för partikel-koord-konsekvens. Embers koncentreras nu kring content-area istället för att spridas över hela 1920px desktop-bredden.
+- **Void "WIP"-flaggan borttagen.** "Void · WIP" → "Void". Niklas: "Det får vara som det är helt enkelt. Lite spartanskt med det är ju själva grejen med Void."
+- **Audit alla tema-headers:** verifierat att ingen tema över-rider `padding` — 3.33.2 header-fix (`max(24px, calc((100vw - 600px) / 2))`) gäller universellt på alla 10 teman utan konflikt.
+
+**Inte fixat (medvetet):**
+- Daylight + Crusader har också "· WIP" i tema-namnet — Niklas instruktion gällde bara Void, övriga lämnade orörda.
+- Crusader cross-bg är medvetet placerat off-center höger enligt design från 3.20.x.
+
+---
+
 ## 3.33.2 — 2026-05-22
 **Desktop-fix för header + Cosmic Horror veiner.** Niklas testade på desktop första gången — två problem:
 

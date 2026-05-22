@@ -3394,9 +3394,14 @@ body.theme-obsidian{
 /* Ember-canvas — vanilla JS-driven. position:fixed bakom allt content via z-index:0.
    OBS: mix-blend-mode och isolation:isolate togs bort i 3.31.1 (gav bugg där bakgrunden
    blev helt vit på Android och nav-fliken hoppade till toppen pga stacking-context-konflikt).
-   Partiklarna har alpha själv → vanlig alpha-blending räcker. */
+   Partiklarna har alpha själv → vanlig alpha-blending räcker.
+   3.33.3: max-width 800px + centered så embers koncentreras kring content på desktop
+   (konsekvens med Cosmic Horror vein-fix). */
 #obsidianEmberCanvas{
-  position:fixed; inset:0; pointer-events:none; z-index:0;
+  position:fixed; top:0; bottom:0;
+  left:50%; transform:translateX(-50%);
+  width:100%; max-width:800px;
+  pointer-events:none; z-index:0;
   display:none;
 }
 body.theme-obsidian #obsidianEmberCanvas{display:block;}
@@ -4747,7 +4752,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.33.2';
+const APP_VERSION = '3.33.3';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4756,7 +4761,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.33.2',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.33.3',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -7906,7 +7911,7 @@ const THEMES = [
   {id:'nanosuit',      name:'Nanosuit',      cat:'dark', desc:'Hexagonal · Morphing cyan · Adaptive armor',           class:'theme-nanosuit'},
   {id:'nightcity',     name:'Night City',    cat:'dark', desc:'Acid yellow + magenta · Orbitron · Cyberpunk homage',  class:'theme-nightcity'},
   {id:'ember',         name:'Ember',         cat:'dark', desc:'Molten orange · Rajdhani · Industrial forge',          class:'theme-ember'},
-  {id:'void',          name:'Void · WIP',    cat:'dark', desc:'Pure black & white · Playfair italic · Luxury minimal',class:'theme-void'},
+  {id:'void',          name:'Void',          cat:'dark', desc:'Pure black & white · Playfair italic · Luxury minimal',class:'theme-void'},
   {id:'obsidian',      name:'Obsidian',      cat:'dark', desc:'Dark fantasy · Gold embers · Cinzel scriptorium',     class:'theme-obsidian'},
   {id:'cosmic-horror', name:'Cosmic Horror', cat:'dark', desc:'Biological alien · Teal veins · Cormorant italic',     class:'theme-cosmic-horror'},
   // LIGHT
@@ -7977,7 +7982,8 @@ function startObsidianEmbers(){
   const NUM=32;
   const state = _obEmberState = {w:0, h:0, scrollH:0, arr:[], t:0};
   function resize(){
-    const newW = window.innerWidth;
+    // 3.33.3: canvas-bredd capad till 800px på desktop (CSS max-width). JS matchar för partikel-koord-konsekvens.
+    const newW = Math.min(window.innerWidth, 800);
     const newH = window.innerHeight;
     const newScrollH = getScrollH();
     if(newW===state.w && newH===state.h && newScrollH===state.scrollH) return;
