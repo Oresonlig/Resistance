@@ -5221,9 +5221,6 @@ function doSessionRename(pid){
   if(!val)return;
   if(!state.sessionNameOverrides)state.sessionNameOverrides={};
   state.sessionNameOverrides[pid]=val;
-  // Update the BASE_SESSIONS name for rendering
-  const bp=BASE_SESSIONS.find(p=>p.id===pid);
-  if(bp) bp.name=val;
   save();
   showToast('Session renamed ✓');
   const panel=document.getElementById('reorder-panel');
