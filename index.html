@@ -221,7 +221,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .set-input.work-set{border-color:#1a2a1a;}
 .set-input.forced{border-color:#2a1a2a;color:#9a6a9a;}
 .set-input.timed{border-color:#1a2a3a;color:#7ab;}
-.set-unit{font-family:var(--mono);font-size:1rem;font-weight:600;color:#888;text-transform:uppercase;text-align:center;margin-top:3px;letter-spacing:.04em;}
+.set-unit{font-family:var(--mono);font-size:.82rem;font-weight:600;color:#888;text-transform:uppercase;text-align:center;margin-top:3px;letter-spacing:.04em;}
 .set-unit.forced-unit{color:#5a3a5a;}
 .set-unit.time-unit{color:#3a5a5a;}
 .side-btn{background:none;border:1px solid #3a2a00;color:#c89030;font-family:var(--mono);font-size:.6rem;font-weight:600;padding:3px 6px;cursor:pointer;transition:all .15s;width:100%;text-align:center;}
@@ -396,7 +396,7 @@ canvas#weightChart{width:100%!important;display:block;}
 @media(max-width:360px){
   .set-row.normal-set,.set-row.bw-set,.set-row.uni-set{gap:3px;}
   .set-input{font-size:.68rem;padding:4px 3px;}
-  .set-unit{font-size:.88rem;}
+  .set-unit{font-size:.72rem;}
   .set-num{font-size:.38rem;}
 }
 
@@ -1131,6 +1131,137 @@ body.theme-arctic .chain-tab.adjacent .chain-tab-name-short{color:rgba(26,46,58,
 /* Z-index: header and auth above frost layers */
 body.theme-arctic header,
 body.theme-arctic .auth-wrap{position:relative;z-index:2;}
+
+/* ════════════════════════════════════════════════════════════
+   ARCTIC — paritet med Daylight (3.30.16)
+   Default-CSS sätter mörka bakgrunder (#0d0d0d, #111, #1a1a1a) på massor av element.
+   Arctic hade tidigare bara ~57 overrides vs Daylight 124 — denna sektion stänger gapet.
+   Långsiktigt: PM22 — CSS-variabel-refaktor (--bg-surface etc) ersätter detta.
+   ════════════════════════════════════════════════════════════ */
+
+/* Header user-info & logout */
+body.theme-arctic .header-user{color:#5a7a88;}
+body.theme-arctic .header-user strong{color:#1a2e3a;}
+body.theme-arctic .header-logout{border-color:rgba(0,168,216,0.3);color:#5a7a88;}
+body.theme-arctic .header-logout:hover{border-color:var(--red);color:var(--red);}
+
+/* AM-pill (morning weight) */
+body.theme-arctic .am-pill{background:rgba(255,255,255,0.75);border-color:rgba(0,168,216,0.3);color:#5a7a88;}
+body.theme-arctic .am-pill:hover{border-color:rgba(0,168,216,0.6);color:#1a2e3a;}
+body.theme-arctic .am-pill.logged{color:var(--green-bright);border-color:rgba(0,200,160,0.4);background:rgba(220,240,235,0.75);}
+body.theme-arctic .am-pill.logged:hover{border-color:var(--green-bright);}
+body.theme-arctic .am-pill.missing{color:#8a4a4a;border-color:rgba(192,57,43,0.3);background:rgba(255,255,255,0.75);}
+body.theme-arctic .am-pill.missing:hover{border-color:var(--red);color:var(--red);}
+body.theme-arctic .am-pill-log{border-color:rgba(0,200,160,0.5);color:#1a8a78;}
+body.theme-arctic .am-pill-log:hover{background:rgba(0,200,160,0.12);}
+
+/* Pass-name colors + done greyout */
+body.theme-arctic .pass-preview{color:#7a96a4;}
+body.theme-arctic .pass-card.done{background:rgba(255,255,255,0.4);border-color:rgba(0,168,216,0.1);filter:saturate(0.5);opacity:.85;}
+body.theme-arctic .pass-card.done .pass-letter{color:#a8c2cc;}
+body.theme-arctic .pass-card.done .pass-name{color:#7a96a4;}
+body.theme-arctic .pass-card.done .pass-preview{color:#a8c2cc;}
+
+/* Exercise btn-skip / edit */
+body.theme-arctic .ex-btn-skip{border-color:rgba(0,168,216,0.3);color:#5a7a88;}
+body.theme-arctic .ex-btn-edit{border-color:rgba(0,168,216,0.3);color:#1a2e3a;}
+
+/* Set-input variants */
+body.theme-arctic .set-input.work-set{border-color:rgba(0,168,216,0.3);}
+body.theme-arctic .set-input.warmup{border-color:rgba(0,168,216,0.15);color:#7a96a4;}
+body.theme-arctic .set-unit{color:var(--red);font-weight:600;}
+body.theme-arctic .set-num{color:var(--red);font-weight:700;}
+body.theme-arctic .sets-group-label{color:#5a7a88;border-top:1px dashed rgba(0,168,216,0.2);font-weight:600;}
+body.theme-arctic .sets-group-label.work-group{color:var(--red);}
+
+/* Exercise name + meta */
+body.theme-arctic .ex-name{color:#1a2e3a;font-weight:700;}
+body.theme-arctic .ex-detail{color:#5a7a88;}
+body.theme-arctic .ex-prev .last-val{color:var(--green-bright);}
+body.theme-arctic .ex-prev .pr-val{color:var(--red);}
+body.theme-arctic .ex-collapsed-name{color:#1a2e3a;}
+body.theme-arctic .ex-collapsed-status{color:#5a7a88;}
+body.theme-arctic .ex-block.collapsed.saved .ex-collapsed-summary{background:rgba(220,240,235,0.6);}
+body.theme-arctic .ex-note-input{background:rgba(255,255,255,0.82);border-color:rgba(0,168,216,0.3);color:#1a2e3a;}
+
+/* Exercise tags */
+body.theme-arctic .ex-tag.ramp{background:rgba(255,245,220,0.85);border-color:#c89030;color:#8a6020;}
+body.theme-arctic .ex-tag.bw{background:rgba(220,240,235,0.85);border-color:var(--green-bright);color:#1a8a6a;}
+body.theme-arctic .ex-tag.uni{background:rgba(255,235,220,0.85);border-color:#d0612b;color:#a04020;}
+body.theme-arctic .ex-tag.singles{background:rgba(245,225,220,0.85);border-color:#a04040;color:#803030;}
+
+/* Edit menu dropdown */
+body.theme-arctic .ex-edit-menu{background:rgba(255,255,255,0.95);border-color:rgba(0,168,216,0.3);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+
+/* Auth-wrap stuff */
+body.theme-arctic #userScreen{background:#eaf4f8;}
+body.theme-arctic .auth-logo{color:#1a2e3a;}
+body.theme-arctic .auth-logo span{color:var(--red);}
+body.theme-arctic .auth-tagline{color:#5a7a88;}
+body.theme-arctic .auth-btn-google{background:rgba(255,255,255,0.82);border:1px solid rgba(0,168,216,0.3);color:#1a2e3a;}
+body.theme-arctic .auth-btn-google:hover{background:#ffffff;border-color:rgba(0,168,216,0.6);}
+body.theme-arctic .auth-divider{color:#5a7a88;}
+body.theme-arctic .auth-divider::before,
+body.theme-arctic .auth-divider::after{background:rgba(0,168,216,0.25);}
+body.theme-arctic .auth-stay,
+body.theme-arctic .auth-checkbox-row{color:#5a7a88;}
+body.theme-arctic .auth-disclaimer{background:rgba(255,255,255,0.55);border-left-color:rgba(0,168,216,0.3);color:#5a7a88;}
+body.theme-arctic .auth-btn-secondary{background:none;border-color:rgba(0,168,216,0.3);color:#5a7a88;}
+body.theme-arctic .auth-btn-secondary:hover{border-color:var(--red);color:#1a2e3a;}
+body.theme-arctic .auth-footer a{color:#5a7a88;}
+body.theme-arctic .auth-footer a:hover{color:var(--red);}
+
+/* Weight banner */
+body.theme-arctic .weight-banner-label{color:#5a7a88;}
+body.theme-arctic .weight-today{color:var(--red);}
+
+/* Section + chain intro subtitles */
+body.theme-arctic .section-sub,
+body.theme-arctic .chain-intro-sub{color:#5a7a88;}
+
+/* Progress: stats / PR / history */
+body.theme-arctic .stat-box{background:rgba(255,255,255,0.65);border:1px solid rgba(0,168,216,0.18);}
+body.theme-arctic .stat-num{color:var(--red);}
+body.theme-arctic .stat-desc{color:#5a7a88;}
+body.theme-arctic .pr-card{background:rgba(255,255,255,0.65);border:1px solid rgba(0,168,216,0.18);}
+body.theme-arctic .pr-card::before{background:rgba(220,240,235,0.85);color:var(--gold);}
+body.theme-arctic .pr-value{color:var(--red);font-weight:700;}
+body.theme-arctic .hist-entry{background:rgba(255,255,255,0.65);border-left:2px solid var(--red);}
+body.theme-arctic .hist-date{color:#1a2e3a;font-weight:600;}
+body.theme-arctic .hist-pass{color:var(--red);font-weight:600;}
+body.theme-arctic .hist-ex strong{color:#1a2e3a;}
+body.theme-arctic .hist-set{color:#5a7a88;}
+
+/* Toast */
+body.theme-arctic .toast{background:rgba(255,255,255,0.95);border:1px solid var(--red);color:var(--red);box-shadow:0 4px 16px rgba(0,168,216,0.18);}
+
+/* Scrollbar */
+body.theme-arctic::-webkit-scrollbar-track{background:#dceaf0;}
+body.theme-arctic::-webkit-scrollbar-thumb{background:rgba(0,168,216,0.35);}
+
+/* App-modals */
+body.theme-arctic .app-modal-card{background:rgba(255,255,255,0.95);border-color:var(--red);color:#1a2e3a;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+body.theme-arctic .app-modal-title{color:#1a2e3a;}
+body.theme-arctic .app-modal-body{color:#5a7a88;}
+body.theme-arctic .app-modal-input,
+body.theme-arctic .app-modal-btn{background:rgba(255,255,255,0.82);border-color:rgba(0,168,216,0.3);color:#5a7a88;}
+body.theme-arctic .app-modal-btn:hover{border-color:rgba(0,168,216,0.6);color:#1a2e3a;}
+body.theme-arctic .app-modal-btn-primary{background:var(--red);border-color:var(--red);color:#fff;}
+body.theme-arctic .app-modal-btn-primary:hover{background:#0088b8;}
+body.theme-arctic .app-modal-btn-danger{background:rgba(255,255,255,0.82);border-color:var(--red);color:var(--red);}
+body.theme-arctic .app-modal-btn-danger:hover{background:var(--red);color:#fff;}
+
+/* Selects (swap, app-modal-select) */
+body.theme-arctic select,
+body.theme-arctic .swap-select,
+body.theme-arctic .app-modal-select{background:rgba(255,255,255,0.85) !important;color:#1a2e3a !important;border-color:rgba(0,168,216,0.3) !important;}
+body.theme-arctic select option,
+body.theme-arctic .swap-select option{background:#ffffff;color:#1a2e3a;}
+body.theme-arctic select optgroup,
+body.theme-arctic .swap-select optgroup{background:#dceaf0;color:#1a2e3a;}
+
+/* Add-ex input */
+body.theme-arctic .add-ex-input{background:rgba(255,255,255,0.82);border-color:rgba(0,168,216,0.3);color:#1a2e3a;}
 
 /* ─────────────────────────────────────────────────────────────
    4. EMBER — Industrial forge
@@ -3929,7 +4060,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.30.15';
+const APP_VERSION = '3.30.16';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3938,7 +4069,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.15',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.16',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -4806,7 +4937,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
             // lazy-init default warmups in draft
           }
         }
-        let tags='';if(isRampEx)tags+=`<span class="ex-tag ramp">Ramp</span>`;if(isSingles)tags+=`<span class="ex-tag singles">Singles</span>`;if(isBW)tags+=`<span class="ex-tag bw">BW+</span>`;if(isUni)tags+=`<span class="ex-tag uni">Unilateral</span>`;if(isTimed)tags+=`<span class="ex-tag" style="border-color:#1a2a3a;background:#08101a;color:#7ab;">Timed</span>`;
+        let tags='';if(isRampEx)tags+=`<span class="ex-tag ramp">Ramp</span>`;if(isSingles)tags+=`<span class="ex-tag singles">Singles</span>`;if(isBW){const bwDisp=todayWkg?`${toDisplay(todayWkg)} ${unitLabel()}`:'';tags+=`<span class="ex-tag bw">BW${bwDisp?' '+bwDisp:''}</span>`;}if(isUni)tags+=`<span class="ex-tag uni">Unilateral</span>`;if(isTimed)tags+=`<span class="ex-tag" style="border-color:#1a2a3a;background:#08101a;color:#7ab;">Timed</span>`;
         const lastSession=getLastSession(ex.id, sessionSwap||permSwap||null);
         let prevText='';
         if(lastSession){
@@ -5015,7 +5146,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
                 <div><input class="set-input${wCls}" type="number" id="bw-${ex.id}-${origIdx}" placeholder="0"
                   value="${savedSet?.extra!=null?toDisplay(savedSet.extra):bufVal?.extra!=null?toDisplay(bufVal.extra):''}"
                   min="-50" step="${unitL==='lbs'?'1':'1.25'}" ${dis}>
-                  <div class="set-unit">BW ${snapDisp} + ${unitL}</div></div>
+                  <div class="set-unit">+ ${unitL}</div></div>
                 <div><input class="${'set-input'+wCls+(isTimed?' timed':'')}" type="number" id="r-${ex.id}-${origIdx}"
                   placeholder="${isTimed?('—'):('—')}" value="${isTimed?(savedSet?.secs||bufVal?.secs||''):(savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:'')}" min="1" ${isTimed?'max="3600"':'max="50"'} ${dis}>
                   <div class="set-unit${isTimed?' time-unit':''}">${isTimed?'sec':'reps'}</div></div>

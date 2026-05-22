@@ -6,6 +6,16 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.30.16 — 2026-05-22
+**Iterations-paket: labels sänkta, BW som tag bredvid namnet, Arctic-paritet med Daylight.**
+
+- **Set-row labels sänkta 18%.** `1rem → .82rem` desktop, `.88rem → .72rem` mobil. Var på gränsen till för stora i 3.30.15.
+- **BW flyttad ut ur input-fönstret.** Tidigare `BW {snap} + KG` i set-unit (under input). Nu: BW-tagen bredvid övningsnamnet visar `BW 97 kg` (dagens vikt från AM-pillen). Set-unit blir bara `+ KG`. Logik: BW är ens vikt, inte en addition — ska stå som identifierare, inte i input-labeln.
+- **Arctic-paritet med Daylight.** Niklas frustration: "Varför löser vi inte det från GRUNDEN?" Audit visade Arctic hade 57 overrides, Daylight 124 — gapet på ~67 element var anledningen till att svarta fönster fortsatte dyka upp. Lagt till Arctic-overrides för: AM-pill (alla 3 states), pass-card.done, ex-btn-skip/edit, set-input variants, set-unit/num, sets-group-label, ex-name/detail/prev, ex-tag.ramp/bw/uni/singles, ex-collapsed-name/status/saved, ex-note-input, ex-edit-menu, userScreen, auth-logo/tagline/divider/disclaimer/btn-google/btn-secondary/footer, weight-banner-label/today, section-sub, chain-intro-sub, stat-box/num/desc, pr-card + ::before, pr-value, hist-entry/date/pass/ex/set, toast, scrollbar, app-modal-card/title/body/input/btn (alla varianter), select/swap-select/app-modal-select + option/optgroup, add-ex-input, header-user/logout.
+- **PM22 dokumenterat (kvarstår).** Rot-fix: CSS-variabel-refaktor (`--bg-surface`, `--bg-input`, `--bg-menu`, etc) så default sätter mörka värden och ljusa teman bara override:ar variabeln. Eliminerar paritets-arbete för framtida teman och nya komponenter. Estimat ~1-2h, gör i nästa session.
+
+---
+
 ## 3.30.15 — 2026-05-22
 **UI-polish: tydligare set-row labels, större kollapsade rader, BW-format omvänt, ljus-tema password-fix.** Live-feedback från gymmet.
 
