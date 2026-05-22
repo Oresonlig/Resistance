@@ -6,6 +6,16 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.31.2 — 2026-05-22
+**Ember-canvas gigant-glow-bugg fixad.** Niklas såg "vit blob i mitten + UPDATED FROM CLOUD ✓" efter sync. Inte vit bakgrund — canvas-storleksbugg.
+
+- **Rotorsak:** `canvas.getBoundingClientRect()` är opålitlig på Android Chrome när elementet just fick `display:block` (race med layout-engine). Returnerade 300x150 (canvas-element default) istället för viewport-size. Resultat: alla 32 partiklar spawnade i ett litet hörn, sedan CSS-stretched 3-15× upp till viewport → en gigantisk vit/cream glow-blob där partiklarna lade ihop.
+- **Trigger:** `syncFromCloud` slutförs → renderChain anropas → DOM reflow → canvas re-mätning → falska 300x150-värden låste sig.
+- **Fix:** byt till `window.innerWidth/Height` (alltid korrekt) + sätt `canvas.style.width/height` explicit + re-spawn partiklarna vid varje resize (annars hänger gamla koordinater kvar). Säkerhetsnät: en extra `requestAnimationFrame(resize)` efter första körningen för att fånga sena layout-händelser.
+- **Bonus:** bytt ResizeObserver → `window.addEventListener('resize')` — enklare cleanup, ingen risk för observer som överlever theme-byten.
+
+---
+
 ## 3.31.1 — 2026-05-22
 **Obsidian-hotfix: vit bakgrund + nav-flikar på fel plats.** Två rotorsaker:
 
