@@ -4743,7 +4743,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.33.0';
+const APP_VERSION = '3.33.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4752,7 +4752,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.33.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.33.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -8088,17 +8088,37 @@ function _chRenderVeins(){
   if(!svg) return;
   const w = window.innerWidth;
   const h = Math.max(window.innerHeight, document.documentElement.scrollHeight || 0, document.body.scrollHeight || 0);
-  // ViewBox skalas till verklig pixel-area så designens koordinater (380x760-baserade)
-  // sträcker sig naturligt. Två main trunks + två cluster — proportionellt placerade.
+  // ViewBox = verklig pixel-area. Vein-walker producerar paths ~216px långa (18 segments × ~12px)
+  // så för att täcka hela page-höjden behöver vi flera vein-system fördelade vertikalt.
+  // 3.33.1: dynamic count baserat på h (1 cluster-par per ~1500px) — fixar buggen där veiner
+  // bara visades i top + bottom corners och mitten var tom på mobil/desktop med långt content.
   svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
   svg.style.width = w + 'px';
   svg.style.height = h + 'px';
-  // Generera 4 vein-system (proportionellt mot viewport-bredd)
+  const clusterPairs = Math.max(2, Math.ceil(h / 1500));
+  // Två corner-trunks (top-right + bottom-left) — designens main trunks med pulser
   const tr = _chGenerateVein(w * 1.01, -8, 2.35, 731);
   const bl = _chGenerateVein(-5, h * 1.01, -0.78, 1289);
-  const trC = _chGenerateVein(w * 0.89, 90, 2.5, 4421);
-  const blC = _chGenerateVein(60, h * 0.92, -0.7, 8893);
-  const all = [...tr, ...bl, ...trC, ...blC];
+  // Fördelade clusters över hela höjden (alternerande höger/vänster start)
+  const clusters = [];
+  const pulseTrunks = []; // trunk-paths som ska få traveling-pulse
+  for(let i = 0; i < clusterPairs; i++){
+    const t = (i + 0.5) / clusterPairs; // 0.25, 0.75 för pairs=2; 0.17, 0.5, 0.83 för pairs=3
+    // Höger-cluster vid y1
+    const y1 = h * t;
+    const rightCluster = _chGenerateVein(w * 0.85, y1, 2.5, 4421 + i * 1009);
+    clusters.push(...rightCluster);
+    // Vänster-cluster offset:ad så de inte överlappar
+    const y2 = h * (t + 0.5/clusterPairs);
+    const leftCluster = _chGenerateVein(w * 0.15, y2 > h ? y2 - h : y2, -0.7, 8893 + i * 1009);
+    clusters.push(...leftCluster);
+    // Sätt pulse på mid-clusters trunk för att ge motion i mitten också (inte bara corners)
+    if(i > 0 && i < clusterPairs - 1){
+      const midTrunk = rightCluster.find(p => p.depth === 3);
+      if(midTrunk) pulseTrunks.push(midTrunk);
+    }
+  }
+  const all = [...tr, ...bl, ...clusters];
   const trunkTR = tr.find(p => p.depth === 3);
   const trunkBL = bl.find(p => p.depth === 3);
   // Bygg SVG-content
@@ -8109,7 +8129,7 @@ function _chRenderVeins(){
     svgInner += `<path d="${p.d}" stroke="#3a6a60" stroke-width="${sw}" opacity="${op}" />`;
   }
   svgInner += '</g>';
-  // Traveling pulses på de 2 main trunks
+  // Traveling pulses — corners + mid-clusters
   svgInner += '<g fill="none" stroke="#aee8d8" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 5px #7fc8b4)">';
   if(trunkTR){
     svgInner += `<path d="${trunkTR.d}" stroke-width="1.8" pathLength="1" stroke-dasharray="0.04 1" class="ch-pulse" style="animation-duration:2.6s" />`;
@@ -8117,6 +8137,11 @@ function _chRenderVeins(){
   if(trunkBL){
     svgInner += `<path d="${trunkBL.d}" stroke-width="1.8" pathLength="1" stroke-dasharray="0.04 1" class="ch-pulse" style="animation-duration:2.8s;animation-delay:-1s" />`;
   }
+  pulseTrunks.forEach((trunk, idx) => {
+    const dur = (2.6 + (idx * 0.4)).toFixed(1);
+    const delay = (-0.5 * (idx + 1)).toFixed(1);
+    svgInner += `<path d="${trunk.d}" stroke-width="1.5" pathLength="1" stroke-dasharray="0.04 1" class="ch-pulse" style="animation-duration:${dur}s;animation-delay:${delay}s" />`;
+  });
   svgInner += '</g>';
   svg.innerHTML = svgInner;
 }

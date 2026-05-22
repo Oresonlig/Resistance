@@ -6,6 +6,15 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.33.1 — 2026-05-22
+**Cosmic Horror vein-fördelning fixad — veiner täcker hela page, inte bara hörn.**
+
+- **Rotorsak:** vein-walker producerar paths ~216px långa (18 segments × ~12px stepLen). När viewBox sträcktes till verklig pixel-area (1080×{scrollHeight}) hamnade alla 4 designens vein-systems i top-right + bottom-left + närliggande clusters — mitten av page var TOM. Niklas såg veiner högst upp + längst ner, mitt-scroll utan vegetation.
+- **Fix:** dynamic antal cluster-pairs baserat på scrollHeight (1 par per ~1500px). Mobile ~3000px scrollHeight → 2 pairs (4 clusters), desktop ~5000px → 4 pairs (8 clusters), lång Progress-vy ~12000px → 8 pairs (16 clusters). Alternerande höger/vänster start så de fördelas över hela höjden.
+- **Bonus: mid-pulser.** Mid-cluster trunks får också traveling-pulse (med ramped durations 3.0s, 3.4s, 3.8s) — motion även i mitten av page, inte bara corner-trunks. Pulser fördelade så de inte alla peakar samtidigt.
+
+---
+
 ## 3.33.0 — 2026-05-22
 **NYTT TEMA: Cosmic Horror** — Biological alien organism. Designat i Claude Design, källa: `C:\Resistance\theme\cosmic horror\`.
 
