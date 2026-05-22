@@ -1817,6 +1817,11 @@ body.theme-void .btn-primary:hover{background:#ddd;}
 body.theme-void .ex-btn-done{background:none;border-color:#fff;color:#fff;}
 body.theme-void .ex-btn-skip{border-color:#444;color:#666;}
 body.theme-void .set-input{background:#050505;border-color:#1a1a1a;}
+/* Void — modal primary-confirm: --red=#fff + color:#fff = vit-på-vitt → explicit svart text */
+body.theme-void .app-modal-btn-primary{background:#fff;border-color:#fff;color:#000;}
+body.theme-void .app-modal-btn-primary:hover{background:#ddd;border-color:#ddd;color:#000;}
+body.theme-void .app-modal-btn-danger{background:transparent;border-color:#fff;color:#fff;}
+body.theme-void .app-modal-btn-danger:hover{background:#fff;color:#000;}
 body.theme-void .set-input:focus{border-color:#fff;}
 body.theme-void .weight-banner{background:#050505;}
 body.theme-void .ex-tag{border-color:#222;color:#444;}
@@ -4060,7 +4065,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.30.17';
+const APP_VERSION = '3.30.18';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4069,7 +4074,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.17',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.18',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -7249,7 +7254,13 @@ function renderData(){
   const el=document.getElementById('view-data');
   // Async cloud version check (updates UI when done)
   checkCloudVersion();const size=(JSON.stringify(state).length/1024).toFixed(1);
-  const unitBtn=(u)=>`<button onclick="state.unit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.unit===u?'var(--red)':'none'};border:1px solid ${state.unit===u?'var(--red)':'#2a2a2a'};color:${state.unit===u?'var(--white)':'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u.toUpperCase()}</button>`;
+  // Void special-case: --red och --white är båda vita → vit-på-vitt på selected-state.
+  // Mappa selected-bg/fg + active-border till säkra kontrastfärger.
+  const isVoid = (state.theme||'iron') === 'void';
+  const selBg = isVoid ? '#fff' : 'var(--red)';
+  const selFg = isVoid ? '#000' : 'var(--white)';
+  const selBorder = isVoid ? '#888' : 'var(--red)';
+  const unitBtn=(u)=>`<button onclick="state.unit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.unit===u?selBg:'none'};border:1px solid ${state.unit===u?selBorder:'#2a2a2a'};color:${state.unit===u?selFg:'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u.toUpperCase()}</button>`;
   el.innerHTML=`<div class="section-title">Settings</div>
   <div style="font-family:var(--mono);font-size:.58rem;color:#444;margin-bottom:18px">Supabase · ${escapeHTML(currentUser?.name||'')} · ${size} KB · ${state.log.length} sessions</div>
   <div class="section-sub">Rest Timer</div>
@@ -7261,7 +7272,7 @@ function renderData(){
     <button onclick="state.timerEnabled=!state.timerEnabled;save();renderData();" style="background:${state.timerEnabled?'var(--green-bright)':'var(--gray-mid)'};border:1px solid ${state.timerEnabled?'var(--green-bright)':'var(--gray-mid)'};color:${state.timerEnabled?'var(--black)':'var(--gray-light)'};font-family:var(--mono);font-size:.54rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:all .2s;">${state.timerEnabled?'ON':'OFF'}</button>
   </div>
   <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);margin-bottom:8px;">Rest duration</div>
-  <div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;">${[60,90,120,180,240,300].map(s=>`<button onclick="state.timerDefault=${s};save();renderData();" style="background:${state.timerDefault===s?'var(--red)':'none'};border:1px solid ${state.timerDefault===s?'var(--red)':'#444'};color:${state.timerDefault===s?'var(--white)':'#888'};font-family:var(--mono);font-size:.5rem;padding:6px 10px;cursor:pointer;transition:all .15s;">${s<60?s+'s':Math.floor(s/60)+(s%60?':'+String(s%60).padStart(2,'0'):'')+' min'}</button>`).join('')}</div>
+  <div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;">${[60,90,120,180,240,300].map(s=>`<button onclick="state.timerDefault=${s};save();renderData();" style="background:${state.timerDefault===s?selBg:'none'};border:1px solid ${state.timerDefault===s?selBorder:'#444'};color:${state.timerDefault===s?selFg:'#888'};font-family:var(--mono);font-size:.5rem;padding:6px 10px;cursor:pointer;transition:all .15s;">${s<60?s+'s':Math.floor(s/60)+(s%60?':'+String(s%60).padStart(2,'0'):'')+' min'}</button>`).join('')}</div>
   <div class="section-sub">Weight Unit</div>
   <div style="font-family:var(--mono);font-size:.54rem;color:var(--gray-light);margin-bottom:8px;">Currently: <strong style="color:var(--white)">${(state.unit||'kg').toUpperCase()}</strong></div>
   <div style="display:flex;gap:6px;margin-bottom:18px">${unitBtn('kg')}${unitBtn('lbs')}</div>
@@ -7295,12 +7306,12 @@ function renderData(){
     ${THEMES.filter(t=>t.cat==='dark').map(t=>{
       const active = (state.theme||'iron')===t.id;
       return `<button onclick="applyTheme('${t.id}');renderData();"
-        style="background:${active?'var(--red)':'none'};border:1px solid ${active?'var(--red)':'var(--gray-mid)'};
-        color:${active?'var(--black)':'inherit'};padding:10px 8px;cursor:pointer;text-align:left;
+        style="background:${active?selBg:'none'};border:1px solid ${active?selBorder:'var(--gray-mid)'};
+        color:${active?'#000':'inherit'};padding:10px 8px;cursor:pointer;text-align:left;
         font-family:var(--mono);font-size:.48rem;letter-spacing:.04em;transition:all .2s;position:relative;">
-        <div style="font-family:var(--sans);font-size:.8rem;color:${active?'var(--black)':'inherit'};margin-bottom:3px;">${t.name}</div>
-        <div style="font-size:.44rem;color:var(--gray-light);line-height:1.4;">${t.desc}</div>
-        ${active?'<div style="position:absolute;top:6px;right:8px;color:var(--red);font-size:.6rem;">✓</div>':''}
+        <div style="font-family:var(--sans);font-size:.8rem;color:${active?'#000':'inherit'};margin-bottom:3px;">${t.name}</div>
+        <div style="font-size:.44rem;color:${active?'#555':'var(--gray-light)'};line-height:1.4;">${t.desc}</div>
+        ${active?`<div style="position:absolute;top:6px;right:8px;color:${selBorder};font-size:.6rem;">✓</div>`:''}
       </button>`;
     }).join('')}
   </div>
@@ -7309,12 +7320,12 @@ function renderData(){
     ${THEMES.filter(t=>t.cat==='light').map(t=>{
       const active = (state.theme||'iron')===t.id;
       return `<button onclick="applyTheme('${t.id}');renderData();"
-        style="background:${active?'var(--red)':'none'};border:1px solid ${active?'var(--red)':'var(--gray-mid)'};
-        color:${active?'var(--black)':'inherit'};padding:10px 8px;cursor:pointer;text-align:left;
+        style="background:${active?selBg:'none'};border:1px solid ${active?selBorder:'var(--gray-mid)'};
+        color:${active?'#000':'inherit'};padding:10px 8px;cursor:pointer;text-align:left;
         font-family:var(--mono);font-size:.48rem;letter-spacing:.04em;transition:all .2s;position:relative;">
-        <div style="font-family:var(--sans);font-size:.8rem;color:${active?'var(--black)':'inherit'};margin-bottom:3px;">${t.name}</div>
-        <div style="font-size:.44rem;color:var(--gray-light);line-height:1.4;">${t.desc}</div>
-        ${active?'<div style="position:absolute;top:6px;right:8px;color:var(--red);font-size:.6rem;">✓</div>':''}
+        <div style="font-family:var(--sans);font-size:.8rem;color:${active?'#000':'inherit'};margin-bottom:3px;">${t.name}</div>
+        <div style="font-size:.44rem;color:${active?'#555':'var(--gray-light)'};line-height:1.4;">${t.desc}</div>
+        ${active?`<div style="position:absolute;top:6px;right:8px;color:${selBorder};font-size:.6rem;">✓</div>`:''}
       </button>`;
     }).join('')}
   </div>

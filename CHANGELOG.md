@@ -6,7 +6,12 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
-## 3.30.17 — 2026-05-22
+## 3.30.18 — 2026-05-22
+**Void: vit-på-vitt-buggar fixade.** Rot: Void har `--red:#ffffff` (medvetet minimalistiskt) men flera Settings-element använde `color:var(--white)` på selected-state → vit text på vit bakgrund = osynlig.
+
+- **Settings — selected-state nu synlig.** Weight-unit (KG/LBS), Rest-duration-presets (1/2/3/4/5 min) och tema-kort använder en `isVoid`-check som mappar selected `bg/fg/border` till `#fff/#000/#888` på Void istället för `var(--red)/var(--white)/var(--red)`. Övriga teman opåverkade.
+- **Modal-confirm-knappen (Log Out, m.fl.) synlig på Void.** Default `.app-modal-btn-primary { color:#fff }` + Void's `--red:#fff` gav vit-på-vitt. Lade in `body.theme-void` override som tvingar svart text på vit bakgrund. Också `.app-modal-btn-danger` får synlig styling.
+- **Inverkan på framtida arbete:** PM22 (CSS-variabel-refaktor) blir lättare när dessa selectable-element flyttas från inline-styles till klasser med `--accent-bg`/`--accent-fg`-variabler.
 **AM-pillen: BW-text bort, viktsymbolen kvar.** ⚖-ikonen identifierar redan att det är morning weight — "BW"-prefixet var redundant och låg inne i pillen ("input-fönstret"). Loggat: `⚖ 97 kg` (förut `⚖ BW 97 kg`). Missing: `⚖ +` (förut `⚖ + BW`).
 
 ---
