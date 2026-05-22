@@ -6,6 +6,43 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.32.0 — 2026-05-22
+**PM22 LÖST — Semantisk CSS-variabel-refaktor för bakgrunder.** Rotorsak till "svart blöder på ljusa teman" eliminerad.
+
+**Problemet:**
+Hela CSS-arkitekturen hade hardcoded mörka bakgrunder (`background:#0d0d0d`, `#111`, `#1a1a1a`, etc.) direkt i selectors. Varje ny komponent fick mörk default → ljusa teman (Daylight, Arctic) krävde EXPLICIT per-fall-override för varje element. Daylight hade 124 sådana overrides, Arctic 57+. Glömdes en → svart fläck på ljust tema.
+
+**Lösningen:**
+8 semantiska variabler i `:root` (default = mörka värden):
+- `--surface-base` (cards, pillars, ex-blocks)
+- `--surface-elevated` (modaler, dropdowns, menyer)
+- `--surface-input` (alla input-fält)
+- `--surface-saved` (saved-state ex-block)
+- `--surface-deep` (djupare bakgrunder)
+- `--surface-overlay` (hover-state)
+- `--border-subtle` (diskret border)
+- `--border-strong` (synligare border)
+
+Varje tema (Arctic, Daylight, Crusader, Obsidian, Void) över-rider variablerna ETT enda ställe istället för per-fall. CSS-regler använder `var(--surface-X)` istället av hardcoded färg.
+
+**Vad det betyder framåt:**
+- Nya komponenter får automatiskt rätt färg per tema utan extra arbete
+- Per-fall theme-overrides krävs INTE längre (existing overrides kvarstår men är redundanta — harmless)
+- Tema-utveckling fokuserar på UNIK styling (glasmorphism, gradients, animations) — inte färgmappning
+
+**25+ element migrerade:** AM-pill, nav, weight-banner/input, ex-block.saved, ex-collapsed.saved, ex-note-input, ex-edit-menu, set-input, swap-select, add-ex-input, app-modal-card/input/select/btn, auth-form-inputs, auth-btn-google, drag-containers, custom-ex-input, weight-step-select.
+
+**Vad som INTE bytts:**
+- Tag-bakgrunder (`.ex-tag.ramp/bw/uni` etc) — medvetet olika färg per tag-typ
+- Tema-specifika unika effekter (Arctic glasmorphism, Crusader gradient, Obsidian gold-gradient) — orörda
+- Redundanta theme-overrides i tema-blocken — harmless, bryt inte mot variabel-systemet
+
+**Risk:** Mörka teman opåverkade (defaults har samma värden som tidigare hardcoded). Ljusa teman testas av Niklas live under session.
+
+**Why:** Niklas frustration 2026-05-22 efter att ha hittat fler svarta fönster: "Varför löser vi inte det från GRUNDEN?" Per-fall-fixar var arkitektur-skuld. Nu löst på riktigt.
+
+---
+
 ## 3.31.5 — 2026-05-22
 **Obsidian nav-bar läsbarhet.** Designens preview hade `background:transparent → rgba(30,20,8,0.7)`-gradient + `color:#4a3a18` på icke-aktiv text — för dim i riktig app, embers + content skinade igenom. Bytt till opaque `rgba(15,10,4,0.96)` + backdrop-blur + ljusare text `#8a7a58` (gold-family men muted, fortfarande clearly readable). Aktiv-tab oförändrad (#f0d99c gold).
 

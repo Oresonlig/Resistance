@@ -23,6 +23,17 @@
   --gold:#b8922a;--green-bright:#3a9a5a;
   --gray-mid:#666;--gray-light:#999;
   --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Bebas Neue',sans-serif;
+  /* ── PM22: Semantic surface variables (3.32.0). Default = mörka värden.
+     Ljusa teman override:ar dessa istället för att duplicera per-fall.
+     CSS-regler ska använda var(--surface-X) istället av hardcoded background. */
+  --surface-base:#0d0d0d;        /* cards, pillars, ex-blocks default-bg */
+  --surface-elevated:#1a1a1a;    /* modaler, dropdowns, menyer */
+  --surface-input:#111;          /* alla input-fält */
+  --surface-saved:#0a120a;       /* saved-state ex-block, completed */
+  --surface-deep:#050505;        /* djupare bakgrund (weight-banner etc) */
+  --surface-overlay:rgba(255,255,255,0.03); /* hover-state subtilt */
+  --border-subtle:#2a2a2a;       /* diskret border (default) */
+  --border-strong:#3a3a3a;       /* synligare border */
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--black);color:var(--white);font-family:var(--sans);min-height:100vh;overflow-x:hidden;max-width:100vw;color-scheme:dark;}
@@ -47,7 +58,7 @@ header{border-bottom:1px solid #1e1e1e;padding:11px 14px;display:flex;align-item
 .header-sync{font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;}
 .header-bottom-row{display:flex;align-items:center;gap:8px;}
 /* AM-pill — morning weight i header */
-.am-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border:1px solid #2a2a2a;border-radius:12px;background:#0d0d0d;font-family:var(--mono);font-size:.55rem;color:var(--gray-light);cursor:pointer;transition:border-color .15s,color .15s,background .15s;letter-spacing:.04em;}
+.am-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border:1px solid var(--border-subtle);border-radius:12px;background:var(--surface-base);font-family:var(--mono);font-size:.55rem;color:var(--gray-light);cursor:pointer;transition:border-color .15s,color .15s,background .15s;letter-spacing:.04em;}
 .am-pill:hover{border-color:var(--gray-light);color:var(--white);}
 .am-pill.logged{color:var(--green-bright);border-color:#2a3a2a;}
 .am-pill.logged:hover{border-color:var(--green-bright);}
@@ -61,19 +72,19 @@ header{border-bottom:1px solid #1e1e1e;padding:11px 14px;display:flex;align-item
 .am-pill-unit{opacity:.7;}
 .am-pill-log{background:none;border:1px solid #2a3a2a;color:var(--green-bright);font-family:var(--mono);font-size:.46rem;padding:2px 7px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;border-radius:8px;margin-left:2px;}
 .am-pill-log:hover{background:rgba(58,154,90,0.12);}
-nav{display:flex;border-top:1px solid #2a2a2a;position:fixed;bottom:0;left:0;right:0;background:var(--black);z-index:100;padding-bottom:env(safe-area-inset-bottom,0);}
+nav{display:flex;border-top:1px solid var(--border-subtle);position:fixed;bottom:0;left:0;right:0;background:var(--black);z-index:100;padding-bottom:env(safe-area-inset-bottom,0);}
 nav button{flex:1;background:none;border:none;border-right:1px solid #1e1e1e;color:#aaa;font-family:var(--mono);font-size:.52rem;letter-spacing:.07em;text-transform:uppercase;padding:12px 2px 10px;cursor:pointer;transition:all .15s;}
 nav button:last-child{border-right:none;}
-nav button.active{color:var(--white);background:#0d0d0d;border-top:2px solid var(--red);margin-top:-1px;}
-nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
+nav button.active{color:var(--white);background:var(--surface-base);border-top:2px solid var(--red);margin-top:-1px;}
+nav button:hover:not(.active){color:var(--white);background:var(--surface-overlay);}
 
 .view{display:none;}
 .view.active{display:block;}
 
 /* WEIGHT BANNER */
-.weight-banner{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid #1a1a1a;background:#0d0d0d;flex-wrap:wrap;}
+.weight-banner{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid #1a1a1a;background:var(--surface-base);flex-wrap:wrap;}
 .weight-banner-label{font-family:var(--mono);font-size:.52rem;color:#aaa;text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;}
-.weight-input{background:#111;border:1px solid #5a1a1a;color:var(--white);font-family:var(--mono);font-size:.86rem;padding:5px 8px;width:70px;transition:border-color .15s;-moz-appearance:textfield;}
+.weight-input{background:var(--surface-input);border:1px solid #5a1a1a;color:var(--white);font-family:var(--mono);font-size:.86rem;padding:5px 8px;width:70px;transition:border-color .15s;-moz-appearance:textfield;}
 .weight-input::-webkit-outer-spin-button,.weight-input::-webkit-inner-spin-button{-webkit-appearance:none;}
 .weight-input:focus{outline:none;border-color:var(--red);}
 .weight-unit{font-family:var(--mono);font-size:.52rem;color:#444;text-transform:uppercase;}
@@ -146,7 +157,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .ex-block{border-bottom:1px solid #141414;padding:8px 0 6px;}
 .ex-block:last-of-type{border-bottom:none;}
 .ex-block.skipped{opacity:.28;}
-.ex-block.saved{background:#0a120a;}
+.ex-block.saved{background:var(--surface-saved);}
 /* V1 Collapse: kollapsade övningar visar bara summary-raden */
 .ex-block .ex-collapsed-summary{display:none;}
 .ex-block.collapsed{padding:0;}
@@ -154,8 +165,8 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .ex-block.collapsed .ex-collapsed-summary{display:flex;align-items:center;gap:12px;padding:13px 12px;cursor:pointer;transition:background .15s;}
 .ex-collapsed-chevron{color:var(--gray-light);font-size:.78rem;width:14px;flex-shrink:0;opacity:1;line-height:1;}
 .ex-block.collapsed .ex-collapsed-name{flex:1;min-width:0;}
-.ex-block.collapsed .ex-collapsed-summary:hover{background:rgba(255,255,255,0.03);}
-.ex-block.collapsed.saved .ex-collapsed-summary{background:#0a120a;}
+.ex-block.collapsed .ex-collapsed-summary:hover{background:var(--surface-overlay);}
+.ex-block.collapsed.saved .ex-collapsed-summary{background:var(--surface-saved);}
 .ex-block.collapsed.done .ex-collapsed-summary{cursor:default;}
 .ex-block.collapsed.done .ex-collapsed-summary:hover{background:transparent;}
 /* #2 — separator mellan kollapsade rader för tydligare gruppering */
@@ -178,7 +189,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .ex-note-banner{font-family:var(--mono);font-size:.66rem;color:#c8a84a;background:rgba(180,140,40,0.1);border-left:2px solid #b8922a;padding:5px 10px;margin-top:5px;cursor:pointer;line-height:1.5;display:block;}
 .ex-note-banner:hover{border-left-color:var(--gold);}
 .ex-note-wrap{margin:4px 0;}
-.ex-note-input{width:100%;background:#111;border:1px solid #3a3000;color:var(--white);font-family:var(--mono);font-size:.56rem;padding:6px 8px;resize:vertical;min-height:48px;line-height:1.6;}
+.ex-note-input{width:100%;background:var(--surface-input);border:1px solid #3a3000;color:var(--white);font-family:var(--mono);font-size:.56rem;padding:6px 8px;resize:vertical;min-height:48px;line-height:1.6;}
 .ex-note-input:focus{outline:none;border-color:var(--gold);}
 .ex-note-actions{display:flex;gap:4px;margin-top:4px;}
 .ex-note-save{background:#2a1a00;border:1px solid var(--gold);color:var(--gold);font-family:var(--mono);font-size:.44rem;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;cursor:pointer;}
@@ -199,7 +210,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .ex-btn-edit{background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.44rem;letter-spacing:.05em;padding:0 12px;cursor:pointer;text-transform:uppercase;transition:all .15s;white-space:nowrap;min-height:36px;display:inline-flex;align-items:center;gap:4px;}
 .ex-btn-edit:hover{border-color:#666;color:#888;}
 .ex-edit-dropdown{position:relative;display:inline-block;}
-.ex-edit-menu{display:none;position:absolute;right:0;top:100%;background:#1a1a1a;border:1px solid #333;z-index:50;min-width:120px;margin-top:2px;}
+.ex-edit-menu{display:none;position:absolute;right:0;top:100%;background:var(--surface-elevated);border:1px solid var(--border-strong);z-index:50;min-width:120px;margin-top:2px;}
 .ex-edit-menu.open{display:block;}
 .ex-edit-menu button{display:block;width:100%;background:none;border:none;border-bottom:1px solid #222;color:#888;font-family:var(--mono);font-size:.44rem;letter-spacing:.05em;text-transform:uppercase;padding:7px 10px;cursor:pointer;text-align:left;transition:color .15s;}
 .ex-edit-menu button:last-child{border-bottom:none;}
@@ -213,7 +224,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .set-row.bw-set{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
 .set-num{font-family:var(--mono);font-size:.44rem;color:#666;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:5px;}
 .set-num.warmup-label{color:#4a4a4a;}
-.set-input{background:#111;border:1px solid #3a1a1a;color:var(--white);font-family:var(--mono);font-size:.76rem;padding:5px 4px;text-align:center;transition:border-color .15s;-moz-appearance:textfield;width:100%;}
+.set-input{background:var(--surface-input);border:1px solid #3a1a1a;color:var(--white);font-family:var(--mono);font-size:.76rem;padding:5px 4px;text-align:center;transition:border-color .15s;-moz-appearance:textfield;width:100%;}
 .set-input::-webkit-outer-spin-button,.set-input::-webkit-inner-spin-button{-webkit-appearance:none;}
 .set-input:focus{outline:none;border-color:var(--red);}
 .set-input:disabled{opacity:.2;cursor:not-allowed;}
@@ -236,7 +247,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .bw-snap{font-family:var(--mono);font-size:.5rem;color:#3a3a3a;text-align:center;padding:1px 0 2px;}
 .add-set-btn{background:none;border:1px dashed #333;color:#888;font-family:var(--mono);font-size:.62rem;letter-spacing:.07em;text-transform:uppercase;padding:10px 4px;width:100%;cursor:pointer;transition:all .15s;margin-top:3px;display:flex;align-items:center;justify-content:center;gap:3px;}
 .add-set-btn:hover{border-color:var(--red);color:#777;}
-.swap-select{background:#111;border:1px solid #5a1a1a;color:var(--white);font-family:var(--mono);font-size:.56rem;padding:4px 6px;width:100%;margin-top:4px;cursor:pointer;}
+.swap-select{background:var(--surface-input);border:1px solid #5a1a1a;color:var(--white);font-family:var(--mono);font-size:.56rem;padding:4px 6px;width:100%;margin-top:4px;cursor:pointer;}
 .swap-select optgroup{
   font-family:var(--mono);
   font-size:.7rem;
@@ -247,14 +258,14 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
   text-transform:uppercase;
   padding:6px 0;
 }
-.swap-select option{font-family:var(--sans);background:#111;color:var(--white);padding:6px 10px;}
+.swap-select option{font-family:var(--sans);background:var(--surface-input);color:var(--white);padding:6px 10px;}
 .swap-select:focus{outline:none;border-color:var(--red);}
 
 .add-ex-row{padding:6px 0 0;}
 .add-ex-btn{background:none;border:1px dashed #333;color:#666;font-family:var(--mono);font-size:.5rem;letter-spacing:.07em;text-transform:uppercase;padding:7px;width:100%;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px;}
 .add-ex-btn:hover{border-color:var(--red);color:#777;}
 .add-ex-form{margin-top:5px;display:flex;gap:4px;align-items:center;}
-.add-ex-input{flex:1;background:#111;border:1px solid #5a1a1a;color:var(--white);font-family:var(--mono);font-size:.68rem;padding:6px 8px;}
+.add-ex-input{flex:1;background:var(--surface-input);border:1px solid #5a1a1a;color:var(--white);font-family:var(--mono);font-size:.68rem;padding:6px 8px;}
 .add-ex-input:focus{outline:none;border-color:var(--red);}
 .add-ex-confirm{background:var(--red);border:none;color:var(--white);font-family:var(--mono);font-size:.52rem;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;cursor:pointer;}
 .rest-content{padding:10px 0 3px;font-family:var(--mono);font-size:.64rem;color:#484848;line-height:1.8;}
@@ -998,6 +1009,15 @@ body.theme-arctic{
   --display:'Rajdhani',sans-serif;
   --sans:'Rajdhani',sans-serif;
   --mono:'DM Mono',monospace;
+  /* PM22 surface-overrides — glasmorphism light */
+  --surface-base:rgba(255,255,255,0.55);
+  --surface-elevated:rgba(255,255,255,0.95);
+  --surface-input:rgba(255,255,255,0.82);
+  --surface-saved:rgba(220,240,235,0.6);
+  --surface-deep:rgba(225,242,250,0.78);
+  --surface-overlay:rgba(0,168,216,0.08);
+  --border-subtle:rgba(0,168,216,0.18);
+  --border-strong:rgba(0,168,216,0.3);
   color-scheme:light;
   color:#1a2e3a;
   background-color:#eaf4f8;
@@ -1795,6 +1815,15 @@ body.theme-void{
   --black:#000000;--white:#ffffff;--red:#ffffff;
   --gold:#aaaaaa;--green-bright:#cccccc;
   --gray-mid:#111111;--gray-light:#666666;
+  /* PM22 surface-overrides — pure-black minimal */
+  --surface-base:#000000;
+  --surface-elevated:#050505;
+  --surface-input:#050505;
+  --surface-saved:#080808;
+  --surface-deep:#000000;
+  --surface-overlay:rgba(255,255,255,0.05);
+  --border-subtle:#222;
+  --border-strong:#333;
   --display:'Playfair Display',serif;
   --sans:'DM Mono',monospace;
   --mono:'DM Mono',monospace;
@@ -2204,8 +2233,8 @@ body.theme-nanosuit .auth-btn-primary:hover{background:linear-gradient(135deg,#0
 }
 .auth-btn-google{
   width:100%;
-  background:#1a1a1a;
-  border:1px solid #2a2a2a;
+  background:var(--surface-elevated);
+  border:1px solid var(--border-subtle);
   color:var(--white);
   font-family:var(--sans);
   font-size:.85rem;
@@ -2230,8 +2259,8 @@ body.theme-nanosuit .auth-btn-primary:hover{background:linear-gradient(135deg,#0
 #auth-email-form input[type="password"],
 #reset-password-form input[type="password"]{
   width:100%;
-  background:#0a0a0a;
-  border:1px solid #2a2a2a;
+  background:var(--surface-input);
+  border:1px solid var(--border-subtle);
   color:var(--white);
   font-family:var(--mono);
   font-size:.9rem;
@@ -2373,7 +2402,7 @@ body.theme-nanosuit .auth-btn-primary:hover{background:linear-gradient(135deg,#0
 }
 .app-modal-card{
   position:relative;
-  background:linear-gradient(135deg,var(--gray-mid,#1a1a1a) 0%,var(--black,#0a0a0a) 100%);
+  background:var(--surface-elevated);
   border:1px solid var(--red,#a02020);
   width:100%;max-width:380px;
   padding:22px 22px 18px;
@@ -2402,8 +2431,8 @@ body.theme-nanosuit .auth-btn-primary:hover{background:linear-gradient(135deg,#0
 }
 .app-modal-input{
   width:100%;
-  background:var(--black,#0a0a0a);
-  border:1px solid #2a2a2a;
+  background:var(--surface-input);
+  border:1px solid var(--border-subtle);
   color:var(--white,#fff);
   font-family:var(--mono);
   font-size:.85rem;
@@ -2427,8 +2456,8 @@ body.theme-nanosuit .auth-btn-primary:hover{background:linear-gradient(135deg,#0
 }
 .app-modal-select{
   width:100%;
-  background:var(--black,#0a0a0a);
-  border:1px solid #2a2a2a;
+  background:var(--surface-input);
+  border:1px solid var(--border-subtle);
   color:var(--white,#fff);
   font-family:var(--mono);
   font-size:.8rem;
@@ -2448,7 +2477,7 @@ body.theme-nanosuit .auth-btn-primary:hover{background:linear-gradient(135deg,#0
   text-transform:uppercase;
   padding:10px 18px;
   cursor:pointer;
-  border:1px solid #3a3a3a;
+  border:1px solid var(--border-strong);
   background:transparent;
   color:#bbb;
   transition:all .15s;
@@ -2497,6 +2526,15 @@ body.theme-daylight{
   --green-bright:#2a7a3a;
   --gray-mid:#e8e6df;
   --gray-light:#6a6a6a;
+  /* PM22 surface-overrides — paper-clean ljus */
+  --surface-base:#ffffff;
+  --surface-elevated:#ffffff;
+  --surface-input:#ffffff;
+  --surface-saved:#f0f7ec;
+  --surface-deep:#f5f3ee;
+  --surface-overlay:rgba(0,0,0,0.04);
+  --border-subtle:#e0dcd0;
+  --border-strong:#d0ccc0;
   --display:'Bebas Neue',sans-serif;
   --sans:'Inter',sans-serif;
   --mono:'JetBrains Mono',monospace;
@@ -2883,6 +2921,15 @@ body.theme-crusader{
   --gold:#8a7048;             /* aged bronze */
   --green-bright:#6a8a3a;
   --gray-mid:#3a322a;--gray-light:#7a6e58;
+  /* PM22 surface-overrides — warm parchment */
+  --surface-base:#221d17;
+  --surface-elevated:#2a241c;
+  --surface-input:#2a241c;
+  --surface-saved:#1f2a18;
+  --surface-deep:#1a1612;
+  --surface-overlay:rgba(216,200,168,0.05);
+  --border-subtle:#3a322a;
+  --border-strong:#4a3e30;
   --display:'Cinzel',serif;
   --sans:'Crimson Pro',serif;
   --mono:'DM Mono',monospace;
@@ -3323,6 +3370,15 @@ body.theme-obsidian{
   --green-bright:#9ab57a;
   --gray-mid:#2a2010;
   --gray-light:#8a7a58;
+  /* PM22 surface-overrides — dark fantasy gothic */
+  --surface-base:rgba(40,28,12,0.55);
+  --surface-elevated:rgba(15,10,4,0.95);
+  --surface-input:rgba(15,10,4,0.6);
+  --surface-saved:rgba(30,40,15,0.5);
+  --surface-deep:rgba(40,28,12,0.7);
+  --surface-overlay:rgba(201,163,90,0.08);
+  --border-subtle:#2a2010;
+  --border-strong:#4a3a18;
   --display:'Cinzel',serif;
   --sans:'Cardo',serif;
   --mono:'Cinzel',serif;
@@ -4404,7 +4460,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.31.5';
+const APP_VERSION = '3.32.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4413,7 +4469,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.31.5',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.32.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -5621,7 +5677,7 @@ function buildReorderUI(effectiveChain){
       ontouchstart="touchStart(event,'${pid}')"
       ontouchmove="touchMove(event)"
       ontouchend="touchEnd(event,'${pid}')"
-      style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #3a3a3a;margin-bottom:6px;cursor:grab;background:#1a1a1a;touch-action:none;-webkit-user-select:none;user-select:none;">
+      style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border-strong);margin-bottom:6px;cursor:grab;background:var(--surface-elevated);touch-action:none;-webkit-user-select:none;user-select:none;">
       <span style="font-family:var(--display);font-size:1.3rem;color:var(--red);min-width:20px;">${letter}</span>
       <span style="font-family:var(--sans);font-size:.82rem;flex:1;color:var(--white);">${escapeHTML(getSessionName(pid))}</span>
       <span style="color:var(--gray-light);font-size:1.1rem;letter-spacing:2px;">⠿</span>
@@ -6228,7 +6284,7 @@ function showEditSort(){
         ontouchstart="touchStart(event,'${pid}')"
         ontouchmove="touchMove(event)"
         ontouchend="touchEndAndRefreshSort(event,'${pid}')"
-        style="display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid #333;margin-bottom:6px;cursor:grab;background:#111;touch-action:none;-webkit-user-select:none;user-select:none;">
+        style="display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--border-strong);margin-bottom:6px;cursor:grab;background:var(--surface-input);touch-action:none;-webkit-user-select:none;user-select:none;">
       <span style="font-family:var(--display);font-size:1.4rem;color:var(--red);min-width:22px;">${letter}</span>
       <span style="font-family:var(--sans);font-size:.9rem;flex:1;color:var(--white);">${name}</span>
       <span style="color:#555;font-size:1.2rem;letter-spacing:2px;">⠿</span>
@@ -6275,7 +6331,7 @@ function showEditAddRemove(){
         <div style="display:flex;gap:6px;">
           <input class="add-ex-input" id="passrenameinput-${pid}" type="text" placeholder="${name}" value="${name}" style="flex:1;">
           <button class="add-ex-confirm" onclick="doSessionRename('${pid}');showEditAddRemove();">✓</button>
-          <button class="add-ex-confirm" style="background:#1a1a1a;" onclick="toggleSessionRename('${pid}')">✕</button>
+          <button class="add-ex-confirm" style="background:var(--surface-elevated);" onclick="toggleSessionRename('${pid}')">✕</button>
         </div>
       </div>
       <div style="display:flex;gap:5px;padding:5px;background:var(--black);border-top:1px solid #1a1a1a;">
@@ -7732,7 +7788,7 @@ function renderData(){
         <div style="border:1px solid #2a2a2a;padding:10px 12px;margin-bottom:6px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
             <input type="text" value="${escapeHTML(c.name)}" id="custName-${c.id}"
-              style="flex:1;background:#111;border:1px solid #333;color:var(--white);font-family:var(--sans);font-size:.82rem;padding:5px 8px;"
+              style="flex:1;background:var(--surface-input);border:1px solid var(--border-strong);color:var(--white);font-family:var(--sans);font-size:.82rem;padding:5px 8px;"
               onblur="updateCustomExercise('${c.id}',{name:this.value});renderData();">
             <button onclick="confirmDeleteCustomEx('${c.id}',${escapeHTML(JSON.stringify(c.name))})"
               style="background:none;border:1px solid #3a1a1a;color:#884444;font-family:var(--mono);font-size:.44rem;padding:4px 8px;cursor:pointer;text-transform:uppercase;">Delete</button>
@@ -7803,7 +7859,7 @@ function renderData(){
       <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);">Weight step</div>
       <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);margin-top:2px;">Used by +/− steppers on set inputs</div>
     </div>
-    <select onchange="state.weightStep=parseFloat(this.value);save();" style="background:var(--black);border:1px solid var(--gray-mid);color:var(--white);font-family:var(--mono);font-size:.7rem;padding:6px 10px;cursor:pointer;">
+    <select onchange="state.weightStep=parseFloat(this.value);save();" style="background:var(--surface-input);border:1px solid var(--border-strong);color:var(--white);font-family:var(--mono);font-size:.7rem;padding:6px 10px;cursor:pointer;">
       <option value="1.25" ${(state.weightStep||2.5)===1.25?"selected":""}>1.25 kg</option>
       <option value="2.5"  ${(state.weightStep||2.5)===2.5?"selected":""}>2.5 kg</option>
       <option value="5"    ${(state.weightStep||2.5)===5?"selected":""}>5 kg</option>
