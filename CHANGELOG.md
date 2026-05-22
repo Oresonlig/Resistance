@@ -6,6 +6,21 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.31.3 — 2026-05-22
+**Obsidian embers följer scroll — känns "i appen" istället för "på skärmen".** Niklas: "embers ligger som en film på min mobil. Jag vill att de ska vara i appen rent grafiskt".
+
+- **Rotorsak:** canvas var `position:fixed` viewport-storlek, partikel-koords var viewport-relativa → vid scroll följde inte embers med content, kändes som ett filterlager utanför app:s grafik.
+- **Fix:** WORLD-COORD partiklar. Canvas förblir viewport-storlek (perf), men:
+  - Partiklarna spawnas över hela `document.scrollHeight` (inte bara viewport-y)
+  - Varje frame sätts `ctx.setTransform(dpr, 0, 0, dpr, 0, -scrollY*dpr)` → world-coords renderas på rätt viewport-position
+  - `clearRect` rensar bara den synliga viewport-arean (i world-coords)
+  - Off-screen-clip: partiklar utanför viewport ± 50px ritas inte (perf)
+  - Periodisk `getScrollH()`-re-mätning var 1.5s fångar content-tillväxt utan MutationObserver-overhead
+- **Spawn-pattern ändrat:** alltid random y över hela världen (förut respawn vid `h+40` = längst ner). Ger continuous täckning av lång content (Progress-vy etc), inte bara längs nedre kanten.
+- **Visuell effekt:** scrollar du nedåt så glider embers förbi naturligt som om de tillhör appens bakgrund, inte är pålagd på mobilskärmen.
+
+---
+
 ## 3.31.2 — 2026-05-22
 **Ember-canvas gigant-glow-bugg fixad.** Niklas såg "vit blob i mitten + UPDATED FROM CLOUD ✓" efter sync. Inte vit bakgrund — canvas-storleksbugg.
 

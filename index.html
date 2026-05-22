@@ -4347,7 +4347,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.31.2';
+const APP_VERSION = '3.31.3';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4356,7 +4356,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.31.2',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.31.3',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -7542,12 +7542,13 @@ function initTheme(){
 // 32 partiklar med per-partikel fysik (position, hastighet, livslängd, sway).
 // Mount/demount via applyTheme + Settings ambient-toggle.
 //
-// 3.31.2: storleksbugg fixad. getBoundingClientRect() var opålitlig på Android när
-// canvas just fick display:block — returnerade 300x150 (canvas default) → partiklar
-// koncentrerades i hörnet → CSS stretched visuellt till gigantisk glow-blob.
-// Lösning: window.innerWidth/innerHeight + canvas.style.width/height explicit +
-// re-spawn partiklarna vid resize så de inte hänger kvar med gamla koordinater.
-let _obEmberRaf=0, _obEmberResize=null, _obEmberState=null;
+// 3.31.3: WORLD-COORD partiklar. Tidigare hade partiklarna viewport-koords →
+// kändes som ett filterlager "på skärmen" som inte följde med scroll. Nu har
+// partiklarna världs-koordinater (y över hela scrollHeight) och canvas ritas
+// med transform shifted by -scrollY varje frame → partiklarna känns "fästade i
+// appen" och scrollar naturligt med content. Canvas förblir viewport-stor för
+// prestanda; bara partiklar inom viewport ritas (off-screen-clip).
+let _obEmberRaf=0, _obEmberResize=null, _obEmberState=null, _obEmberScrollHTimer=null;
 function startObsidianEmbers(){
   if(_obEmberRaf) return; // already running
   const canvas=document.getElementById('obsidianEmberCanvas');
@@ -7555,36 +7556,50 @@ function startObsidianEmbers(){
   const ctx=canvas.getContext('2d');
   const dpr=Math.min(window.devicePixelRatio||1, 2);
   const rand=(a,b)=>a+Math.random()*(b-a);
-  function spawn(w,h,initial){
+  function getScrollH(){
+    return Math.max(window.innerHeight, document.documentElement.scrollHeight || 0, document.body.scrollHeight || 0);
+  }
+  // Spawn ALWAYS random y över hela världen — partiklar fade-in tändar oavsett var.
+  // Det ger continuous täckning av lång content (inte bara längst ner som default-spawn).
+  function spawn(w,scrollH){
     return {
-      x:rand(0,w), y:initial?rand(0,h):h+rand(0,40),
+      x:rand(0,w), y:rand(0,scrollH),
       r:rand(0.5,1.8), vy:rand(0.1,0.32), vx:rand(-0.06,0.06),
       sp:rand(0,Math.PI*2), ss:rand(0.004,0.014), sa:rand(0.1,0.35),
       life:0, maxLife:rand(700,1600), hue:rand(22,38), baseAlpha:rand(0.35,0.9),
     };
   }
   const NUM=32;
-  const state = _obEmberState = {w:0, h:0, arr:[], t:0};
+  const state = _obEmberState = {w:0, h:0, scrollH:0, arr:[], t:0};
   function resize(){
     const newW = window.innerWidth;
     const newH = window.innerHeight;
-    if(newW===state.w && newH===state.h) return; // ingen ändring
-    state.w=newW; state.h=newH;
+    const newScrollH = getScrollH();
+    if(newW===state.w && newH===state.h && newScrollH===state.scrollH) return;
+    state.w=newW; state.h=newH; state.scrollH=newScrollH;
     canvas.width=newW*dpr; canvas.height=newH*dpr;
     canvas.style.width=newW+'px'; canvas.style.height=newH+'px';
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    // Re-spawn partiklarna med korrekt w/h så de inte hänger kvar med gamla koordinater
+    // Re-spawn över ny world-height
     state.arr.length=0;
-    for(let i=0;i<NUM;i++) state.arr.push(spawn(newW,newH,true));
+    for(let i=0;i<NUM;i++) state.arr.push(spawn(newW,newScrollH));
   }
   resize();
   // Säkerhetsnät: re-resize efter en frame ifall första anropet missade layout
   requestAnimationFrame(resize);
   _obEmberResize=resize;
   window.addEventListener('resize', resize);
+  // Periodisk re-mätning av scrollH (fångar content-ändringar utan MutationObserver-overhead)
+  _obEmberScrollHTimer=setInterval(()=>{
+    const newScrollH=getScrollH();
+    if(newScrollH!==state.scrollH){ state.scrollH=newScrollH; } // bara uppdatera, ingen jarring re-spawn
+  }, 1500);
   function tick(){
     state.t++;
-    ctx.clearRect(0,0,state.w,state.h);
+    const sy = window.scrollY || window.pageYOffset || 0;
+    // World-to-viewport transform: shift by -scrollY så partikel-world-coords renderas på rätt viewport-position
+    ctx.setTransform(dpr, 0, 0, dpr, 0, -sy*dpr);
+    // Clear bara den synliga viewport-arean (i world-coords)
+    ctx.clearRect(0, sy, state.w, state.h);
     for(let i=0;i<state.arr.length;i++){
       const e=state.arr[i];
       e.life++; e.sp+=e.ss;
@@ -7593,7 +7608,9 @@ function startObsidianEmbers(){
       const lt=e.life/e.maxLife;
       let a = lt<0.15 ? lt/0.15 : lt>0.7 ? Math.max(0,1-(lt-0.7)/0.3) : 1;
       a *= e.baseAlpha*(0.7+0.3*Math.sin(state.t*0.04+e.sp));
-      if(e.y<-10 || e.life>e.maxLife){ state.arr[i]=spawn(state.w,state.h,false); continue; }
+      if(e.y<-10 || e.life>e.maxLife){ state.arr[i]=spawn(state.w,state.scrollH); continue; }
+      // Off-screen-clip: rita bara partiklar inom viewport ± 50px (perf-optimering)
+      if(e.y < sy-50 || e.y > sy+state.h+50) continue;
       const g=ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r*5);
       g.addColorStop(0,   `hsla(${e.hue},90%,62%,${a})`);
       g.addColorStop(0.5, `hsla(${e.hue},90%,42%,${a*0.4})`);
@@ -7610,9 +7627,10 @@ function startObsidianEmbers(){
 function stopObsidianEmbers(){
   if(_obEmberRaf){ cancelAnimationFrame(_obEmberRaf); _obEmberRaf=0; }
   if(_obEmberResize){ window.removeEventListener('resize', _obEmberResize); _obEmberResize=null; }
+  if(_obEmberScrollHTimer){ clearInterval(_obEmberScrollHTimer); _obEmberScrollHTimer=null; }
   _obEmberState=null;
   const canvas=document.getElementById('obsidianEmberCanvas');
-  if(canvas){ const ctx=canvas.getContext('2d'); if(ctx) ctx.clearRect(0,0,canvas.width,canvas.height); }
+  if(canvas){ const ctx=canvas.getContext('2d'); if(ctx){ ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,canvas.width,canvas.height); } }
 }
 function toggleAmbientEffects(){
   state.ambientEffects = state.ambientEffects===false; // toggle (default true → false → true)
