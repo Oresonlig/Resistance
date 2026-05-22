@@ -6,6 +6,19 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.31.4 — 2026-05-22
+**Obsidian aktiv chain-tab: rektangel med diamond-ends + RITE-prefix på session-header.** Matchar Claude Designs förslag.
+
+- **Aktiv chain-tab är nu EN sammanhängande rounded-rektangel** (border-radius:6px, gold border) som omger BÅDE bokstaven + namnet. Default-hexagonen (`clip-path:polygon(...)`) är override:ad till `none` bara för Obsidian + aktiv.
+- **Diamond-ends:** `::before` och `::after` på aktiv-cellen renderar 8×8px roterade kvadrater (45°) i gold-outline + dark fill — kapslar in rektangeln som "scroll-ends". Margin på sidorna garanterar att de inte clippas av chain-strip-overflow.
+- **Letter (B) inom aktiv-rektangeln:** 32×32 gold cirkel med inner gradient, ingen egen animation (breath är på containern istället så hela kapseln "andas" som en enhet).
+- **RITE-prefix på session-header.** `body.theme-obsidian .pass-ex-letter::before { content:"RITE " }` + `::after { content:" ·" }` ger "RITE B · BACK · BICEPS" istället för "B BACK · BICEPS". Pseudo-only — ingen JS-edit. Övriga teman opåverkade.
+- **Icke-aktiva chain-tabs** (A, V1, C som cirklar; CHE, VB som avlånga hexagons för adjacent med name-short) — opåverkade, behåller default-styling. Bara aktiv-cellen får rektangel-form.
+
+Niklas: "VERKLIGEN gillar hexagonens form överlag" — bekräftade att Obsidian är undantaget där rektangel passar tema-karaktären bättre.
+
+---
+
 ## 3.31.3 — 2026-05-22
 **Obsidian embers följer scroll — känns "i appen" istället för "på skärmen".** Niklas: "embers ligger som en film på min mobil. Jag vill att de ska vara i appen rent grafiskt".
 
