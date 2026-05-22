@@ -6,6 +6,16 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.30.15 — 2026-05-22
+**UI-polish: tydligare set-row labels, större kollapsade rader, BW-format omvänt, ljus-tema password-fix.** Live-feedback från gymmet.
+
+- **Set-row labels (`KG` / `REPS` / `+F`) större och fetare.** `.set-unit` `.65rem → 1rem` + `font-weight:600`, mobil `.55rem → .88rem`. Var nästan oläsligt på mindre skärmar.
+- **Kollapsade övningar tydligare.** `.ex-collapsed-name` `.72rem → .95rem` (+`font-weight:500`). `.ex-collapsed-status` `.56rem → .78rem`. Sessionsöversikten är primärt scan-vy — fonten måste tåla snabbläsning.
+- **BW-format vänt om: BW först, vikt efter.** "BW är ens vikt" — det är primär-värdet, inte en addition. Input-label: `+KG (BW:?)` → `BW {snap} + KG`. Last-display, clipboard, history, PR-card: `BW+20kg ×4r` → `BW + 20kg ×4r`. Konsekvent med AM-pillen (`BW 97 kg` från 3.30.9).
+- **Arctic password-input bugfix.** Email-fältet fick autofill-styling från browsern (vit bakgrund) medan password föll tillbaka till default `#0a0a0a` — gav asymmetri på ljust tema. Lade till Arctic-override (analog till Daylight) + `:-webkit-autofill`-regler för båda ljusa teman som tvingar konsekvent vit bakgrund.
+
+---
+
 ## 3.30.14 — 2026-05-21
 **Data-säkerhetspaket: PM20 + PM17 + PM9 + delete-tombstones + PM10-verifiering.** Sista buntningen av premortem-tail.
 

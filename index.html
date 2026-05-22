@@ -160,9 +160,9 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .ex-block.collapsed.done .ex-collapsed-summary:hover{background:transparent;}
 /* #2 — separator mellan kollapsade rader för tydligare gruppering */
 .ex-block.collapsed + .ex-block.collapsed{border-top:1px solid #303030;}
-.ex-collapsed-name{font-family:var(--mono);font-size:.72rem;letter-spacing:.05em;color:var(--white);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ex-collapsed-name{font-family:var(--mono);font-size:.95rem;font-weight:500;letter-spacing:.05em;color:var(--white);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ex-collapsed-name .ex-tag{margin-left:6px;}
-.ex-collapsed-status{font-family:var(--mono);font-size:.56rem;color:var(--gray-light);letter-spacing:.04em;flex-shrink:0;}
+.ex-collapsed-status{font-family:var(--mono);font-size:.78rem;color:var(--gray-light);letter-spacing:.04em;flex-shrink:0;}
 .ex-header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;}
 .ex-label-col{flex:1;min-width:0;}
 .ex-name{font-size:.82rem;font-weight:500;}
@@ -221,7 +221,7 @@ nav button:hover:not(.active){color:var(--white);background:#0f0f0f;}
 .set-input.work-set{border-color:#1a2a1a;}
 .set-input.forced{border-color:#2a1a2a;color:#9a6a9a;}
 .set-input.timed{border-color:#1a2a3a;color:#7ab;}
-.set-unit{font-family:var(--mono);font-size:.65rem;color:#666;text-transform:uppercase;text-align:center;margin-top:2px;}
+.set-unit{font-family:var(--mono);font-size:1rem;font-weight:600;color:#888;text-transform:uppercase;text-align:center;margin-top:3px;letter-spacing:.04em;}
 .set-unit.forced-unit{color:#5a3a5a;}
 .set-unit.time-unit{color:#3a5a5a;}
 .side-btn{background:none;border:1px solid #3a2a00;color:#c89030;font-family:var(--mono);font-size:.6rem;font-weight:600;padding:3px 6px;cursor:pointer;transition:all .15s;width:100%;text-align:center;}
@@ -396,7 +396,7 @@ canvas#weightChart{width:100%!important;display:block;}
 @media(max-width:360px){
   .set-row.normal-set,.set-row.bw-set,.set-row.uni-set{gap:3px;}
   .set-input{font-size:.68rem;padding:4px 3px;}
-  .set-unit{font-size:.55rem;}
+  .set-unit{font-size:.88rem;}
   .set-num{font-size:.38rem;}
 }
 
@@ -1092,6 +1092,31 @@ body.theme-arctic .section-title{font-family:'Rajdhani',sans-serif;font-weight:7
 body.theme-arctic .auth-btn-primary{background:linear-gradient(135deg,#00a8d8 0%,#0088b8 100%);color:#fff;}
 body.theme-arctic .auth-btn-primary:hover{background:linear-gradient(135deg,#00c8e8 0%,#0099c8 100%);color:#fff;}
 body.theme-arctic .draft-notice{color:#1a8a8a;border-color:rgba(0,168,216,0.3);background:rgba(255,255,255,0.4);}
+/* Arctic — auth-form inputs (matcha email/password till ljus tema, default är mörk #0a0a0a) */
+body.theme-arctic #auth-email-form input,
+body.theme-arctic #auth-signup-fields input,
+body.theme-arctic #reset-password-form input{
+  background:#ffffff;
+  border:1px solid rgba(0,168,216,0.3);
+  color:#1a2e3a;
+}
+body.theme-arctic #auth-email-form input:focus,
+body.theme-arctic #auth-signup-fields input:focus,
+body.theme-arctic #reset-password-form input:focus{
+  border-color:var(--red);
+  box-shadow:0 0 0 1px var(--red);
+}
+/* Ljusa teman — neutralisera browser-autofill (asymmetri mellan email/password) */
+body.theme-daylight #auth-email-form input:-webkit-autofill,
+body.theme-daylight #auth-signup-fields input:-webkit-autofill,
+body.theme-daylight #reset-password-form input:-webkit-autofill,
+body.theme-arctic #auth-email-form input:-webkit-autofill,
+body.theme-arctic #auth-signup-fields input:-webkit-autofill,
+body.theme-arctic #reset-password-form input:-webkit-autofill{
+  -webkit-box-shadow:0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color:#1a2e3a !important;
+  caret-color:#1a2e3a;
+}
 
 /* Chain strip — frosted ice hexagons */
 body.theme-arctic .chain-tab-letter{color:#5a7a88;background:rgba(180,220,240,0.58);}
@@ -3904,7 +3929,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.30.14';
+const APP_VERSION = '3.30.15';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -3913,7 +3938,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.14',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.15',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -4791,7 +4816,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
           let lastStr='';
           if(lastSet){
             if(isTimed) lastStr=`${lastSet.secs||'?'}s`;
-            else if(isBW) lastStr=`BW+${toDisplay(lastSet.extra)||0}${unitLabel()} ×${lastSet.reps||'?'}r${lastSet.forced?` +${lastSet.forced}f`:''}`;
+            else if(isBW) lastStr=`BW + ${toDisplay(lastSet.extra)||0}${unitLabel()} ×${lastSet.reps||'?'}r${lastSet.forced?` +${lastSet.forced}f`:''}`;
             else lastStr=`${toDisplay(lastSet.weight)||'—'}${unitLabel()} ×${lastSet.reps||'?'}r${lastSet.forced?` +${lastSet.forced}f`:''}`;
           }
           const daysAgo=Math.floor((Date.now()-lastSession.timestamp)/86400000);
@@ -4990,7 +5015,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
                 <div><input class="set-input${wCls}" type="number" id="bw-${ex.id}-${origIdx}" placeholder="0"
                   value="${savedSet?.extra!=null?toDisplay(savedSet.extra):bufVal?.extra!=null?toDisplay(bufVal.extra):''}"
                   min="-50" step="${unitL==='lbs'?'1':'1.25'}" ${dis}>
-                  <div class="set-unit">+${unitL} (BW:${snapDisp})</div></div>
+                  <div class="set-unit">BW ${snapDisp} + ${unitL}</div></div>
                 <div><input class="${'set-input'+wCls+(isTimed?' timed':'')}" type="number" id="r-${ex.id}-${origIdx}"
                   placeholder="${isTimed?('—'):('—')}" value="${isTimed?(savedSet?.secs||bufVal?.secs||''):(savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:'')}" min="1" ${isTimed?'max="3600"':'max="50"'} ${dis}>
                   <div class="set-unit${isTimed?' time-unit':''}">${isTimed?'sec':'reps'}</div></div>
@@ -6778,8 +6803,8 @@ function undoSession(passId){
 
 function formatSetLine(set,u){
   let str;
-  if(set.extra!=null&&set.secs) str='BW+'+toDisplay(set.extra)+' '+u+' · '+set.secs+'s';
-  else if(set.extra!=null)      str='BW+'+toDisplay(set.extra)+' '+u+' × '+(set.reps||'?')+'r';
+  if(set.extra!=null&&set.secs) str='BW + '+toDisplay(set.extra)+' '+u+' · '+set.secs+'s';
+  else if(set.extra!=null)      str='BW + '+toDisplay(set.extra)+' '+u+' × '+(set.reps||'?')+'r';
   else if(set.secs)             str=set.secs+'s';
   else                          str=(set.weight!=null?toDisplay(set.weight)+' '+u:'')+' × '+(set.reps||'?')+'r';
   if(set.forced)                str+=' (+'+set.forced+'f)';
@@ -7018,9 +7043,9 @@ function renderProgress(){
   const last=state.log[state.log.length-1];const days=Math.floor((Date.now()-last.timestamp)/86400000);
   let html=`<div class="section-title">Progress</div><div class="stats-grid"><div class="stat-box"><div class="stat-num">${state.log.length}</div><div class="stat-desc">Sessions</div></div><div class="stat-box"><div class="stat-num">${state.cycles.length}</div><div class="stat-desc">Rounds</div></div><div class="stat-box"><div class="stat-num">${days}d</div><div class="stat-desc">Since last</div></div></div>`;
   const prs=getAllPRs();
-  if(prs.length){html+=`<div class="section-sub">★ Personal Records</div><div class="pr-grid">`;prs.forEach(pr=>{const val=pr.bw?`BW+${toDisplay(pr.extra)||0}${unitLabel()}`:`${toDisplay(pr.weight)}${unitLabel()}`;const sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${unitLabel()} · ${pr.reps||'?'}r`:`${pr.reps||'?'} reps`;const safeName=escapeHTML(pr.name);const jsName=JSON.stringify(pr.name);html+=`<div class="pr-card"><button class="pr-delete" onclick="ignorePR(${escapeHTML(jsName)})" title="Remove this PR" aria-label="Remove ${safeName}">✕</button><div class="pr-ex-name">${safeName}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;});html+=`</div>`;}
+  if(prs.length){html+=`<div class="section-sub">★ Personal Records</div><div class="pr-grid">`;prs.forEach(pr=>{const val=pr.bw?`BW + ${toDisplay(pr.extra)||0}${unitLabel()}`:`${toDisplay(pr.weight)}${unitLabel()}`;const sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${unitLabel()} · ${pr.reps||'?'}r`:`${pr.reps||'?'} reps`;const safeName=escapeHTML(pr.name);const jsName=JSON.stringify(pr.name);html+=`<div class="pr-card"><button class="pr-delete" onclick="ignorePR(${escapeHTML(jsName)})" title="Remove this PR" aria-label="Remove ${safeName}">✕</button><div class="pr-ex-name">${safeName}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;});html+=`</div>`;}
   html+=`<div class="section-sub">History</div>`;
-  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW(${toDisplay(s.bwSnap)||0})+${toDisplay(s.extra)||0}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
+  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW ${toDisplay(s.bwSnap)||0} + ${toDisplay(s.extra)||0}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
   el.innerHTML=html;
 }
 
