@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.31.5 — 2026-05-22
+**Obsidian nav-bar läsbarhet.** Designens preview hade `background:transparent → rgba(30,20,8,0.7)`-gradient + `color:#4a3a18` på icke-aktiv text — för dim i riktig app, embers + content skinade igenom. Bytt till opaque `rgba(15,10,4,0.96)` + backdrop-blur + ljusare text `#8a7a58` (gold-family men muted, fortfarande clearly readable). Aktiv-tab oförändrad (#f0d99c gold).
+
+---
+
 ## 3.31.4 — 2026-05-22
 **Obsidian aktiv chain-tab: rektangel med diamond-ends + RITE-prefix på session-header.** Matchar Claude Designs förslag.
 
