@@ -6,6 +6,20 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.31.0 — 2026-05-22
+**NYTT TEMA: Obsidian** — Dark fantasy / gothic scriptorium med breathing gold embers. Designat i Claude Design (Niklas + Claude), porterat till single-file index.html.
+
+- **Palette:** Deep warm charcoal (`#0a0805`) + gold accents (`#c9a35a` / `#f0d99c`) + ember (`#d68262`).
+- **Typografi:** Cinzel (display, gold-shimmer THE CHAIN-titel) + Cardo (italic body/details). Båda från Google Fonts, laddade via befintlig `<link>` i `<head>` (Cinzel fanns redan via Crusader, Cardo lades till).
+- **Chain-strip:** runda gold medaljer ersätter hexagon-formen för detta tema (Niklas godkände specifikt formavvikelse — temat är så distinkt att det får lov).
+- **Ember canvas:** vanilla JS-port av designens `<ObsidianEmbers>` React-komponent. 32 partiklar med per-partikel fysik (position, vy, sway, livslängd), radial gradients per frame, `mix-blend-mode:screen`. Mount/demount via `applyTheme` + nytt `Settings → Ambient Effects`-toggle (default ON). Stopp-funktion cancellar rAF + ResizeObserver + clearar canvas.
+- **8 breathing-animationer:** sync-dot blink (2.6s), THE CHAIN gold shimmer (8s), active-medallion breath (4.6s), Log-button gold breath (2.8s) + shimmer-sweep (5.4s), COMPLETE button breath (5.2s), active-tab underline pulse (3.2s), embers (rAF). Desynced så skärmen "andas" istället för att ticka.
+- **Symbol-prefixes:** `✦` på COMPLETE (ex-done-primary.ready), `✚` på add-buttons. Full text-immersion (EDIT → ⊕ AMEND, etc.) skjuts till v2 — kräver tema-aware text-rendering, gör inkrementellt.
+- **Mappning:** alla `.ob-*` selectors från designens JSX porterade till `body.theme-obsidian` + befintliga klasser (`.pass-card`, `.ex-block`, `.set-input`, `.set-log-btn`, `.chain-tab`, `nav button`, modaler, auth, progress, hist, etc.). ~290 rader CSS.
+- **Övriga teman opåverkade.** Void kvar för Johannes.
+
+---
+
 ## 3.30.18 — 2026-05-22
 **Void: vit-på-vitt-buggar fixade.** Rot: Void har `--red:#ffffff` (medvetet minimalistiskt) men flera Settings-element använde `color:var(--white)` på selected-state → vit text på vit bakgrund = osynlig.
 

@@ -15,7 +15,7 @@
 <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22The%20Chain%20%E2%80%94%20Resistance%20Training%22,%22short_name%22:%22The%20Chain%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%230a0a0a%22,%22theme_color%22:%22%230a0a0a%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Crect%20width='100'%20height='100'%20fill='%230a0a0a'/%3E%3Ctext%20y='68'%20x='50'%20text-anchor='middle'%20font-size='38'%20font-family='serif'%20fill='%23c0392b'%3ETC%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22any%22,%22type%22:%22image/svg+xml%22}]}">
 <title>The Chain — Resistance Training</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&family=Orbitron:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Space+Grotesk:wght@300;400;700&family=Crimson+Pro:ital,wght@0,300;1,300&family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cardo:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&family=Orbitron:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Space+Grotesk:wght@300;400;700&family=Crimson+Pro:ital,wght@0,300;1,300&family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 
 :root{
@@ -3307,6 +3307,294 @@ body.theme-crusader .swap-select option{background:#221d17;color:#d8c8a8;}
 body.theme-crusader select optgroup,
 body.theme-crusader .swap-select optgroup{background:#1a1612;color:#a89668;}
 
+/* ═════════════════════════════════════════════════════════════
+   OBSIDIAN — Dark fantasy · Gothic scriptorium · Breathing gold embers
+   Designed in Claude Design (Niklas + Claude), ported 2026-05-22.
+   Source: obsidian/ObsidianTheme.jsx (290 rader CSS).
+   Palette: deep warm charcoal #0a0805, gold accents #c9a35a / #f0d99c, ember #d68262.
+   Fonts: Cinzel (display) + Cardo (body) — google-fontladdade i <head>.
+   Embers: 32 ambient partiklar via canvas (id=obsidianEmberCanvas) — toggleable i Settings.
+   ═════════════════════════════════════════════════════════════ */
+body.theme-obsidian{
+  --black:#0a0805;
+  --white:#f0d99c;
+  --red:#c9a35a;
+  --gold:#c9a35a;
+  --green-bright:#9ab57a;
+  --gray-mid:#2a2010;
+  --gray-light:#8a7a58;
+  --display:'Cinzel',serif;
+  --sans:'Cardo',serif;
+  --mono:'Cinzel',serif;
+  color:#c0b39a;
+  background-color:#0a0805;
+  background-image:
+    radial-gradient(ellipse 70% 30% at 50% 0%,   rgba(220,150,70,0.18), transparent 70%),
+    radial-gradient(ellipse 90% 60% at 50% 110%, rgba(140,50,30,0.22),  transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 50%,  rgba(120,40,20,0.06),  transparent 70%);
+  background-attachment:fixed;
+  isolation:isolate;
+}
+/* Ember-canvas — vanilla JS-driven. Sits below content, mix-blend screen for glow. */
+#obsidianEmberCanvas{
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  mix-blend-mode:screen;
+  display:none;
+}
+body.theme-obsidian #obsidianEmberCanvas{display:block;}
+body.theme-obsidian.embers-off #obsidianEmberCanvas{display:none;}
+/* Parchment-noise overlay för texture (motsv. .ob-root::before) */
+body.theme-obsidian::before{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:1;
+  background-image:
+    radial-gradient(circle at 30% 40%, rgba(180,130,60,0.04) 0 1px, transparent 1px),
+    radial-gradient(circle at 70% 60%, rgba(160,80,40,0.05)  0 1px, transparent 1px);
+  background-size:19px 23px, 31px 27px;
+  mix-blend-mode:screen;
+}
+/* Vignette (motsv. .ob-root::after) */
+body.theme-obsidian::after{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:1;
+  background:radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.55) 100%);
+}
+/* Lyft content ovanför ember+vignette */
+body.theme-obsidian header,
+body.theme-obsidian nav,
+body.theme-obsidian #appShell,
+body.theme-obsidian #userScreen{position:relative; z-index:2;}
+
+/* Header */
+body.theme-obsidian header{
+  background:rgba(10,8,5,0.85);
+  border-bottom:1px solid rgba(200,160,90,0.12);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+body.theme-obsidian .logo{font-family:'Cinzel',serif;font-weight:600;letter-spacing:.34em;color:#c9a35a;}
+body.theme-obsidian .logo span{color:#c9a35a;}
+body.theme-obsidian .header-user{font-family:'Cinzel',serif;color:#6a5a3a;font-size:.5rem;letter-spacing:.2em;font-weight:600;}
+body.theme-obsidian .header-user strong{color:#c9a35a;}
+body.theme-obsidian .header-logout{font-family:'Cinzel',serif;color:#a8442e;border:1px solid #4a2018;letter-spacing:.2em;font-weight:600;}
+body.theme-obsidian .header-logout:hover{background:rgba(168,68,46,0.15);color:#d68262;}
+
+/* AM-pill — gold ring, ember icon */
+body.theme-obsidian .am-pill{background:rgba(40,28,12,0.6);border-color:#4a3a18;color:#8a7a58;font-family:'Cinzel',serif;}
+body.theme-obsidian .am-pill:hover{border-color:#c9a35a;color:#f0d99c;}
+body.theme-obsidian .am-pill.logged{color:#9ab57a;border-color:rgba(154,181,122,0.4);background:rgba(20,30,15,0.6);}
+body.theme-obsidian .am-pill.missing{color:#a8442e;border-color:rgba(168,68,46,0.5);background:rgba(40,15,10,0.5);}
+body.theme-obsidian .am-pill-log{border:1px solid #c9a35a;color:#f0d99c;}
+body.theme-obsidian .am-pill-log:hover{background:rgba(201,163,90,0.15);}
+
+/* Sync-dot — gold glow blink */
+body.theme-obsidian .sync-dot.ok{background:#c9a35a;box-shadow:0 0 6px #c9a35a;animation:obSyncBlink 2.6s ease-in-out infinite;}
+@keyframes obSyncBlink{0%,100%{opacity:.5;box-shadow:0 0 4px #c9a35a;}50%{opacity:1;box-shadow:0 0 10px #f0d99c;}}
+
+/* Chain intro — gold shimmer title */
+body.theme-obsidian .chain-intro{background:rgba(40,28,12,0.4);border:1px solid #2a2010;}
+body.theme-obsidian .chain-intro-title{
+  font-family:'Cinzel',serif; font-size:2rem; font-weight:700; letter-spacing:.04em;
+  background:linear-gradient(110deg,#8a6d30 0%,#c9a35a 25%,#f8e6b0 45%,#ffe9a8 50%,#f8e6b0 55%,#c9a35a 75%,#8a6d30 100%);
+  background-size:250% 100%; background-position:0% 50%;
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  animation:obShimmer 8s ease-in-out infinite;
+  filter:drop-shadow(0 0 12px rgba(200,150,70,0.18));
+}
+@keyframes obShimmer{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+body.theme-obsidian .chain-intro-sub{font-family:'Cardo',serif;font-style:italic;color:#7a6a48;letter-spacing:.04em;}
+body.theme-obsidian .section-title{font-family:'Cinzel',serif;font-weight:600;letter-spacing:.32em;color:#c9a35a;text-transform:uppercase;}
+body.theme-obsidian .section-sub{font-family:'Cinzel',serif;color:#5a4a28;letter-spacing:.18em;font-weight:600;text-transform:uppercase;}
+
+/* Chain bar */
+body.theme-obsidian .chain-bar{background:#2a2010;}
+body.theme-obsidian .chain-fill{background:linear-gradient(90deg,#c9a35a,#f0d99c);}
+
+/* Chain-strip — runda medaljer (skriver över hexagon för Obsidian) */
+body.theme-obsidian .chain-tab .chain-tab-letter{
+  width:36px; height:36px; border-radius:50%; clip-path:none !important;
+  border:1px solid #3a2e14; background:rgba(20,14,6,0.6);
+  color:#5a4a28; font-family:'Cinzel',serif; font-weight:600;
+}
+body.theme-obsidian .chain-tab.adjacent .chain-tab-letter{color:#c9a35a;background:rgba(40,28,12,0.65);border-color:#4a3a18;}
+body.theme-obsidian .chain-tab.active .chain-tab-letter{
+  color:#f0d99c; background:linear-gradient(180deg,rgba(70,50,20,0.7),rgba(30,20,8,0.7));
+  border-color:#c9a35a;
+  box-shadow:inset 0 1px 0 rgba(240,200,130,0.18), inset 0 -1px 0 rgba(0,0,0,0.5), 0 0 16px rgba(200,150,70,0.18);
+  animation:obMedalBreath 4.6s ease-in-out infinite;
+}
+@keyframes obMedalBreath{
+  0%,100%{box-shadow:inset 0 1px 0 rgba(240,200,130,0.18), inset 0 -1px 0 rgba(0,0,0,0.5), 0 0 12px rgba(200,150,70,0.14);}
+  50%    {box-shadow:inset 0 1px 0 rgba(240,200,130,0.24), inset 0 -1px 0 rgba(0,0,0,0.5), 0 0 24px rgba(220,160,80,0.32);}
+}
+body.theme-obsidian .chain-tab.done .chain-tab-letter{color:#3a2e14;background:rgba(15,10,4,0.4);border-color:#1a140a;}
+body.theme-obsidian .chain-tab-name-full{font-family:'Cinzel',serif;color:#d4b878;background:rgba(40,28,12,0.5);letter-spacing:.2em;font-weight:600;}
+body.theme-obsidian .chain-tab.active .chain-tab-name-full{color:#f0d99c;background:linear-gradient(180deg,rgba(70,50,20,0.7),rgba(30,20,8,0.7));}
+body.theme-obsidian .chain-tab-name-short{color:#7a6a48;background:rgba(40,28,12,0.4);font-family:'Cinzel',serif;font-weight:600;}
+
+/* Pass cards (RITE) — parchment dark + gold edge */
+body.theme-obsidian .pass-card{
+  background:radial-gradient(ellipse 80% 60% at 20% 0%, rgba(120,60,20,0.12), transparent 70%),
+             linear-gradient(180deg, rgba(40,28,12,0.55), rgba(15,10,4,0.55));
+  border:1px solid #2a2010; border-radius:2px;
+  box-shadow:inset 0 1px 0 rgba(240,200,130,0.06), 0 0 0 1px #0a0805, 0 0 1px 2px #2a2010;
+}
+body.theme-obsidian .pass-card.next-up{border-color:#c9a35a;box-shadow:inset 0 1px 0 rgba(240,200,130,0.12), 0 0 18px rgba(200,150,70,0.18);}
+body.theme-obsidian .pass-card.next-up::before{background:#c9a35a;color:#0a0805;font-family:'Cinzel',serif;letter-spacing:.2em;}
+body.theme-obsidian .pass-card.in-progress::before{background:#9ab57a;color:#0a0805;font-family:'Cinzel',serif;letter-spacing:.2em;}
+body.theme-obsidian .pass-card.done{opacity:.55;}
+body.theme-obsidian .pass-letter{font-family:'Cinzel',serif;font-weight:700;color:#c9a35a;}
+body.theme-obsidian .pass-name{font-family:'Cinzel',serif;font-weight:700;letter-spacing:.1em;color:#f0d99c;}
+body.theme-obsidian .pass-preview{color:#7a6a48;font-family:'Cardo',serif;font-style:italic;}
+
+/* Exercise blocks */
+body.theme-obsidian .ex-block{
+  background:radial-gradient(ellipse 80% 60% at 20% 0%, rgba(120,60,20,0.12), transparent 70%),
+             linear-gradient(180deg, rgba(40,28,12,0.55), rgba(15,10,4,0.55));
+  border:1px solid #2a2010;
+}
+body.theme-obsidian .ex-block.saved{background:linear-gradient(180deg,rgba(30,40,15,0.5),rgba(15,20,8,0.5));border-color:#3a4a18;}
+body.theme-obsidian .ex-name{font-family:'Cinzel',serif;font-weight:600;color:#f0d99c;letter-spacing:.02em;}
+body.theme-obsidian .ex-detail{color:#8a7a58;font-style:italic;font-family:'Cardo',serif;}
+body.theme-obsidian .ex-note-input{background:rgba(40,28,12,0.5);border-color:#4a3a18;color:#c9a35a;font-family:'Cardo',serif;}
+
+/* Collapsed-row */
+body.theme-obsidian .ex-block.collapsed .ex-collapsed-summary{background:rgba(40,28,12,0.35);border-top:1px solid rgba(200,160,90,0.12);}
+body.theme-obsidian .ex-block.collapsed.saved .ex-collapsed-summary{background:rgba(30,40,15,0.4);}
+body.theme-obsidian .ex-collapsed-name{font-family:'Cinzel',serif;font-weight:600;color:#c9a35a;letter-spacing:.04em;}
+body.theme-obsidian .ex-collapsed-status{color:#8a7a58;font-family:'Cardo',serif;font-style:italic;}
+body.theme-obsidian .ex-collapsed-chevron{color:#4a3a18;}
+
+/* Tags */
+body.theme-obsidian .ex-tag{font-family:'Cinzel',serif;color:#c9a35a;border-color:#4a3a18;background:rgba(40,28,12,0.5);letter-spacing:.22em;font-weight:600;}
+body.theme-obsidian .ex-tag.ramp{color:#d4a030;border-color:#6a4a00;background:rgba(40,30,0,0.5);}
+body.theme-obsidian .ex-tag.bw{color:#9ab57a;border-color:#2a3a18;background:rgba(30,40,15,0.5);}
+body.theme-obsidian .ex-tag.uni{color:#d68262;border-color:#5a2018;background:rgba(40,15,10,0.5);}
+body.theme-obsidian .ex-tag.singles{color:#d68262;border-color:#5a2018;background:rgba(40,15,10,0.5);}
+
+/* Exercise buttons (Skip / Edit) — gold ghost */
+body.theme-obsidian .ex-btn-skip{background:linear-gradient(180deg,rgba(50,35,14,0.4),rgba(20,14,6,0.4));border:1px solid #4a3a18;color:#c9a35a;font-family:'Cinzel',serif;letter-spacing:.22em;font-weight:600;}
+body.theme-obsidian .ex-btn-edit{background:linear-gradient(180deg,rgba(50,35,14,0.4),rgba(20,14,6,0.4));border:1px solid #4a3a18;color:#c9a35a;font-family:'Cinzel',serif;letter-spacing:.22em;font-weight:600;}
+
+/* Set inputs */
+body.theme-obsidian .set-input{background:rgba(15,10,4,0.6);border:1px solid #2a2010;color:#f0d99c;font-family:'Cinzel',serif;font-weight:600;}
+body.theme-obsidian .set-input:focus{border-color:#c9a35a;box-shadow:0 0 8px rgba(201,163,90,0.4);}
+body.theme-obsidian .set-input.warmup{color:#5a4a28;}
+body.theme-obsidian .set-unit{color:#c9a35a;font-family:'Cinzel',serif;font-weight:600;letter-spacing:.18em;}
+body.theme-obsidian .set-num{color:#a8442e;font-family:'Cinzel',serif;font-weight:600;letter-spacing:.32em;}
+body.theme-obsidian .sets-group-label{color:#5a4a28;font-family:'Cinzel',serif;letter-spacing:.32em;font-weight:600;border-top:1px dashed #2a2010;}
+body.theme-obsidian .sets-group-label.work-group{color:#a8442e;}
+
+/* Log button — gold breath + shimmer sweep */
+body.theme-obsidian .set-log-btn{
+  background:linear-gradient(180deg,#c9a35a 0%,#8a6d30 100%);
+  border:1px solid #f0d99c; border-bottom-color:#4a3a18;
+  color:#1a0e04; font-family:'Cinzel',serif; font-weight:700; letter-spacing:.24em;
+  position:relative; overflow:hidden;
+  box-shadow:0 0 14px rgba(200,150,70,0.22), inset 0 1px 0 rgba(255,230,180,0.5);
+  animation:obLogBreath 2.8s ease-in-out infinite;
+}
+@keyframes obLogBreath{
+  0%,100%{box-shadow:0 0 14px rgba(200,150,70,0.22), inset 0 1px 0 rgba(255,230,180,0.5);}
+  50%    {box-shadow:0 0 28px rgba(240,180,90,0.55), 0 0 4px rgba(240,200,130,0.5), inset 0 1px 0 rgba(255,240,200,0.7);}
+}
+body.theme-obsidian .set-log-btn::after{
+  content:''; position:absolute; top:0; left:-60%; width:50%; height:100%;
+  background:linear-gradient(90deg, transparent, rgba(255,240,200,0.5), transparent);
+  animation:obLogShimmer 5.4s ease-in-out infinite; pointer-events:none;
+}
+@keyframes obLogShimmer{0%{left:-60%;}60%,100%{left:120%;}}
+body.theme-obsidian .set-log-btn.has-value{background:linear-gradient(180deg,#c9a35a 0%,#8a6d30 100%);color:#1a0e04;}
+body.theme-obsidian .set-logged-indicator{color:#9ab57a;text-shadow:0 0 6px rgba(154,181,122,0.6);}
+
+/* Action-buttons (Add set / Warm-up / Done-primary) */
+body.theme-obsidian .ex-btn-done{background:linear-gradient(180deg,rgba(50,35,14,0.4),rgba(20,14,6,0.4));border:1px solid #4a3a18;color:#c9a35a;font-family:'Cinzel',serif;letter-spacing:.22em;font-weight:600;}
+body.theme-obsidian .ex-done-primary{border:1px dashed #2a2010;color:#5a4a28;font-family:'Cinzel',serif;letter-spacing:.28em;font-weight:600;}
+body.theme-obsidian .ex-done-primary.ready{
+  background:linear-gradient(180deg,rgba(70,50,20,0.7),rgba(30,20,8,0.7));
+  border:1px solid #c9a35a; color:#f0d99c;
+  box-shadow:inset 0 1px 0 rgba(240,200,130,0.15), 0 0 14px rgba(200,150,70,0.15);
+  animation:obDoneBreath 5.2s ease-in-out infinite;
+}
+@keyframes obDoneBreath{
+  0%,100%{box-shadow:inset 0 1px 0 rgba(240,200,130,0.15), 0 0 10px rgba(200,150,70,0.12);}
+  50%    {box-shadow:inset 0 1px 0 rgba(240,200,130,0.22), 0 0 22px rgba(220,160,80,0.28);}
+}
+
+/* Nav-bar — gold underline pulse */
+body.theme-obsidian nav{background:linear-gradient(180deg,transparent,rgba(30,20,8,0.7));border-top:1px solid rgba(200,160,90,0.18);}
+body.theme-obsidian nav button{color:#4a3a18;font-family:'Cinzel',serif;letter-spacing:.28em;font-weight:600;}
+body.theme-obsidian nav button.active{color:#f0d99c;background:none;border-top-color:transparent;position:relative;}
+body.theme-obsidian nav button.active::before{
+  content:''; position:absolute; top:-1px; left:50%; transform:translateX(-50%);
+  width:36px; height:2px;
+  background:linear-gradient(90deg,transparent,#c9a35a,transparent);
+  box-shadow:0 0 12px #c9a35a;
+  animation:obTabPulse 3.2s ease-in-out infinite;
+}
+@keyframes obTabPulse{
+  0%,100%{box-shadow:0 0 8px #c9a35a;opacity:.85;}
+  50%    {box-shadow:0 0 18px #f0d99c, 0 0 2px #fff5d0;opacity:1;}
+}
+
+/* Buttons (generic) */
+body.theme-obsidian .btn-primary{background:linear-gradient(180deg,#c9a35a 0%,#8a6d30 100%);color:#1a0e04;font-family:'Cinzel',serif;letter-spacing:.24em;font-weight:700;border:1px solid #f0d99c;box-shadow:0 0 14px rgba(200,150,70,0.22);}
+body.theme-obsidian .btn-primary:hover{background:linear-gradient(180deg,#f0d99c 0%,#c9a35a 100%);}
+body.theme-obsidian .btn-primary:disabled{background:#2a2010;color:#5a4a28;box-shadow:none;}
+
+/* Auth */
+body.theme-obsidian #userScreen{background:#0a0805;}
+body.theme-obsidian .auth-logo{font-family:'Cinzel',serif;color:#c9a35a;letter-spacing:.34em;}
+body.theme-obsidian .auth-logo span{color:#f0d99c;}
+body.theme-obsidian .auth-tagline{color:#7a6a48;font-family:'Cardo',serif;font-style:italic;}
+body.theme-obsidian #auth-email-form input,
+body.theme-obsidian #auth-signup-fields input,
+body.theme-obsidian #reset-password-form input{background:rgba(15,10,4,0.7);border-color:#2a2010;color:#f0d99c;font-family:'Cinzel',serif;}
+body.theme-obsidian #auth-email-form input:focus,
+body.theme-obsidian #auth-signup-fields input:focus,
+body.theme-obsidian #reset-password-form input:focus{border-color:#c9a35a;box-shadow:0 0 0 1px #c9a35a;}
+body.theme-obsidian .auth-divider{color:#5a4a28;}
+body.theme-obsidian .auth-divider::before,
+body.theme-obsidian .auth-divider::after{background:#2a2010;}
+body.theme-obsidian .auth-btn-primary{background:linear-gradient(180deg,#c9a35a 0%,#8a6d30 100%);color:#1a0e04;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.24em;}
+body.theme-obsidian .auth-btn-google{background:rgba(40,28,12,0.5);border:1px solid #4a3a18;color:#c9a35a;font-family:'Cinzel',serif;}
+
+/* Progress / PR / History */
+body.theme-obsidian .stat-box{background:rgba(40,28,12,0.5);border:1px solid #2a2010;}
+body.theme-obsidian .stat-num{color:#c9a35a;font-family:'Cinzel',serif;}
+body.theme-obsidian .stat-desc{color:#8a7a58;font-family:'Cardo',serif;font-style:italic;}
+body.theme-obsidian .pr-card{background:rgba(40,28,12,0.5);border:1px solid #2a2010;}
+body.theme-obsidian .pr-card::before{background:rgba(40,30,0,0.7);color:#d4a030;font-family:'Cinzel',serif;}
+body.theme-obsidian .pr-value{color:#f0d99c;font-family:'Cinzel',serif;font-weight:700;}
+body.theme-obsidian .hist-entry{background:rgba(40,28,12,0.4);border-left:2px solid #c9a35a;}
+body.theme-obsidian .hist-date{color:#c9a35a;font-family:'Cinzel',serif;font-weight:600;}
+body.theme-obsidian .hist-pass{color:#f0d99c;font-family:'Cinzel',serif;font-weight:600;}
+body.theme-obsidian .hist-ex strong{color:#c9a35a;font-family:'Cinzel',serif;}
+body.theme-obsidian .hist-set{color:#8a7a58;font-family:'Cardo',serif;}
+
+/* Toast / Modal */
+body.theme-obsidian .toast{background:rgba(15,10,4,0.95);border:1px solid #c9a35a;color:#f0d99c;font-family:'Cinzel',serif;}
+body.theme-obsidian .app-modal-card{background:rgba(15,10,4,0.95);border-color:#c9a35a;color:#f0d99c;}
+body.theme-obsidian .app-modal-title{color:#f0d99c;font-family:'Cinzel',serif;}
+body.theme-obsidian .app-modal-body{color:#8a7a58;font-family:'Cardo',serif;}
+body.theme-obsidian .app-modal-btn{background:rgba(40,28,12,0.5);border-color:#4a3a18;color:#c9a35a;font-family:'Cinzel',serif;}
+body.theme-obsidian .app-modal-btn-primary{background:linear-gradient(180deg,#c9a35a 0%,#8a6d30 100%);border-color:#f0d99c;color:#1a0e04;font-family:'Cinzel',serif;font-weight:700;}
+body.theme-obsidian .app-modal-btn-danger{background:transparent;border-color:#a8442e;color:#d68262;font-family:'Cinzel',serif;}
+body.theme-obsidian .app-modal-btn-danger:hover{background:#a8442e;color:#f0d99c;}
+
+/* Scrollbar */
+body.theme-obsidian::-webkit-scrollbar-track{background:#1a1208;}
+body.theme-obsidian::-webkit-scrollbar-thumb{background:#4a3a18;}
+
+/* Selects */
+body.theme-obsidian select,
+body.theme-obsidian .swap-select,
+body.theme-obsidian .app-modal-select{background:#1a1208 !important;color:#f0d99c !important;border-color:#4a3a18 !important;font-family:'Cinzel',serif !important;}
+body.theme-obsidian select option,
+body.theme-obsidian .swap-select option{background:#1a1208;color:#f0d99c;}
+
+/* Symbol-prefixes — full immersion (Niklas valt 2026-05-22) */
+body.theme-obsidian .ex-done-primary.ready::before{content:'✦ ';color:#c9a35a;}
+body.theme-obsidian .add-ex-confirm::before{content:'✚ ';color:#c9a35a;}
+
 /* ── SET LOG BUTTON ──────────────────────────────────────────*/
 .set-log-btn{
   background:none;
@@ -4065,7 +4353,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.30.18';
+const APP_VERSION = '3.31.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4074,7 +4362,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.18',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.31.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -7225,6 +7513,7 @@ const THEMES = [
   {id:'nightcity',     name:'Night City',    cat:'dark', desc:'Acid yellow + magenta · Orbitron · Cyberpunk homage',  class:'theme-nightcity'},
   {id:'ember',         name:'Ember',         cat:'dark', desc:'Molten orange · Rajdhani · Industrial forge',          class:'theme-ember'},
   {id:'void',          name:'Void · WIP',    cat:'dark', desc:'Pure black & white · Playfair italic · Luxury minimal',class:'theme-void'},
+  {id:'obsidian',      name:'Obsidian',      cat:'dark', desc:'Dark fantasy · Gold embers · Cinzel scriptorium',     class:'theme-obsidian'},
   // LIGHT
   {id:'arctic',        name:'Arctic Terminal',cat:'light',desc:'Frozen lake · Liquid nitrogen · Frosted glass',  class:'theme-arctic'},
   {id:'daylight',      name:'Daylight · WIP',cat:'light', desc:'Clean white · Charcoal text · Bright sun-readable',   class:'theme-daylight'},
@@ -7240,6 +7529,9 @@ function applyTheme(themeId){
   const wasChange = state.theme !== themeId;
   state.theme = themeId;
   if(currentUser && wasChange) save();
+  // Obsidian: mount/unmount ember canvas
+  if(themeId==='obsidian' && state.ambientEffects!==false) startObsidianEmbers();
+  else stopObsidianEmbers();
 }
 
 function initTheme(){
@@ -7248,6 +7540,80 @@ function initTheme(){
   const theme = THEMES.find(t=>t.id===state.theme) || THEMES[0];
   THEMES.forEach(t=>{ if(t.class) document.body.classList.remove(t.class); });
   if(theme.class) document.body.classList.add(theme.class);
+  if(state.theme==='obsidian' && state.ambientEffects!==false) startObsidianEmbers();
+}
+
+// ── OBSIDIAN EMBERS ─────────────────────────────────────────────
+// Vanilla JS port av ObsidianEmbers (från designens React-component).
+// 32 partiklar med per-partikel fysik (position, hastighet, livslängd, sway).
+// Mount/demount via applyTheme + Settings ambient-toggle.
+let _obEmberRaf=0, _obEmberRo=null;
+function startObsidianEmbers(){
+  if(_obEmberRaf) return; // already running
+  const canvas=document.getElementById('obsidianEmberCanvas');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  let w=0,h=0;
+  const dpr=Math.min(window.devicePixelRatio||1, 2);
+  function resize(){
+    const r=canvas.getBoundingClientRect();
+    w=r.width; h=r.height;
+    canvas.width=w*dpr; canvas.height=h*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  resize();
+  try{ _obEmberRo=new ResizeObserver(resize); _obEmberRo.observe(canvas); }catch(_){}
+  const rand=(a,b)=>a+Math.random()*(b-a);
+  function spawn(initial){
+    return {
+      x:rand(0,w), y:initial?rand(0,h):h+rand(0,40),
+      r:rand(0.5,1.8), vy:rand(0.1,0.32), vx:rand(-0.06,0.06),
+      sp:rand(0,Math.PI*2), ss:rand(0.004,0.014), sa:rand(0.1,0.35),
+      life:0, maxLife:rand(700,1600), hue:rand(22,38), baseAlpha:rand(0.35,0.9),
+    };
+  }
+  const NUM=32;
+  const arr=[]; for(let i=0;i<NUM;i++) arr.push(spawn(true));
+  let t=0;
+  function tick(){
+    t++;
+    ctx.clearRect(0,0,w,h);
+    for(let i=0;i<arr.length;i++){
+      const e=arr[i];
+      e.life++; e.sp+=e.ss;
+      e.x+=e.vx+Math.sin(e.sp)*e.sa;
+      e.y-=e.vy;
+      const lt=e.life/e.maxLife;
+      let a = lt<0.15 ? lt/0.15 : lt>0.7 ? Math.max(0,1-(lt-0.7)/0.3) : 1;
+      a *= e.baseAlpha*(0.7+0.3*Math.sin(t*0.04+e.sp));
+      if(e.y<-10 || e.life>e.maxLife){ arr[i]=spawn(false); continue; }
+      const g=ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r*5);
+      g.addColorStop(0,   `hsla(${e.hue},90%,62%,${a})`);
+      g.addColorStop(0.5, `hsla(${e.hue},90%,42%,${a*0.4})`);
+      g.addColorStop(1,   `hsla(${e.hue},90%,32%,0)`);
+      ctx.fillStyle=g;
+      ctx.beginPath(); ctx.arc(e.x,e.y,e.r*5,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=`hsla(${e.hue+8},100%,82%,${a*0.9})`;
+      ctx.beginPath(); ctx.arc(e.x,e.y,e.r*0.5,0,Math.PI*2); ctx.fill();
+    }
+    _obEmberRaf=requestAnimationFrame(tick);
+  }
+  tick();
+}
+function stopObsidianEmbers(){
+  if(_obEmberRaf){ cancelAnimationFrame(_obEmberRaf); _obEmberRaf=0; }
+  if(_obEmberRo){ try{ _obEmberRo.disconnect(); }catch(_){} _obEmberRo=null; }
+  const canvas=document.getElementById('obsidianEmberCanvas');
+  if(canvas){ const ctx=canvas.getContext('2d'); if(ctx) ctx.clearRect(0,0,canvas.width,canvas.height); }
+}
+function toggleAmbientEffects(){
+  state.ambientEffects = state.ambientEffects===false; // toggle (default true → false → true)
+  save();
+  if(state.theme==='obsidian'){
+    if(state.ambientEffects!==false) startObsidianEmbers();
+    else stopObsidianEmbers();
+  }
+  renderData();
 }
 
 function renderData(){
@@ -7328,6 +7694,14 @@ function renderData(){
         ${active?`<div style="position:absolute;top:6px;right:8px;color:${selBorder};font-size:.6rem;">✓</div>`:''}
       </button>`;
     }).join('')}
+  </div>
+  <div class="section-sub">Ambient Effects</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--gray-mid);margin-bottom:18px;">
+    <div>
+      <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);margin-bottom:2px;">Animations &amp; particles</div>
+      <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);">Ember-partiklar i Obsidian + framtida animation-tunga teman. Stäng av för battery / mindre distraktion.</div>
+    </div>
+    <button onclick="toggleAmbientEffects()" style="background:${state.ambientEffects!==false?'var(--green-bright)':'var(--gray-mid)'};border:1px solid ${state.ambientEffects!==false?'var(--green-bright)':'var(--gray-mid)'};color:${state.ambientEffects!==false?'var(--black)':'var(--gray-light)'};font-family:var(--mono);font-size:.54rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:all .2s;">${state.ambientEffects!==false?'ON':'OFF'}</button>
   </div>
   <div class="section-sub">Sync Status</div>
   <div id="sync-status-card" style="border:1px solid var(--gray-mid);padding:12px 14px;margin-bottom:18px;font-family:var(--mono);font-size:.55rem;color:var(--gray-light);line-height:1.9;">
@@ -7988,6 +8362,8 @@ if('serviceWorker' in navigator){
   <img id="crusader-cross-img" src="crusader2.jpg" alt="" draggable="false">
 </div>
 <div id="crusader-cross-glow" aria-hidden="true"></div>
+<!-- Obsidian theme: ember canvas (visible only when theme-obsidian is active; mounted/unmounted via JS in applyTheme) -->
+<canvas id="obsidianEmberCanvas" aria-hidden="true"></canvas>
 <!-- Reusable modal — controlled by JS, theme-aware via CSS vars -->
 <div id="appModal" class="app-modal" style="display:none">
   <div class="app-modal-backdrop"></div>
