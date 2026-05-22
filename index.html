@@ -383,7 +383,8 @@ canvas#weightChart{width:100%!important;display:block;}
   /* Bottom nav on desktop — cap width, center */
   nav{max-width:600px;left:50%;right:auto;transform:translateX(-50%);width:100%;border:1px solid #2a2a2a;border-bottom:none;}
   nav button{font-size:.6rem;padding:13px 4px;}
-  header{padding:14px 24px;}
+  /* Header on desktop — content centered with max-width via auto-padding (background stays full-width) */
+  header{padding:14px max(24px, calc((100vw - 600px) / 2));}
   .pass-top{padding:13px 16px;}
   .pass-body{padding:0 16px 14px;}
   .set-input{font-size:.82rem;padding:7px 6px;}
@@ -3738,9 +3739,12 @@ body.theme-cosmic-horror{
   background-attachment:fixed;
   position:relative; /* så SVG-veins (absolute) scrollar med page */
 }
-/* Vein SVG — world-coord scrollar med content. INTE mix-blend (Android stacking-bug). */
+/* Vein SVG — world-coord scrollar med content. INTE mix-blend (Android stacking-bug).
+   3.33.2: max-width 800px + centered, så veiner inte sprids ut till desktop-edges (1920px) utanför content. */
 #cosmicHorrorVeins{
-  position:absolute; top:0; left:0;
+  position:absolute; top:0;
+  left:50%; transform:translateX(-50%);
+  width:100%; max-width:800px;
   pointer-events:none; z-index:0;
   display:none;
   opacity:0.85;
@@ -4743,7 +4747,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.33.1';
+const APP_VERSION = '3.33.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4752,7 +4756,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.33.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.33.2',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -8086,7 +8090,8 @@ function _chGenerateVein(startX, startY, baseAngle, seed){
 function _chRenderVeins(){
   const svg = document.getElementById('cosmicHorrorVeins');
   if(!svg) return;
-  const w = window.innerWidth;
+  // 3.33.2: SVG-bredd capad till 800px på desktop (CSS max-width). JS-w matchar för viewBox-konsekvens.
+  const w = Math.min(window.innerWidth, 800);
   const h = Math.max(window.innerHeight, document.documentElement.scrollHeight || 0, document.body.scrollHeight || 0);
   // ViewBox = verklig pixel-area. Vein-walker producerar paths ~216px långa (18 segments × ~12px)
   // så för att täcka hela page-höjden behöver vi flera vein-system fördelade vertikalt.

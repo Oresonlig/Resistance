@@ -6,6 +6,14 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.33.2 — 2026-05-22
+**Desktop-fix för header + Cosmic Horror veiner.** Niklas testade på desktop första gången — två problem:
+
+- **Header logo + LOG OUT på extrema kanter (alla teman).** Header hade `padding:14px 24px` på desktop men ingen max-width, så `justify-content:space-between` sprider innehållet till skärmkanterna på 1920px-monitor. Mitten var tom. Universal bug, syns på alla teman när desktop används. **Fix:** `header { padding: 14px max(24px, calc((100vw - 600px) / 2)); }` — auto-padding expanderar när viewport > 600px så header-content blir centrerat i samma 600px-bred area som övrig content. Bakgrund förblir full-width (sticky bar). Mobile opåverkad.
+- **Cosmic Horror veiner spred sig över hela 1920px desktop-bredd.** SVG fyllde full window-bredd även när content var centrerat i 560px → veiner "all over the place" utanför content. **Fix:** `#cosmicHorrorVeins { max-width: 800px; left: 50%; transform: translateX(-50%); }` + JS `w = Math.min(window.innerWidth, 800)` för viewBox-konsekvens. Veinerna sträcker sig nu 120px utanför content på varje sida (snyggt buffert), inte över hela skärmen.
+
+---
+
 ## 3.33.1 — 2026-05-22
 **Cosmic Horror vein-fördelning fixad — veiner täcker hela page, inte bara hörn.**
 
