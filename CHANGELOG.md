@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.30.17 — 2026-05-22
+**AM-pillen: BW-text bort, viktsymbolen kvar.** ⚖-ikonen identifierar redan att det är morning weight — "BW"-prefixet var redundant och låg inne i pillen ("input-fönstret"). Loggat: `⚖ 97 kg` (förut `⚖ BW 97 kg`). Missing: `⚖ +` (förut `⚖ + BW`).
+
+---
+
 ## 3.30.16 — 2026-05-22
 **Iterations-paket: labels sänkta, BW som tag bredvid namnet, Arctic-paritet med Daylight.**
 

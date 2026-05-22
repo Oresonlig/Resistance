@@ -3436,7 +3436,7 @@ body.theme-ember .set-logged-indicator{border-color:#5a7a2a;color:#a0cc40;}
       <div class="header-bottom-row">
         <div class="am-pill missing" id="amPill" onclick="expandAmPill(event)" title="Morning weight">
           <span class="am-pill-icon">⚖</span>
-          <span class="am-pill-value" id="amPillValue">+ BW</span>
+          <span class="am-pill-value" id="amPillValue">+</span>
           <input class="am-pill-input" id="morningWeight" type="number" step="0.1" min="20" max="660" style="display:none" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){logWeight();}else if(event.key==='Escape'){collapseAmPill();}">
           <span class="am-pill-unit" id="amPillUnit" style="display:none">kg</span>
           <button class="am-pill-log" id="amPillLog" style="display:none" onclick="event.stopPropagation();logWeight();">Log</button>
@@ -4060,7 +4060,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.30.16';
+const APP_VERSION = '3.30.17';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4069,7 +4069,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.16',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.30.17',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -4689,12 +4689,12 @@ function refreshAmPill(){
   const today=getTodayWeight();
   if(today){
     const disp=toDisplay(today);
-    if(valEl) valEl.textContent='BW '+disp+' '+unitLabel();
+    if(valEl) valEl.textContent=disp+' '+unitLabel();
     if(inp) inp.value=disp;
     pill.classList.add('logged');
     pill.classList.remove('missing');
   } else {
-    if(valEl) valEl.textContent='+ BW';
+    if(valEl) valEl.textContent='+';
     if(inp) inp.value='';
     pill.classList.add('missing');
     pill.classList.remove('logged');
