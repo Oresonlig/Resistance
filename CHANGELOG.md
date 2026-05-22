@@ -6,6 +6,28 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.33.0 — 2026-05-22
+**NYTT TEMA: Cosmic Horror** — Biological alien organism. Designat i Claude Design, källa: `C:\Resistance\theme\cosmic horror\`.
+
+- **Palette:** Blue-black `#03080a` + teal `#7fc8b4` accent + blood burgundy `#a8424c` (warning) + amber `#d8b878` (RAMP/BW+) + ochre teal varianter.
+- **Typografi:** Cormorant Garamond italic (body/details) + Cormorant SC (display, caps) + IBM Plex Mono (data/tags).
+- **Vein-bakgrund (SVG):** procedurellt genererad rekursiv branching-walker (4 system, ~80-120 paths). Tapered stroke (tjocka trunks → tunna kapillärer). 2 main trunks har animerade pulser (`pathLength=1` + `stroke-dasharray=0.04 1` + dashoffset-animation = bright segment travels along path). Genereras via deterministisk seeded RNG så samma vy = samma shape.
+- **World-coord SVG** (samma princip som Obsidian-embers): SVG position:absolute i body, höjd = `scrollHeight`, scrollar med content (inte filterlager på skärmen). Periodisk re-mätning via setInterval för content-tillväxt.
+- **Asymmetriska organiska shapes:** alla cards/inputs/buttons använder asymmetric border-radius (`border-radius: 24px 6px 28px 8px / 16px 22px 12px 24px`). Inga rektanglar, inga symmetriska shapes.
+- **Aktiv chain-tab:** asymmetric organic blob med inner asymmetric letter-cirkel. INTE rektangel som Obsidian.
+- **5 animationer:** vein-pulses (2.6-2.8s), sync-blink (3.2s), tab-fang-pulse (4.2s), wave-slide (14s, kvar för divider om vi lägger till). Eye-pupil-animation (6.2s) — sigil SVG skjuts till v2 om Niklas ber.
+- **LOG/DONE är STATISKA** — INGEN breathing-glow (designens explicit val). Menace via shape language + vein-pulser, inte konstant glödande.
+- **Settings → Ambient Effects-toggle** styr veiner ON/OFF (samma toggle som Obsidian-embers).
+- **Lärdomar från Obsidian-port tillämpade:** ingen `isolation:isolate` på body (Android stacking-bug), ingen `mix-blend-mode:screen` (samma), nav-position aldrig override:ad (behåller fixed bottom), surface-variabler från PM22.
+- **Övriga teman opåverkade.**
+
+**Skjutet till v2 (om Niklas ber):**
+- EyeSigil (org eye med dilaterande pupill) i header
+- Divider med MiniGlyph + wavy gradient slide
+- Tema-specifika texter (EDIT → ⇄ EDIT, DONE → ✓ DONE etc) — full immersion-paket
+
+---
+
 ## 3.32.1 — 2026-05-22
 **Obsidian glow-dämpning.** Niklas-feedback: när 3+ Log-knappar visas samtidigt (W1, W2, S1) blev gold-glow för intensiv och dominerande.
 

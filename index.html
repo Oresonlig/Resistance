@@ -15,7 +15,7 @@
 <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22The%20Chain%20%E2%80%94%20Resistance%20Training%22,%22short_name%22:%22The%20Chain%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%230a0a0a%22,%22theme_color%22:%22%230a0a0a%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Crect%20width='100'%20height='100'%20fill='%230a0a0a'/%3E%3Ctext%20y='68'%20x='50'%20text-anchor='middle'%20font-size='38'%20font-family='serif'%20fill='%23c0392b'%3ETC%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22any%22,%22type%22:%22image/svg+xml%22}]}">
 <title>The Chain — Resistance Training</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cardo:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&family=Orbitron:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Space+Grotesk:wght@300;400;700&family=Crimson+Pro:ital,wght@0,300;1,300&family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cardo:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Cormorant+SC:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&family=IBM+Plex+Mono:wght@300;400;500&family=Orbitron:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Space+Grotesk:wght@300;400;700&family=Crimson+Pro:ital,wght@0,300;1,300&family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 
 :root{
@@ -3703,6 +3703,288 @@ body.theme-obsidian .swap-select option{background:#1a1208;color:#f0d99c;}
 body.theme-obsidian .ex-done-primary.ready::before{content:'✦ ';color:#c9a35a;}
 body.theme-obsidian .add-ex-confirm::before{content:'✚ ';color:#c9a35a;}
 
+/* ═════════════════════════════════════════════════════════════
+   COSMIC HORROR — Biological alien · Teal veins · Cormorant italic
+   Porterad 2026-05-22 från Claude Design CosmicHorrorTheme.jsx.
+   Palette: blue-black #03080a, teal #7fc8b4, blood burgundy #a8424c.
+   Fonts: Cormorant Garamond (italic body), Cormorant SC (display), IBM Plex Mono (data).
+   Vein-SVG genererad via JS, mountas vid theme-switch (world-coord scrollar med content).
+   ════════════════════════════════════════════════════════════ */
+body.theme-cosmic-horror{
+  --black:#03080a;
+  --white:#e8f7f0;
+  --red:#7fc8b4;
+  --gold:#d8b878;
+  --green-bright:#bedab0;
+  --gray-mid:#2a4a44;
+  --gray-light:#7a948c;
+  /* PM22 surface-overrides — cold alien biological */
+  --surface-base:rgba(10,30,28,0.7);
+  --surface-elevated:rgba(8,20,18,0.95);
+  --surface-input:rgba(4,14,16,0.65);
+  --surface-saved:rgba(20,50,30,0.5);
+  --surface-deep:rgba(8,20,22,0.85);
+  --surface-overlay:rgba(127,200,180,0.08);
+  --border-subtle:rgba(127,200,180,0.18);
+  --border-strong:rgba(127,200,180,0.3);
+  --display:'Cormorant SC',serif;
+  --sans:'Cormorant Garamond',serif;
+  --mono:'IBM Plex Mono',monospace;
+  color:#c8d4ce;
+  background-color:#03080a;
+  background-image:
+    radial-gradient(ellipse 70% 30% at 50% 0%,   rgba(60,130,120,0.16), transparent 70%),
+    radial-gradient(ellipse 90% 50% at 50% 110%, rgba(40,80,90,0.20),   transparent 60%);
+  background-attachment:fixed;
+  position:relative; /* så SVG-veins (absolute) scrollar med page */
+}
+/* Vein SVG — world-coord scrollar med content. INTE mix-blend (Android stacking-bug). */
+#cosmicHorrorVeins{
+  position:absolute; top:0; left:0;
+  pointer-events:none; z-index:0;
+  display:none;
+  opacity:0.85;
+}
+body.theme-cosmic-horror #cosmicHorrorVeins{display:block;}
+.ch-pulse{
+  animation-name:chPulseFlow;
+  animation-timing-function:linear;
+  animation-iteration-count:infinite;
+}
+@keyframes chPulseFlow{from{stroke-dashoffset:0;}to{stroke-dashoffset:-1;}}
+/* Subtle noise + vignette */
+body.theme-cosmic-horror::before{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:
+    radial-gradient(circle at 30% 40%, rgba(120,200,180,0.03) 0 1px, transparent 1px),
+    radial-gradient(circle at 70% 60%, rgba(80,160,150,0.04)  0 1px, transparent 1px);
+  background-size:23px 19px, 31px 27px;
+}
+body.theme-cosmic-horror::after{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:1;
+  background:radial-gradient(ellipse at center, transparent 50%, rgba(0,2,4,0.55) 100%);
+}
+
+/* Header */
+body.theme-cosmic-horror header{
+  background:rgba(3,8,10,0.85);
+  border-bottom:1px solid rgba(127,200,180,0.10);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+body.theme-cosmic-horror .logo{font-family:'Cormorant SC',serif;font-weight:500;letter-spacing:.38em;color:#aedcd0;font-size:1rem;}
+body.theme-cosmic-horror .logo span{color:#aedcd0;}
+body.theme-cosmic-horror .header-user{font-family:'IBM Plex Mono',monospace;color:#4f6a64;font-size:.5rem;letter-spacing:.16em;font-weight:400;}
+body.theme-cosmic-horror .header-user strong{color:#aedcd0;}
+body.theme-cosmic-horror .header-logout{font-family:'IBM Plex Mono',monospace;color:#a8424c;border:1px solid #5a2530;letter-spacing:.16em;font-weight:400;border-radius:4px 10px 4px 10px;}
+body.theme-cosmic-horror .header-logout:hover{background:rgba(168,66,76,0.15);color:#c46878;}
+
+/* AM-pill — organic blob */
+body.theme-cosmic-horror .am-pill{background:rgba(10,30,28,0.6);border-color:rgba(127,200,180,0.22);color:#7a948c;font-family:'IBM Plex Mono',monospace;border-radius:10px 4px 10px 4px;}
+body.theme-cosmic-horror .am-pill:hover{border-color:#7fc8b4;color:#e8f7f0;}
+body.theme-cosmic-horror .am-pill.logged{color:#bedab0;border-color:rgba(190,218,176,0.4);background:rgba(20,40,28,0.6);}
+body.theme-cosmic-horror .am-pill.missing{color:#a8424c;border-color:rgba(168,66,76,0.45);background:rgba(30,15,18,0.5);}
+body.theme-cosmic-horror .am-pill-log{border:1px solid #7fc8b4;color:#aedcd0;}
+body.theme-cosmic-horror .am-pill-log:hover{background:rgba(127,200,180,0.12);}
+
+/* Sync-dot — teal blink */
+body.theme-cosmic-horror .sync-dot.ok{background:#7fc8b4;box-shadow:0 0 6px #7fc8b4;animation:chSyncBlink 3.2s ease-in-out infinite;}
+@keyframes chSyncBlink{0%,100%{opacity:.45;box-shadow:0 0 4px #7fc8b4;}50%{opacity:1;box-shadow:0 0 12px #aee8d8;}}
+
+/* Chain intro — italic Cormorant rubrik */
+body.theme-cosmic-horror .chain-intro{background:rgba(10,30,28,0.4);border:1px solid rgba(127,200,180,0.15);border-radius:24px 6px 28px 8px / 16px 22px 12px 24px;}
+body.theme-cosmic-horror .chain-intro-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.4rem; font-weight:500; font-style:italic;
+  color:#e8f7f0; letter-spacing:-0.01em; line-height:0.95;
+  text-shadow:0 0 18px rgba(127,200,180,0.22);
+}
+body.theme-cosmic-horror .chain-intro-sub{font-family:'IBM Plex Mono',monospace;color:#6a8480;letter-spacing:.14em;text-transform:uppercase;}
+body.theme-cosmic-horror .section-title{font-family:'Cormorant SC',serif;font-weight:500;letter-spacing:.22em;color:#aedcd0;text-transform:uppercase;}
+body.theme-cosmic-horror .section-sub{font-family:'IBM Plex Mono',monospace;color:#4f6a64;letter-spacing:.2em;font-weight:400;text-transform:uppercase;}
+
+/* Chain bar */
+body.theme-cosmic-horror .chain-bar{background:#0a2020;}
+body.theme-cosmic-horror .chain-fill{background:linear-gradient(90deg,#7fc8b4,#aedcd0);}
+
+/* Chain-strip — organiska asymmetriska blobs (skriver över hexagon) */
+body.theme-cosmic-horror .chain-tab .chain-tab-letter{
+  width:38px; height:38px; clip-path:none !important;
+  border:1px solid rgba(127,200,180,0.22);
+  background:rgba(8,18,22,0.55);
+  color:#4f6a64; font-family:'Cormorant SC',serif; font-size:.9rem; font-weight:500;
+  border-radius:50% 38% 60% 42% / 42% 60% 38% 58%;
+}
+body.theme-cosmic-horror .chain-tab:nth-child(odd) .chain-tab-letter{border-radius:60% 40% 38% 62% / 38% 58% 42% 60%;}
+body.theme-cosmic-horror .chain-tab.adjacent .chain-tab-letter{color:#aedcd0;background:rgba(20,40,38,0.6);border-color:rgba(127,200,180,0.4);}
+body.theme-cosmic-horror .chain-tab.done .chain-tab-letter{color:#2a4a44;background:rgba(8,18,22,0.3);border-color:rgba(127,200,180,0.08);}
+body.theme-cosmic-horror .chain-tab-name-full{font-family:'Cormorant SC',serif;color:#aedcd0;background:rgba(20,50,46,0.5);letter-spacing:.2em;font-weight:500;}
+body.theme-cosmic-horror .chain-tab.active{
+  clip-path:none !important;
+  position:relative;
+  border:1px solid #7fc8b4;
+  border-radius:20px 28px 18px 26px / 22px 20px 24px 18px;
+  background:linear-gradient(180deg,rgba(60,120,110,0.55) 0%,rgba(20,50,46,0.85) 50%,rgba(8,22,26,0.85) 100%);
+  padding:0 6px 0 4px;
+  margin:0 5px;
+  box-shadow:0 0 0 2px rgba(127,200,180,0.08), inset 0 0 16px rgba(127,200,180,0.18);
+  overflow:visible;
+}
+body.theme-cosmic-horror .chain-tab.active .chain-tab-letter{
+  width:30px; height:30px;
+  border:1px solid #7fc8b4;
+  background:rgba(40,80,72,0.5);
+  color:#e0f2eb;
+  font-size:1rem;
+  align-self:center;
+  opacity:1;
+  border-radius:50% 40% 55% 45% / 45% 55% 40% 55%;
+}
+body.theme-cosmic-horror .chain-tab.active .chain-tab-name-full{background:none !important;color:#e0f2eb;padding:0 6px 0 9px;letter-spacing:.2em;}
+body.theme-cosmic-horror .chain-tab-name-short{color:#7a948c;background:rgba(20,50,46,0.4);font-family:'Cormorant SC',serif;font-weight:500;}
+
+/* Section header (pass-ex-header) */
+body.theme-cosmic-horror .pass-ex-letter{font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:#7fc8b4;letter-spacing:.22em;}
+body.theme-cosmic-horror .pass-ex-name{font-family:'IBM Plex Mono',monospace;color:#aedcd0;letter-spacing:.22em;font-weight:500;text-transform:uppercase;}
+
+/* Pass cards & ex-blocks — asymmetric organic blobs */
+body.theme-cosmic-horror .pass-card,
+body.theme-cosmic-horror .ex-block{
+  background:radial-gradient(ellipse 80% 60% at 70% 0%, rgba(60,120,110,0.12), transparent 70%),
+             linear-gradient(180deg,rgba(10,30,28,0.7),rgba(4,14,16,0.7));
+  border:1px solid rgba(127,200,180,0.22);
+  border-radius:24px 6px 28px 8px / 16px 22px 12px 24px;
+}
+body.theme-cosmic-horror .ex-block.saved{background:linear-gradient(180deg,rgba(20,50,30,0.5),rgba(8,20,12,0.5));border-color:rgba(190,218,176,0.3);}
+body.theme-cosmic-horror .pass-card.next-up{border-color:#7fc8b4;box-shadow:0 0 18px rgba(127,200,180,0.18);}
+body.theme-cosmic-horror .pass-card.next-up::before{background:#7fc8b4;color:#03080a;font-family:'IBM Plex Mono',monospace;letter-spacing:.2em;}
+body.theme-cosmic-horror .pass-card.in-progress::before{background:#bedab0;color:#03080a;font-family:'IBM Plex Mono',monospace;letter-spacing:.2em;}
+body.theme-cosmic-horror .pass-card.done{opacity:.55;}
+body.theme-cosmic-horror .pass-letter{font-family:'Cormorant SC',serif;font-weight:500;color:#7fc8b4;}
+body.theme-cosmic-horror .pass-name{font-family:'Cormorant Garamond',serif;font-style:italic;color:#e8f7f0;letter-spacing:-0.005em;font-size:1.15rem;}
+body.theme-cosmic-horror .pass-preview{color:#7a948c;font-family:'IBM Plex Mono',monospace;font-size:.5rem;letter-spacing:.14em;}
+
+/* Exercise name + meta — italic Cormorant */
+body.theme-cosmic-horror .ex-name{font-family:'Cormorant Garamond',serif;font-weight:600;color:#e8f7f0;font-size:1.2rem;letter-spacing:-0.005em;}
+body.theme-cosmic-horror .ex-detail{color:#7a948c;font-family:'IBM Plex Mono',monospace;font-size:.65rem;}
+body.theme-cosmic-horror .ex-note-input{background:rgba(10,30,28,0.5);border-color:rgba(127,200,180,0.3);color:#aedcd0;font-family:'IBM Plex Mono',monospace;}
+body.theme-cosmic-horror .ex-collapsed-name{font-family:'Cormorant Garamond',serif;font-style:italic;color:#c8d4ce;letter-spacing:0;font-size:1.05rem;font-weight:400;}
+body.theme-cosmic-horror .ex-collapsed-status{color:#7a948c;font-family:'IBM Plex Mono',monospace;}
+body.theme-cosmic-horror .ex-collapsed-chevron{color:#2a4a44;}
+
+/* Tags — organisk teal/amber/blue/green */
+body.theme-cosmic-horror .ex-tag{font-family:'IBM Plex Mono',monospace;color:#aedcd0;border-color:rgba(127,200,180,0.3);background:rgba(20,50,46,0.4);letter-spacing:.18em;font-weight:500;border-radius:6px 2px 6px 2px;text-transform:uppercase;}
+body.theme-cosmic-horror .ex-tag.ramp{color:#d8b878;border-color:rgba(180,140,70,0.35);background:rgba(40,30,15,0.45);border-radius:2px 6px 2px 6px;}
+body.theme-cosmic-horror .ex-tag.bw{color:#d8b878;border-color:rgba(180,140,70,0.35);background:rgba(40,30,15,0.45);border-radius:2px 6px 2px 6px;}
+body.theme-cosmic-horror .ex-tag.uni{color:#bedab0;border-color:rgba(150,200,130,0.3);background:rgba(20,40,18,0.45);border-radius:6px 2px 6px 2px;}
+body.theme-cosmic-horror .ex-tag.singles{color:#a8424c;border-color:rgba(168,66,76,0.35);background:rgba(40,15,18,0.45);}
+
+/* Exercise buttons */
+body.theme-cosmic-horror .ex-btn-skip{background:linear-gradient(180deg,rgba(20,50,46,0.5),rgba(8,18,22,0.5));border:1px solid rgba(127,200,180,0.22);color:#aedcd0;font-family:'IBM Plex Mono',monospace;letter-spacing:.16em;font-weight:400;border-radius:4px 10px 4px 10px;}
+body.theme-cosmic-horror .ex-btn-edit{background:linear-gradient(180deg,rgba(20,50,46,0.5),rgba(8,18,22,0.5));border:1px solid rgba(127,200,180,0.22);color:#aedcd0;font-family:'IBM Plex Mono',monospace;letter-spacing:.16em;font-weight:400;border-radius:10px 4px 10px 4px;}
+
+/* Set-inputs — asymmetric blob radii */
+body.theme-cosmic-horror .set-input{background:rgba(4,14,16,0.65);border:1px solid rgba(127,200,180,0.14);color:#e6f0ea;font-family:'IBM Plex Mono',monospace;font-weight:400;border-radius:8px 2px 8px 2px;}
+body.theme-cosmic-horror .set-input:focus{border-color:#7fc8b4;box-shadow:0 0 8px rgba(127,200,180,0.32);}
+body.theme-cosmic-horror .set-input.warmup{color:#2a3a36;}
+body.theme-cosmic-horror .set-unit{color:#2a4a44;font-family:'IBM Plex Mono',monospace;font-weight:500;letter-spacing:.18em;}
+body.theme-cosmic-horror .set-num{color:#a8424c;font-family:'IBM Plex Mono',monospace;font-weight:500;letter-spacing:.2em;}
+body.theme-cosmic-horror .sets-group-label{color:#4f6a64;font-family:'IBM Plex Mono',monospace;letter-spacing:.2em;font-weight:400;border-top:1px dashed rgba(127,200,180,0.15);text-transform:uppercase;}
+body.theme-cosmic-horror .sets-group-label.work-group{color:#a8424c;}
+
+/* LOG button — STATIC teal blob, INGEN glow (designens explicit val: no breathing) */
+body.theme-cosmic-horror .set-log-btn{
+  background:linear-gradient(180deg,#7fc8b4 0%,#3a7068 100%);
+  border:none;
+  color:#02151a; font-family:'IBM Plex Mono',monospace; font-weight:500; letter-spacing:.18em;
+  box-shadow:inset 0 1px 0 rgba(220,245,240,0.45), inset 0 -1px 0 rgba(0,20,18,0.35);
+  border-radius:16px 4px 18px 4px / 14px 6px 16px 4px;
+}
+body.theme-cosmic-horror .set-log-btn.has-value{background:linear-gradient(180deg,#7fc8b4 0%,#3a7068 100%);color:#02151a;}
+body.theme-cosmic-horror .set-logged-indicator{color:#bedab0;text-shadow:0 0 6px rgba(190,218,176,0.6);}
+
+/* Action-buttons (Add set / Warm-up / Done) — asymmetric blob */
+body.theme-cosmic-horror .ex-btn-done{background:linear-gradient(180deg,rgba(20,50,46,0.5),rgba(8,18,22,0.5));border:1px dashed rgba(127,200,180,0.22);color:#aedcd0;font-family:'IBM Plex Mono',monospace;letter-spacing:.16em;font-weight:400;border-radius:8px 18px 8px 18px;}
+body.theme-cosmic-horror .ex-done-primary{border:1px dashed rgba(127,200,180,0.18);color:#6a8480;font-family:'IBM Plex Mono',monospace;letter-spacing:.2em;font-weight:400;border-radius:8px 18px 8px 18px;}
+body.theme-cosmic-horror .ex-done-primary.ready{
+  background:linear-gradient(180deg,rgba(30,70,64,0.6),rgba(8,22,26,0.6));
+  border:1px solid #7fc8b4; color:#e0f2eb;
+  font-weight:500; letter-spacing:.24em;
+  border-radius:20px 6px 20px 6px;
+  box-shadow:inset 0 0 14px rgba(127,200,180,0.18);
+}
+
+/* Nav — opaque + downward teal fang som aktiv-indicator */
+body.theme-cosmic-horror nav{background:rgba(3,8,10,0.96);border-top:1px solid rgba(127,200,180,0.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+body.theme-cosmic-horror nav button{color:#4f6a64;font-family:'IBM Plex Mono',monospace;letter-spacing:.18em;font-weight:400;}
+body.theme-cosmic-horror nav button.active{color:#e6f0ea;background:none;border-top-color:transparent;position:relative;}
+body.theme-cosmic-horror nav button.active::before{
+  content:''; position:absolute; top:-1px; left:50%; transform:translateX(-50%);
+  width:0; height:0;
+  border-left:7px solid transparent;
+  border-right:7px solid transparent;
+  border-top:9px solid #7fc8b4;
+  filter:drop-shadow(0 0 6px rgba(127,200,180,0.55));
+  animation:chTabPulse 4.2s ease-in-out infinite;
+}
+@keyframes chTabPulse{0%,100%{opacity:.7;}50%{opacity:1;}}
+
+/* Buttons (generic) */
+body.theme-cosmic-horror .btn-primary{background:linear-gradient(180deg,#7fc8b4 0%,#3a7068 100%);color:#02151a;font-family:'IBM Plex Mono',monospace;letter-spacing:.18em;font-weight:500;border:none;border-radius:16px 4px 18px 4px / 14px 6px 16px 4px;box-shadow:inset 0 1px 0 rgba(220,245,240,0.45);}
+body.theme-cosmic-horror .btn-primary:hover{background:linear-gradient(180deg,#aedcd0 0%,#5a9088 100%);}
+body.theme-cosmic-horror .btn-primary:disabled{background:rgba(20,40,38,0.5);color:#4f6a64;box-shadow:none;}
+
+/* Auth */
+body.theme-cosmic-horror #userScreen{background:#03080a;}
+body.theme-cosmic-horror .auth-logo{font-family:'Cormorant SC',serif;color:#aedcd0;letter-spacing:.38em;font-weight:500;}
+body.theme-cosmic-horror .auth-logo span{color:#aedcd0;}
+body.theme-cosmic-horror .auth-tagline{color:#7a948c;font-family:'Cormorant Garamond',serif;font-style:italic;}
+body.theme-cosmic-horror #auth-email-form input,
+body.theme-cosmic-horror #auth-signup-fields input,
+body.theme-cosmic-horror #reset-password-form input{background:rgba(4,14,16,0.7);border-color:rgba(127,200,180,0.22);color:#e6f0ea;font-family:'IBM Plex Mono',monospace;border-radius:8px 2px 8px 2px;}
+body.theme-cosmic-horror #auth-email-form input:focus,
+body.theme-cosmic-horror #auth-signup-fields input:focus,
+body.theme-cosmic-horror #reset-password-form input:focus{border-color:#7fc8b4;box-shadow:0 0 0 1px #7fc8b4;}
+body.theme-cosmic-horror .auth-divider{color:#4f6a64;}
+body.theme-cosmic-horror .auth-divider::before,
+body.theme-cosmic-horror .auth-divider::after{background:rgba(127,200,180,0.18);}
+body.theme-cosmic-horror .auth-btn-primary{background:linear-gradient(180deg,#7fc8b4 0%,#3a7068 100%);color:#02151a;font-family:'IBM Plex Mono',monospace;font-weight:500;letter-spacing:.18em;border-radius:16px 4px 18px 4px;}
+body.theme-cosmic-horror .auth-btn-google{background:rgba(10,30,28,0.5);border:1px solid rgba(127,200,180,0.22);color:#aedcd0;font-family:'IBM Plex Mono',monospace;border-radius:10px 4px 10px 4px;}
+
+/* Progress / PR / History */
+body.theme-cosmic-horror .stat-box{background:rgba(10,30,28,0.5);border:1px solid rgba(127,200,180,0.22);border-radius:24px 6px 28px 8px / 16px 22px 12px 24px;}
+body.theme-cosmic-horror .stat-num{color:#7fc8b4;font-family:'Cormorant SC',serif;}
+body.theme-cosmic-horror .stat-desc{color:#7a948c;font-family:'IBM Plex Mono',monospace;}
+body.theme-cosmic-horror .pr-card{background:rgba(10,30,28,0.5);border:1px solid rgba(127,200,180,0.22);border-radius:24px 6px 28px 8px / 16px 22px 12px 24px;}
+body.theme-cosmic-horror .pr-card::before{background:rgba(40,30,15,0.7);color:#d8b878;font-family:'IBM Plex Mono',monospace;}
+body.theme-cosmic-horror .pr-value{color:#e8f7f0;font-family:'Cormorant SC',serif;font-weight:600;}
+body.theme-cosmic-horror .hist-entry{background:rgba(10,30,28,0.4);border-left:2px solid #7fc8b4;}
+body.theme-cosmic-horror .hist-date{color:#aedcd0;font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;}
+body.theme-cosmic-horror .hist-pass{color:#e8f7f0;font-family:'IBM Plex Mono',monospace;font-weight:500;letter-spacing:.18em;}
+body.theme-cosmic-horror .hist-ex strong{color:#aedcd0;font-family:'Cormorant Garamond',serif;font-style:italic;}
+body.theme-cosmic-horror .hist-set{color:#7a948c;font-family:'IBM Plex Mono',monospace;}
+
+/* Toast / Modal */
+body.theme-cosmic-horror .toast{background:rgba(8,20,18,0.95);border:1px solid #7fc8b4;color:#e8f7f0;font-family:'IBM Plex Mono',monospace;letter-spacing:.18em;border-radius:16px 4px 16px 4px;}
+body.theme-cosmic-horror .app-modal-card{background:rgba(8,20,18,0.95);border-color:#7fc8b4;color:#e8f7f0;border-radius:24px 6px 28px 8px / 16px 22px 12px 24px;}
+body.theme-cosmic-horror .app-modal-title{color:#e8f7f0;font-family:'Cormorant SC',serif;font-weight:500;letter-spacing:.18em;}
+body.theme-cosmic-horror .app-modal-body{color:#7a948c;font-family:'Cormorant Garamond',serif;font-style:italic;}
+body.theme-cosmic-horror .app-modal-btn{background:rgba(10,30,28,0.5);border-color:rgba(127,200,180,0.3);color:#aedcd0;font-family:'IBM Plex Mono',monospace;border-radius:10px 4px 10px 4px;}
+body.theme-cosmic-horror .app-modal-btn-primary{background:linear-gradient(180deg,#7fc8b4 0%,#3a7068 100%);border-color:#7fc8b4;color:#02151a;font-family:'IBM Plex Mono',monospace;font-weight:500;}
+body.theme-cosmic-horror .app-modal-btn-danger{background:transparent;border-color:#a8424c;color:#c46878;font-family:'IBM Plex Mono',monospace;}
+body.theme-cosmic-horror .app-modal-btn-danger:hover{background:#a8424c;color:#e8f7f0;}
+
+/* Scrollbar */
+body.theme-cosmic-horror::-webkit-scrollbar-track{background:#0a1818;}
+body.theme-cosmic-horror::-webkit-scrollbar-thumb{background:#2a4a44;}
+
+/* Selects */
+body.theme-cosmic-horror select,
+body.theme-cosmic-horror .swap-select,
+body.theme-cosmic-horror .app-modal-select{background:#0a1818 !important;color:#e8f7f0 !important;border-color:rgba(127,200,180,0.3) !important;font-family:'IBM Plex Mono',monospace !important;}
+body.theme-cosmic-horror select option,
+body.theme-cosmic-horror .swap-select option{background:#0a1818;color:#e8f7f0;}
+
 /* ── SET LOG BUTTON ──────────────────────────────────────────*/
 .set-log-btn{
   background:none;
@@ -4461,7 +4743,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.32.1';
+const APP_VERSION = '3.33.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4470,7 +4752,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.32.1',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.33.0',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -7622,6 +7904,7 @@ const THEMES = [
   {id:'ember',         name:'Ember',         cat:'dark', desc:'Molten orange · Rajdhani · Industrial forge',          class:'theme-ember'},
   {id:'void',          name:'Void · WIP',    cat:'dark', desc:'Pure black & white · Playfair italic · Luxury minimal',class:'theme-void'},
   {id:'obsidian',      name:'Obsidian',      cat:'dark', desc:'Dark fantasy · Gold embers · Cinzel scriptorium',     class:'theme-obsidian'},
+  {id:'cosmic-horror', name:'Cosmic Horror', cat:'dark', desc:'Biological alien · Teal veins · Cormorant italic',     class:'theme-cosmic-horror'},
   // LIGHT
   {id:'arctic',        name:'Arctic Terminal',cat:'light',desc:'Frozen lake · Liquid nitrogen · Frosted glass',  class:'theme-arctic'},
   {id:'daylight',      name:'Daylight · WIP',cat:'light', desc:'Clean white · Charcoal text · Bright sun-readable',   class:'theme-daylight'},
@@ -7640,6 +7923,9 @@ function applyTheme(themeId){
   // Obsidian: mount/unmount ember canvas
   if(themeId==='obsidian' && state.ambientEffects!==false) startObsidianEmbers();
   else stopObsidianEmbers();
+  // Cosmic Horror: mount/unmount vein SVG
+  if(themeId==='cosmic-horror' && state.ambientEffects!==false) startCosmicHorrorVeins();
+  else stopCosmicHorrorVeins();
 }
 
 function initTheme(){
@@ -7649,6 +7935,7 @@ function initTheme(){
   THEMES.forEach(t=>{ if(t.class) document.body.classList.remove(t.class); });
   if(theme.class) document.body.classList.add(theme.class);
   if(state.theme==='obsidian' && state.ambientEffects!==false) startObsidianEmbers();
+  if(state.theme==='cosmic-horror' && state.ambientEffects!==false) startCosmicHorrorVeins();
 }
 
 // ── OBSIDIAN EMBERS ─────────────────────────────────────────────
@@ -7753,7 +8040,106 @@ function toggleAmbientEffects(){
     if(state.ambientEffects!==false) startObsidianEmbers();
     else stopObsidianEmbers();
   }
+  if(state.theme==='cosmic-horror'){
+    if(state.ambientEffects!==false) startCosmicHorrorVeins();
+    else stopCosmicHorrorVeins();
+  }
   renderData();
+}
+
+// ── COSMIC HORROR VEINS ─────────────────────────────────────────
+// Vanilla JS port av VeinBackground (från designens CosmicHorrorTheme.jsx).
+// Procedurellt genererade SVG-paths (rekursiv walker med branching).
+// World-coord: SVG position:absolute i body, höjd = scrollHeight, scrollar med content.
+// 4 vein-systems (full design), pulser på 2 main trunks.
+let _chScrollHTimer=null, _chResizeHandler=null;
+// Seeded RNG så samma seed → samma vein-shape (deterministisk via memo-pattern)
+function _chRand(seedRef){
+  return () => { seedRef.s = (seedRef.s * 9301 + 49297) % 233280; return seedRef.s / 233280; };
+}
+function _chGenerateVein(startX, startY, baseAngle, seed){
+  const seedRef = {s: seed};
+  const rand = _chRand(seedRef);
+  const paths = [];
+  function walk(x, y, ang, segs, depth, branchProb){
+    if(segs <= 0 || depth < 0) return;
+    const points = [`M ${x.toFixed(1)} ${y.toFixed(1)}`];
+    let cx=x, cy=y, ca=ang;
+    for(let i=0; i<segs; i++){
+      const stepLen = (depth > 1 ? 11 : 6) + rand() * 7;
+      ca += (rand() - 0.5) * (0.55 + (3 - depth) * 0.2);
+      cx += Math.cos(ca) * stepLen;
+      cy += Math.sin(ca) * stepLen;
+      points.push(`L ${cx.toFixed(1)} ${cy.toFixed(1)}`);
+      if(rand() < branchProb && i > 1 && i < segs-1 && depth > 0){
+        const side = rand() < 0.5 ? -1 : 1;
+        const branchAng = ca + side * (0.5 + rand() * 1.0);
+        const branchSegs = Math.max(2, Math.floor(segs * (0.3 + rand() * 0.35)));
+        walk(cx, cy, branchAng, branchSegs, depth-1, branchProb * 0.7);
+      }
+    }
+    paths.push({d: points.join(' '), depth});
+  }
+  walk(startX, startY, baseAngle, 18, 3, 0.45);
+  return paths;
+}
+function _chRenderVeins(){
+  const svg = document.getElementById('cosmicHorrorVeins');
+  if(!svg) return;
+  const w = window.innerWidth;
+  const h = Math.max(window.innerHeight, document.documentElement.scrollHeight || 0, document.body.scrollHeight || 0);
+  // ViewBox skalas till verklig pixel-area så designens koordinater (380x760-baserade)
+  // sträcker sig naturligt. Två main trunks + två cluster — proportionellt placerade.
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.style.width = w + 'px';
+  svg.style.height = h + 'px';
+  // Generera 4 vein-system (proportionellt mot viewport-bredd)
+  const tr = _chGenerateVein(w * 1.01, -8, 2.35, 731);
+  const bl = _chGenerateVein(-5, h * 1.01, -0.78, 1289);
+  const trC = _chGenerateVein(w * 0.89, 90, 2.5, 4421);
+  const blC = _chGenerateVein(60, h * 0.92, -0.7, 8893);
+  const all = [...tr, ...bl, ...trC, ...blC];
+  const trunkTR = tr.find(p => p.depth === 3);
+  const trunkBL = bl.find(p => p.depth === 3);
+  // Bygg SVG-content
+  let svgInner = '<g fill="none" stroke-linecap="round" stroke-linejoin="round">';
+  for(const p of all){
+    const sw = 0.35 + p.depth * 0.4;
+    const op = 0.3 + p.depth * 0.15;
+    svgInner += `<path d="${p.d}" stroke="#3a6a60" stroke-width="${sw}" opacity="${op}" />`;
+  }
+  svgInner += '</g>';
+  // Traveling pulses på de 2 main trunks
+  svgInner += '<g fill="none" stroke="#aee8d8" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 5px #7fc8b4)">';
+  if(trunkTR){
+    svgInner += `<path d="${trunkTR.d}" stroke-width="1.8" pathLength="1" stroke-dasharray="0.04 1" class="ch-pulse" style="animation-duration:2.6s" />`;
+  }
+  if(trunkBL){
+    svgInner += `<path d="${trunkBL.d}" stroke-width="1.8" pathLength="1" stroke-dasharray="0.04 1" class="ch-pulse" style="animation-duration:2.8s;animation-delay:-1s" />`;
+  }
+  svgInner += '</g>';
+  svg.innerHTML = svgInner;
+}
+function startCosmicHorrorVeins(){
+  if(_chResizeHandler) return; // already running
+  const svg = document.getElementById('cosmicHorrorVeins');
+  if(!svg) return;
+  svg.style.display = 'block';
+  _chRenderVeins();
+  _chResizeHandler = () => { _chRenderVeins(); };
+  window.addEventListener('resize', _chResizeHandler);
+  // Periodisk re-mätning för content-tillväxt (samma pattern som Obsidian-embers)
+  _chScrollHTimer = setInterval(() => {
+    const currentH = Math.max(window.innerHeight, document.documentElement.scrollHeight || 0, document.body.scrollHeight || 0);
+    const svgH = parseInt(svg.style.height) || 0;
+    if(Math.abs(currentH - svgH) > 50) _chRenderVeins();
+  }, 1500);
+}
+function stopCosmicHorrorVeins(){
+  const svg = document.getElementById('cosmicHorrorVeins');
+  if(svg){ svg.style.display = 'none'; svg.innerHTML = ''; }
+  if(_chResizeHandler){ window.removeEventListener('resize', _chResizeHandler); _chResizeHandler = null; }
+  if(_chScrollHTimer){ clearInterval(_chScrollHTimer); _chScrollHTimer = null; }
 }
 
 function renderData(){
@@ -8504,6 +8890,8 @@ if('serviceWorker' in navigator){
 <div id="crusader-cross-glow" aria-hidden="true"></div>
 <!-- Obsidian theme: ember canvas (visible only when theme-obsidian is active; mounted/unmounted via JS in applyTheme) -->
 <canvas id="obsidianEmberCanvas" aria-hidden="true"></canvas>
+<!-- Cosmic Horror theme: SVG vein-background (procedurally generated, world-coord scrollar med content) -->
+<svg id="cosmicHorrorVeins" aria-hidden="true" preserveAspectRatio="xMidYMid slice"></svg>
 <!-- Reusable modal — controlled by JS, theme-aware via CSS vars -->
 <div id="appModal" class="app-modal" style="display:none">
   <div class="app-modal-backdrop"></div>
