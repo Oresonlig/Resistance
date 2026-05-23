@@ -6,6 +6,33 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.34.10 — 2026-05-23
+**PM22 completion: default-CSS semantic vars + theme override-cleanup.**
+
+PM22 (3.32.0) etablerade 8 semantic CSS-variabler men lämnade existerande per-fall theme-overrides oroade. Den här versionen completar refaktorn genom att:
+
+**Default-CSS uppdaterad till semantic vars (5 selectors):**
+- `.pass-card`: hardcoded `border:#2c2c2c` → `var(--border-subtle)` + ny `background:var(--surface-base)`. (Iron pass-card nu subtilt ljusare än body — visuell förbättring.)
+- `.weight-banner`: hardcoded `border-bottom:#1a1a1a` → `var(--border-subtle)`. Bg redan semantic.
+- `.stat-box`: hardcoded `border:#2c2c2c` → `var(--border-subtle)` + ny `background:var(--surface-base)`.
+- `.pr-card`: samma som stat-box.
+- `.hist-entry`: hardcoded `border:#2a2a2a` → `var(--border-subtle)` + ny `background:var(--surface-base)`.
+
+**Theme override-cleanup (där default semantic var nu räcker):**
+- **Daylight:** rensade redundant `background:#ffffff` på `.pass-card`, `.weight-banner`, `.weight-input`, `.stat-box`, `.pr-card`, `.hist-entry`, `.app-modal-card`. Tog bort `.ex-block.saved` override (matchade `--surface-saved` exakt). ~12 rader rensade.
+- **Arctic:** rensade `.pass-card` bg + border, `.ex-block.saved`, `.ex-block.collapsed.saved .ex-collapsed-summary`. ~5 rader.
+- **Crusader:** rensade `.stat-box`/`.pr-card`/`.hist-entry` background (matchade `--surface-base`), behöll `--border-strong` overrides (heavier warrior-feel). ~3 simplifications.
+- **Mörka teman (Iron/Nanosuit/Night City/Ember/Void/Obsidian/Cosmic Horror):** ingen rensning behövdes — deras stat-box/pr-card/hist-entry har INTENTIONAL custom gradients/backgrounds som inte är redundanta med `--surface-base`.
+
+**Inte så dramatisk reduktion som initialt hypat** (~25-40 rader totalt) — många "redundant looking" rules visade sig vara intentional aesthetic overrides (Arctic uses 0.65 alpha vs base 0.55 etc).
+
+**Konsekvens framåt:**
+- Nya komponenter ärver default semantic vars som SOM TIDIGARE — men nu också `.pass-card`, `.weight-banner`, `.stat-box`, `.pr-card`, `.hist-entry`.
+- Mindre risk för "svart fönster"-bug på dessa surfaces.
+- Daylight + Arctic + Crusader marginellt mindre kod att underhålla.
+
+---
+
 ## 3.34.9 — 2026-05-23
 **Code review Batch 3: migrations-städning (guards).**
 
