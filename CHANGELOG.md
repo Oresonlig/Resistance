@@ -6,6 +6,32 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.34.6 — 2026-05-23
+**Notes → Reminders: tydligare ephemeral semantik (1+2).**
+
+Niklas: "Min initiala tanke var ju att ha notes inför nästa övning av samma slag." Systemet var redan ephemeral (single-use carry-forward via `finishSession()` rad 7466 — flyttar exerciseNotes → lastSessionNotes, dropp:ar nästa session om inte refreshad), men UI:t signalerade det inte tillräckligt.
+
+**1. Tydligare visuell signal på reminder från förra sessionen:**
+- Ny CSS-klass `.ex-note-banner.reminder-prev` — amber-orange `#e89a40` (var gold `#c8a84a`), dashed border-left istället av solid, italic text. Distinct från en just sparad note.
+- **Dagar-räkning:** "Reminder från 3d sen: ..." istället för bara "From last session:". Använder `lastSession.timestamp` (redan tillgänglig i samma scope). 0d = "idag", 1d = "1d sen", N = "Nd sen".
+- **Ikon-byte:** ⏰ för reminder-from-last (förstärker tidsdimensionen), 📝 förblir för just sparad/edited note.
+- Tooltip uppdaterad: "Tap to edit (försvinner efter denna session om inte refreshad)".
+
+**2. Namnändring — "note" → "reminder" där det matchar semantiken:**
+- Add-button: "+ note" → "+ Reminder for next time"
+- Textarea placeholder: "Note for next time..." → "Reminder for next time (e.g. 'för lätt vikt, gå upp')..."
+- Save-button: "Save Note" → "Save Reminder"
+- Toast-text: "Note saved" → "Reminder saved" (likadant för cleared)
+- Tooltip på existing note: "Tap to edit" → "Tap to edit reminder"
+
+**3. saveNote() DOM-update fix:**
+- Tidigare: efter clear av note kvar bara borttagen banner — ingen "+ Reminder"-knapp dök upp utan full rerender. Nu renderas add-knappen tillbaka direkt så användaren kan skapa ny reminder utan att vänta.
+- Också: rensar både `.ex-note-banner` OCH `.ex-note-add` innan ny element, så ingen dubbel-rendering vid edge cases.
+
+**Modellen oförändrad** — notes är fortfarande ephemeral via finishSession-logiken. Bara UI:t talar nu tydligt om vad som händer.
+
+---
+
 ## 3.34.5 — 2026-05-23
 **Städning: borttaget oanvänd `toggleHistory()` + `_showHistory`-state.**
 

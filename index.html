@@ -202,6 +202,10 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .ex-prev-history-set.warmup .set-lbl{color:#555;font-weight:500;}
 .ex-note-banner{font-family:var(--mono);font-size:.66rem;color:#c8a84a;background:rgba(180,140,40,0.1);border-left:2px solid #b8922a;padding:5px 10px;margin-top:5px;cursor:pointer;line-height:1.5;display:block;}
 .ex-note-banner:hover{border-left-color:var(--gold);}
+/* 3.34.6 — Reminder från förra sessionen (ephemeral): distinkt amber-orange,
+   dashed border, italic så det syns att det är "inkommande" inte permanent. */
+.ex-note-banner.reminder-prev{color:#e89a40;background:rgba(232,154,64,0.08);border-left:2px dashed #e89a40;font-style:italic;}
+.ex-note-banner.reminder-prev:hover{border-left-color:#ffb060;border-left-style:solid;color:#ffb060;}
 .ex-note-wrap{margin:4px 0;}
 .ex-note-input{width:100%;background:var(--surface-input);border:1px solid #3a3000;color:var(--white);font-family:var(--mono);font-size:.56rem;padding:6px 8px;resize:vertical;min-height:48px;line-height:1.6;}
 .ex-note-input:focus{outline:none;border-color:var(--gold);}
@@ -4866,7 +4870,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.34.5';
+const APP_VERSION = '3.34.6';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4875,7 +4879,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.34.5',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.34.6',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -5783,12 +5787,19 @@ function buildPassBodyHTML(pass,cycle,nextId){
         const lastNote = !existingNote ? (state.lastSessionNotes?.[ex.id]||'') : '';
         const escapedNote = escapeHTML(existingNote);
         const escapedLastNote = escapeHTML(lastNote);
+        // 3.34.6 — Reminder semantik: notes är ephemeral, försvinner efter nästa session.
+        // Distinkt visuell signal för "from last session" + dagar-räkning så ephemeralness syns.
+        let reminderWhen = '';
+        if(lastNote && lastSession?.timestamp){
+          const d = Math.floor((Date.now() - lastSession.timestamp) / 86400000);
+          reminderWhen = d === 0 ? 'idag' : d === 1 ? '1d sen' : `${d}d sen`;
+        }
         const noteBanner = !isDone
           ? existingNote
-            ? `<div class="ex-note-banner" onclick="toggleNote('${ex.id}')" title="Tap to edit">📝 ${escapedNote}</div>`
+            ? `<div class="ex-note-banner" onclick="toggleNote('${ex.id}')" title="Tap to edit reminder">📝 ${escapedNote}</div>`
             : lastNote
-              ? `<div class="ex-note-banner" onclick="toggleNote('${ex.id}')" title="Tap to edit" style="opacity:.72;">📝 From last session: ${escapedLastNote}</div>`
-              : `<div class="ex-note-add" onclick="toggleNote('${ex.id}')">+ note</div>`
+              ? `<div class="ex-note-banner reminder-prev" onclick="toggleNote('${ex.id}')" title="Tap to edit (försvinner efter denna session om inte refreshad)">⏰ Reminder${reminderWhen?' från '+reminderWhen:''}: ${escapedLastNote}</div>`
+              : `<div class="ex-note-add" onclick="toggleNote('${ex.id}')">+ Reminder for next time</div>`
           : existingNote
             ? `<div class="ex-note-banner done-note">📝 ${escapedNote}</div>` : '';
         // V1 Collapse: kollapsa om denna inte är aktiv övning (funkar både med/utan draft)
@@ -5861,9 +5872,9 @@ function buildPassBodyHTML(pass,cycle,nextId){
         if(!isDone){
           html+=buildTagEditorHTML(ex, passId);
           html+=`<div id="notewrap-${ex.id}" style="display:none" class="ex-note-wrap">
-            <textarea class="ex-note-input" id="noteinput-${ex.id}" placeholder="Note for next time...">${escapedNote}</textarea>
+            <textarea class="ex-note-input" id="noteinput-${ex.id}" placeholder="Reminder for next time (e.g. 'för lätt vikt, gå upp')...">${escapedNote}</textarea>
             <div class="ex-note-actions">
-              <button class="ex-note-save" onclick="saveNote('${ex.id}')">Save Note</button>
+              <button class="ex-note-save" onclick="saveNote('${ex.id}')">Save Reminder</button>
               ${existingNote?`<button class="ex-note-clear" onclick="clearNote('${ex.id}')">Clear</button>`:''}
               <button class="ex-note-clear" onclick="toggleNote('${ex.id}')">Cancel</button>
             </div>
@@ -7226,22 +7237,32 @@ function saveNote(exId){
     state.deletions.exerciseNotes[exId] = Date.now();
   }
   save();
-  showToast(val?'Note saved':'Note cleared');
+  showToast(val?'Reminder saved':'Reminder cleared');
   const wrap=document.getElementById('notewrap-'+exId);
   if(wrap)wrap.style.display='none';
-  // Update banner without full rerender
+  // Update banner without full rerender (3.34.6: + cleanup av reminder-prev klass)
   const block=document.getElementById('exblock-'+exId);
   if(block){
     const existing=block.querySelector('.ex-note-banner');
+    const existingAdd=block.querySelector('.ex-note-add');
     if(existing)existing.remove();
+    if(existingAdd)existingAdd.remove();
     if(val){
       const banner=document.createElement('div');
       banner.className='ex-note-banner';
-      banner.title='Tap to edit';
+      banner.title='Tap to edit reminder';
       banner.onclick=()=>toggleNote(exId);
       banner.textContent='📝 '+val;
       const detail=block.querySelector('.ex-detail');
       if(detail)detail.after(banner);
+    } else {
+      // No value → render "+ Reminder for next time" add-button
+      const add=document.createElement('div');
+      add.className='ex-note-add';
+      add.onclick=()=>toggleNote(exId);
+      add.textContent='+ Reminder for next time';
+      const detail=block.querySelector('.ex-detail');
+      if(detail)detail.after(add);
     }
   }
 }
