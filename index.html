@@ -122,13 +122,13 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .chain-strip-outer::-webkit-scrollbar{display:none;}
 .chain-strip-inner{display:flex;align-items:center;min-width:max-content;padding-bottom:10px;gap:4px;}
 .chain-tab{display:flex;flex-direction:row;align-items:stretch;cursor:pointer;border:none;padding:0;flex-shrink:0;height:44px;background:none;clip-path:polygon(9px 0,calc(100% - 9px) 0,100% 50%,calc(100% - 9px) 100%,9px 100%,0 50%);transition:opacity .22s;}
-.chain-tab-letter{font-family:var(--mono);font-weight:700;color:var(--red);width:42px;display:flex;align-items:center;justify-content:center;font-size:1.32rem;flex-shrink:0;background:color-mix(in srgb,var(--red) 7%,transparent);border:none;transition:background .22s,color .22s,opacity .22s;opacity:.5;}
-.chain-tab.adjacent .chain-tab-letter{opacity:.82;background:color-mix(in srgb,var(--red) 18%,transparent);}
+.chain-tab-letter{font-family:var(--mono);font-weight:700;color:var(--red);width:42px;display:flex;align-items:center;justify-content:center;font-size:1.32rem;flex-shrink:0;background:color-mix(in srgb,var(--red) 16%,transparent);border:none;transition:background .22s,color .22s,opacity .22s;opacity:.82;}
+.chain-tab.adjacent .chain-tab-letter{opacity:.92;background:color-mix(in srgb,var(--red) 24%,transparent);}
 .chain-tab.active .chain-tab-letter{opacity:1;background:color-mix(in srgb,var(--red) 52%,transparent);}
 .chain-tab.rest-day .chain-tab-letter{color:color-mix(in srgb,var(--gold) 50%,#666);background:color-mix(in srgb,var(--gold) 6%,transparent);}
 .chain-tab.adjacent.rest-day .chain-tab-letter{color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent);}
 .chain-tab.active.rest-day .chain-tab-letter{color:var(--gold);background:color-mix(in srgb,var(--gold) 32%,transparent);}
-.chain-tab.done .chain-tab-letter{opacity:.22;background:color-mix(in srgb,var(--red) 4%,transparent);}
+.chain-tab.done .chain-tab-letter{opacity:.15;background:color-mix(in srgb,var(--red) 3%,transparent);filter:saturate(0.4);}
 .chain-tab.adjacent.done .chain-tab-name-short{opacity:.22;}
 .chain-tab-name-full,.chain-tab-name-short{font-family:var(--mono);font-weight:600;color:var(--white);max-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;opacity:0;letter-spacing:.05em;transition:max-width .25s ease-out,opacity .2s,padding .25s ease-out;padding:0;text-transform:uppercase;display:flex;align-items:center;background:color-mix(in srgb,var(--red) 18%,transparent);}
 .chain-tab-name-full{font-size:.6rem;}
@@ -178,6 +178,13 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .ex-label-col{flex:1;min-width:0;}
 .ex-name{font-size:.82rem;font-weight:500;}
 .ex-tag{display:inline-block;font-family:var(--mono);font-size:.46rem;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;border:1px solid #333;color:#555;margin-left:5px;vertical-align:middle;border-radius:2px;}
+/* 3.34.0 — Tags under name (alltid). Reset margin-left on tags inside .ex-tags-row. */
+.ex-tags-row{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 2px;}
+.ex-tags-row .ex-tag{margin:0;font-size:.5rem;padding:3px 8px;letter-spacing:.09em;}
+.ex-collapsed-name-col{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;}
+.ex-collapsed-name-col .ex-collapsed-name{flex:none;}
+.ex-collapsed-tags{display:flex;flex-wrap:wrap;gap:3px;}
+.ex-collapsed-tags .ex-tag{margin:0;font-size:.42rem;padding:1px 5px;letter-spacing:.07em;}
 .ex-tag.ramp{border-color:#6a4a00;background:#1a1000;color:#d4a030;}
 .ex-tag.singles{border-color:#4a2a2a;background:#140a0a;color:#c07060;}
 .ex-tag.bw{border-color:#1a3a1a;background:#0a140a;color:#5aaa5a;}
@@ -186,6 +193,15 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .ex-prev{font-family:var(--mono);font-size:.48rem;color:#555;margin-top:3px;line-height:1.5;}
 .ex-prev span{color:#777;}
 .ex-prev .last-val{color:#6a8a6a;font-style:italic;}
+/* 3.34.3 — History-expand under "Last (Xd ago)" — visa alla warmup+work sets från förra passet */
+.ex-prev-history-toggle{display:inline-block;cursor:pointer;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 0;margin-top:2px;user-select:none;transition:color .15s;}
+.ex-prev-history-toggle:hover{color:var(--white);}
+.ex-prev-history{display:none;margin-top:4px;padding:5px 0 5px 8px;border-left:1px dashed var(--border-subtle);}
+.ex-prev-history.open{display:block;}
+.ex-prev-history-set{font-family:var(--mono);font-size:.55rem;color:var(--gray-light);padding:1px 0;letter-spacing:.03em;}
+.ex-prev-history-set.warmup{color:#7a6850;opacity:.78;}
+.ex-prev-history-set .set-lbl{color:var(--red);font-weight:600;margin-right:4px;display:inline-block;min-width:18px;}
+.ex-prev-history-set.warmup .set-lbl{color:#8a7048;font-weight:500;}
 .ex-note-banner{font-family:var(--mono);font-size:.66rem;color:#c8a84a;background:rgba(180,140,40,0.1);border-left:2px solid #b8922a;padding:5px 10px;margin-top:5px;cursor:pointer;line-height:1.5;display:block;}
 .ex-note-banner:hover{border-left-color:var(--gold);}
 .ex-note-wrap{margin:4px 0;}
@@ -270,9 +286,11 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .add-ex-confirm{background:var(--red);border:none;color:var(--white);font-family:var(--mono);font-size:.52rem;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;cursor:pointer;}
 .rest-content{padding:10px 0 3px;font-family:var(--mono);font-size:.64rem;color:#484848;line-height:1.8;}
 .pass-actions{display:flex;gap:6px;margin-top:10px;}
-.btn-primary{flex:1;background:var(--red);border:none;color:var(--white);font-family:var(--display);font-size:.95rem;letter-spacing:.1em;padding:10px;cursor:pointer;transition:background .15s;}
-.btn-primary:hover{background:#a83226;}
-.btn-primary:disabled{background:#3a1a1a;color:#5a3a3a;cursor:not-allowed;}
+/* 3.34.1: btn-primary (Finish Session) — Iron default upgraded med gradient+glow,
+   matchar nu Obsidian/Cosmic's "cool" feel istället för flat röd. */
+.btn-primary{flex:1;background:linear-gradient(180deg,#d04535 0%,#8a2820 100%);border:1px solid #8a2820;color:var(--white);font-family:var(--display);font-size:.95rem;letter-spacing:.1em;padding:10px;cursor:pointer;transition:all .15s;text-shadow:0 1px 0 rgba(0,0,0,0.3);box-shadow:inset 0 1px 0 rgba(255,180,160,0.22),0 2px 8px rgba(192,57,43,0.3);}
+.btn-primary:hover{background:linear-gradient(180deg,#e0584a 0%,#9a3025 100%);box-shadow:inset 0 1px 0 rgba(255,200,180,0.32),0 0 16px rgba(192,57,43,0.55);transform:translateY(-1px);}
+.btn-primary:disabled{background:#3a1a1a;color:#5a3a3a;cursor:not-allowed;border-color:#2a1010;box-shadow:none;text-shadow:none;}
 .btn-secondary{background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.52rem;letter-spacing:.06em;padding:0 10px;cursor:pointer;text-transform:uppercase;transition:all .15s;}
 .btn-secondary:hover{border-color:#555;color:var(--gray-light);}
 .btn-ghost{flex:1;background:none;border:1px solid #3a3a3a;color:#888;font-family:var(--display);font-size:.95rem;letter-spacing:.1em;padding:10px;cursor:pointer;transition:all .15s;}
@@ -1862,10 +1880,10 @@ body.theme-void .auth-logo span{color:#aaa;}
 body.theme-void .auth-btn-primary{background:#fff;color:#000;}
 body.theme-void .auth-btn-primary:hover{background:#ddd;}
 body.theme-void .btn-primary:disabled{background:#1a1a1a;color:#444;}
-body.theme-void .chain-tab-letter{color:#555;background:rgba(255,255,255,0.04);}
-body.theme-void .chain-tab.adjacent .chain-tab-letter{color:#aaa;background:rgba(255,255,255,0.08);}
+body.theme-void .chain-tab-letter{color:#888;background:rgba(255,255,255,0.07);}
+body.theme-void .chain-tab.adjacent .chain-tab-letter{color:#bbb;background:rgba(255,255,255,0.12);}
 body.theme-void .chain-tab.active .chain-tab-letter{color:#000;background:rgba(255,255,255,0.88);}
-body.theme-void .chain-tab.done .chain-tab-letter{color:#333;background:rgba(255,255,255,0.02);}
+body.theme-void .chain-tab.done .chain-tab-letter{color:#2a2a2a;background:rgba(255,255,255,0.015);opacity:0.6;}
 body.theme-void .chain-tab-name-full{color:#fff;background:rgba(255,255,255,0.08);}
 body.theme-void .chain-tab.active .chain-tab-name-full{color:#000;background:rgba(255,255,255,0.88);}
 body.theme-void .chain-tab-name-short{color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.05);}
@@ -2621,15 +2639,21 @@ body.theme-daylight .chain-fill{
   background:linear-gradient(90deg,var(--red) 0%,#a02525 100%);
 }
 
+/* 3.34.1: Daylight btn-primary — solid + elevated shadow + clean hover lift */
 body.theme-daylight .btn-primary{
-  background:var(--red);
+  background:linear-gradient(180deg,var(--red) 0%,#a02525 100%);
   color:#ffffff;
   font-family:var(--display);
-  letter-spacing:.1em;
+  letter-spacing:.12em;
   border:none;
+  border-radius:6px;
+  box-shadow:0 2px 6px rgba(192,57,43,0.25),inset 0 1px 0 rgba(255,180,160,0.3);
+  transition:all .15s;
 }
 body.theme-daylight .btn-primary:hover{
-  background:#a02525;
+  background:linear-gradient(180deg,#d04535 0%,#a02525 100%);
+  box-shadow:0 4px 12px rgba(192,57,43,0.4),inset 0 1px 0 rgba(255,200,180,0.4);
+  transform:translateY(-1px);
 }
 
 body.theme-daylight .ex-btn-done{
@@ -3467,12 +3491,14 @@ body.theme-obsidian .chain-fill{background:linear-gradient(90deg,#c9a35a,#f0d99c
 
 /* Chain-strip — runda medaljer för icke-aktiv, rektangel med diamond-ends för aktiv (designens look) */
 body.theme-obsidian .chain-tab .chain-tab-letter{
+  /* 3.34.2: distant brighter (var #5a4a28 → #8a7340), Niklas: "oklara sessions tydligare" */
   width:36px; height:36px; border-radius:50%; clip-path:none !important;
-  border:1px solid #3a2e14; background:rgba(20,14,6,0.6);
-  color:#5a4a28; font-family:'Cinzel',serif; font-weight:600;
+  border:1px solid #4a3a18; background:rgba(30,22,10,0.7);
+  color:#8a7340; font-family:'Cinzel',serif; font-weight:600;
+  opacity:1;
 }
-body.theme-obsidian .chain-tab.adjacent .chain-tab-letter{color:#c9a35a;background:rgba(40,28,12,0.65);border-color:#4a3a18;}
-body.theme-obsidian .chain-tab.done .chain-tab-letter{color:#3a2e14;background:rgba(15,10,4,0.4);border-color:#1a140a;}
+body.theme-obsidian .chain-tab.adjacent .chain-tab-letter{color:#e0c078;background:rgba(60,42,18,0.75);border-color:#6a5028;}
+body.theme-obsidian .chain-tab.done .chain-tab-letter{color:#2a2010;background:rgba(15,10,4,0.4);border-color:#1a140a;opacity:0.5;filter:saturate(0.3);}
 body.theme-obsidian .chain-tab-name-full{font-family:'Cinzel',serif;color:#d4b878;background:rgba(40,28,12,0.5);letter-spacing:.2em;font-weight:600;}
 body.theme-obsidian .chain-tab-name-short{color:#7a6a48;background:rgba(40,28,12,0.4);font-family:'Cinzel',serif;font-weight:600;}
 /* Aktiv: ersätt hexagon-clip med rounded rektangel + diamonds på sidorna */
@@ -3749,10 +3775,10 @@ body.theme-cosmic-horror{
 #cosmicHorrorVeins{
   position:absolute; top:0;
   left:50%; transform:translateX(-50%);
-  width:100%; max-width:800px;
+  width:100%; max-width:720px; /* 3.34.2: 800 → 720, närmare content-area på desktop */
   pointer-events:none; z-index:0;
   display:none;
-  opacity:0.85;
+  opacity:0.55; /* 3.33.5: down from 0.85 — Niklas: "veins tar över" */
 }
 body.theme-cosmic-horror #cosmicHorrorVeins{display:block;}
 .ch-pulse{
@@ -3760,6 +3786,7 @@ body.theme-cosmic-horror #cosmicHorrorVeins{display:block;}
   animation-timing-function:linear;
   animation-iteration-count:infinite;
 }
+.ch-pulse-reverse{animation-direction:reverse;}
 @keyframes chPulseFlow{from{stroke-dashoffset:0;}to{stroke-dashoffset:-1;}}
 /* Subtle noise + vignette */
 body.theme-cosmic-horror::before{
@@ -3818,15 +3845,17 @@ body.theme-cosmic-horror .chain-fill{background:linear-gradient(90deg,#7fc8b4,#a
 
 /* Chain-strip — organiska asymmetriska blobs (skriver över hexagon) */
 body.theme-cosmic-horror .chain-tab .chain-tab-letter{
+  /* distant = upcoming/not yet — brighter post-3.33.4 so passes "tänds upp" after chain restart */
   width:38px; height:38px; clip-path:none !important;
-  border:1px solid rgba(127,200,180,0.22);
-  background:rgba(8,18,22,0.55);
-  color:#4f6a64; font-family:'Cormorant SC',serif; font-size:.9rem; font-weight:500;
+  border:1px solid rgba(127,200,180,0.32);
+  background:rgba(20,40,38,0.55);
+  color:#8aacaa; font-family:'Cormorant SC',serif; font-size:.9rem; font-weight:500;
   border-radius:50% 38% 60% 42% / 42% 60% 38% 58%;
+  opacity:1;
 }
 body.theme-cosmic-horror .chain-tab:nth-child(odd) .chain-tab-letter{border-radius:60% 40% 38% 62% / 38% 58% 42% 60%;}
-body.theme-cosmic-horror .chain-tab.adjacent .chain-tab-letter{color:#aedcd0;background:rgba(20,40,38,0.6);border-color:rgba(127,200,180,0.4);}
-body.theme-cosmic-horror .chain-tab.done .chain-tab-letter{color:#2a4a44;background:rgba(8,18,22,0.3);border-color:rgba(127,200,180,0.08);}
+body.theme-cosmic-horror .chain-tab.adjacent .chain-tab-letter{color:#cce8de;background:rgba(40,80,72,0.65);border-color:rgba(127,200,180,0.55);}
+body.theme-cosmic-horror .chain-tab.done .chain-tab-letter{color:#1a3a34;background:rgba(6,12,14,0.45);border-color:rgba(127,200,180,0.05);opacity:0.5;filter:saturate(0.3);}
 body.theme-cosmic-horror .chain-tab-name-full{font-family:'Cormorant SC',serif;color:#aedcd0;background:rgba(20,50,46,0.5);letter-spacing:.2em;font-weight:500;}
 body.theme-cosmic-horror .chain-tab.active{
   clip-path:none !important;
@@ -3994,34 +4023,121 @@ body.theme-cosmic-horror .app-modal-select{background:#0a1818 !important;color:#
 body.theme-cosmic-horror select option,
 body.theme-cosmic-horror .swap-select option{background:#0a1818;color:#e8f7f0;}
 
-/* ── SET LOG BUTTON ──────────────────────────────────────────*/
+/* ── SET LOG BUTTON (3.34.1: themed per tema, matchar Obsidian/Cosmic-feeling) ─*/
+/* Default = Iron — 3.34.2: dunkel blodröd istället för flashig bright red.
+   Niklas: "Iron ska vara lite mörk och inte så flashigt." */
 .set-log-btn{
-  background:none;
-  border:1px solid #2a3a2a;
-  color:var(--green-bright);
+  background:linear-gradient(180deg,#6a1a14 0%,#3a0a08 100%);
+  border:1px solid #5a1410;
+  color:#d4a098;
   cursor:pointer;
-  font-family:var(--mono);
-  font-size:.7rem;
-  letter-spacing:.05em;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:.78rem; letter-spacing:.12em;
   text-transform:uppercase;
-  cursor:default;
-  padding:5px 0;
+  padding:6px 0;
   width:36px;
   box-sizing:border-box;
-  transition:border-color .15s,color .15s,background .15s;
+  text-shadow:0 1px 0 rgba(0,0,0,0.6);
+  box-shadow:inset 0 1px 0 rgba(180,100,90,0.18),inset 0 -1px 0 rgba(0,0,0,0.4),0 1px 2px rgba(0,0,0,0.5);
   display:block;
   text-align:center;
+  transition:all .15s;
 }
-/* has-value: no change needed since base is already green */
-.set-log-btn.has-value:hover{
-  background:rgba(58,154,90,0.1);
-  border-color:var(--green-bright);
+.set-log-btn:hover{background:linear-gradient(180deg,#7a221a 0%,#4a1010 100%);color:#e8b0a4;box-shadow:inset 0 1px 0 rgba(200,120,100,0.25),inset 0 -1px 0 rgba(0,0,0,0.4),0 0 6px rgba(120,30,20,0.4);}
+.set-log-btn.has-value{background:linear-gradient(180deg,#8a2820 0%,#4a0e08 100%);color:#f0b8aa;}
+.set-log-btn.has-value:hover{background:linear-gradient(180deg,#9a3026 0%,#5a1410 100%);color:#f8c8b8;box-shadow:inset 0 1px 0 rgba(220,140,120,0.3),0 0 10px rgba(140,40,30,0.5);}
+
+/* Nanosuit — octagonal cyan HUD button med inner glow */
+body.theme-nanosuit .set-log-btn{
+  background:linear-gradient(180deg,#00d4ff 0%,#0088b8 100%);
+  border:1px solid #00fff0; color:#050810;
+  font-family:'Orbitron',sans-serif; font-weight:900; letter-spacing:.14em;
+  clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 50%,calc(100% - 6px) 100%,6px 100%,0 50%);
+  text-shadow:0 1px 0 rgba(255,255,255,0.3);
+  box-shadow:inset 0 1px 0 rgba(180,240,255,0.5),0 0 8px rgba(0,212,255,0.35);
 }
-/* Theme overrides */
-body.theme-daylight .set-log-btn{border-color:#d8d4cc;color:#ccc;}
-body.theme-daylight .set-log-btn.has-value{border-color:#b0d4b0;color:var(--green-bright);}
-body.theme-ember .set-log-btn{border-color:#2a2a2a;color:#444;}
-body.theme-ember .set-log-btn.has-value{border-color:#5a7a2a;color:#a0cc40;}
+body.theme-nanosuit .set-log-btn:hover{box-shadow:inset 0 1px 0 rgba(220,250,255,0.6),0 0 18px rgba(0,255,240,0.7);}
+body.theme-nanosuit .set-log-btn.has-value{background:linear-gradient(180deg,#00fff0 0%,#00a8cc 100%);}
+
+/* Night City — parallelogram acid yellow med chromatic edge */
+body.theme-nightcity .set-log-btn{
+  background:linear-gradient(135deg,#ffe600 0%,#e6cf00 100%);
+  border:none; color:#08010f;
+  font-family:'Orbitron',sans-serif; font-weight:900; letter-spacing:.16em;
+  clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);
+  text-shadow:0 1px 0 rgba(255,255,255,0.4);
+  box-shadow:-1px 0 0 rgba(255,45,120,0.6),1px 0 0 rgba(0,255,240,0.5),0 0 12px rgba(255,230,0,0.4);
+}
+body.theme-nightcity .set-log-btn:hover{background:linear-gradient(135deg,#fff800 0%,#ffe600 100%);box-shadow:-2px 0 0 rgba(255,45,120,0.8),2px 0 0 rgba(0,255,240,0.7),0 0 24px rgba(255,230,0,0.7);}
+body.theme-nightcity .set-log-btn.has-value{background:linear-gradient(135deg,#fff080 0%,#ffe600 100%);}
+
+/* Ember — glowing molten orange furnace switch med heat-pulse */
+body.theme-ember .set-log-btn{
+  background:linear-gradient(180deg,#ff8c1a 0%,#cc3300 100%);
+  border:none; color:#0c0600;
+  font-family:'Rajdhani',sans-serif; font-weight:900; letter-spacing:.14em;
+  text-shadow:0 1px 0 rgba(255,255,255,0.25);
+  box-shadow:inset 0 1px 0 rgba(255,200,100,0.4),0 0 8px rgba(255,106,0,0.4);
+  animation:embLogBreath 3.6s ease-in-out infinite;
+}
+@keyframes embLogBreath{
+  0%,100%{box-shadow:inset 0 1px 0 rgba(255,200,100,0.4),0 0 8px rgba(255,106,0,0.35);}
+  50%    {box-shadow:inset 0 1px 0 rgba(255,220,120,0.5),0 0 18px rgba(255,140,30,0.6);}
+}
+body.theme-ember .set-log-btn:hover{background:linear-gradient(180deg,#ffaa40 0%,#ff5500 100%);}
+body.theme-ember .set-log-btn.has-value{background:linear-gradient(180deg,#ffaa40 0%,#ff5500 100%);box-shadow:inset 0 1px 0 rgba(255,220,140,0.5),0 0 22px rgba(255,140,30,0.7);}
+
+/* Void — pure white italic pill, Playfair, minimal */
+body.theme-void .set-log-btn{
+  background:#fff; border:none; color:#000;
+  font-family:'Playfair Display',serif; font-style:italic; font-weight:700;
+  font-size:.72rem; letter-spacing:.04em; text-transform:none;
+  border-radius:18px;
+  box-shadow:0 1px 0 rgba(255,255,255,0.5),0 1px 4px rgba(0,0,0,0.3);
+}
+body.theme-void .set-log-btn:hover{background:#ddd;}
+body.theme-void .set-log-btn.has-value{background:#fff;box-shadow:0 0 8px rgba(255,255,255,0.5);}
+
+/* Arctic — frosted glass pill med cyan accent */
+body.theme-arctic .set-log-btn{
+  background:linear-gradient(180deg,rgba(0,200,232,0.92) 0%,rgba(0,136,184,0.88) 100%);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,0.4); color:#fff;
+  font-family:'Rajdhani',sans-serif; font-weight:700; letter-spacing:.12em;
+  border-radius:14px;
+  text-shadow:0 1px 0 rgba(0,80,120,0.4);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),0 2px 10px rgba(0,168,216,0.35);
+}
+body.theme-arctic .set-log-btn:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,0.6),0 4px 16px rgba(0,168,216,0.55);}
+body.theme-arctic .set-log-btn.has-value{background:linear-gradient(180deg,rgba(0,224,255,0.95) 0%,rgba(0,160,200,0.92) 100%);}
+
+/* Daylight — clean solid red pill, Bebas Neue, modern */
+body.theme-daylight .set-log-btn{
+  background:var(--red); border:none; color:#fff;
+  font-family:'Bebas Neue',sans-serif; letter-spacing:.14em;
+  border-radius:14px;
+  text-shadow:0 1px 0 rgba(0,0,0,0.2);
+  box-shadow:0 1px 3px rgba(192,57,43,0.4);
+}
+body.theme-daylight .set-log-btn:hover{background:#d04535;box-shadow:0 2px 8px rgba(192,57,43,0.5);}
+body.theme-daylight .set-log-btn.has-value{background:#a02525;}
+
+/* Crusader — forged stamped metal med rust edge + red glow */
+body.theme-crusader .set-log-btn{
+  background:linear-gradient(180deg,#a82828 0%,#5a1010 100%);
+  border:1px solid #6a1a14;
+  border-top-color:#c83838; border-bottom-color:#3a0808;
+  color:#f5eed8;
+  font-family:'Cinzel',serif; font-weight:700; letter-spacing:.14em; font-size:.66rem;
+  text-shadow:0 1px 0 rgba(0,0,0,0.5),0 0 6px rgba(255,180,100,0.3);
+  box-shadow:
+    inset 0 1px 0 rgba(255,200,160,0.25),
+    inset 0 -1px 0 rgba(0,0,0,0.5),
+    0 1px 0 rgba(168,40,40,0.4),
+    0 2px 4px rgba(0,0,0,0.6);
+}
+body.theme-crusader .set-log-btn:hover{background:linear-gradient(180deg,#c83838 0%,#7a1818 100%);box-shadow:inset 0 1px 0 rgba(255,200,160,0.35),inset 0 -1px 0 rgba(0,0,0,0.5),0 0 12px rgba(232,64,64,0.5),0 2px 6px rgba(0,0,0,0.7);}
+body.theme-crusader .set-log-btn.has-value{background:linear-gradient(180deg,#c83838 0%,#7a1818 100%);}
 
 /* ── SET LOGGED STATE ────────────────────────────────────────*/
 .set-logged{opacity:.5;}
@@ -4752,7 +4868,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.33.3';
+const APP_VERSION = '3.34.3';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4761,7 +4877,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.33.3',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.34.3',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -5644,7 +5760,25 @@ function buildPassBodyHTML(pass,cycle,nextId){
           }
           const daysAgo=Math.floor((Date.now()-lastSession.timestamp)/86400000);
           const whenStr=daysAgo===0?'today':daysAgo===1?'1d ago':`${daysAgo}d ago`;
-          prevText=`<div class="ex-prev"><span class="last-val">Last (${whenStr}): ${lastStr}</span></div>`;
+          // 3.34.3 — History-expand: visa alla warmup+work sets från förra passet, kollapsat default.
+          const allSets = lastSession.allSets || lastSession.sets || [];
+          let historyHTML = '';
+          if(allSets.length > 1){
+            let wCnt=0, sCnt=0;
+            const rows = allSets.map(s => {
+              const wu = !!s.warmup;
+              const lbl = wu ? ('W'+(++wCnt)) : ('S'+(++sCnt));
+              let valStr='';
+              if(isTimed) valStr = `${s.secs||'?'}s`;
+              else if(isBW) valStr = `BW + ${toDisplay(s.extra)||0}${unitLabel()} ×${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}`;
+              else valStr = `${toDisplay(s.weight)||'—'}${unitLabel()} ×${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}`;
+              return `<div class="ex-prev-history-set ${wu?'warmup':'work'}"><span class="set-lbl">${lbl}</span>${valStr}</div>`;
+            }).join('');
+            const isOpen = !!_showHistory[ex.id];
+            const togLabel = (isOpen?'▴':'▾') + ' History (' + allSets.length + ')';
+            historyHTML = `<div class="ex-prev-history-toggle" id="histtog-${ex.id}" data-count="${allSets.length}" onclick="toggleHistory('${ex.id}')">${togLabel}</div><div class="ex-prev-history${isOpen?' open':''}" id="hist-${ex.id}">${rows}</div>`;
+          }
+          prevText=`<div class="ex-prev"><span class="last-val">Last (${whenStr}): ${lastStr}</span>${historyHTML}</div>`;
         }
 
         const existingNote = state.exerciseNotes?.[ex.id]||'';
@@ -5689,8 +5823,11 @@ function buildPassBodyHTML(pass,cycle,nextId){
         const _collapseAttr = isDone ? '' : ` onclick="setActiveExercise('${passId}','${ex.id}')"`;
         // Chevron som expand-affordans på vänster kant (utelämnas för done-rader som är read-only)
         const _chevron = isDone ? '' : '<span class="ex-collapsed-chevron">▼</span>';
-        html+=`<div class="ex-collapsed-summary"${_collapseAttr}>${_chevron}<div class="ex-collapsed-name">${escapeHTML(customName)}${tags}</div><div class="ex-collapsed-status">${collapsedStatus}</div></div>`;
-        html+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(customName)}${tags}</div><div class="ex-detail">${ex.detail}</div>${prevText}${noteBanner}</div><div class="ex-action-col">`;
+        // 3.34.0 — Tags ALLTID under namnet (Niklas request). Egna rader för collapsed + expanded.
+        const tagsRow = tags ? `<div class="ex-tags-row">${tags}</div>` : '';
+        const tagsCollapsed = tags ? `<div class="ex-collapsed-tags">${tags}</div>` : '';
+        html+=`<div class="ex-collapsed-summary"${_collapseAttr}>${_chevron}<div class="ex-collapsed-name-col"><div class="ex-collapsed-name">${escapeHTML(customName)}</div>${tagsCollapsed}</div><div class="ex-collapsed-status">${collapsedStatus}</div></div>`;
+        html+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(customName)}</div>${tagsRow}<div class="ex-detail">${ex.detail}</div>${prevText}${noteBanner}</div><div class="ex-action-col">`;
 
         if(!isDone&&!isSkipped){
           html+=`<div class="ex-mini-btns">`;
@@ -5763,15 +5900,8 @@ function buildPassBodyHTML(pass,cycle,nextId){
         if(!isSkipped){
           // ── SET RENDERING ─────────────────────────────────────────
           // Model: extraSets array stores all sets (including work + warmup)
-          // Each: {warmup:bool}. Default depends on exercise type.
-          // Ramp: 3 work sets (no warmup — ramping IS the warmup)
-          // BW (dead hang etc): 1 work set, no default warmup
-          // Normal: 2 warmup + 1 work
-          const defaultSets = isRampEx
-            ? [{warmup:false},{warmup:false},{warmup:false}]
-            : ex.bw
-              ? [{warmup:false}]
-              : [{warmup:true},{warmup:true},{warmup:false}];
+          // Each: {warmup:bool}. Default driven by primary tag (TAG_DEFAULTS, 3.34.0).
+          const defaultSets = getDefaultSets(ex);
           const rawSets = (draftExtraSets[ex.id] !== undefined && draftExtraSets[ex.id].length > 0)
             ? draftExtraSets[ex.id]
             : defaultSets;
@@ -7054,11 +7184,19 @@ function toggleExTag(exId, passId, tagKey){
   const baseVal=!!ex?.[tagKey];
   const curOvr=state.exerciseTagOverrides[exId][tagKey];
   const curVal=curOvr!==undefined?curOvr:baseVal;
+  // 3.34.0 — Auto-apply tag-defaults om primary tag ÄNDRAS och övningen är fresh.
+  const primaryBefore = ex ? getPrimaryTag(ex) : null;
   // Toggle
   state.exerciseTagOverrides[exId][tagKey]=!curVal;
-  // If toggling ramp, also reset extraSets so set structure updates
-  if(tagKey==='ramp'&&state.draft?.extraSets?.[exId]){
-    delete state.draft.extraSets[exId];
+  const primaryAfter = ex ? getPrimaryTag(ex) : null;
+  if(primaryAfter !== primaryBefore && ex){
+    const hasLogged = !!state.draft?.loggedSets?.[exId] && Object.keys(state.draft.loggedSets[exId]).length > 0;
+    const hasSaved  = !!state.draft?.savedExercises?.[exId];
+    // Fresh övning → reset extraSets så nya defaults appliceras vid rerender.
+    // Logged/saved → behåll struktur, användaren får +/− set manuellt.
+    if(!hasLogged && !hasSaved && state.draft?.extraSets){
+      delete state.draft.extraSets[exId];
+    }
   }
   save();
   rerenderSession(passId);
@@ -7364,22 +7502,37 @@ function finishSession(passId){
 }
 
 // ── SET MANAGEMENT ────────────────────────────────────────────
+// 3.34.0 — Tag-driven set defaults. First active tag (in TAG_ORDER) wins.
+// Niklas: "Standard är ju HIT. 2 warm + 1 work." Övriga tags overridar.
+const TAG_DEFAULTS = {
+  ramp:    { warmup: 0, work: 4 },  // Ramping up = ingen separat warmup, 4 set
+  bw:      { warmup: 0, work: 3 },  // Bodyweight = hopp direkt in
+  uni:     { warmup: 2, work: 1 },  // Unilateral = långsam aktivering, 1 set/sida
+  timed:   { warmup: 0, work: 1 },  // Dead hang etc = 1 set till failure
+  singles: { warmup: 1, work: 5 },  // Heavy singles = minimal warmup, pyramid
+  _none:   { warmup: 2, work: 1 },  // HIT default — Niklas: "standard är HIT"
+};
+const TAG_ORDER = ['ramp','bw','uni','timed','singles'];
+function getPrimaryTag(ex){
+  if(!ex) return null;
+  const ovr = state.exerciseTagOverrides?.[ex.id] || {};
+  for(const key of TAG_ORDER){
+    const active = ovr[key]!==undefined ? ovr[key] : !!ex[key];
+    if(active) return key;
+  }
+  return null;
+}
+function getTagDefaults(ex){
+  return TAG_DEFAULTS[getPrimaryTag(ex) || '_none'];
+}
 function getDefaultSets(ex){
-  const ovr=state.exerciseTagOverrides?.[ex.id];
-  const r=ovr?!!ovr.ramp:!!ex.ramp;
-  const b=ovr?!!ovr.bw:!!ex.bw;
+  const def = getTagDefaults(ex);
   // Carry forward work-set count from last completed session (cap 8 for sanity)
-  const lastWork=Math.min(state.lastSessionSetCount?.[ex.id]||0,8);
-  if(r){
-    const n=lastWork||3;
-    return Array.from({length:n},()=>({warmup:false}));
-  }
-  if(b){
-    const n=lastWork||1;
-    return Array.from({length:n},()=>({warmup:false}));
-  }
-  const n=lastWork||1;
-  return [{warmup:true},{warmup:true},...Array.from({length:n},()=>({warmup:false}))];
+  const lastWork = Math.min(state.lastSessionSetCount?.[ex.id]||0, 8);
+  const workCount = lastWork || def.work;
+  const warmupSets = Array.from({length: def.warmup}, () => ({warmup: true}));
+  const workSets = Array.from({length: workCount}, () => ({warmup: false}));
+  return [...warmupSets, ...workSets];
 }
 function ensureExtraSets(exId, passId){
   ensureDraft(passId);
@@ -7801,7 +7954,8 @@ function getLastSession(exId, swappedName){
     if(!ex) continue;
     const workSets = getWorkSets(ex);
     if(workSets.length>0)
-      return {sets:workSets, passName:entry.passName, timestamp:entry.timestamp};
+      // 3.34.3: allSets (inkl warmups) för history-display under "Last"-raden
+      return {sets:workSets, allSets:(ex.sets||[]), passName:entry.passName, timestamp:entry.timestamp};
   }
   // 2) Search state.cycles done snapshots (in-progress data not yet in log)
   // Walk cycles backwards (most recent last)
@@ -7818,11 +7972,24 @@ function getLastSession(exId, swappedName){
       const workSets = getWorkSets(ex);
       if(workSets.length>0){
         // Use cycle.id as timestamp proxy (cycle.id = Date.now() when created)
-        return {sets:workSets, passName:'', timestamp: cycle.id || Date.now()};
+        return {sets:workSets, allSets:(ex.sets||[]), passName:'', timestamp: cycle.id || Date.now()};
       }
     }
   }
   return null;
+}
+// 3.34.3 — Module-level state för history-expand-toggle. In-memory only (överlever
+// rerenderSession men inte page-reload). Per Niklas: default kollapsat, kom ihåg per session.
+const _showHistory = {};
+function toggleHistory(exId){
+  _showHistory[exId] = !_showHistory[exId];
+  const el = document.getElementById('hist-'+exId);
+  if(el) el.classList.toggle('open', _showHistory[exId]);
+  const tog = document.getElementById('histtog-'+exId);
+  if(tog){
+    const cnt = tog.dataset.count || '';
+    tog.innerHTML = (_showHistory[exId] ? '▴' : '▾') + ' History' + (cnt?` (${cnt})`:'');
+  }
 }
 function getAllPRs(){
   const prs={};
@@ -8096,9 +8263,14 @@ function _chGenerateVein(startX, startY, baseAngle, seed){
 function _chRenderVeins(){
   const svg = document.getElementById('cosmicHorrorVeins');
   if(!svg) return;
-  // 3.33.2: SVG-bredd capad till 800px på desktop (CSS max-width). JS-w matchar för viewBox-konsekvens.
-  const w = Math.min(window.innerWidth, 800);
-  const h = Math.max(window.innerHeight, document.documentElement.scrollHeight || 0, document.body.scrollHeight || 0);
+  // 3.34.2: width 800 → 720 (närmare content-area så veiner ej "långt på kanterna" desktop)
+  const w = Math.min(window.innerWidth, 720);
+  // 3.34.2: Använd appShell höjd istället av body/html scrollHeight.
+  // body/html scrollHeight INKLUDERAR absolute SVG (current vein-höjd) → feedback-loop där
+  // SVG aldrig krymper efter att content krympt (gammal vein-höjd höll sidan utsträckt).
+  // Niklas: "Man fick scrolla väldigt långt för att nå botten."
+  const appH = document.getElementById('appShell')?.scrollHeight || 0;
+  const h = Math.max(window.innerHeight, appH);
   // ViewBox = verklig pixel-area. Vein-walker producerar paths ~216px långa (18 segments × ~12px)
   // så för att täcka hela page-höjden behöver vi flera vein-system fördelade vertikalt.
   // 3.33.1: dynamic count baserat på h (1 cluster-par per ~1500px) — fixar buggen där veiner
@@ -8136,22 +8308,29 @@ function _chRenderVeins(){
   let svgInner = '<g fill="none" stroke-linecap="round" stroke-linejoin="round">';
   for(const p of all){
     const sw = 0.35 + p.depth * 0.4;
-    const op = 0.3 + p.depth * 0.15;
+    // 3.33.5: lower opacity — depth 0=0.22, depth 3=0.52 (down from 0.3-0.75)
+    const op = 0.22 + p.depth * 0.10;
     svgInner += `<path d="${p.d}" stroke="#3a6a60" stroke-width="${sw}" opacity="${op}" />`;
   }
   svgInner += '</g>';
   // Traveling pulses — corners + mid-clusters
-  svgInner += '<g fill="none" stroke="#aee8d8" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 5px #7fc8b4)">';
+  // 3.33.5: randomized duration (4-7s) + delay (-4 to 0s) + direction per pulse
+  // 3.34.2: drop-shadow blur 3 → 2px + stroke-opacity 0.75 — mindre dominanta vs dim base.
+  svgInner += '<g fill="none" stroke="#aee8d8" stroke-opacity="0.75" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 2px #7fc8b4)">';
+  const rndPulse = () => {
+    const dur = (4 + Math.random() * 3).toFixed(1);     // 4.0–7.0s
+    const delay = (-Math.random() * 4).toFixed(1);       // -4.0–0.0s
+    const reverse = Math.random() < 0.5 ? ' ch-pulse-reverse' : '';
+    return `class="ch-pulse${reverse}" style="animation-duration:${dur}s;animation-delay:${delay}s"`;
+  };
   if(trunkTR){
-    svgInner += `<path d="${trunkTR.d}" stroke-width="1.8" pathLength="1" stroke-dasharray="0.04 1" class="ch-pulse" style="animation-duration:2.6s" />`;
+    svgInner += `<path d="${trunkTR.d}" stroke-width="1.8" pathLength="1" stroke-dasharray="0.04 1" ${rndPulse()} />`;
   }
   if(trunkBL){
-    svgInner += `<path d="${trunkBL.d}" stroke-width="1.8" pathLength="1" stroke-dasharray="0.04 1" class="ch-pulse" style="animation-duration:2.8s;animation-delay:-1s" />`;
+    svgInner += `<path d="${trunkBL.d}" stroke-width="1.8" pathLength="1" stroke-dasharray="0.04 1" ${rndPulse()} />`;
   }
-  pulseTrunks.forEach((trunk, idx) => {
-    const dur = (2.6 + (idx * 0.4)).toFixed(1);
-    const delay = (-0.5 * (idx + 1)).toFixed(1);
-    svgInner += `<path d="${trunk.d}" stroke-width="1.5" pathLength="1" stroke-dasharray="0.04 1" class="ch-pulse" style="animation-duration:${dur}s;animation-delay:${delay}s" />`;
+  pulseTrunks.forEach((trunk) => {
+    svgInner += `<path d="${trunk.d}" stroke-width="1.5" pathLength="1" stroke-dasharray="0.04 1" ${rndPulse()} />`;
   });
   svgInner += '</g>';
   svg.innerHTML = svgInner;
@@ -8165,8 +8344,10 @@ function startCosmicHorrorVeins(){
   _chResizeHandler = () => { _chRenderVeins(); };
   window.addEventListener('resize', _chResizeHandler);
   // Periodisk re-mätning för content-tillväxt (samma pattern som Obsidian-embers)
+  // 3.34.2: appShell-höjd istället för body/html scrollHeight (samma fix som _chRenderVeins).
   _chScrollHTimer = setInterval(() => {
-    const currentH = Math.max(window.innerHeight, document.documentElement.scrollHeight || 0, document.body.scrollHeight || 0);
+    const appH = document.getElementById('appShell')?.scrollHeight || 0;
+    const currentH = Math.max(window.innerHeight, appH);
     const svgH = parseInt(svg.style.height) || 0;
     if(Math.abs(currentH - svgH) > 50) _chRenderVeins();
   }, 1500);

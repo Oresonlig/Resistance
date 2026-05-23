@@ -6,6 +6,103 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.34.3 — 2026-05-23
+**Förra passets full historik under "Last (Xd ago)" — expand-on-tap (FEATURE).**
+
+Niklas: "Nu finns det utrymme (efter att det blev kollapsade övningar) att lägga in samtliga warmup och workout set från förra veckans övning. Som det är nu är det bara senaste workout."
+
+- **`getLastSession()` returnerar nu `allSets`** (alla sets inkl. warmups) tillsammans med befintliga `sets` (bara work sets). Backward compatible — `sets` används fortfarande av PR-beräkningar.
+- **History-block under "Last"-raden:** Klick på `▾ History (N)` expanderar lista över alla sets från senaste session, formatterade per set-typ:
+  - W1, W2 — warmups (faded color)
+  - S1, S2, S3 — work sets (accent color)
+  - Format per typ: TIMED `"42s"`, BW+ `"BW + 5kg ×8r +1f"`, default `"50kg ×5r +1f"`
+- **State:** In-memory `_showHistory[exId]` overlever `rerenderSession()` men inte page-reload. Per Niklas: "default kollapsat, kom ihåg per session."
+- **Render-villkor:** Visas endast om `allSets.length > 1` (single-set övningar = ingen mening med expand).
+- **CSS:** Använder `var(--border-subtle)` + `var(--gray-light)` så alla teman ärver semantik. Warmup-rows dimmer (color `#7a6850`, opacity 0.78).
+
+---
+
+## 3.34.2 — 2026-05-23
+**Iron Log dunkel + Cosmic veins desktop-feedback-loop + chain-tab clarity.**
+
+Feedback från Niklas efter morgontest av 3.34.1:
+
+- **Iron Log:** Var "för skarp och flashig", Iron ska vara "mörk och inte så flashigt". Dunkel blodröd istället: gradient `#6a1a14 → #3a0a08` (was `#c0392b → #7a1f15`), color `#d4a098` (faded brick-pink, was `#fff`), inset highlight dämpat, drop-shadow borttaget. Hover och has-value lyser upp gradvis utan att bli flashy.
+- **Cosmic Horror veins desktop:**
+  - **Feedback-loop fix:** `body.scrollHeight`/`html.scrollHeight` inkluderar absolut SVG, så SVG-höjden växte med page-höjden cirkulärt. När content krympte stannade SVG kvar på gamla höjden → "Man fick scrolla väldigt långt för att nå botten." Byt till `document.getElementById('appShell').scrollHeight` (content-only, excluderar SVG). SVG krymper nu när content krymper.
+  - **Width cap 800 → 720px** (CSS + JS), närmare content-area. Veins är inte "långt på kanterna" på desktop.
+  - **Pulse dampening:** drop-shadow blur `3 → 2px`, stroke-opacity `0.75`. Pulser dominerar mindre vs dim base-veins.
+- **Chain-tab clarity bump:** Niklas: "oklara sessions kanske ska vara något mer tydligare på samtliga teman."
+  - Default distant: opacity `.7 → .82`, bg red-mix `11% → 16%`. Påverkar Iron, Nanosuit, Night City, Ember, Daylight, Crusader (alla som ärver default).
+  - Default adjacent: opacity `.82 → .92`, bg red-mix `18% → 24%`.
+  - **Obsidian:** distant color `#5a4a28 → #8a7340` (brighter dim gold), bg alpha `.6 → .7`. Adjacent `#c9a35a → #e0c078`, bg `.65 → .75`. Done: opacity 0.5 + saturate(0.3) tillagt så done verkligen ser avklarat ut.
+
+---
+
+## 3.34.1 — 2026-05-23
+**Themed Log-knappar för alla 8 gamla teman + Finish Session-polish.**
+
+Niklas: "Alla nya teman (Obsidian & Cosmic) har coola nya Log-knappar och finish session mm. De gamla teman har inte det." Designat distinkta Log-knappar för varje tema:
+
+- **Iron (default):** Solid red metal stamp med gradient `#c0392b → #7a1f15`, Bebas Neue, inset highlight + outer red glow. Has-value bumpar saturation. Hover lyfter med stronger glow.
+- **Nanosuit:** Octagonal HUD-knapp via `clip-path:polygon(...)`, cyan gradient `#00d4ff → #0088b8`, Orbitron 900. Has-value lyser upp till `#00fff0` bright cyan.
+- **Night City:** Parallelogram acid yellow `#ffe600`, chromatic-aberration edges (-1px magenta, +1px cyan), neon glow. Hover bumpar offsets till -2/+2.
+- **Ember:** Molten orange `#ff8c1a → #cc3300` med `embLogBreath` 3.6s pulse-animation (heat-glow breath). Has-value glödar `0 0 22px` orange.
+- **Void:** Pure white `#fff` italic pill (border-radius 18px), Playfair Display 700 italic, ingen text-transform. Minimal som hela temat kräver.
+- **Arctic:** Frosted glass pill med `backdrop-filter:blur(6px)`, cyan gradient, white inner highlight, soft cyan box-shadow.
+- **Daylight:** Clean solid red pill (border-radius 14px), Bebas Neue, soft drop-shadow `0 1px 3px rgba(192,57,43,0.4)`. Modern matchar paper-aesthetic.
+- **Crusader:** Forged stamped metal — red gradient `#a82828 → #5a1010`, dual-tone border (`#c83838` top / `#3a0808` bottom), Cinzel 700. Heavy multi-axis shadow.
+
+**Bonus — Finish Session polish:**
+- **Iron `.btn-primary`:** Solid red → gradient + outer red glow + hover lift. Matchar Obsidian/Cosmic's "cool" feel.
+- **Daylight `.btn-primary`:** Solid → gradient + elevated drop-shadow + hover lift med stronger shadow. Light polish (Daylight är WIP/redesign-kandidat så minimal investering).
+- Övriga teman (Nanosuit, Night City, Ember, Void, Arctic, Crusader) har redan distinkt `.btn-primary`-styling sedan tidigare versioner.
+
+---
+
+## 3.34.0 — 2026-05-23
+**Tag-driven set defaults + tags under namnet (FEATURE).**
+
+- **`TAG_DEFAULTS`-tabell:** Första aktiva tag (i ordningen RAMP → BW → UNI → TIMED → SINGLES) dikterar set-defaults för ny övning.
+  - **RAMP:** 0 warm + 4 work
+  - **BW+:** 0 warm + 3 work
+  - **UNILATERAL:** 2 warm + 1 work
+  - **TIMED:** 0 warm + 1 work
+  - **SINGLES:** 1 warm + 5 work
+  - **(ingen tag) HIT:** 2 warm + 1 work (standard)
+- **`getPrimaryTag(ex)` helper:** Loopar igenom `TAG_ORDER`, returnerar första aktiva tag. Konsekvent ordning vid flera tags.
+- **`getDefaultSets(ex)` refaktor:** Använder `TAG_DEFAULTS` istället för hardcoded `if(isRamp)/if(isBW)`. `lastSessionSetCount` overridar fortfarande work-count (F1 från 3.28.0).
+- **Inline `defaultSets` (rad 5773) konsoliderad** till `getDefaultSets(ex)` — single source of truth för tag-driven defaults.
+- **Auto-apply på tag-byte:** När primary tag ändras OCH övningen är "fresh" (inga loggade sets, ingen saved data), resettas `state.draft.extraSets[exId]` så nya defaults appliceras vid rerender. Med loggade/saved sets bibehålls struktur — användaren får +/− set manuellt. Ingen "Done"-knapp behövs (auto-apply räcker).
+- **Tags ALLTID under namnet** (Niklas request). Ny `.ex-tags-row` (expanded view) + `.ex-collapsed-tags` (collapsed). Tags har egen rad direkt under övningens namn istället för inline till höger om namnet. Påverkar alla teman.
+
+---
+
+## 3.33.5 — 2026-05-23
+**Cosmic Horror veins: dampen + randomize.**
+
+- **SVG-opacity sänkt** `0.85` → `0.55`. Niklas: "veins tar över".
+- **Per-path opacity sänkt:** `0.3 + depth*0.15` → `0.22 + depth*0.10`. Depth-3 trunks max 0.52 (var 0.75), depth-0 branches 0.22 (var 0.3). Veins känns nu som bakgrund, inte foreground.
+- **Pulse drop-shadow:** blur 5px → 3px. Mindre glödande pulser.
+- **Pulse-randomisering** — varje pulse-path får nu:
+  - `animation-duration` 4.0–7.0s (var fast 2.6–2.8s) — långsammare och varierat
+  - `animation-delay` -4.0–0.0s (var fast -0.5–-1s) — pulserna är inte i fas
+  - `animation-direction: reverse` på 50% av paths (ny `.ch-pulse-reverse` klass) — pulser går nu åt båda håll, inte alltid samma riktning. Niklas: "går samma väg hela tiden — lite tråkigt/förutsägbart".
+- **Resultat:** Veins-bakgrunden är mer organisk och oförutsägbar utan att förlora karaktären.
+
+---
+
+## 3.33.4 — 2026-05-23
+**Chain-strip distant/done contrast — passes "tänds upp" efter restart.**
+
+- **Default `.chain-tab .chain-tab-letter`:** distant opacity `.5` → `.7`, bg red-mix 7% → 11%. Upcoming sessions nu tydligt synliga. Påverkar alla teman som ärver default (Iron, Nanosuit, Night City, Ember, Arctic, Daylight, Crusader, Obsidian).
+- **Default `.chain-tab.done`:** opacity `.22` → `.15` + `filter:saturate(0.4)`. Avklarade pass clearly desaturated, omöjligt att förväxla med upcoming.
+- **Cosmic Horror chain-tab override:** distant color `#4f6a64` → `#8aacaa`, bg alpha `.55` → `.55` (samma) men brighter teal `rgba(20,40,38)`, border `.22` → `.32`. Adjacent också bumpat: color `#aedcd0` → `#cce8de`, bg `.6` → `.65`, border `.4` → `.55`. Done: color `#2a4a44` → `#1a3a34`, bg alpha `.3` → `.45` (med darker base), opacity `0.5` + `filter:saturate(0.3)`.
+- **Void chain-tab:** distant color `#555` → `#888`, bg `.04` → `.07`. Done `#333` → `#2a2a2a` + opacity `0.6`. Adjacent bumpat också för konsekvens.
+- **Rotorsak (#5 från morgonpass 2026-05-23):** Efter chain-restart såg upcoming-pass nästan identiska med done-pass. Logiken var korrekt (`doNewCycle()` rad 7681 sätter `cycle.done[passId]=null` för alla). Problem var visuell distinktion — distant och done för subtilt åtskilda, särskilt i Cosmic Horror.
+
+---
+
 ## 3.33.3 — 2026-05-22
 **Obsidian-embers konsekvens + Void WIP-flagga bort.**
 
