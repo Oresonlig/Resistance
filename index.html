@@ -4866,7 +4866,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.34.4';
+const APP_VERSION = '3.34.5';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4875,7 +4875,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.34.4',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.34.5',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -7975,19 +7975,6 @@ function getLastSession(exId, swappedName){
     }
   }
   return null;
-}
-// 3.34.3 — Module-level state för history-expand-toggle. In-memory only (överlever
-// rerenderSession men inte page-reload). Per Niklas: default kollapsat, kom ihåg per session.
-const _showHistory = {};
-function toggleHistory(exId){
-  _showHistory[exId] = !_showHistory[exId];
-  const el = document.getElementById('hist-'+exId);
-  if(el) el.classList.toggle('open', _showHistory[exId]);
-  const tog = document.getElementById('histtog-'+exId);
-  if(tog){
-    const cnt = tog.dataset.count || '';
-    tog.innerHTML = (_showHistory[exId] ? '▴' : '▾') + ' History' + (cnt?` (${cnt})`:'');
-  }
 }
 function getAllPRs(){
   const prs={};

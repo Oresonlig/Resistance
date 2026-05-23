@@ -6,6 +6,17 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.34.5 — 2026-05-23
+**Städning: borttaget oanvänd `toggleHistory()` + `_showHistory`-state.**
+
+Niklas: "Inte en fan av att 'history' ligger kvar i koden. Blir mycket skräp tids nog om flera features jag inte vill ha kvar ligger kvar där." Tagit bort:
+- `const _showHistory = {}` (modul-state, oanvänd efter 3.34.4)
+- `function toggleHistory(exId)` (toggle-funktion, oanvänd efter 3.34.4)
+
+Etablerar princip: rensa dead code direkt i samma version som ersätter funktionen — inte vänta till "senare".
+
+---
+
 ## 3.34.4 — 2026-05-23
 **Iron Log avlång hexagon + History alltid expanderad.**
 
