@@ -6,6 +6,54 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.34.9 — 2026-05-23
+**Code review Batch 3: migrations-städning (guards).**
+
+Del 3 av 3-batch städ-runda. Båda one-time migrations körde varje load:
+
+- **`cleanLegacyLocalStorage()` guarded:** Nu med `localStorage.getItem('__legacyCleanDone')`-check. Skippas efter första körningen per device. Tidigare anropade `removeItem` på 4 nycklar varje page-load även för users som aldrig haft dessa nycklar. (Nyttjar localStorage flag, inte state.migrations, eftersom det är device-globalt cleanup som körs INNAN current-user state är laddat.)
+- **`migratePassKeysToSession()` guarded:** Nu med `state.migrations.passKeysToSession_v1`-flag. Tidigare kollade `passOrder` in state varje load även för users som aldrig haft den (alla post-3.15.0). Sätter flag efter körning så subsequent loads skippar instant.
+- **`migrateExerciseNames()`** är redan guardad via `state.migrations.exerciseSplit_v2` (etablerad 3.17.x). Inget byte.
+
+**Konsekvens:** Snabbare load för existerande users (sparar 2-3 funktion-anrop + property-lookups per session-start). Migrations-pipeline är konsekvent guardad nu.
+
+**Skippat (M1):** Migrering INTO `SCHEMA_MIGRATIONS`-pipelinen (kräver schema-version-shift, mer risk än värde just nu). Ad-hoc migrations + schema-pipeline lever parallellt — bägge guardade, fungerar.
+
+---
+
+## 3.34.8 — 2026-05-23
+**Code review Batch 2: state-init konsolidering.**
+
+Del 2 av 3-batch städ-runda. State-init var fragmenterat över 4 platser:
+- `let state={...}` inline (var rad 4882) — 26 fält
+- `freshState()` (rad 4518) — 28 fält
+- `ensureStateDefaults()` (rad 4452) — 30+ fält (definitiv)
+- `resetAll()` inline (rad 8716) — **11 fält** (bug — tappade theme/customExercises/etc)
+
+**Refactor:**
+- **`freshState()` är nu single source of truth** med ALLA fält listade (added: `importedPRs, exerciseOrder, ignoredPRs, lastSessionSetCount, lastSessionNotes, migrations`). Comment-block ovan funktionen förklarar roll-uppdelningen.
+- **Inline `let state={...}`** ersatt med `let state = freshState()`. Borttagen post-init `state.cycles=[newCycle()]` (freshState gör det redan).
+- **`resetAll()`** använder nu `{ ...freshState(), ...preserved }` istället för minimal inline-init. Preservar `sessionOrder/restSlots/unit/theme` explicit. **Bug fix:** användarens valda tema försvann tidigare vid reset.
+- **`SCHEMA_VERSION` + `SCHEMA_MIGRATIONS` flyttade upp** till före `let state` (var rad 5016, nu rad ~4880). Krävdes för att `freshState()` ska kunna anropas vid script-load utan TDZ-fel. `runSchemaMigrations()` funktion ligger kvar där den var.
+- `ensureStateDefaults()` rör vi INTE — den är backup-net för gamla loaded users som saknar nyare fält.
+
+**Konsekvens:** Vid framtida nya state-fält behöver bara `freshState()` + `ensureStateDefaults()` uppdateras (2 platser istället för 4).
+
+---
+
+## 3.34.7 — 2026-05-23
+**Code review Batch 1: dead code removal.**
+
+Del 1 av 3-batch städ-runda från full code review.
+
+- **`safeHTML()` borttagen** (var rad 5068-5084, 17 rader): PM9-prep från tidigare som ALDRIG anropades. Template-tagg som skulle auto-escape interpolation. Aldrig adopterad i koden.
+- **`getWeightStep()` borttagen** (var rad 7398-7404, 7 rader): Tunn wrapper runt `parseFloat(state.weightStep) || 2.5`. Aldrig anropad.
+- **Orphan TODO-kommentar borttagen**: "Tap-and-hold eventually supported via press timer" — feature som aldrig byggdes. Inte i backlog.
+
+Net: −24 rader.
+
+---
+
 ## 3.34.6 — 2026-05-23
 **Notes → Reminders: tydligare ephemeral semantik (1+2).**
 

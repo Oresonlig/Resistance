@@ -4386,9 +4386,12 @@ async function handleSession(session){
 
 // Clean up old localStorage keys from before auth migration
 function cleanLegacyLocalStorage(){
+  // 3.34.9 — Guard: körs en gång per device (pre-multiuser-auth keys).
+  if(localStorage.getItem('__legacyCleanDone')) return;
   ['thechain_niklas','thechain_henrik','thechain_lt','thechain_robban'].forEach(k=>{
     try{ localStorage.removeItem(k); }catch(e){}
   });
+  try{ localStorage.setItem('__legacyCleanDone', '1'); }catch(e){}
 }
 
 // Load state for the now-logged-in user
@@ -4515,6 +4518,10 @@ function isFreshState(s){
   return !hasLog && !hasWeight && !hasProgress && !hasCustomEx && !hasOverrides && !hasSwaps && !completedOnboarding;
 }
 
+// 3.34.8 — Single source of truth för state-init. ALLA fält listade.
+// Används av `let state = freshState()` vid script-load, `resetAll()`, samt
+// loadStateForUser() när ingen tidigare data finns. ensureStateDefaults()
+// är backup-net för loaded data (gamla users som saknar nyare fält).
 function freshState(){
   return {
     cycles:[newCycle()],
@@ -4527,6 +4534,9 @@ function freshState(){
     customExercises:[], appVersion:APP_VERSION,
     removedExercises:{}, weightStep:2.5,
     addedExercises:{}, hiddenRemoved:{},
+    importedPRs:[], exerciseOrder:{}, ignoredPRs:[],
+    lastSessionSetCount:{}, lastSessionNotes:{},
+    migrations:{},
     schemaVersion: SCHEMA_VERSION,
     deletions: { customExercises:{}, exerciseNotes:{} }
   };
@@ -4870,7 +4880,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.34.6';
+const APP_VERSION = '3.34.9';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4879,8 +4889,25 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.34.6',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
-state.cycles=[newCycle()];
+
+// PM20: Schema-versioning. Bumpa SCHEMA_VERSION när breaking state-format-ändring
+// görs, och registrera en migration i SCHEMA_MIGRATIONS som tar state från
+// version N → N+1. Migrations körs i ordning vid load + efter cloud-pull.
+//
+// Aktuell version 1 = post-3.30.14 baseline (post-CRDT-merge + tombstones).
+// Tidigare ad-hoc migrations (migrateExerciseNames, migratePassKeysToSession)
+// är inte en del av denna pipeline — de körs separat innan schema-pipeline för
+// bakåtkompatibilitet.
+const SCHEMA_VERSION = 1;
+
+const SCHEMA_MIGRATIONS = {
+  // Exempel:
+  // 1: (s) => { s.newField = s.oldField ?? 'default'; delete s.oldField; return s; },
+};
+
+// 3.34.8 — Use freshState() as single source of truth (var 26-fält inline-init).
+// Replaced by loadStateForUser(); här bara placeholder vid script-load.
+let state = freshState();
 
 
 
@@ -4993,8 +5020,9 @@ function migrateExerciseNames(){
 }
 
 function migratePassKeysToSession(){
+  // 3.34.9 — Guard: skip om redan migrerat (flag i state.migrations).
   // One-time rename of state keys from Swedish-origin names to English.
-  // Safe: if sessionOrder already exists, migration was already applied.
+  if(state.migrations?.passKeysToSession_v1) return;
   if('passOrder' in state && !('sessionOrder' in state)){
     state.sessionOrder = state['passOrder'];
     delete state['passOrder'];
@@ -5003,22 +5031,9 @@ function migratePassKeysToSession(){
     state.sessionNameOverrides = state['passNameOverrides'];
     delete state['passNameOverrides'];
   }
+  if(!state.migrations) state.migrations = {};
+  state.migrations.passKeysToSession_v1 = Date.now();
 }
-
-// PM20: Schema-versioning. Bumpa SCHEMA_VERSION när breaking state-format-ändring
-// görs, och registrera en migration i SCHEMA_MIGRATIONS som tar state från
-// version N → N+1. Migrations körs i ordning vid load + efter cloud-pull.
-//
-// Aktuell version 1 = post-3.30.14 baseline (post-CRDT-merge + tombstones).
-// Tidigare ad-hoc migrations (migrateExerciseNames, migratePassKeysToSession)
-// är inte en del av denna pipeline — de körs separat innan schema-pipeline för
-// bakåtkompatibilitet.
-const SCHEMA_VERSION = 1;
-
-const SCHEMA_MIGRATIONS = {
-  // Exempel:
-  // 1: (s) => { s.newField = s.oldField ?? 'default'; delete s.oldField; return s; },
-};
 
 function runSchemaMigrations(){
   if(!state) return;
@@ -5063,24 +5078,6 @@ function lsKey(uid){return 'thechain_'+uid;}
 // ── UTILS ─────────────────────────────────────────────────────
 function escapeHTML(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-
-// PM9: safeHTML — template-tag som auto-escapar interpolerade värden.
-// Användning: safeHTML`<div>${userInput}</div>` istället för `<div>${escapeHTML(userInput)}</div>`.
-// All ${expr} escapas automatiskt. Använd för NY render-kod som rör user-data
-// (custom-namn, importerad data, etc.) så vi inte glömmer escape i framtida diff:ar.
-// Existing render-kod kan migreras vid behov — PM19 är full arkitektur-refaktor.
-function safeHTML(strings, ...values){
-  let result = strings[0];
-  for(let i = 0; i < values.length; i++){
-    const v = values[i];
-    // Markera explicit "trust this HTML" via {raw:string} object för fall där
-    // sub-rendering redan har escapat (sällsynt — undvik om möjligt)
-    if(v && typeof v === 'object' && typeof v.raw === 'string') result += v.raw;
-    else result += escapeHTML(v == null ? '' : v);
-    result += strings[i+1];
-  }
-  return result;
 }
 
 // ── UNIT CONVERSION ──────────────────────────────────────────
@@ -7395,14 +7392,6 @@ function unlogSet(exId, origIdx, passId){
 }
 
 
-// ── WEIGHT STEPPERS ───────────────────────────────────────────
-// weightStep is configurable per user (stored in state.weightStep)
-// Default 2.5 kg. Tap-and-hold eventually supported via press timer.
-
-function getWeightStep(){
-  return parseFloat(state.weightStep) || 2.5;
-}
-
 function skipExercise(passId,exId){
   ensureDraft(passId);
   const isExtra=exId.startsWith('extra_');
@@ -8713,7 +8702,15 @@ async function resetAll(){
     { confirmLabel: 'Yes, erase all', danger: true }
   );
   if(!ok) return;
-  state={cycles:[newCycle()],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:state.sessionOrder,restSlots:state.restSlots,unit:state.unit||'kg',exerciseOverrides:{}};
+  // 3.34.8 — Använd freshState() + preservera explicit user prefs (program-struktur + unit + theme).
+  // Bug-fix: gamla inline-init satte bara 11 fält → theme/customExercises/etc försvann vid reset.
+  const preserved = {
+    sessionOrder: state.sessionOrder,
+    restSlots: state.restSlots,
+    unit: state.unit || 'kg',
+    theme: state.theme || 'iron',
+  };
+  state = { ...freshState(), ...preserved };
   save();
   showToast('Data reset');
   renderChain();
