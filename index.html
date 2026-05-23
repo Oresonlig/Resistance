@@ -34,6 +34,13 @@
   --surface-overlay:rgba(255,255,255,0.03); /* hover-state subtilt */
   --border-subtle:#2a2a2a;       /* diskret border (default) */
   --border-strong:#3a3a3a;       /* synligare border */
+  /* ── 3.34.11: Tag design-tokens (PM22-style komplettering). Default = Iron. ──
+     Teman över-rider bara variabler de avviker från, inte hela selektor-rules. */
+  --tag-base-bg:transparent;       --tag-base-border:#333;     --tag-base-color:#555;
+  --tag-ramp-bg:#1a1000;           --tag-ramp-border:#6a4a00;  --tag-ramp-color:#d4a030;
+  --tag-bw-bg:#0a140a;             --tag-bw-border:#1a3a1a;    --tag-bw-color:#5aaa5a;
+  --tag-uni-bg:#120e00;            --tag-uni-border:#4a3a00;   --tag-uni-color:#c89030;
+  --tag-singles-bg:#140a0a;        --tag-singles-border:#4a2a2a; --tag-singles-color:#c07060;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--black);color:var(--white);font-family:var(--sans);min-height:100vh;overflow-x:hidden;max-width:100vw;color-scheme:dark;}
@@ -177,7 +184,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .ex-header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;}
 .ex-label-col{flex:1;min-width:0;}
 .ex-name{font-size:.82rem;font-weight:500;}
-.ex-tag{display:inline-block;font-family:var(--mono);font-size:.46rem;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;border:1px solid #333;color:#555;margin-left:5px;vertical-align:middle;border-radius:2px;}
+.ex-tag{display:inline-block;font-family:var(--mono);font-size:.46rem;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;background:var(--tag-base-bg);border:1px solid var(--tag-base-border);color:var(--tag-base-color);margin-left:5px;vertical-align:middle;border-radius:2px;}
 /* 3.34.0 — Tags under name (alltid). Reset margin-left on tags inside .ex-tags-row. */
 .ex-tags-row{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 2px;}
 .ex-tags-row .ex-tag{margin:0;font-size:.5rem;padding:3px 8px;letter-spacing:.09em;}
@@ -185,10 +192,10 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .ex-collapsed-name-col .ex-collapsed-name{flex:none;}
 .ex-collapsed-tags{display:flex;flex-wrap:wrap;gap:3px;}
 .ex-collapsed-tags .ex-tag{margin:0;font-size:.42rem;padding:1px 5px;letter-spacing:.07em;}
-.ex-tag.ramp{border-color:#6a4a00;background:#1a1000;color:#d4a030;}
-.ex-tag.singles{border-color:#4a2a2a;background:#140a0a;color:#c07060;}
-.ex-tag.bw{border-color:#1a3a1a;background:#0a140a;color:#5aaa5a;}
-.ex-tag.uni{border-color:#4a3a00;background:#120e00;color:#c89030;}
+.ex-tag.ramp{background:var(--tag-ramp-bg);border-color:var(--tag-ramp-border);color:var(--tag-ramp-color);}
+.ex-tag.singles{background:var(--tag-singles-bg);border-color:var(--tag-singles-border);color:var(--tag-singles-color);}
+.ex-tag.bw{background:var(--tag-bw-bg);border-color:var(--tag-bw-border);color:var(--tag-bw-color);}
+.ex-tag.uni{background:var(--tag-uni-bg);border-color:var(--tag-uni-border);color:var(--tag-uni-color);}
 .ex-detail{font-family:var(--mono);font-size:.74rem;color:#bbb;margin-top:4px;line-height:1.5;}
 .ex-prev{font-family:var(--mono);font-size:.48rem;color:#555;margin-top:3px;line-height:1.5;}
 .ex-prev span{color:#777;}
@@ -512,6 +519,10 @@ body.theme-nightcity{
   --green-bright:#00fff0; /* cyan tertiary */
   --gray-mid:#1a0830;
   --gray-light:#7a55a0;
+  /* 3.34.11 — Tag tokens (angular HUD chips med neon gradients) */
+  --tag-ramp-bg:linear-gradient(90deg,rgba(255,230,0,0.15),rgba(255,230,0,0.05)); --tag-ramp-border:#ffe600; --tag-ramp-color:#ffe600;
+  --tag-bw-bg:linear-gradient(90deg,rgba(0,255,240,0.15),rgba(0,255,240,0.05));   --tag-bw-border:#00fff0;   --tag-bw-color:#00fff0;
+  --tag-uni-bg:linear-gradient(90deg,rgba(255,45,120,0.15),rgba(255,45,120,0.05));--tag-uni-border:#ff2d78;  --tag-uni-color:#ff2d78;
   --display:'Orbitron',sans-serif;
   --sans:'Space Grotesk',sans-serif;
   --mono:'JetBrains Mono',monospace;
@@ -830,24 +841,10 @@ body.theme-nightcity .ex-tag{
   clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);
   padding:3px 10px !important;
 }
-body.theme-nightcity .ex-tag.ramp{
-  background:linear-gradient(90deg,rgba(255,230,0,0.15),rgba(255,230,0,0.05));
-  border-color:var(--red);
-  color:var(--red);
-  text-shadow:0 0 4px rgba(255,230,0,0.5);
-}
-body.theme-nightcity .ex-tag.bw{
-  background:linear-gradient(90deg,rgba(0,255,240,0.15),rgba(0,255,240,0.05));
-  border-color:var(--green-bright);
-  color:var(--green-bright);
-  text-shadow:0 0 4px rgba(0,255,240,0.5);
-}
-body.theme-nightcity .ex-tag.uni{
-  background:linear-gradient(90deg,rgba(255,45,120,0.15),rgba(255,45,120,0.05));
-  border-color:var(--gold);
-  color:var(--gold);
-  text-shadow:0 0 4px rgba(255,45,120,0.5);
-}
+/* Night City ex-tag — colors via tokens (3.34.11), keep text-shadow neon glow */
+body.theme-nightcity .ex-tag.ramp{text-shadow:0 0 4px rgba(255,230,0,0.5);}
+body.theme-nightcity .ex-tag.bw{text-shadow:0 0 4px rgba(0,255,240,0.5);}
+body.theme-nightcity .ex-tag.uni{text-shadow:0 0 4px rgba(255,45,120,0.5);}
 
 /* EXERCISE NAME & DETAIL */
 body.theme-nightcity .ex-name{
@@ -1039,6 +1036,11 @@ body.theme-arctic{
   --surface-overlay:rgba(0,168,216,0.08);
   --border-subtle:rgba(0,168,216,0.18);
   --border-strong:rgba(0,168,216,0.3);
+  /* 3.34.11 — Tag tokens (glassmorphism pastels) */
+  --tag-ramp-bg:rgba(255,245,220,0.85);  --tag-ramp-border:#c89030;  --tag-ramp-color:#8a6020;
+  --tag-bw-bg:rgba(220,240,235,0.85);    --tag-bw-border:#00c8a0;    --tag-bw-color:#1a8a6a;
+  --tag-uni-bg:rgba(255,235,220,0.85);   --tag-uni-border:#d0612b;   --tag-uni-color:#a04020;
+  --tag-singles-bg:rgba(245,225,220,0.85); --tag-singles-border:#a04040; --tag-singles-color:#803030;
   color-scheme:light;
   color:#1a2e3a;
   background-color:#eaf4f8;
@@ -1224,10 +1226,7 @@ body.theme-arctic .ex-collapsed-status{color:#5a7a88;}
 body.theme-arctic .ex-note-input{background:rgba(255,255,255,0.82);border-color:rgba(0,168,216,0.3);color:#1a2e3a;}
 
 /* Exercise tags */
-body.theme-arctic .ex-tag.ramp{background:rgba(255,245,220,0.85);border-color:#c89030;color:#8a6020;}
-body.theme-arctic .ex-tag.bw{background:rgba(220,240,235,0.85);border-color:var(--green-bright);color:#1a8a6a;}
-body.theme-arctic .ex-tag.uni{background:rgba(255,235,220,0.85);border-color:#d0612b;color:#a04020;}
-body.theme-arctic .ex-tag.singles{background:rgba(245,225,220,0.85);border-color:#a04040;color:#803030;}
+/* Arctic tag colors — se tokens i body.theme-arctic ovan (3.34.11) */
 
 /* Edit menu dropdown */
 body.theme-arctic .ex-edit-menu{background:rgba(255,255,255,0.95);border-color:rgba(0,168,216,0.3);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
@@ -1312,6 +1311,10 @@ body.theme-ember{
   --black:#0c0600;--white:#ffe8cc;--red:#ff6a00;
   --gold:#ffcc00;--green-bright:#a0cc40;
   --gray-mid:#2a1800;--gray-light:#aa7040;
+  /* 3.34.11 — Tag tokens (branded metal stamps med gradient bgs) */
+  --tag-ramp-bg:linear-gradient(90deg,rgba(255,106,0,0.15),rgba(255,106,0,0.04)); --tag-ramp-border:#aa4400; --tag-ramp-color:#ff8844;
+  --tag-bw-bg:linear-gradient(90deg,rgba(160,204,64,0.15),rgba(160,204,64,0.04)); --tag-bw-border:#a0cc40;   --tag-bw-color:#a0cc40;
+  --tag-uni-bg:linear-gradient(90deg,rgba(255,204,0,0.15),rgba(255,204,0,0.04));  --tag-uni-border:#ffcc00;  --tag-uni-color:#ffcc00;
   --display:'Rajdhani',sans-serif;
   --sans:'Space Grotesk',sans-serif;
   --mono:'DM Mono',monospace;
@@ -1633,31 +1636,16 @@ body.theme-ember .sets-group-label.work-group{
   text-shadow:0 0 6px rgba(255,106,0,0.4);
 }
 
-/* EXERCISE TAGS — branded metal stamps */
+/* EXERCISE TAGS — colors via tokens (3.34.11), keep typography + text-shadow */
 body.theme-ember .ex-tag{
   font-family:'Rajdhani',sans-serif;
   font-weight:700;
   letter-spacing:.15em;
   text-transform:uppercase;
 }
-body.theme-ember .ex-tag.ramp{
-  border-color:#aa4400;
-  background:linear-gradient(90deg,rgba(255,106,0,0.15),rgba(255,106,0,0.04));
-  color:#ff8844;
-  text-shadow:0 0 4px rgba(255,106,0,0.4);
-}
-body.theme-ember .ex-tag.bw{
-  border-color:#a0cc40;
-  background:linear-gradient(90deg,rgba(160,204,64,0.15),rgba(160,204,64,0.04));
-  color:#a0cc40;
-  text-shadow:0 0 4px rgba(160,204,64,0.4);
-}
-body.theme-ember .ex-tag.uni{
-  border-color:#ffcc00;
-  background:linear-gradient(90deg,rgba(255,204,0,0.15),rgba(255,204,0,0.04));
-  color:#ffcc00;
-  text-shadow:0 0 4px rgba(255,204,0,0.4);
-}
+body.theme-ember .ex-tag.ramp{text-shadow:0 0 4px rgba(255,106,0,0.4);}
+body.theme-ember .ex-tag.bw{text-shadow:0 0 4px rgba(160,204,64,0.4);}
+body.theme-ember .ex-tag.uni{text-shadow:0 0 4px rgba(255,204,0,0.4);}
 
 /* EXERCISE NAME & DETAILS */
 body.theme-ember .ex-name{
@@ -1834,6 +1822,12 @@ body.theme-void{
   --black:#000000;--white:#ffffff;--red:#ffffff;
   --gold:#aaaaaa;--green-bright:#cccccc;
   --gray-mid:#111111;--gray-light:#666666;
+  /* 3.34.11 — Tag tokens: alla varianter neutrala (Void = all tags look same) */
+  --tag-base-bg:transparent; --tag-base-border:#222; --tag-base-color:#444;
+  --tag-ramp-bg:transparent; --tag-ramp-border:#222; --tag-ramp-color:#444;
+  --tag-bw-bg:transparent;   --tag-bw-border:#222;   --tag-bw-color:#444;
+  --tag-uni-bg:transparent;  --tag-uni-border:#222;  --tag-uni-color:#444;
+  --tag-singles-bg:transparent; --tag-singles-border:#222; --tag-singles-color:#444;
   /* PM22 surface-overrides — pure-black minimal */
   --surface-base:#000000;
   --surface-elevated:#050505;
@@ -1872,7 +1866,7 @@ body.theme-void .app-modal-btn-danger{background:transparent;border-color:#fff;c
 body.theme-void .app-modal-btn-danger:hover{background:#fff;color:#000;}
 body.theme-void .set-input:focus{border-color:#fff;}
 body.theme-void .weight-banner{background:#050505;}
-body.theme-void .ex-tag{border-color:#222;color:#444;}
+/* Void tag colors — alla varianter neutrala via tokens i body.theme-void ovan (3.34.11) */
 body.theme-void .pass-card.done{opacity:.4;}
 body.theme-void .section-title{font-family:'Playfair Display',serif;font-style:italic;}
 body.theme-void .sync-dot.ok{background:#888;}
@@ -1899,6 +1893,10 @@ body.theme-nanosuit{
   --black:#050810;--white:#e0faff;--red:#00d4ff;
   --gold:#00fff0;--green-bright:#50ff88;
   --gray-mid:#102030;--gray-light:#5a8899;
+  /* 3.34.11 — Tag tokens (tactical HUD neon) */
+  --tag-ramp-bg:#1a2a00;  --tag-ramp-border:#88aa00;  --tag-ramp-color:#ccff00;
+  --tag-bw-bg:#002a1a;    --tag-bw-border:#00aa66;    --tag-bw-color:#50ff88;
+  --tag-uni-bg:#2a1500;   --tag-uni-border:#cc8800;   --tag-uni-color:#ffaa44;
   --display:'Orbitron',sans-serif;
   --sans:'Space Grotesk',sans-serif;
   --mono:'JetBrains Mono',monospace;
@@ -2107,9 +2105,7 @@ body.theme-nanosuit .ex-tag{
   letter-spacing:.12em;
   clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%);
 }
-body.theme-nanosuit .ex-tag.ramp{background:#1a2a00;border-color:#88aa00;color:#ccff00;}
-body.theme-nanosuit .ex-tag.bw{background:#002a1a;border-color:#00aa66;color:#50ff88;}
-body.theme-nanosuit .ex-tag.uni{background:#2a1500;border-color:#cc8800;color:#ffaa44;}
+/* Nanosuit tag colors — se tokens i body.theme-nanosuit ovan (3.34.11) */
 
 /* Exercise name & detail */
 body.theme-nanosuit .ex-name{
@@ -2554,6 +2550,10 @@ body.theme-daylight{
   --surface-overlay:rgba(0,0,0,0.04);
   --border-subtle:#e0dcd0;
   --border-strong:#d0ccc0;
+  /* 3.34.11 — Tag tokens (paper-clean ljus) */
+  --tag-ramp-bg:#fff8e6;     --tag-ramp-border:#a8830a;  --tag-ramp-color:#a8830a;
+  --tag-bw-bg:#f0f7ec;       --tag-bw-border:#2a7a3a;    --tag-bw-color:#2a7a3a;
+  --tag-uni-bg:#fdf2ec;      --tag-uni-border:#d0612b;   --tag-uni-color:#d0612b;
   --display:'Bebas Neue',sans-serif;
   --sans:'Inter',sans-serif;
   --mono:'JetBrains Mono',monospace;
@@ -2697,21 +2697,7 @@ body.theme-daylight .ex-detail{color:#666;}
 body.theme-daylight .ex-prev .last-val{color:var(--green-bright);}
 body.theme-daylight .ex-prev .pr-val{color:var(--red);}
 
-body.theme-daylight .ex-tag.ramp{
-  background:#fff8e6;
-  border-color:var(--gold);
-  color:var(--gold);
-}
-body.theme-daylight .ex-tag.bw{
-  background:#f0f7ec;
-  border-color:var(--green-bright);
-  color:var(--green-bright);
-}
-body.theme-daylight .ex-tag.uni{
-  background:#fdf2ec;
-  border-color:#d0612b;
-  color:#d0612b;
-}
+/* Daylight tag colors — se tokens i body.theme-daylight ovan (3.34.11) */
 
 body.theme-daylight #userScreen{
   background:#fafaf7;
@@ -2926,6 +2912,10 @@ body.theme-crusader{
   --surface-overlay:rgba(216,200,168,0.05);
   --border-subtle:#3a322a;
   --border-strong:#4a3e30;
+  /* 3.34.11 — Tag tokens (warm parchment) */
+  --tag-ramp-bg:#2a241c;  --tag-ramp-border:#8a7048;  --tag-ramp-color:#a89668;
+  --tag-bw-bg:#1f2a18;    --tag-bw-border:#6a8a3a;    --tag-bw-color:#9ab06a;
+  --tag-uni-bg:#2a1c18;   --tag-uni-border:#c05030;   --tag-uni-color:#d86a48;
   --display:'Cinzel',serif;
   --sans:'Crimson Pro',serif;
   --mono:'DM Mono',monospace;
@@ -3246,9 +3236,7 @@ body.theme-crusader .ex-name{
 body.theme-crusader .ex-detail{color:#9a8e72;}
 body.theme-crusader .ex-prev .last-val{color:#9ab06a;}
 body.theme-crusader .ex-prev .pr-val{color:#e84040;}
-body.theme-crusader .ex-tag.ramp{background:#2a241c;border-color:#8a7048;color:#a89668;}
-body.theme-crusader .ex-tag.bw{background:#1f2a18;border-color:#6a8a3a;color:#9ab06a;}
-body.theme-crusader .ex-tag.uni{background:#2a1c18;border-color:#c05030;color:#d86a48;}
+/* Crusader tag colors — se tokens i body.theme-crusader ovan (3.34.11) */
 
 /* AUTH SCREEN */
 body.theme-crusader #userScreen{background:#13100c;}
@@ -3375,6 +3363,12 @@ body.theme-obsidian{
   --surface-overlay:rgba(201,163,90,0.08);
   --border-subtle:#2a2010;
   --border-strong:#4a3a18;
+  /* 3.34.11 — Tag tokens (gothic gold + ember) */
+  --tag-base-bg:rgba(40,28,12,0.5);  --tag-base-border:#4a3a18;  --tag-base-color:#c9a35a;
+  --tag-ramp-bg:rgba(40,30,0,0.5);   --tag-ramp-border:#6a4a00;  --tag-ramp-color:#d4a030;
+  --tag-bw-bg:rgba(30,40,15,0.5);    --tag-bw-border:#2a3a18;    --tag-bw-color:#9ab57a;
+  --tag-uni-bg:rgba(40,15,10,0.5);   --tag-uni-border:#5a2018;   --tag-uni-color:#d68262;
+  --tag-singles-bg:rgba(40,15,10,0.5); --tag-singles-border:#5a2018; --tag-singles-color:#d68262;
   --display:'Cinzel',serif;
   --sans:'Cardo',serif;
   --mono:'Cinzel',serif;
@@ -3575,11 +3569,8 @@ body.theme-obsidian .ex-collapsed-status{color:#8a7a58;font-family:'Cardo',serif
 body.theme-obsidian .ex-collapsed-chevron{color:#4a3a18;}
 
 /* Tags */
-body.theme-obsidian .ex-tag{font-family:'Cinzel',serif;color:#c9a35a;border-color:#4a3a18;background:rgba(40,28,12,0.5);letter-spacing:.22em;font-weight:600;}
-body.theme-obsidian .ex-tag.ramp{color:#d4a030;border-color:#6a4a00;background:rgba(40,30,0,0.5);}
-body.theme-obsidian .ex-tag.bw{color:#9ab57a;border-color:#2a3a18;background:rgba(30,40,15,0.5);}
-body.theme-obsidian .ex-tag.uni{color:#d68262;border-color:#5a2018;background:rgba(40,15,10,0.5);}
-body.theme-obsidian .ex-tag.singles{color:#d68262;border-color:#5a2018;background:rgba(40,15,10,0.5);}
+/* Obsidian ex-tag — colors via tokens (3.34.11), keep typography overrides */
+body.theme-obsidian .ex-tag{font-family:'Cinzel',serif;letter-spacing:.22em;font-weight:600;}
 
 /* Exercise buttons (Skip / Edit) — gold ghost */
 body.theme-obsidian .ex-btn-skip{background:linear-gradient(180deg,rgba(50,35,14,0.4),rgba(20,14,6,0.4));border:1px solid #4a3a18;color:#c9a35a;font-family:'Cinzel',serif;letter-spacing:.22em;font-weight:600;}
@@ -3730,6 +3721,12 @@ body.theme-cosmic-horror{
   --surface-overlay:rgba(127,200,180,0.08);
   --border-subtle:rgba(127,200,180,0.18);
   --border-strong:rgba(127,200,180,0.3);
+  /* 3.34.11 — Tag tokens (biological alien teal/amber/blue/green) */
+  --tag-base-bg:rgba(20,50,46,0.4);    --tag-base-border:rgba(127,200,180,0.3); --tag-base-color:#aedcd0;
+  --tag-ramp-bg:rgba(40,30,15,0.45);   --tag-ramp-border:rgba(180,140,70,0.35); --tag-ramp-color:#d8b878;
+  --tag-bw-bg:rgba(40,30,15,0.45);     --tag-bw-border:rgba(180,140,70,0.35);   --tag-bw-color:#d8b878;
+  --tag-uni-bg:rgba(20,40,18,0.45);    --tag-uni-border:rgba(150,200,130,0.3);  --tag-uni-color:#bedab0;
+  --tag-singles-bg:rgba(40,15,18,0.45);--tag-singles-border:rgba(168,66,76,0.35); --tag-singles-color:#a8424c;
   --display:'Cormorant SC',serif;
   --sans:'Cormorant Garamond',serif;
   --mono:'IBM Plex Mono',monospace;
@@ -3882,11 +3879,11 @@ body.theme-cosmic-horror .ex-collapsed-status{color:#7a948c;font-family:'IBM Ple
 body.theme-cosmic-horror .ex-collapsed-chevron{color:#2a4a44;}
 
 /* Tags — organisk teal/amber/blue/green */
-body.theme-cosmic-horror .ex-tag{font-family:'IBM Plex Mono',monospace;color:#aedcd0;border-color:rgba(127,200,180,0.3);background:rgba(20,50,46,0.4);letter-spacing:.18em;font-weight:500;border-radius:6px 2px 6px 2px;text-transform:uppercase;}
-body.theme-cosmic-horror .ex-tag.ramp{color:#d8b878;border-color:rgba(180,140,70,0.35);background:rgba(40,30,15,0.45);border-radius:2px 6px 2px 6px;}
-body.theme-cosmic-horror .ex-tag.bw{color:#d8b878;border-color:rgba(180,140,70,0.35);background:rgba(40,30,15,0.45);border-radius:2px 6px 2px 6px;}
-body.theme-cosmic-horror .ex-tag.uni{color:#bedab0;border-color:rgba(150,200,130,0.3);background:rgba(20,40,18,0.45);border-radius:6px 2px 6px 2px;}
-body.theme-cosmic-horror .ex-tag.singles{color:#a8424c;border-color:rgba(168,66,76,0.35);background:rgba(40,15,18,0.45);}
+/* Cosmic Horror ex-tag — colors via tokens (3.34.11), keep typography + asymmetric border-radius */
+body.theme-cosmic-horror .ex-tag{font-family:'IBM Plex Mono',monospace;letter-spacing:.18em;font-weight:500;border-radius:6px 2px 6px 2px;text-transform:uppercase;}
+body.theme-cosmic-horror .ex-tag.ramp,
+body.theme-cosmic-horror .ex-tag.bw{border-radius:2px 6px 2px 6px;}
+body.theme-cosmic-horror .ex-tag.uni{border-radius:6px 2px 6px 2px;}
 
 /* Exercise buttons */
 body.theme-cosmic-horror .ex-btn-skip{background:linear-gradient(180deg,rgba(20,50,46,0.5),rgba(8,18,22,0.5));border:1px solid rgba(127,200,180,0.22);color:#aedcd0;font-family:'IBM Plex Mono',monospace;letter-spacing:.16em;font-weight:400;border-radius:4px 10px 4px 10px;}
@@ -4849,7 +4846,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.34.10';
+const APP_VERSION = '3.34.11';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

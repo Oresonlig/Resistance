@@ -6,6 +6,42 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.34.11 — 2026-05-23
+**Komplett tag design-tokenization (PM22-style steg 2).**
+
+Niklas: "kör allt i ett svep. Som vi brukade säga i norrland — ingen minns en fegis!"
+
+**Strategi:** Lägga till 15 design-tokens för tag-färger i `:root`. Default = Iron-värden. Teman över-rider bara variablerna de avviker från, inte hela selektor-rules.
+
+**Tokens i `:root` (15 st):**
+- `--tag-base-{bg/border/color}` — när ingen variant matchar
+- `--tag-ramp-{bg/border/color}`
+- `--tag-bw-{bg/border/color}`
+- `--tag-uni-{bg/border/color}`
+- `--tag-singles-{bg/border/color}`
+
+**Component rules uppdaterade** att använda `var(--tag-X-Y)` istället för hardcoded hex.
+
+**Per-tema tokenization:**
+- **Daylight, Arctic, Crusader, Nanosuit** — full color-tokenization (deleted 3-4 rader per tema, ersatt med token-overrides i `body.theme-X{}`)
+- **Void** — tokeniserade ALLA varianter till neutral gray (alltid var meningen — Void vill att alla tags ser likadana ut). Bugfix bonus.
+- **Obsidian** — full token-set inkl. `--tag-base-*` (eftersom Obsidian överrider base-tag-styling)
+- **Cosmic Horror** — full token-set + behållit asymmetric `border-radius` rules (token-systemet hanterar inte shape)
+- **Ember** — tokenized inkl. gradient bgs (variabler tillåter gradient values!). Behållit text-shadow per variant.
+- **Night City** — tokenized inkl. neon gradient bgs. Behållit text-shadow + clip-path.
+
+**Tekniska detaljer:**
+- CSS-variabler hanterar **alla värden** inkl. gradients, rgba, transparent. Inga begränsningar.
+- Theme-specifika non-color properties (typography, text-shadow, clip-path, border-radius) behöll sina egna rules.
+- **Visuellt resultat: 100% identiska teman.** Pure rename — samma färger, bara annan kodstruktur.
+
+**Net effect:**
+- ~30-50% mindre kod per tema-block för tag-styling
+- Nya teman behöver bara override:a tag-tokens (inte skriva 4-5 separata `.ex-tag.{variant}` rules)
+- Konsistent vokabulär — alla teman talar samma "tag-token-språk"
+
+---
+
 ## 3.34.10 — 2026-05-23
 **PM22 completion: default-CSS semantic vars + theme override-cleanup.**
 
