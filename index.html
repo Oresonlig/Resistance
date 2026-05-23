@@ -193,15 +193,13 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .ex-prev{font-family:var(--mono);font-size:.48rem;color:#555;margin-top:3px;line-height:1.5;}
 .ex-prev span{color:#777;}
 .ex-prev .last-val{color:#6a8a6a;font-style:italic;}
-/* 3.34.3 — History-expand under "Last (Xd ago)" — visa alla warmup+work sets från förra passet */
-.ex-prev-history-toggle{display:inline-block;cursor:pointer;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 0;margin-top:2px;user-select:none;transition:color .15s;}
-.ex-prev-history-toggle:hover{color:var(--white);}
-.ex-prev-history{display:none;margin-top:4px;padding:5px 0 5px 8px;border-left:1px dashed var(--border-subtle);}
-.ex-prev-history.open{display:block;}
-.ex-prev-history-set{font-family:var(--mono);font-size:.55rem;color:var(--gray-light);padding:1px 0;letter-spacing:.03em;}
-.ex-prev-history-set.warmup{color:#7a6850;opacity:.78;}
-.ex-prev-history-set .set-lbl{color:var(--red);font-weight:600;margin-right:4px;display:inline-block;min-width:18px;}
-.ex-prev-history-set.warmup .set-lbl{color:#8a7048;font-weight:500;}
+/* 3.34.4 — History: alltid expanderad direkt under "Last (Xd ago)", samma font/size.
+   Niklas: "Lägg det bara under varandra. Då blir det tydligt hur många dagar senast och alla set." */
+.ex-prev-history{display:block;margin:0;padding:0;border:none;}
+.ex-prev-history-set{font-family:var(--mono);font-size:.48rem;color:#888;padding:0;letter-spacing:.04em;line-height:1.5;}
+.ex-prev-history-set.warmup{color:#666;}
+.ex-prev-history-set .set-lbl{color:#777;font-weight:600;margin-right:4px;display:inline-block;min-width:18px;}
+.ex-prev-history-set.warmup .set-lbl{color:#555;font-weight:500;}
 .ex-note-banner{font-family:var(--mono);font-size:.66rem;color:#c8a84a;background:rgba(180,140,40,0.1);border-left:2px solid #b8922a;padding:5px 10px;margin-top:5px;cursor:pointer;line-height:1.5;display:block;}
 .ex-note-banner:hover{border-left-color:var(--gold);}
 .ex-note-wrap{margin:4px 0;}
@@ -4024,28 +4022,28 @@ body.theme-cosmic-horror select option,
 body.theme-cosmic-horror .swap-select option{background:#0a1818;color:#e8f7f0;}
 
 /* ── SET LOG BUTTON (3.34.1: themed per tema, matchar Obsidian/Cosmic-feeling) ─*/
-/* Default = Iron — 3.34.2: dunkel blodröd istället för flashig bright red.
-   Niklas: "Iron ska vara lite mörk och inte så flashigt." */
+/* Default = Iron — 3.34.4: avlång hexagon (chain-tab vokabulär), MYCKET mörk.
+   Niklas: "Den röda knappen skriker ut nu. Vill ha den MYCKET mörkare + annan form.
+   Skulle en avlång hexagon funka, som session swipen? Den där rektangeln funkar inte." */
 .set-log-btn{
-  background:linear-gradient(180deg,#6a1a14 0%,#3a0a08 100%);
-  border:1px solid #5a1410;
-  color:#d4a098;
+  background:linear-gradient(180deg,#180404 0%,#0a0202 100%);
+  border:none;
+  clip-path:polygon(7px 0,calc(100% - 7px) 0,100% 50%,calc(100% - 7px) 100%,7px 100%,0 50%);
+  color:#7a2820;
   cursor:pointer;
   font-family:'Bebas Neue',sans-serif;
-  font-size:.78rem; letter-spacing:.12em;
+  font-size:.7rem; letter-spacing:.1em;
   text-transform:uppercase;
   padding:6px 0;
   width:36px;
   box-sizing:border-box;
-  text-shadow:0 1px 0 rgba(0,0,0,0.6);
-  box-shadow:inset 0 1px 0 rgba(180,100,90,0.18),inset 0 -1px 0 rgba(0,0,0,0.4),0 1px 2px rgba(0,0,0,0.5);
   display:block;
   text-align:center;
-  transition:all .15s;
+  transition:all .2s;
 }
-.set-log-btn:hover{background:linear-gradient(180deg,#7a221a 0%,#4a1010 100%);color:#e8b0a4;box-shadow:inset 0 1px 0 rgba(200,120,100,0.25),inset 0 -1px 0 rgba(0,0,0,0.4),0 0 6px rgba(120,30,20,0.4);}
-.set-log-btn.has-value{background:linear-gradient(180deg,#8a2820 0%,#4a0e08 100%);color:#f0b8aa;}
-.set-log-btn.has-value:hover{background:linear-gradient(180deg,#9a3026 0%,#5a1410 100%);color:#f8c8b8;box-shadow:inset 0 1px 0 rgba(220,140,120,0.3),0 0 10px rgba(140,40,30,0.5);}
+.set-log-btn:hover{background:linear-gradient(180deg,#280808 0%,#140404 100%);color:#a03828;}
+.set-log-btn.has-value{background:linear-gradient(180deg,#2a0a0a 0%,#180404 100%);color:#c0392b;}
+.set-log-btn.has-value:hover{background:linear-gradient(180deg,#3a1010 0%,#220808 100%);color:#d04535;}
 
 /* Nanosuit — octagonal cyan HUD button med inner glow */
 body.theme-nanosuit .set-log-btn{
@@ -4868,7 +4866,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.34.3';
+const APP_VERSION = '3.34.4';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4877,7 +4875,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
-let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.34.3',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
+let state={cycles:[],log:[],weightLog:[],draft:null,restCount:1,permanentSwaps:{},sessionOrder:null,restSlots:null,unit:'kg',exerciseOverrides:{},sessionNameOverrides:{},timerDefault:120,timerEnabled:false,exerciseNotes:{},onboardingDone:false,theme:'iron',exerciseTagOverrides:{},updatedAt:0,customExercises:[],appVersion:'3.34.4',removedExercises:{},weightStep:2.5,addedExercises:{},importedPRs:[],exerciseOrder:{}};
 state.cycles=[newCycle()];
 
 
@@ -5760,7 +5758,8 @@ function buildPassBodyHTML(pass,cycle,nextId){
           }
           const daysAgo=Math.floor((Date.now()-lastSession.timestamp)/86400000);
           const whenStr=daysAgo===0?'today':daysAgo===1?'1d ago':`${daysAgo}d ago`;
-          // 3.34.3 — History-expand: visa alla warmup+work sets från förra passet, kollapsat default.
+          // 3.34.4 — History alltid expanderad direkt under "Last"-raden. Ingen toggle.
+          // Niklas: "Lägg det bara under varandra. Då blir det tydligt hur många dagar senast och alla set."
           const allSets = lastSession.allSets || lastSession.sets || [];
           let historyHTML = '';
           if(allSets.length > 1){
@@ -5774,11 +5773,10 @@ function buildPassBodyHTML(pass,cycle,nextId){
               else valStr = `${toDisplay(s.weight)||'—'}${unitLabel()} ×${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}`;
               return `<div class="ex-prev-history-set ${wu?'warmup':'work'}"><span class="set-lbl">${lbl}</span>${valStr}</div>`;
             }).join('');
-            const isOpen = !!_showHistory[ex.id];
-            const togLabel = (isOpen?'▴':'▾') + ' History (' + allSets.length + ')';
-            historyHTML = `<div class="ex-prev-history-toggle" id="histtog-${ex.id}" data-count="${allSets.length}" onclick="toggleHistory('${ex.id}')">${togLabel}</div><div class="ex-prev-history${isOpen?' open':''}" id="hist-${ex.id}">${rows}</div>`;
+            historyHTML = `<div class="ex-prev-history">${rows}</div>`;
           }
-          prevText=`<div class="ex-prev"><span class="last-val">Last (${whenStr}): ${lastStr}</span>${historyHTML}</div>`;
+          // "Last (Xd ago):" — utan trailing summary nu (alla sets listas under)
+          prevText=`<div class="ex-prev"><span class="last-val">Last (${whenStr}):</span>${historyHTML || ' '+lastStr}</div>`;
         }
 
         const existingNote = state.exerciseNotes?.[ex.id]||'';

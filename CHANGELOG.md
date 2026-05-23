@@ -6,6 +6,30 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.34.4 — 2026-05-23
+**Iron Log avlång hexagon + History alltid expanderad.**
+
+Niklas test-feedback från 3.34.3:
+
+- **Iron Log:** Var fortfarande "för skrikande röd". Total redesign:
+  - **Avlång hexagon** via `clip-path:polygon(7px 0, calc(100% - 7px) 0, 100% 50%, calc(100% - 7px) 100%, 7px 100%, 0 50%)` — samma vokabulär som chain-tab session-swipen, mindre skala.
+  - **MYCKET mörkare:** gradient `#180404 → #0a0202` (nästan svart med svag rödbrun hint).
+  - **Färre kontrast-element:** ingen border, ingen text-shadow, ingen box-shadow.
+  - **Text dim:** `#7a2820` (dunkel blodröd) istället för `#d4a098`. Hover lyser till `#a03828`, has-value `#c0392b`.
+  - Knappen "ligger låg" i Iron's dunkla estetik nu istället för att skrika.
+- **History:** Borttagen toggle-mekanik (`▾ History (N)` + click-to-expand). Alltid expanderad direkt under "Last"-raden:
+  ```
+  Last (2d ago):
+  W1: 40kg ×8r
+  W2: 45kg ×6r
+  S1: 50kg ×5r +1f
+  ```
+  - Tog bort `_showHistory` state + `toggleHistory()` helper (deklarerad men oanvänd nu — kan rensas senare).
+  - Font size matchad till `.ex-prev` (`.48rem` istället för `.55rem`), färger toned down för att smälta in (grays #555-#888 istället för accent-färger).
+  - Endast 1 set → fallback till inline "Last (today): 42s" (singles/timed har inget värde av list-format).
+
+---
+
 ## 3.34.3 — 2026-05-23
 **Förra passets full historik under "Last (Xd ago)" — expand-on-tap (FEATURE).**
 
