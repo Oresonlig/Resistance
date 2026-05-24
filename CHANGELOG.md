@@ -6,6 +6,15 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.35.2 — 2026-05-24
+**P1 + P6 — Typografi-pass: övningsnamn matchar collapsed, historik upp i storlek.**
+
+**P1:** `.ex-name` (expanded) bumpad från `.82rem` → `.95rem` så storleken matchar `.ex-collapsed-name` default. Lade till samma `letter-spacing:.05em` för full paritet. Cosmic Horror har egen `font-size:1.2rem` på `.ex-name` som override:r — behållen (Niklas-undantag).
+
+**P6:** `.ex-prev` ("Last (Xd ago):") + `.ex-prev-history-set` (S1/S2/S3-rader) bumpade från `.48rem` → `.65rem`. Färg upp från `#555/#888` → `#888/#aaa` för bättre läsbarhet. Line-height + margin lite upp för andnings-utrymme. Niklas säger till om för stort.
+
+---
+
 ## 3.35.1 — 2026-05-24
 **P7 — Done-state behåller temats unika form.**
 

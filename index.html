@@ -183,7 +183,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .ex-collapsed-status{font-family:var(--mono);font-size:.78rem;color:var(--gray-light);letter-spacing:.04em;flex-shrink:0;}
 .ex-header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;}
 .ex-label-col{flex:1;min-width:0;}
-.ex-name{font-size:.82rem;font-weight:500;}
+.ex-name{font-size:.95rem;font-weight:500;letter-spacing:.05em;}
 .ex-tag{display:inline-block;font-family:var(--mono);font-size:.46rem;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;background:var(--tag-base-bg);border:1px solid var(--tag-base-border);color:var(--tag-base-color);margin-left:5px;vertical-align:middle;border-radius:2px;}
 /* 3.34.0 — Tags under name (alltid). Reset margin-left on tags inside .ex-tags-row. */
 .ex-tags-row{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 2px;}
@@ -197,13 +197,13 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .ex-tag.bw{background:var(--tag-bw-bg);border-color:var(--tag-bw-border);color:var(--tag-bw-color);}
 .ex-tag.uni{background:var(--tag-uni-bg);border-color:var(--tag-uni-border);color:var(--tag-uni-color);}
 .ex-detail{font-family:var(--mono);font-size:.74rem;color:#bbb;margin-top:4px;line-height:1.5;}
-.ex-prev{font-family:var(--mono);font-size:.48rem;color:#555;margin-top:3px;line-height:1.5;}
+.ex-prev{font-family:var(--mono);font-size:.65rem;color:#888;margin-top:5px;line-height:1.55;}
 .ex-prev span{color:#777;}
 .ex-prev .last-val{color:#6a8a6a;font-style:italic;}
 /* 3.34.4 — History: alltid expanderad direkt under "Last (Xd ago)", samma font/size.
    Niklas: "Lägg det bara under varandra. Då blir det tydligt hur många dagar senast och alla set." */
 .ex-prev-history{display:block;margin:0;padding:0;border:none;}
-.ex-prev-history-set{font-family:var(--mono);font-size:.48rem;color:#888;padding:0;letter-spacing:.04em;line-height:1.5;}
+.ex-prev-history-set{font-family:var(--mono);font-size:.65rem;color:#aaa;padding:0;letter-spacing:.04em;line-height:1.55;}
 .ex-prev-history-set.warmup{color:#666;}
 .ex-prev-history-set .set-lbl{color:#777;font-weight:600;margin-right:4px;display:inline-block;min-width:18px;}
 .ex-prev-history-set.warmup .set-lbl{color:#555;font-weight:500;}
@@ -4882,7 +4882,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.35.1';
+const APP_VERSION = '3.35.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
