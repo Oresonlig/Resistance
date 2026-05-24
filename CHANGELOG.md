@@ -6,6 +6,19 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.35.8 — 2026-05-24
+**Login-bug-diagnostik + hängnings-fix på buildCurrentUser.**
+
+Niklas kunde inte logga in efter 3.35.7-reverten heller. Bekräftat via flera tester: thechain.training/Supabase/esm.sh alla operativa. Niklas testat cellular + WiFi + desktop, allt hänger. Password reset-mejl kommer fram och lösenord kan bytas, men "Password updated, signing you in" hänger också → samma kod-path: `handleSession()` fryser.
+
+**Hypotes:** `buildCurrentUser()` kallar `sb.from('profiles').select(...).maybeSingle()`. Om den queryn hänger för Niklas's user-id (RLS-policy som loopar, eller databas-lås) → handleSession fryser eftersom await aldrig returnerar.
+
+**Fix:** `Promise.race` med 3s timeout på profile-fetch. Om timeout → fallback till email-prefix som display name. Login fortsätter normalt.
+
+**Bonus:** `console.log` i varje steg av `handleSession` så Niklas kan öppna DevTools och se EXAKT var det hänger om timeout-fixen inte räcker.
+
+---
+
 ## 3.35.7 — 2026-05-24
 **REVERT — backat 3.35.0 → 3.35.6 (login-bug).**
 

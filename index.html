@@ -4256,14 +4256,21 @@ async function buildCurrentUser(session){
   if(!session) return null;
   const u = session.user;
   let displayName = null;
+  // 3.35.8 - Timeout paa profile-fetch saa login inte haenger om RLS/db stallar
   try{
-    const { data: profile } = await window.sb
+    const profilePromise = window.sb
       .from('profiles')
       .select('display_name, email')
       .eq('id', u.id)
       .maybeSingle();
-    displayName = profile?.display_name;
-  }catch(e){ /* ignore — profile fetch is non-critical */ }
+    const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve({data:null, error:'timeout'}), 3000));
+    const result = await Promise.race([profilePromise, timeoutPromise]);
+    if(result?.error === 'timeout'){
+      console.warn('[auth] profiles fetch timed out after 3s, falling back to email prefix');
+    } else {
+      displayName = result?.data?.display_name;
+    }
+  }catch(e){ console.warn('[auth] profiles fetch threw:', e); }
   const email = u.email || '';
   const name = displayName || email.split('@')[0] || 'User';
   return { id: u.id, name: name };
@@ -4320,6 +4327,7 @@ function authMsg(text, kind){
 
 // Handle a session (whether new or existing)
 async function handleSession(session){
+  console.log('[auth] handleSession start, hasSession:', !!session);
   if(!session){
     currentUser = null;
     showAuthScreen();
@@ -4327,10 +4335,15 @@ async function handleSession(session){
   }
   isLoading = true; // block save() during entire load sequence
   try{
+    console.log('[auth] before buildCurrentUser');
     currentUser = await buildCurrentUser(session);
+    console.log('[auth] after buildCurrentUser:', currentUser);
     cleanLegacyLocalStorage();
+    console.log('[auth] before loadStateForUser');
     await loadStateForUser();
+    console.log('[auth] after loadStateForUser');
     showAppShell();
+    console.log('[auth] showAppShell done');
     initTheme();
     const hv=document.getElementById('headerVersion');if(hv)hv.textContent=APP_VERSION;
     // PM12: varna om Private Browsing efter app-shell renderats
@@ -4338,10 +4351,15 @@ async function handleSession(session){
     refreshAmPill();
     requestNotificationPermission && requestNotificationPermission();
     if(!state.onboardingDone){
+      console.log('[auth] showing onboarding');
       showOnboarding(currentUser.id, 0, {});
     } else {
+      console.log('[auth] calling renderChain');
       renderChain();
+      console.log('[auth] renderChain done');
     }
+  } catch(e) {
+    console.error('[auth] handleSession threw:', e);
   } finally {
     isLoading = false; // always unblock, even if something throws
   }
@@ -4846,7 +4864,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.35.7';
+const APP_VERSION = '3.35.8';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
