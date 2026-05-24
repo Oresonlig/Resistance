@@ -6,95 +6,14 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
-## 3.35.6 — 2026-05-24
-**P9 — Kollapsbar PR-sektion på Progress-fliken (default collapsed).**
+## 3.35.7 — 2026-05-24
+**REVERT — backat 3.35.0 → 3.35.6 (login-bug).**
 
-Niklas: "viktigare att se tidigare sessions snabbare. Sedan vill man kolla på PR så ska man kunna klicka upp det." För användare med många PRs blev historiken otillgänglig långt ner.
+Mobil-login hängde på "Logging in…" efter 3.35.6-deploy. Syntaxen var ren men något kraschade runtime mellan `buildCurrentUser` och `showAppShell` (sannolikt i `loadStateForUser` eller direkt efter). Utan DevTools-access på mobil gick det inte att diagnosa snabbt.
 
-**Fix:** Section-sub för PR ("★ Personal Records · N") nu klickbar med chevron (▶ collapsed / ▼ expanded). Default `state.prCollapsed = true`. Persisteras i state — toggle behålls per användare.
+**Åtgärd:** Återställde `index.html` och `CHANGELOG.md` till tillståndet vid commit `1a24021` (3.34.11). Bumpade version till **3.35.7** så Service Worker hämtar färsk version och tömmer cache. Original-commits (`0e24c94` → `7a52339`) finns kvar i git-historiken för framtida diagnos och re-apply.
 
----
-
-## 3.35.5 — 2026-05-24
-**P5 — Separera träningsstil-hint (tag-driven) från teknik-tip (övning-specifik).**
-
-Niklas identifierade: "1 set failure" är ett HIT/ramping-mönster (träningsstil), inte en egenskap hos Flat BB Bench Press. "Full ROM deep stretch" är en teknik-tip för Incline Cable Flyes (övnings-egenskap). De ska inte ligga i samma sträng.
-
-**Ny arkitektur:**
-- `TAG_HINTS`-map (ramp/bw/uni/timed/singles/_none) → tag-driven beskrivnings-linje
-- `getExerciseDescriptionLine(ex)` → returnerar text för primär tag
-- `getExerciseTip(ex)` → returnerar `ex.tip` (explicit) eller utvinner icke-tag-info ur `ex.detail`
-- Ny `.ex-tip` CSS-klass (italic, mer dämpad än `.ex-detail`)
-
-**Rendering:** rad 1 = tag-driven (`.ex-detail`), rad 2 = övnings-tip om finns (`.ex-tip`).
-
-**Parse-strategi:** strippar kända tag-only-strings ("1 set failure", "Ramping → 1 set failure", "Ramping → work sets to failure"). Behåller resten som tip ("Full ROM - Deep stretch", "Supinated or neutral", "2 sets"). När du byter primär tag uppdateras rad 1 automatiskt; teknik-tips persisterar.
-
----
-
-## 3.35.4 — 2026-05-24
-**P2 — Input borders starkare per tema (balansering mot prominenta Log-knappar).**
-
-Efter 3.34.1 themed Log/Finish-knappar och 3.35.1 done-form-bevarande hade Log-knapparna mer visuell vikt än input-fälten — Niklas: "input behöver bli någon nivå tydligare". Niklas valde A: starkare border tom-state.
-
-**Bumpar:**
-- Iron default `.set-input` border: `#3a1a1a → #5a2828`
-- Cosmic Horror: `rgba(127,200,180,0.14) → 0.34` (mer än dubbelt)
-- Arctic: `rgba(0,168,216,0.22) → 0.45` (dubbelt)
-- Obsidian: `#2a2010 → #4a3818`
-- Void: `#1a1a1a → #3a3a3a` (mer dubbelt)
-
-Övriga teman (Night City, Ember, Nanosuit, Daylight, Crusader) orörda — Niklas testar och säger till om något behöver mer.
-
----
-
-## 3.35.3 — 2026-05-24
-**P3 — Chain-strip distant intensitet upp för tydligare "återstår".**
-
-Niklas-feedback: vid helt ny runda såg alla 6 ej-done-sessioner väldigt dova ut, knappt synligt att de var kvar. Spotlight (active+adjacent på glänt) behållen, men distant höjd nära adjacent-nivå.
-
-**Default (Iron + ärver):** `.chain-tab-letter` opacity `.82 → .92`, background `red-mix 16% → 26%`.
-
-**Per tema:**
-- Arctic: distant bg `0.58 → 0.78`, text `#5a7a88 → #3a5a68` (mer kontrast)
-- Void: distant bg `0.07 → 0.18`, color `#888 → #bbb`
-- Obsidian: distant bg `.7 → .82`, color `#8a7340 → #b08840`, border lite ljusare
-- Cosmic Horror: distant bg `.55 → .72`, color `#8aacaa → #b0d0c8`, border lite mer mättad
-
-Adjacent och active orörda — Niklas nämnde bara distant.
-
----
-
-## 3.35.2 — 2026-05-24
-**P1 + P6 — Typografi-pass: övningsnamn matchar collapsed, historik upp i storlek.**
-
-**P1:** `.ex-name` (expanded) bumpad från `.82rem` → `.95rem` så storleken matchar `.ex-collapsed-name` default. Lade till samma `letter-spacing:.05em` för full paritet. Cosmic Horror har egen `font-size:1.2rem` på `.ex-name` som override:r — behållen (Niklas-undantag).
-
-**P6:** `.ex-prev` ("Last (Xd ago):") + `.ex-prev-history-set` (S1/S2/S3-rader) bumpade från `.48rem` → `.65rem`. Färg upp från `#555/#888` → `#888/#aaa` för bättre läsbarhet. Line-height + margin lite upp för andnings-utrymme. Niklas säger till om för stort.
-
----
-
-## 3.35.1 — 2026-05-24
-**P7 — Done-state behåller temats unika form.**
-
-Loggad set tappade form: hexagon/octagon/blob på `.set-log-btn` blev fyrkantig `.set-logged-indicator` efter Log → visuellt brott per tema.
-
-**Fix:** Kopiera `clip-path` (Iron/Nanosuit/NightCity), `border-radius` (Void/Arctic/Daylight/Cosmic) från Log-knappens form till `.set-logged-indicator` per tema. Ember/Crusader/Obsidian behåller rectangle (matchar deras Log). Padding upp från 5px → 6px så formen klipps korrekt.
-
----
-
-## 3.35.0 — 2026-05-24
-**P8 — Multi-draft: state reset vid pass-byte löst (KRITISK DATAFÖRLUST-BUGG).**
-
-Niklas-flöde: pass A halvklart (övningar Done + loggade), gick till pass B för note-redigering, tillbaka till A → allt nollställt inkl. Done-rader.
-
-**Rotorsak:** `ensureDraft(passId)` raderade hela `state.draft` om `passId` inte matchade — kallades från `setActiveExercise` (V1 Collapse tap på collapsed-rad), så att titta på en annan övning i pass B wipea pass A:s draft.
-
-**Fix:** Multi-draft. Varje pass har egen draft i `state.drafts[passId]`. `state.draft` är alias för aktiv draft. Vid pass-byte persisteras nuvarande till sin slot innan nästa hämtas — ingenting raderas. `finishSession` rensar `state.drafts[passId]` när passet markeras klart. Drafts förblir device-lokala (SL6) — exkluderas från cloud-push och återställs vid pull.
-
-**Migration:** Vid load läggs befintlig `state.draft` in i `state.drafts[passId]` automatiskt via `ensureStateDefaults`.
-
-**Sannolikt löser även P4** (set försvinner efter Log) som symptom på samma rot — kollas vid test.
+**Åter-implementeras inkrementellt** efter root-cause-analys: en punkt per version, testad i isolation. Sannolik misstänkt: P5 (TAG_HINTS/getExerciseTip) eller P8 (multi-draft + ensureStateDefaults migration).
 
 ---
 

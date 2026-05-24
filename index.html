@@ -129,7 +129,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .chain-strip-outer::-webkit-scrollbar{display:none;}
 .chain-strip-inner{display:flex;align-items:center;min-width:max-content;padding-bottom:10px;gap:4px;}
 .chain-tab{display:flex;flex-direction:row;align-items:stretch;cursor:pointer;border:none;padding:0;flex-shrink:0;height:44px;background:none;clip-path:polygon(9px 0,calc(100% - 9px) 0,100% 50%,calc(100% - 9px) 100%,9px 100%,0 50%);transition:opacity .22s;}
-.chain-tab-letter{font-family:var(--mono);font-weight:700;color:var(--red);width:42px;display:flex;align-items:center;justify-content:center;font-size:1.32rem;flex-shrink:0;background:color-mix(in srgb,var(--red) 26%,transparent);border:none;transition:background .22s,color .22s,opacity .22s;opacity:.92;}
+.chain-tab-letter{font-family:var(--mono);font-weight:700;color:var(--red);width:42px;display:flex;align-items:center;justify-content:center;font-size:1.32rem;flex-shrink:0;background:color-mix(in srgb,var(--red) 16%,transparent);border:none;transition:background .22s,color .22s,opacity .22s;opacity:.82;}
 .chain-tab.adjacent .chain-tab-letter{opacity:.92;background:color-mix(in srgb,var(--red) 24%,transparent);}
 .chain-tab.active .chain-tab-letter{opacity:1;background:color-mix(in srgb,var(--red) 52%,transparent);}
 .chain-tab.rest-day .chain-tab-letter{color:color-mix(in srgb,var(--gold) 50%,#666);background:color-mix(in srgb,var(--gold) 6%,transparent);}
@@ -183,7 +183,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .ex-collapsed-status{font-family:var(--mono);font-size:.78rem;color:var(--gray-light);letter-spacing:.04em;flex-shrink:0;}
 .ex-header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;}
 .ex-label-col{flex:1;min-width:0;}
-.ex-name{font-size:.95rem;font-weight:500;letter-spacing:.05em;}
+.ex-name{font-size:.82rem;font-weight:500;}
 .ex-tag{display:inline-block;font-family:var(--mono);font-size:.46rem;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;background:var(--tag-base-bg);border:1px solid var(--tag-base-border);color:var(--tag-base-color);margin-left:5px;vertical-align:middle;border-radius:2px;}
 /* 3.34.0 — Tags under name (alltid). Reset margin-left on tags inside .ex-tags-row. */
 .ex-tags-row{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 2px;}
@@ -197,16 +197,13 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .ex-tag.bw{background:var(--tag-bw-bg);border-color:var(--tag-bw-border);color:var(--tag-bw-color);}
 .ex-tag.uni{background:var(--tag-uni-bg);border-color:var(--tag-uni-border);color:var(--tag-uni-color);}
 .ex-detail{font-family:var(--mono);font-size:.74rem;color:#bbb;margin-top:4px;line-height:1.5;}
-/* 3.35.5 — Teknik-tip per oevning (Full ROM, Deep stretch etc.).
-   Separat fraan tag-driven .ex-detail (Ramping/1 set failure/etc.). */
-.ex-tip{font-family:var(--mono);font-size:.7rem;color:#9aa48a;font-style:italic;margin-top:3px;line-height:1.5;letter-spacing:.02em;}
-.ex-prev{font-family:var(--mono);font-size:.65rem;color:#888;margin-top:5px;line-height:1.55;}
+.ex-prev{font-family:var(--mono);font-size:.48rem;color:#555;margin-top:3px;line-height:1.5;}
 .ex-prev span{color:#777;}
 .ex-prev .last-val{color:#6a8a6a;font-style:italic;}
 /* 3.34.4 — History: alltid expanderad direkt under "Last (Xd ago)", samma font/size.
    Niklas: "Lägg det bara under varandra. Då blir det tydligt hur många dagar senast och alla set." */
 .ex-prev-history{display:block;margin:0;padding:0;border:none;}
-.ex-prev-history-set{font-family:var(--mono);font-size:.65rem;color:#aaa;padding:0;letter-spacing:.04em;line-height:1.55;}
+.ex-prev-history-set{font-family:var(--mono);font-size:.48rem;color:#888;padding:0;letter-spacing:.04em;line-height:1.5;}
 .ex-prev-history-set.warmup{color:#666;}
 .ex-prev-history-set .set-lbl{color:#777;font-weight:600;margin-right:4px;display:inline-block;min-width:18px;}
 .ex-prev-history-set.warmup .set-lbl{color:#555;font-weight:500;}
@@ -252,7 +249,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .set-row.bw-set{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
 .set-num{font-family:var(--mono);font-size:.44rem;color:#666;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:5px;}
 .set-num.warmup-label{color:#4a4a4a;}
-.set-input{background:var(--surface-input);border:1px solid #5a2828;color:var(--white);font-family:var(--mono);font-size:.76rem;padding:5px 4px;text-align:center;transition:border-color .15s;-moz-appearance:textfield;width:100%;}
+.set-input{background:var(--surface-input);border:1px solid #3a1a1a;color:var(--white);font-family:var(--mono);font-size:.76rem;padding:5px 4px;text-align:center;transition:border-color .15s;-moz-appearance:textfield;width:100%;}
 .set-input::-webkit-outer-spin-button,.set-input::-webkit-inner-spin-button{-webkit-appearance:none;}
 .set-input:focus{outline:none;border-color:var(--red);}
 .set-input:disabled{opacity:.2;cursor:not-allowed;}
@@ -365,8 +362,6 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .stat-num{font-family:var(--display);font-size:2rem;color:var(--red);line-height:1;}
 .stat-desc{font-family:var(--mono);font-size:.46rem;color:var(--gray-light);text-transform:uppercase;letter-spacing:.07em;margin-top:3px;}
 .pr-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;}
-.pr-grid.collapsed{display:none;}
-.pr-toggle{cursor:pointer;user-select:none;}
 .pr-card{border:1px solid var(--border-subtle);background:var(--surface-base);padding:9px 11px;position:relative;overflow:hidden;}
 .pr-delete{position:absolute;top:4px;right:4px;background:none;border:1px solid transparent;color:#444;cursor:pointer;font-size:.7rem;width:22px;height:22px;line-height:1;padding:0;transition:all .15s;}
 .pr-delete:hover{color:#884444;border-color:#3a1a1a;}
@@ -1128,7 +1123,7 @@ body.theme-arctic .btn-primary:disabled{background:#c8dde5;color:#8aacb8;cursor:
 body.theme-arctic .ex-block{background:rgba(255,255,255,0.55);border:1px solid rgba(0,168,216,0.1);}
 /* ex-block.saved: bg ärvs via --surface-saved */
 body.theme-arctic .ex-btn-done{background:rgba(255,255,255,0.45);border-color:var(--red);color:var(--red);font-family:'Rajdhani',sans-serif;font-weight:600;}
-body.theme-arctic .set-input{background:rgba(255,255,255,0.75);border-color:rgba(0,168,216,0.45);color:#1a2e3a;}
+body.theme-arctic .set-input{background:rgba(255,255,255,0.75);border-color:rgba(0,168,216,0.22);color:#1a2e3a;}
 body.theme-arctic .set-input:focus{border-color:var(--red);box-shadow:0 0 8px rgba(0,168,216,0.32);}
 body.theme-arctic .weight-banner{background:rgba(225,242,250,0.78);}
 body.theme-arctic .weight-input{background:rgba(255,255,255,0.82);border-color:rgba(0,168,216,0.3);color:#1a2e3a;}
@@ -1165,7 +1160,7 @@ body.theme-arctic #reset-password-form input:-webkit-autofill{
 }
 
 /* Chain strip — frosted ice hexagons */
-body.theme-arctic .chain-tab-letter{color:#3a5a68;background:rgba(180,220,240,0.78);}
+body.theme-arctic .chain-tab-letter{color:#5a7a88;background:rgba(180,220,240,0.58);}
 body.theme-arctic .chain-tab.adjacent .chain-tab-letter{color:#00a8d8;background:rgba(160,210,235,0.72);}
 body.theme-arctic .chain-tab.active .chain-tab-letter{color:#fff;background:rgba(0,168,216,0.88);box-shadow:0 0 10px rgba(0,168,216,0.4);}
 body.theme-arctic .chain-tab.done .chain-tab-letter{color:#aaccd8;background:rgba(200,230,245,0.35);}
@@ -1863,7 +1858,7 @@ body.theme-void .btn-primary{background:#fff;color:#000;font-family:'Playfair Di
 body.theme-void .btn-primary:hover{background:#ddd;}
 body.theme-void .ex-btn-done{background:none;border-color:#fff;color:#fff;}
 body.theme-void .ex-btn-skip{border-color:#444;color:#666;}
-body.theme-void .set-input{background:#050505;border-color:#3a3a3a;}
+body.theme-void .set-input{background:#050505;border-color:#1a1a1a;}
 /* Void — modal primary-confirm: --red=#fff + color:#fff = vit-på-vitt → explicit svart text */
 body.theme-void .app-modal-btn-primary{background:#fff;border-color:#fff;color:#000;}
 body.theme-void .app-modal-btn-primary:hover{background:#ddd;border-color:#ddd;color:#000;}
@@ -1879,7 +1874,7 @@ body.theme-void .auth-logo span{color:#aaa;}
 body.theme-void .auth-btn-primary{background:#fff;color:#000;}
 body.theme-void .auth-btn-primary:hover{background:#ddd;}
 body.theme-void .btn-primary:disabled{background:#1a1a1a;color:#444;}
-body.theme-void .chain-tab-letter{color:#bbb;background:rgba(255,255,255,0.18);}
+body.theme-void .chain-tab-letter{color:#888;background:rgba(255,255,255,0.07);}
 body.theme-void .chain-tab.adjacent .chain-tab-letter{color:#bbb;background:rgba(255,255,255,0.12);}
 body.theme-void .chain-tab.active .chain-tab-letter{color:#000;background:rgba(255,255,255,0.88);}
 body.theme-void .chain-tab.done .chain-tab-letter{color:#2a2a2a;background:rgba(255,255,255,0.015);opacity:0.6;}
@@ -3461,11 +3456,10 @@ body.theme-obsidian .chain-fill{background:linear-gradient(90deg,#c9a35a,#f0d99c
 
 /* Chain-strip — runda medaljer för icke-aktiv, rektangel med diamond-ends för aktiv (designens look) */
 body.theme-obsidian .chain-tab .chain-tab-letter{
-  /* 3.34.2: distant brighter (var #5a4a28 → #8a7340), Niklas: "oklara sessions tydligare"
-     3.35.3: distant ytterligare upp #8a7340 → #b08840, bg .7 → .82 — närma adjacent */
+  /* 3.34.2: distant brighter (var #5a4a28 → #8a7340), Niklas: "oklara sessions tydligare" */
   width:36px; height:36px; border-radius:50%; clip-path:none !important;
-  border:1px solid #5a4220; background:rgba(45,32,14,0.82);
-  color:#b08840; font-family:'Cinzel',serif; font-weight:600;
+  border:1px solid #4a3a18; background:rgba(30,22,10,0.7);
+  color:#8a7340; font-family:'Cinzel',serif; font-weight:600;
   opacity:1;
 }
 body.theme-obsidian .chain-tab.adjacent .chain-tab-letter{color:#e0c078;background:rgba(60,42,18,0.75);border-color:#6a5028;}
@@ -3583,7 +3577,7 @@ body.theme-obsidian .ex-btn-skip{background:linear-gradient(180deg,rgba(50,35,14
 body.theme-obsidian .ex-btn-edit{background:linear-gradient(180deg,rgba(50,35,14,0.4),rgba(20,14,6,0.4));border:1px solid #4a3a18;color:#c9a35a;font-family:'Cinzel',serif;letter-spacing:.22em;font-weight:600;}
 
 /* Set inputs */
-body.theme-obsidian .set-input{background:rgba(15,10,4,0.6);border:1px solid #4a3818;color:#f0d99c;font-family:'Cinzel',serif;font-weight:600;}
+body.theme-obsidian .set-input{background:rgba(15,10,4,0.6);border:1px solid #2a2010;color:#f0d99c;font-family:'Cinzel',serif;font-weight:600;}
 body.theme-obsidian .set-input:focus{border-color:#c9a35a;box-shadow:0 0 8px rgba(201,163,90,0.4);}
 body.theme-obsidian .set-input.warmup{color:#5a4a28;}
 body.theme-obsidian .set-unit{color:#c9a35a;font-family:'Cinzel',serif;font-weight:600;letter-spacing:.18em;}
@@ -3819,12 +3813,11 @@ body.theme-cosmic-horror .chain-fill{background:linear-gradient(90deg,#7fc8b4,#a
 
 /* Chain-strip — organiska asymmetriska blobs (skriver över hexagon) */
 body.theme-cosmic-horror .chain-tab .chain-tab-letter{
-  /* distant = upcoming/not yet — brighter post-3.33.4 so passes "tänds upp" after chain restart
-     3.35.3: ytterligare bump - bg .55 → .72, color #8aacaa → #b0d0c8 - närma adjacent */
+  /* distant = upcoming/not yet — brighter post-3.33.4 so passes "tänds upp" after chain restart */
   width:38px; height:38px; clip-path:none !important;
-  border:1px solid rgba(127,200,180,0.45);
-  background:rgba(35,68,62,0.72);
-  color:#b0d0c8; font-family:'Cormorant SC',serif; font-size:.9rem; font-weight:500;
+  border:1px solid rgba(127,200,180,0.32);
+  background:rgba(20,40,38,0.55);
+  color:#8aacaa; font-family:'Cormorant SC',serif; font-size:.9rem; font-weight:500;
   border-radius:50% 38% 60% 42% / 42% 60% 38% 58%;
   opacity:1;
 }
@@ -3897,7 +3890,7 @@ body.theme-cosmic-horror .ex-btn-skip{background:linear-gradient(180deg,rgba(20,
 body.theme-cosmic-horror .ex-btn-edit{background:linear-gradient(180deg,rgba(20,50,46,0.5),rgba(8,18,22,0.5));border:1px solid rgba(127,200,180,0.22);color:#aedcd0;font-family:'IBM Plex Mono',monospace;letter-spacing:.16em;font-weight:400;border-radius:10px 4px 10px 4px;}
 
 /* Set-inputs — asymmetric blob radii */
-body.theme-cosmic-horror .set-input{background:rgba(4,14,16,0.65);border:1px solid rgba(127,200,180,0.34);color:#e6f0ea;font-family:'IBM Plex Mono',monospace;font-weight:400;border-radius:8px 2px 8px 2px;}
+body.theme-cosmic-horror .set-input{background:rgba(4,14,16,0.65);border:1px solid rgba(127,200,180,0.14);color:#e6f0ea;font-family:'IBM Plex Mono',monospace;font-weight:400;border-radius:8px 2px 8px 2px;}
 body.theme-cosmic-horror .set-input:focus{border-color:#7fc8b4;box-shadow:0 0 8px rgba(127,200,180,0.32);}
 body.theme-cosmic-horror .set-input.warmup{color:#2a3a36;}
 body.theme-cosmic-horror .set-unit{color:#2a4a44;font-family:'IBM Plex Mono',monospace;font-weight:500;letter-spacing:.18em;}
@@ -4115,46 +4108,15 @@ body.theme-crusader .set-log-btn:hover{background:linear-gradient(180deg,#c83838
 body.theme-crusader .set-log-btn.has-value{background:linear-gradient(180deg,#c83838 0%,#7a1818 100%);}
 
 /* ── SET LOGGED STATE ────────────────────────────────────────*/
-/* 3.35.1 — Done-state behaaller temats unika form (clip-path/border-radius)
-   istaellet foer fyrkantig fallback. Form-properties kopieras fraan
-   .set-log-btn per tema saa hexagon/octagon/blob bibehaalls efter Log. */
 .set-logged{opacity:.5;}
 .set-logged-indicator{
-  display:block;width:36px;padding:6px 0;
+  display:block;width:36px;padding:5px 0;
   border:1px solid #2a3a2a;color:var(--green-bright);
   font-family:var(--mono);font-size:.7rem;text-align:center;
   box-sizing:border-box;cursor:pointer;
 }
-/* Iron — hexagon (matchar default .set-log-btn) */
-body.theme-iron .set-logged-indicator{
-  clip-path:polygon(7px 0,calc(100% - 7px) 0,100% 50%,calc(100% - 7px) 100%,7px 100%,0 50%);
-  border:none;background:rgba(40,12,12,0.5);
-}
-/* Nanosuit — octagonal HUD */
-body.theme-nanosuit .set-logged-indicator{
-  clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 50%,calc(100% - 6px) 100%,6px 100%,0 50%);
-  border:none;background:rgba(0,80,100,0.4);color:#a0e8f0;
-}
-/* Night City — parallelogram */
-body.theme-nightcity .set-logged-indicator{
-  clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);
-  border:none;background:rgba(80,68,0,0.45);color:#fff080;
-}
-/* Void — pill */
-body.theme-void .set-logged-indicator{
-  border-radius:18px;border-color:rgba(255,255,255,0.4);color:#fff;
-}
-/* Arctic — frosted pill */
-body.theme-arctic .set-logged-indicator{
-  border-radius:14px;border-color:rgba(255,255,255,0.4);color:#e0f8ff;
-}
-body.theme-daylight .set-logged-indicator{border-radius:14px;border-color:#b0d4b0;color:var(--green-bright);}
+body.theme-daylight .set-logged-indicator{border-color:#b0d4b0;color:var(--green-bright);}
 body.theme-ember .set-logged-indicator{border-color:#5a7a2a;color:#a0cc40;}
-/* Cosmic Horror — asymmetric blob (matchar Log-formen) */
-body.theme-cosmic-horror .set-logged-indicator{
-  border-radius:16px 4px 18px 4px / 14px 6px 16px 4px;
-  border-color:rgba(127,200,180,0.35);
-}
 
 
 .ex-note-add{
@@ -4462,12 +4424,6 @@ function ensureStateDefaults(){
   if(!Array.isArray(state.log)) state.log = [];
   if(!Array.isArray(state.weightLog)) state.weightLog = [];
   if(state.draft === undefined) state.draft = null;
-  if(!state.drafts || typeof state.drafts !== 'object') state.drafts = {};
-  if(typeof state.prCollapsed !== 'boolean') state.prCollapsed = true;
-  // 3.35.0 migration: legacy single-draft → multi-draft slot
-  if(state.draft && state.draft.passId && !state.drafts[state.draft.passId]){
-    state.drafts[state.draft.passId] = state.draft;
-  }
   if(typeof state.restCount !== 'number') state.restCount = 1;
   if(!state.permanentSwaps) state.permanentSwaps = {};
   if(state.sessionOrder === undefined) state.sessionOrder = null;
@@ -4535,7 +4491,7 @@ function isFreshState(s){
 function freshState(){
   return {
     cycles:[newCycle()],
-    log:[], weightLog:[], draft:null, drafts:{}, restCount:1, prCollapsed:true,
+    log:[], weightLog:[], draft:null, restCount:1,
     permanentSwaps:{}, sessionOrder:null, restSlots:null,
     unit:'kg', exerciseOverrides:{}, sessionNameOverrides:{},
     timerDefault:120, timerEnabled:false, exerciseNotes:{},
@@ -4890,7 +4846,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.35.6';
+const APP_VERSION = '3.35.7';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5080,20 +5036,7 @@ function nextSessionId(){
   }
   return null;
 }
-// 3.35.0 — Multi-draft: varje pass har egen draft i state.drafts[passId].
-// state.draft är alias för "nuvarande aktiv draft" — pekar på samma objekt
-// som state.drafts[state.draft.passId]. Pass-byte plockar fram rätt draft
-// istället för att radera den. Drafts rensas vid finishSession för sitt passId.
-function ensureDraft(passId){
-  if(!state.drafts || typeof state.drafts !== 'object') state.drafts = {};
-  // Persist current draft till sin egen slot innan vi byter
-  if(state.draft && state.draft.passId && state.draft.passId !== passId){
-    state.drafts[state.draft.passId] = state.draft;
-  }
-  // Hämta existerande draft för passId, eller skapa fräsch
-  state.draft = state.drafts[passId] || {passId, savedExercises:{}, extras:[], swaps:{}, extraSets:{}, inputBuffer:{}, loggedSets:{}, activeExerciseId:null};
-  state.drafts[passId] = state.draft;
-}
+function ensureDraft(passId){if(!state.draft||state.draft.passId!==passId)state.draft={passId,savedExercises:{},extras:[],swaps:{},extraSets:{},inputBuffer:{},loggedSets:{},activeExerciseId:null};}
 
 // ── LOCAL STORAGE ─────────────────────────────────────────────
 function lsKey(uid){return 'thechain_'+uid;}
@@ -5239,7 +5182,6 @@ async function syncFromCloud(userId){
         // SL6: draft är device-lokal — pushas inte, läses inte från cloud
         const _local = {
           draft: state.draft,
-          drafts: state.drafts,
           customExercises: state.customExercises,
           addedExercises: state.addedExercises,
           removedExercises: state.removedExercises,
@@ -5289,9 +5231,8 @@ async function syncFromCloud(userId){
         state.importedPRs = mergeArrayUnion(_local.importedPRs, state.importedPRs);
         state.lastSessionSetCount = mergeKeyedMap(_local.lastSessionSetCount, state.lastSessionSetCount);
         state.lastSessionNotes = mergeKeyedMap(_local.lastSessionNotes, state.lastSessionNotes);
-        // SL6: drafts är device-lokala
+        // SL6: draft är device-lokal
         state.draft = _local.draft;
-        state.drafts = _local.drafts || {};
 
         // PM7: BASE_SESSIONS muteras inte längre — getSessionName(passId) resolve:ar
         // overrides vid läsning. Tidigare reset + re-apply hade race-potential.
@@ -5419,10 +5360,9 @@ async function pushState(opts={}){
   setSyncDot('syncing');
   try{
     state.appVersion = APP_VERSION;
-    // SL6: exclude draft+drafts från payload — drafts är device-lokala
+    // SL6: exclude draft från payload — drafts är device-lokala
     const payload = {...state};
     delete payload.draft;
-    delete payload.drafts;
     const result = await sbUpsert('app_state',{id:currentUser.id,data:payload,updated_at:new Date().toISOString()});
     lastSyncWrite = Date.now();
     // SL5: hämta server-timestamp från upsert response istället för klient-Date.now()
@@ -5859,11 +5799,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
         const tagsRow = tags ? `<div class="ex-tags-row">${tags}</div>` : '';
         const tagsCollapsed = tags ? `<div class="ex-collapsed-tags">${tags}</div>` : '';
         html+=`<div class="ex-collapsed-summary"${_collapseAttr}>${_chevron}<div class="ex-collapsed-name-col"><div class="ex-collapsed-name">${escapeHTML(customName)}</div>${tagsCollapsed}</div><div class="ex-collapsed-status">${collapsedStatus}</div></div>`;
-        const _tagLine = getExerciseDescriptionLine(ex);
-        const _tip = getExerciseTip(ex);
-        const _tagHtml = _tagLine ? `<div class="ex-detail">${escapeHTML(_tagLine)}</div>` : '';
-        const _tipHtml = _tip ? `<div class="ex-tip">${escapeHTML(_tip)}</div>` : '';
-        html+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(customName)}</div>${tagsRow}${_tagHtml}${_tipHtml}${prevText}${noteBanner}</div><div class="ex-action-col">`;
+        html+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(customName)}</div>${tagsRow}<div class="ex-detail">${ex.detail}</div>${prevText}${noteBanner}</div><div class="ex-action-col">`;
 
         if(!isDone&&!isSkipped){
           html+=`<div class="ex-mini-btns">`;
@@ -7536,41 +7472,12 @@ function finishSession(passId){
   curCycle().done[passId]={date:today,exercises};
   state.log.push({passId,passName:getSessionName(pass.id),timestamp:Date.now(),exercises});
   state.draft=null;
-  if(state.drafts) delete state.drafts[passId];
   save();pushState();showToast('Session done! 💪');renderChain();
 }
 
 // ── SET MANAGEMENT ────────────────────────────────────────────
 // 3.34.0 — Tag-driven set defaults. First active tag (in TAG_ORDER) wins.
 // Niklas: "Standard är ju HIT. 2 warm + 1 work." Övriga tags overridar.
-// 3.35.5 — Tag-driven beskrivnings-linje (P5). Primaer tag dikterar text;
-// oevningsspecifika teknik-tips (ex.tip eller utvunnen ur ex.detail) renderas separat.
-const TAG_HINTS = {
-  ramp:    'Ramping → 1 set failure',
-  bw:      'Bodyweight + added load',
-  uni:     'One side at a time',
-  timed:   'Time-based, seconds',
-  singles: 'Heavy singles, long rest',
-  _none:   'HIT → 1 set failure',
-};
-function getExerciseDescriptionLine(ex){
-  const tag = getPrimaryTag(ex) || '_none';
-  return TAG_HINTS[tag] || '';
-}
-// Returnera explicit ex.tip eller utvinn icke-tag-info ur ex.detail.
-// Strippar kaenda tag-onlystrings ("1 set failure", "Ramping -> 1 set failure",
-// "Ramping -> work sets to failure"). Bevarar resten som tip ("Full ROM - Deep
-// stretch", "Supinated or neutral", "2 sets" etc.).
-function getExerciseTip(ex){
-  if(ex?.tip) return ex.tip;
-  const d = (ex?.detail || '').trim();
-  if(!d) return null;
-  if(/^Ramping\s*→\s*1 set failure$/i.test(d)) return null;
-  if(/^1 set failure$/i.test(d)) return null;
-  if(/^Ramping\s*→\s*work sets to failure$/i.test(d)) return null;
-  if(/^Ramping\s*→\s*work sets$/i.test(d)) return null;
-  return d.replace(/\s*·\s*1 set failure\s*$/i, '').trim() || null;
-}
 const TAG_DEFAULTS = {
   ramp:    { warmup: 0, work: 4 },  // Ramping up = ingen separat warmup, 4 set
   bw:      { warmup: 0, work: 3 },  // Bodyweight = hopp direkt in
@@ -7837,12 +7744,9 @@ function undoSession(passId){
       if(ex.id.startsWith('extra_'+passId+'_')) extras[parseInt(ex.id.split('_').pop())]={name:ex.name};
     });
     state.draft={passId,savedExercises,swaps:{},extras:extras.filter(Boolean),extraSets,loggedSets:{},inputBuffer:{}};
-    if(!state.drafts) state.drafts={};
-    state.drafts[passId]=state.draft;
   }else{
     // In-progress draft undo or rest-day undo — just discard any existing draft
     if(state.draft&&state.draft.passId===passId) state.draft=null;
-    if(state.drafts) delete state.drafts[passId];
   }
   save();renderChain();
 }
@@ -8084,25 +7988,13 @@ async function ignorePR(name){
 }
 
 // ── PROGRESS ──────────────────────────────────────────────────
-// 3.35.6 — P9 PR collapse-toggle. Default kollapsat (Niklas: "viktigare se tidigare sessions snabbare").
-function togglePRCollapse(){
-  state.prCollapsed = !state.prCollapsed;
-  save();
-  renderProgress();
-}
 function renderProgress(){
   const el=document.getElementById('view-progress');
   if(!state.log.length){el.innerHTML=`<div class="section-title">Progress</div><div class="empty-state">No sessions logged yet.<br>Start the chain!</div>`;return;}
   const last=state.log[state.log.length-1];const days=Math.floor((Date.now()-last.timestamp)/86400000);
   let html=`<div class="section-title">Progress</div><div class="stats-grid"><div class="stat-box"><div class="stat-num">${state.log.length}</div><div class="stat-desc">Sessions</div></div><div class="stat-box"><div class="stat-num">${state.cycles.length}</div><div class="stat-desc">Rounds</div></div><div class="stat-box"><div class="stat-num">${days}d</div><div class="stat-desc">Since last</div></div></div>`;
   const prs=getAllPRs();
-  if(prs.length){
-    const _prCollapsed = state.prCollapsed !== false; // default true
-    const _chev = _prCollapsed ? '▶' : '▼';
-    html+=`<div class="section-sub pr-toggle" onclick="togglePRCollapse()">${_chev} ★ Personal Records · ${prs.length}</div><div class="pr-grid${_prCollapsed?' collapsed':''}">`;
-    prs.forEach(pr=>{const val=pr.bw?`BW + ${toDisplay(pr.extra)||0}${unitLabel()}`:`${toDisplay(pr.weight)}${unitLabel()}`;const sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${unitLabel()} · ${pr.reps||'?'}r`:`${pr.reps||'?'} reps`;const safeName=escapeHTML(pr.name);const jsName=JSON.stringify(pr.name);html+=`<div class="pr-card"><button class="pr-delete" onclick="ignorePR(${escapeHTML(jsName)})" title="Remove this PR" aria-label="Remove ${safeName}">✕</button><div class="pr-ex-name">${safeName}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;});
-    html+=`</div>`;
-  }
+  if(prs.length){html+=`<div class="section-sub">★ Personal Records</div><div class="pr-grid">`;prs.forEach(pr=>{const val=pr.bw?`BW + ${toDisplay(pr.extra)||0}${unitLabel()}`:`${toDisplay(pr.weight)}${unitLabel()}`;const sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${unitLabel()} · ${pr.reps||'?'}r`:`${pr.reps||'?'} reps`;const safeName=escapeHTML(pr.name);const jsName=JSON.stringify(pr.name);html+=`<div class="pr-card"><button class="pr-delete" onclick="ignorePR(${escapeHTML(jsName)})" title="Remove this PR" aria-label="Remove ${safeName}">✕</button><div class="pr-ex-name">${safeName}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;});html+=`</div>`;}
   html+=`<div class="section-sub">History</div>`;
   [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW ${toDisplay(s.bwSnap)||0} + ${toDisplay(s.extra)||0}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
   el.innerHTML=html;
