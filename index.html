@@ -4917,7 +4917,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.35.11';
+const APP_VERSION = '3.35.12';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5093,7 +5093,10 @@ function runSchemaMigrations(){
 
 function newCycle(){
   const c={id:Date.now(),done:{}};
-  getEffectiveChain().forEach(p=>c.done[p.id]=null);
+  // 3.35.12 - Defensiv: vid foersta freshState()-call (innan state aer assigned)
+  // aer state i TDZ. getEffectiveChain laeser state.sessionOrder och kraschar daa.
+  // try/catch laeter cykeln skapas tomt; done fylls lazy vid foersta riktiga render.
+  try{ getEffectiveChain().forEach(p=>c.done[p.id]=null); }catch(e){ /* state TDZ during script-load init */ }
   return c;
 }
 function curCycle(){return state.cycles[state.cycles.length-1];}

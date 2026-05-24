@@ -6,6 +6,29 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.35.12 — 2026-05-24
+**ROOT CAUSE LÖST: TDZ-bug i `newCycle()` → `getEffectiveChain()`.**
+
+**Bug:** `newCycle()` på rad ~5094 anropar `getEffectiveChain()` som läser `state.sessionOrder`. Men `newCycle()` kallas INNE i `freshState()` som returnerar `{cycles:[newCycle()], ...}`. Och `freshState()` körs i RHS av `let state = freshState()`. Vid det laget är `state` i TDZ → `ReferenceError: Cannot access 'state' before initialization`.
+
+**Varför funkade det i morse:** Niklas's localStorage var giltig → `JSON.parse(raw)` lyckades → `state = freshState()`-fallbacken i catch-blocket triggades aldrig. Bugen var latent.
+
+**Vad triggade idag:** Något fick `JSON.parse` att fail (eller localStorage var tom) → catch-block kör `state = freshState()` → newCycle → getEffectiveChain → state TDZ → kraschar. Felmeddelandet i handleSession's catch konsumerade error utan att visa, så Niklas såg "Logging in..." för evigt.
+
+**Fix:** Defensiv `try/catch` runt `getEffectiveChain()` i `newCycle()`. Vid init-tid (state TDZ): skapa tom `done:{}`, fylls lazy vid första render. Annars (state defined): fylls direkt som tidigare.
+
+**Trace från Niklas's console:**
+```
+[auth] handleSession threw: ReferenceError: Cannot access 'state' before initialization
+    at getEffectiveChain (4893:14)
+    at newCycle (5096:3)
+    at freshState (4539:13)
+    at loadStateForUser (4451:15)
+    at async handleSession (4363:5)
+```
+
+---
+
 ## 3.35.11 — 2026-05-24
 **Failsafe på SJÄLVA login-knappen + tydlig console-trace.**
 
