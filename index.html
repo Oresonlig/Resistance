@@ -3595,6 +3595,7 @@ body.theme-obsidian .sets-group-label.work-group{color:#a8442e;}
 body.theme-obsidian .set-log-btn{
   background:linear-gradient(180deg,#c9a35a 0%,#8a6d30 100%);
   border:1px solid #f0d99c; border-bottom-color:#4a3a18;
+  clip-path:none;
   color:#1a0e04; font-family:'Cinzel',serif; font-weight:700; letter-spacing:.24em;
   position:relative; overflow:hidden;
   box-shadow:0 0 6px rgba(200,150,70,0.12), inset 0 1px 0 rgba(255,230,180,0.35);
@@ -3909,6 +3910,7 @@ body.theme-cosmic-horror .sets-group-label.work-group{color:#a8424c;}
 body.theme-cosmic-horror .set-log-btn{
   background:linear-gradient(180deg,#7fc8b4 0%,#3a7068 100%);
   border:none;
+  clip-path:none;
   color:#02151a; font-family:'IBM Plex Mono',monospace; font-weight:500; letter-spacing:.18em;
   box-shadow:inset 0 1px 0 rgba(220,245,240,0.45), inset 0 -1px 0 rgba(0,20,18,0.35);
   border-radius:16px 4px 18px 4px / 14px 6px 16px 4px;
@@ -4990,7 +4992,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.36.0';
+const APP_VERSION = '3.36.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

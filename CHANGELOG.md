@@ -6,6 +6,17 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.36.1 — 2026-05-24
+**Obsidian + Cosmic Horror Log-knappar: clip-path inheritance fix.**
+
+Niklas-observation: Obsidian och Cosmic Horror Log-knappar visade Iron's hexagon-form istället för sin egen unika form (Obsidian rectangle med gold gradient, Cosmic blob).
+
+**Rotorsak:** Default `.set-log-btn{clip-path:polygon(hexagon)}` ärvdes av Obsidian/Cosmic, vilkas tema-blocks endast överrider `background`/`border-radius` men inte `clip-path`. Clip-path vinner visuellt → bara hexagon syns. Latent bug sedan 3.34.1 (themed Log-knappar) men inte uppmärksammat förrän nu.
+
+**Fix:** Lade till `clip-path:none` på `body.theme-obsidian .set-log-btn` + `body.theme-cosmic-horror .set-log-btn`.
+
+---
+
 ## 3.36.0 — 2026-05-24
 **RE-APPLY: P8/P1/P6/P3/P2/P5/P9 + ny P7 hollow done-state.**
 
