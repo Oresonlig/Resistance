@@ -6,6 +6,15 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.35.1 — 2026-05-24
+**P7 — Done-state behåller temats unika form.**
+
+Loggad set tappade form: hexagon/octagon/blob på `.set-log-btn` blev fyrkantig `.set-logged-indicator` efter Log → visuellt brott per tema.
+
+**Fix:** Kopiera `clip-path` (Iron/Nanosuit/NightCity), `border-radius` (Void/Arctic/Daylight/Cosmic) från Log-knappens form till `.set-logged-indicator` per tema. Ember/Crusader/Obsidian behåller rectangle (matchar deras Log). Padding upp från 5px → 6px så formen klipps korrekt.
+
+---
+
 ## 3.35.0 — 2026-05-24
 **P8 — Multi-draft: state reset vid pass-byte löst (KRITISK DATAFÖRLUST-BUGG).**
 
