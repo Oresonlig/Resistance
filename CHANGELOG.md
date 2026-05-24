@@ -6,6 +6,15 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.35.10 — 2026-05-24
+**Version synlig på auth-screen.**
+
+Niklas-request — han kunde inte verifiera vilken version som var laddad eftersom han aldrig kommer förbi auth-screen. Lade till `v<APP_VERSION>` nedanför "Forgot password?" så det syns innan login.
+
+Setting:as från `whenSbReady` callback eftersom det är samma path som binder login-knappen, så vi vet att JS körs.
+
+---
+
 ## 3.35.9 — 2026-05-24
 **HARD FAILSAFE: tvinga in i appen efter 8s om login hänger.**
 

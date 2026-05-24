@@ -4192,6 +4192,7 @@ body.theme-ember .set-logged-indicator{border-color:#5a7a2a;color:#a0cc40;}
     <div class="auth-footer">
       <a href="#" id="auth-forgot">Forgot password?</a>
     </div>
+    <div id="auth-version" style="margin-top:18px;text-align:center;font-family:var(--mono);font-size:.55rem;color:#555;letter-spacing:.12em;">v<span id="authVersionLabel">—</span></div>
 
     <div id="reset-password-form" style="display:none;width:100%;">
       <div style="font-family:var(--mono);font-size:.62rem;color:var(--gray-light);letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px;text-align:center;">Set New Password</div>
@@ -4666,6 +4667,9 @@ async function logoutUser(){
 // AUTH BOOTSTRAP — wire everything up on load
 // ══════════════════════════════════════════════════════════════
 whenSbReady(async () => {
+  // 3.35.10 - Visa version paa auth-screen saa user kan verifiera vilken version aer laddad
+  const _vLbl = document.getElementById('authVersionLabel');
+  if(_vLbl) _vLbl.textContent = APP_VERSION;
   bindAuthHandlers();
 
   // Listen for auth state changes
@@ -4891,7 +4895,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.35.9';
+const APP_VERSION = '3.35.10';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
