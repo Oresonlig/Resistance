@@ -365,6 +365,8 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .stat-num{font-family:var(--display);font-size:2rem;color:var(--red);line-height:1;}
 .stat-desc{font-family:var(--mono);font-size:.46rem;color:var(--gray-light);text-transform:uppercase;letter-spacing:.07em;margin-top:3px;}
 .pr-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;}
+.pr-grid.collapsed{display:none;}
+.pr-toggle{cursor:pointer;user-select:none;}
 .pr-card{border:1px solid var(--border-subtle);background:var(--surface-base);padding:9px 11px;position:relative;overflow:hidden;}
 .pr-delete{position:absolute;top:4px;right:4px;background:none;border:1px solid transparent;color:#444;cursor:pointer;font-size:.7rem;width:22px;height:22px;line-height:1;padding:0;transition:all .15s;}
 .pr-delete:hover{color:#884444;border-color:#3a1a1a;}
@@ -4461,6 +4463,7 @@ function ensureStateDefaults(){
   if(!Array.isArray(state.weightLog)) state.weightLog = [];
   if(state.draft === undefined) state.draft = null;
   if(!state.drafts || typeof state.drafts !== 'object') state.drafts = {};
+  if(typeof state.prCollapsed !== 'boolean') state.prCollapsed = true;
   // 3.35.0 migration: legacy single-draft → multi-draft slot
   if(state.draft && state.draft.passId && !state.drafts[state.draft.passId]){
     state.drafts[state.draft.passId] = state.draft;
@@ -4532,7 +4535,7 @@ function isFreshState(s){
 function freshState(){
   return {
     cycles:[newCycle()],
-    log:[], weightLog:[], draft:null, drafts:{}, restCount:1,
+    log:[], weightLog:[], draft:null, drafts:{}, restCount:1, prCollapsed:true,
     permanentSwaps:{}, sessionOrder:null, restSlots:null,
     unit:'kg', exerciseOverrides:{}, sessionNameOverrides:{},
     timerDefault:120, timerEnabled:false, exerciseNotes:{},
@@ -4887,7 +4890,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.35.5';
+const APP_VERSION = '3.35.6';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8081,13 +8084,25 @@ async function ignorePR(name){
 }
 
 // ── PROGRESS ──────────────────────────────────────────────────
+// 3.35.6 — P9 PR collapse-toggle. Default kollapsat (Niklas: "viktigare se tidigare sessions snabbare").
+function togglePRCollapse(){
+  state.prCollapsed = !state.prCollapsed;
+  save();
+  renderProgress();
+}
 function renderProgress(){
   const el=document.getElementById('view-progress');
   if(!state.log.length){el.innerHTML=`<div class="section-title">Progress</div><div class="empty-state">No sessions logged yet.<br>Start the chain!</div>`;return;}
   const last=state.log[state.log.length-1];const days=Math.floor((Date.now()-last.timestamp)/86400000);
   let html=`<div class="section-title">Progress</div><div class="stats-grid"><div class="stat-box"><div class="stat-num">${state.log.length}</div><div class="stat-desc">Sessions</div></div><div class="stat-box"><div class="stat-num">${state.cycles.length}</div><div class="stat-desc">Rounds</div></div><div class="stat-box"><div class="stat-num">${days}d</div><div class="stat-desc">Since last</div></div></div>`;
   const prs=getAllPRs();
-  if(prs.length){html+=`<div class="section-sub">★ Personal Records</div><div class="pr-grid">`;prs.forEach(pr=>{const val=pr.bw?`BW + ${toDisplay(pr.extra)||0}${unitLabel()}`:`${toDisplay(pr.weight)}${unitLabel()}`;const sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${unitLabel()} · ${pr.reps||'?'}r`:`${pr.reps||'?'} reps`;const safeName=escapeHTML(pr.name);const jsName=JSON.stringify(pr.name);html+=`<div class="pr-card"><button class="pr-delete" onclick="ignorePR(${escapeHTML(jsName)})" title="Remove this PR" aria-label="Remove ${safeName}">✕</button><div class="pr-ex-name">${safeName}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;});html+=`</div>`;}
+  if(prs.length){
+    const _prCollapsed = state.prCollapsed !== false; // default true
+    const _chev = _prCollapsed ? '▶' : '▼';
+    html+=`<div class="section-sub pr-toggle" onclick="togglePRCollapse()">${_chev} ★ Personal Records · ${prs.length}</div><div class="pr-grid${_prCollapsed?' collapsed':''}">`;
+    prs.forEach(pr=>{const val=pr.bw?`BW + ${toDisplay(pr.extra)||0}${unitLabel()}`:`${toDisplay(pr.weight)}${unitLabel()}`;const sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${unitLabel()} · ${pr.reps||'?'}r`:`${pr.reps||'?'} reps`;const safeName=escapeHTML(pr.name);const jsName=JSON.stringify(pr.name);html+=`<div class="pr-card"><button class="pr-delete" onclick="ignorePR(${escapeHTML(jsName)})" title="Remove this PR" aria-label="Remove ${safeName}">✕</button><div class="pr-ex-name">${safeName}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;});
+    html+=`</div>`;
+  }
   html+=`<div class="section-sub">History</div>`;
   [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW ${toDisplay(s.bwSnap)||0} + ${toDisplay(s.extra)||0}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
   el.innerHTML=html;

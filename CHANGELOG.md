@@ -6,6 +6,15 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.35.6 — 2026-05-24
+**P9 — Kollapsbar PR-sektion på Progress-fliken (default collapsed).**
+
+Niklas: "viktigare att se tidigare sessions snabbare. Sedan vill man kolla på PR så ska man kunna klicka upp det." För användare med många PRs blev historiken otillgänglig långt ner.
+
+**Fix:** Section-sub för PR ("★ Personal Records · N") nu klickbar med chevron (▶ collapsed / ▼ expanded). Default `state.prCollapsed = true`. Persisteras i state — toggle behålls per användare.
+
+---
+
 ## 3.35.5 — 2026-05-24
 **P5 — Separera träningsstil-hint (tag-driven) från teknik-tip (övning-specifik).**
 
