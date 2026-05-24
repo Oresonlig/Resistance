@@ -6,6 +6,22 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.35.4 — 2026-05-24
+**P2 — Input borders starkare per tema (balansering mot prominenta Log-knappar).**
+
+Efter 3.34.1 themed Log/Finish-knappar och 3.35.1 done-form-bevarande hade Log-knapparna mer visuell vikt än input-fälten — Niklas: "input behöver bli någon nivå tydligare". Niklas valde A: starkare border tom-state.
+
+**Bumpar:**
+- Iron default `.set-input` border: `#3a1a1a → #5a2828`
+- Cosmic Horror: `rgba(127,200,180,0.14) → 0.34` (mer än dubbelt)
+- Arctic: `rgba(0,168,216,0.22) → 0.45` (dubbelt)
+- Obsidian: `#2a2010 → #4a3818`
+- Void: `#1a1a1a → #3a3a3a` (mer dubbelt)
+
+Övriga teman (Night City, Ember, Nanosuit, Daylight, Crusader) orörda — Niklas testar och säger till om något behöver mer.
+
+---
+
 ## 3.35.3 — 2026-05-24
 **P3 — Chain-strip distant intensitet upp för tydligare "återstår".**
 

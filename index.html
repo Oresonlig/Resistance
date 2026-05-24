@@ -249,7 +249,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .set-row.bw-set{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
 .set-num{font-family:var(--mono);font-size:.44rem;color:#666;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:5px;}
 .set-num.warmup-label{color:#4a4a4a;}
-.set-input{background:var(--surface-input);border:1px solid #3a1a1a;color:var(--white);font-family:var(--mono);font-size:.76rem;padding:5px 4px;text-align:center;transition:border-color .15s;-moz-appearance:textfield;width:100%;}
+.set-input{background:var(--surface-input);border:1px solid #5a2828;color:var(--white);font-family:var(--mono);font-size:.76rem;padding:5px 4px;text-align:center;transition:border-color .15s;-moz-appearance:textfield;width:100%;}
 .set-input::-webkit-outer-spin-button,.set-input::-webkit-inner-spin-button{-webkit-appearance:none;}
 .set-input:focus{outline:none;border-color:var(--red);}
 .set-input:disabled{opacity:.2;cursor:not-allowed;}
@@ -1123,7 +1123,7 @@ body.theme-arctic .btn-primary:disabled{background:#c8dde5;color:#8aacb8;cursor:
 body.theme-arctic .ex-block{background:rgba(255,255,255,0.55);border:1px solid rgba(0,168,216,0.1);}
 /* ex-block.saved: bg ärvs via --surface-saved */
 body.theme-arctic .ex-btn-done{background:rgba(255,255,255,0.45);border-color:var(--red);color:var(--red);font-family:'Rajdhani',sans-serif;font-weight:600;}
-body.theme-arctic .set-input{background:rgba(255,255,255,0.75);border-color:rgba(0,168,216,0.22);color:#1a2e3a;}
+body.theme-arctic .set-input{background:rgba(255,255,255,0.75);border-color:rgba(0,168,216,0.45);color:#1a2e3a;}
 body.theme-arctic .set-input:focus{border-color:var(--red);box-shadow:0 0 8px rgba(0,168,216,0.32);}
 body.theme-arctic .weight-banner{background:rgba(225,242,250,0.78);}
 body.theme-arctic .weight-input{background:rgba(255,255,255,0.82);border-color:rgba(0,168,216,0.3);color:#1a2e3a;}
@@ -1858,7 +1858,7 @@ body.theme-void .btn-primary{background:#fff;color:#000;font-family:'Playfair Di
 body.theme-void .btn-primary:hover{background:#ddd;}
 body.theme-void .ex-btn-done{background:none;border-color:#fff;color:#fff;}
 body.theme-void .ex-btn-skip{border-color:#444;color:#666;}
-body.theme-void .set-input{background:#050505;border-color:#1a1a1a;}
+body.theme-void .set-input{background:#050505;border-color:#3a3a3a;}
 /* Void — modal primary-confirm: --red=#fff + color:#fff = vit-på-vitt → explicit svart text */
 body.theme-void .app-modal-btn-primary{background:#fff;border-color:#fff;color:#000;}
 body.theme-void .app-modal-btn-primary:hover{background:#ddd;border-color:#ddd;color:#000;}
@@ -3578,7 +3578,7 @@ body.theme-obsidian .ex-btn-skip{background:linear-gradient(180deg,rgba(50,35,14
 body.theme-obsidian .ex-btn-edit{background:linear-gradient(180deg,rgba(50,35,14,0.4),rgba(20,14,6,0.4));border:1px solid #4a3a18;color:#c9a35a;font-family:'Cinzel',serif;letter-spacing:.22em;font-weight:600;}
 
 /* Set inputs */
-body.theme-obsidian .set-input{background:rgba(15,10,4,0.6);border:1px solid #2a2010;color:#f0d99c;font-family:'Cinzel',serif;font-weight:600;}
+body.theme-obsidian .set-input{background:rgba(15,10,4,0.6);border:1px solid #4a3818;color:#f0d99c;font-family:'Cinzel',serif;font-weight:600;}
 body.theme-obsidian .set-input:focus{border-color:#c9a35a;box-shadow:0 0 8px rgba(201,163,90,0.4);}
 body.theme-obsidian .set-input.warmup{color:#5a4a28;}
 body.theme-obsidian .set-unit{color:#c9a35a;font-family:'Cinzel',serif;font-weight:600;letter-spacing:.18em;}
@@ -3892,7 +3892,7 @@ body.theme-cosmic-horror .ex-btn-skip{background:linear-gradient(180deg,rgba(20,
 body.theme-cosmic-horror .ex-btn-edit{background:linear-gradient(180deg,rgba(20,50,46,0.5),rgba(8,18,22,0.5));border:1px solid rgba(127,200,180,0.22);color:#aedcd0;font-family:'IBM Plex Mono',monospace;letter-spacing:.16em;font-weight:400;border-radius:10px 4px 10px 4px;}
 
 /* Set-inputs — asymmetric blob radii */
-body.theme-cosmic-horror .set-input{background:rgba(4,14,16,0.65);border:1px solid rgba(127,200,180,0.14);color:#e6f0ea;font-family:'IBM Plex Mono',monospace;font-weight:400;border-radius:8px 2px 8px 2px;}
+body.theme-cosmic-horror .set-input{background:rgba(4,14,16,0.65);border:1px solid rgba(127,200,180,0.34);color:#e6f0ea;font-family:'IBM Plex Mono',monospace;font-weight:400;border-radius:8px 2px 8px 2px;}
 body.theme-cosmic-horror .set-input:focus{border-color:#7fc8b4;box-shadow:0 0 8px rgba(127,200,180,0.32);}
 body.theme-cosmic-horror .set-input.warmup{color:#2a3a36;}
 body.theme-cosmic-horror .set-unit{color:#2a4a44;font-family:'IBM Plex Mono',monospace;font-weight:500;letter-spacing:.18em;}
@@ -4884,7 +4884,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.35.3';
+const APP_VERSION = '3.35.4';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
