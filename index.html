@@ -4424,6 +4424,11 @@ function ensureStateDefaults(){
   if(!Array.isArray(state.log)) state.log = [];
   if(!Array.isArray(state.weightLog)) state.weightLog = [];
   if(state.draft === undefined) state.draft = null;
+  if(!state.drafts || typeof state.drafts !== 'object') state.drafts = {};
+  // 3.35.0 migration: legacy single-draft → multi-draft slot
+  if(state.draft && state.draft.passId && !state.drafts[state.draft.passId]){
+    state.drafts[state.draft.passId] = state.draft;
+  }
   if(typeof state.restCount !== 'number') state.restCount = 1;
   if(!state.permanentSwaps) state.permanentSwaps = {};
   if(state.sessionOrder === undefined) state.sessionOrder = null;
@@ -4491,7 +4496,7 @@ function isFreshState(s){
 function freshState(){
   return {
     cycles:[newCycle()],
-    log:[], weightLog:[], draft:null, restCount:1,
+    log:[], weightLog:[], draft:null, drafts:{}, restCount:1,
     permanentSwaps:{}, sessionOrder:null, restSlots:null,
     unit:'kg', exerciseOverrides:{}, sessionNameOverrides:{},
     timerDefault:120, timerEnabled:false, exerciseNotes:{},
@@ -4846,7 +4851,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.34.11';
+const APP_VERSION = '3.35.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5036,7 +5041,20 @@ function nextSessionId(){
   }
   return null;
 }
-function ensureDraft(passId){if(!state.draft||state.draft.passId!==passId)state.draft={passId,savedExercises:{},extras:[],swaps:{},extraSets:{},inputBuffer:{},loggedSets:{},activeExerciseId:null};}
+// 3.35.0 — Multi-draft: varje pass har egen draft i state.drafts[passId].
+// state.draft är alias för "nuvarande aktiv draft" — pekar på samma objekt
+// som state.drafts[state.draft.passId]. Pass-byte plockar fram rätt draft
+// istället för att radera den. Drafts rensas vid finishSession för sitt passId.
+function ensureDraft(passId){
+  if(!state.drafts || typeof state.drafts !== 'object') state.drafts = {};
+  // Persist current draft till sin egen slot innan vi byter
+  if(state.draft && state.draft.passId && state.draft.passId !== passId){
+    state.drafts[state.draft.passId] = state.draft;
+  }
+  // Hämta existerande draft för passId, eller skapa fräsch
+  state.draft = state.drafts[passId] || {passId, savedExercises:{}, extras:[], swaps:{}, extraSets:{}, inputBuffer:{}, loggedSets:{}, activeExerciseId:null};
+  state.drafts[passId] = state.draft;
+}
 
 // ── LOCAL STORAGE ─────────────────────────────────────────────
 function lsKey(uid){return 'thechain_'+uid;}
@@ -5182,6 +5200,7 @@ async function syncFromCloud(userId){
         // SL6: draft är device-lokal — pushas inte, läses inte från cloud
         const _local = {
           draft: state.draft,
+          drafts: state.drafts,
           customExercises: state.customExercises,
           addedExercises: state.addedExercises,
           removedExercises: state.removedExercises,
@@ -5231,8 +5250,9 @@ async function syncFromCloud(userId){
         state.importedPRs = mergeArrayUnion(_local.importedPRs, state.importedPRs);
         state.lastSessionSetCount = mergeKeyedMap(_local.lastSessionSetCount, state.lastSessionSetCount);
         state.lastSessionNotes = mergeKeyedMap(_local.lastSessionNotes, state.lastSessionNotes);
-        // SL6: draft är device-lokal
+        // SL6: drafts är device-lokala
         state.draft = _local.draft;
+        state.drafts = _local.drafts || {};
 
         // PM7: BASE_SESSIONS muteras inte längre — getSessionName(passId) resolve:ar
         // overrides vid läsning. Tidigare reset + re-apply hade race-potential.
@@ -5360,9 +5380,10 @@ async function pushState(opts={}){
   setSyncDot('syncing');
   try{
     state.appVersion = APP_VERSION;
-    // SL6: exclude draft från payload — drafts är device-lokala
+    // SL6: exclude draft+drafts från payload — drafts är device-lokala
     const payload = {...state};
     delete payload.draft;
+    delete payload.drafts;
     const result = await sbUpsert('app_state',{id:currentUser.id,data:payload,updated_at:new Date().toISOString()});
     lastSyncWrite = Date.now();
     // SL5: hämta server-timestamp från upsert response istället för klient-Date.now()
@@ -7472,6 +7493,7 @@ function finishSession(passId){
   curCycle().done[passId]={date:today,exercises};
   state.log.push({passId,passName:getSessionName(pass.id),timestamp:Date.now(),exercises});
   state.draft=null;
+  if(state.drafts) delete state.drafts[passId];
   save();pushState();showToast('Session done! 💪');renderChain();
 }
 
@@ -7744,9 +7766,12 @@ function undoSession(passId){
       if(ex.id.startsWith('extra_'+passId+'_')) extras[parseInt(ex.id.split('_').pop())]={name:ex.name};
     });
     state.draft={passId,savedExercises,swaps:{},extras:extras.filter(Boolean),extraSets,loggedSets:{},inputBuffer:{}};
+    if(!state.drafts) state.drafts={};
+    state.drafts[passId]=state.draft;
   }else{
     // In-progress draft undo or rest-day undo — just discard any existing draft
     if(state.draft&&state.draft.passId===passId) state.draft=null;
+    if(state.drafts) delete state.drafts[passId];
   }
   save();renderChain();
 }

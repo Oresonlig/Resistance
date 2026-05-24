@@ -6,6 +6,21 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.35.0 — 2026-05-24
+**P8 — Multi-draft: state reset vid pass-byte löst (KRITISK DATAFÖRLUST-BUGG).**
+
+Niklas-flöde: pass A halvklart (övningar Done + loggade), gick till pass B för note-redigering, tillbaka till A → allt nollställt inkl. Done-rader.
+
+**Rotorsak:** `ensureDraft(passId)` raderade hela `state.draft` om `passId` inte matchade — kallades från `setActiveExercise` (V1 Collapse tap på collapsed-rad), så att titta på en annan övning i pass B wipea pass A:s draft.
+
+**Fix:** Multi-draft. Varje pass har egen draft i `state.drafts[passId]`. `state.draft` är alias för aktiv draft. Vid pass-byte persisteras nuvarande till sin slot innan nästa hämtas — ingenting raderas. `finishSession` rensar `state.drafts[passId]` när passet markeras klart. Drafts förblir device-lokala (SL6) — exkluderas från cloud-push och återställs vid pull.
+
+**Migration:** Vid load läggs befintlig `state.draft` in i `state.drafts[passId]` automatiskt via `ensureStateDefaults`.
+
+**Sannolikt löser även P4** (set försvinner efter Log) som symptom på samma rot — kollas vid test.
+
+---
+
 ## 3.34.11 — 2026-05-23
 **Komplett tag design-tokenization (PM22-style steg 2).**
 
