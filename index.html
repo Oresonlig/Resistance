@@ -197,6 +197,9 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .ex-tag.bw{background:var(--tag-bw-bg);border-color:var(--tag-bw-border);color:var(--tag-bw-color);}
 .ex-tag.uni{background:var(--tag-uni-bg);border-color:var(--tag-uni-border);color:var(--tag-uni-color);}
 .ex-detail{font-family:var(--mono);font-size:.74rem;color:#bbb;margin-top:4px;line-height:1.5;}
+/* 3.35.5 — Teknik-tip per oevning (Full ROM, Deep stretch etc.).
+   Separat fraan tag-driven .ex-detail (Ramping/1 set failure/etc.). */
+.ex-tip{font-family:var(--mono);font-size:.7rem;color:#9aa48a;font-style:italic;margin-top:3px;line-height:1.5;letter-spacing:.02em;}
 .ex-prev{font-family:var(--mono);font-size:.65rem;color:#888;margin-top:5px;line-height:1.55;}
 .ex-prev span{color:#777;}
 .ex-prev .last-val{color:#6a8a6a;font-style:italic;}
@@ -4884,7 +4887,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.35.4';
+const APP_VERSION = '3.35.5';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5853,7 +5856,11 @@ function buildPassBodyHTML(pass,cycle,nextId){
         const tagsRow = tags ? `<div class="ex-tags-row">${tags}</div>` : '';
         const tagsCollapsed = tags ? `<div class="ex-collapsed-tags">${tags}</div>` : '';
         html+=`<div class="ex-collapsed-summary"${_collapseAttr}>${_chevron}<div class="ex-collapsed-name-col"><div class="ex-collapsed-name">${escapeHTML(customName)}</div>${tagsCollapsed}</div><div class="ex-collapsed-status">${collapsedStatus}</div></div>`;
-        html+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(customName)}</div>${tagsRow}<div class="ex-detail">${ex.detail}</div>${prevText}${noteBanner}</div><div class="ex-action-col">`;
+        const _tagLine = getExerciseDescriptionLine(ex);
+        const _tip = getExerciseTip(ex);
+        const _tagHtml = _tagLine ? `<div class="ex-detail">${escapeHTML(_tagLine)}</div>` : '';
+        const _tipHtml = _tip ? `<div class="ex-tip">${escapeHTML(_tip)}</div>` : '';
+        html+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(customName)}</div>${tagsRow}${_tagHtml}${_tipHtml}${prevText}${noteBanner}</div><div class="ex-action-col">`;
 
         if(!isDone&&!isSkipped){
           html+=`<div class="ex-mini-btns">`;
@@ -7533,6 +7540,34 @@ function finishSession(passId){
 // ── SET MANAGEMENT ────────────────────────────────────────────
 // 3.34.0 — Tag-driven set defaults. First active tag (in TAG_ORDER) wins.
 // Niklas: "Standard är ju HIT. 2 warm + 1 work." Övriga tags overridar.
+// 3.35.5 — Tag-driven beskrivnings-linje (P5). Primaer tag dikterar text;
+// oevningsspecifika teknik-tips (ex.tip eller utvunnen ur ex.detail) renderas separat.
+const TAG_HINTS = {
+  ramp:    'Ramping → 1 set failure',
+  bw:      'Bodyweight + added load',
+  uni:     'One side at a time',
+  timed:   'Time-based, seconds',
+  singles: 'Heavy singles, long rest',
+  _none:   'HIT → 1 set failure',
+};
+function getExerciseDescriptionLine(ex){
+  const tag = getPrimaryTag(ex) || '_none';
+  return TAG_HINTS[tag] || '';
+}
+// Returnera explicit ex.tip eller utvinn icke-tag-info ur ex.detail.
+// Strippar kaenda tag-onlystrings ("1 set failure", "Ramping -> 1 set failure",
+// "Ramping -> work sets to failure"). Bevarar resten som tip ("Full ROM - Deep
+// stretch", "Supinated or neutral", "2 sets" etc.).
+function getExerciseTip(ex){
+  if(ex?.tip) return ex.tip;
+  const d = (ex?.detail || '').trim();
+  if(!d) return null;
+  if(/^Ramping\s*→\s*1 set failure$/i.test(d)) return null;
+  if(/^1 set failure$/i.test(d)) return null;
+  if(/^Ramping\s*→\s*work sets to failure$/i.test(d)) return null;
+  if(/^Ramping\s*→\s*work sets$/i.test(d)) return null;
+  return d.replace(/\s*·\s*1 set failure\s*$/i, '').trim() || null;
+}
 const TAG_DEFAULTS = {
   ramp:    { warmup: 0, work: 4 },  // Ramping up = ingen separat warmup, 4 set
   bw:      { warmup: 0, work: 3 },  // Bodyweight = hopp direkt in

@@ -6,6 +6,23 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.35.5 — 2026-05-24
+**P5 — Separera träningsstil-hint (tag-driven) från teknik-tip (övning-specifik).**
+
+Niklas identifierade: "1 set failure" är ett HIT/ramping-mönster (träningsstil), inte en egenskap hos Flat BB Bench Press. "Full ROM deep stretch" är en teknik-tip för Incline Cable Flyes (övnings-egenskap). De ska inte ligga i samma sträng.
+
+**Ny arkitektur:**
+- `TAG_HINTS`-map (ramp/bw/uni/timed/singles/_none) → tag-driven beskrivnings-linje
+- `getExerciseDescriptionLine(ex)` → returnerar text för primär tag
+- `getExerciseTip(ex)` → returnerar `ex.tip` (explicit) eller utvinner icke-tag-info ur `ex.detail`
+- Ny `.ex-tip` CSS-klass (italic, mer dämpad än `.ex-detail`)
+
+**Rendering:** rad 1 = tag-driven (`.ex-detail`), rad 2 = övnings-tip om finns (`.ex-tip`).
+
+**Parse-strategi:** strippar kända tag-only-strings ("1 set failure", "Ramping → 1 set failure", "Ramping → work sets to failure"). Behåller resten som tip ("Full ROM - Deep stretch", "Supinated or neutral", "2 sets"). När du byter primär tag uppdateras rad 1 automatiskt; teknik-tips persisterar.
+
+---
+
 ## 3.35.4 — 2026-05-24
 **P2 — Input borders starkare per tema (balansering mot prominenta Log-knappar).**
 
