@@ -129,7 +129,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .chain-strip-outer::-webkit-scrollbar{display:none;}
 .chain-strip-inner{display:flex;align-items:center;min-width:max-content;padding-bottom:10px;gap:4px;}
 .chain-tab{display:flex;flex-direction:row;align-items:stretch;cursor:pointer;border:none;padding:0;flex-shrink:0;height:44px;background:none;clip-path:polygon(9px 0,calc(100% - 9px) 0,100% 50%,calc(100% - 9px) 100%,9px 100%,0 50%);transition:opacity .22s;}
-.chain-tab-letter{font-family:var(--mono);font-weight:700;color:var(--red);width:42px;display:flex;align-items:center;justify-content:center;font-size:1.32rem;flex-shrink:0;background:color-mix(in srgb,var(--red) 16%,transparent);border:none;transition:background .22s,color .22s,opacity .22s;opacity:.82;}
+.chain-tab-letter{font-family:var(--mono);font-weight:700;color:var(--red);width:42px;display:flex;align-items:center;justify-content:center;font-size:1.32rem;flex-shrink:0;background:color-mix(in srgb,var(--red) 26%,transparent);border:none;transition:background .22s,color .22s,opacity .22s;opacity:.92;}
 .chain-tab.adjacent .chain-tab-letter{opacity:.92;background:color-mix(in srgb,var(--red) 24%,transparent);}
 .chain-tab.active .chain-tab-letter{opacity:1;background:color-mix(in srgb,var(--red) 52%,transparent);}
 .chain-tab.rest-day .chain-tab-letter{color:color-mix(in srgb,var(--gold) 50%,#666);background:color-mix(in srgb,var(--gold) 6%,transparent);}
@@ -1160,7 +1160,7 @@ body.theme-arctic #reset-password-form input:-webkit-autofill{
 }
 
 /* Chain strip — frosted ice hexagons */
-body.theme-arctic .chain-tab-letter{color:#5a7a88;background:rgba(180,220,240,0.58);}
+body.theme-arctic .chain-tab-letter{color:#3a5a68;background:rgba(180,220,240,0.78);}
 body.theme-arctic .chain-tab.adjacent .chain-tab-letter{color:#00a8d8;background:rgba(160,210,235,0.72);}
 body.theme-arctic .chain-tab.active .chain-tab-letter{color:#fff;background:rgba(0,168,216,0.88);box-shadow:0 0 10px rgba(0,168,216,0.4);}
 body.theme-arctic .chain-tab.done .chain-tab-letter{color:#aaccd8;background:rgba(200,230,245,0.35);}
@@ -1874,7 +1874,7 @@ body.theme-void .auth-logo span{color:#aaa;}
 body.theme-void .auth-btn-primary{background:#fff;color:#000;}
 body.theme-void .auth-btn-primary:hover{background:#ddd;}
 body.theme-void .btn-primary:disabled{background:#1a1a1a;color:#444;}
-body.theme-void .chain-tab-letter{color:#888;background:rgba(255,255,255,0.07);}
+body.theme-void .chain-tab-letter{color:#bbb;background:rgba(255,255,255,0.18);}
 body.theme-void .chain-tab.adjacent .chain-tab-letter{color:#bbb;background:rgba(255,255,255,0.12);}
 body.theme-void .chain-tab.active .chain-tab-letter{color:#000;background:rgba(255,255,255,0.88);}
 body.theme-void .chain-tab.done .chain-tab-letter{color:#2a2a2a;background:rgba(255,255,255,0.015);opacity:0.6;}
@@ -3456,10 +3456,11 @@ body.theme-obsidian .chain-fill{background:linear-gradient(90deg,#c9a35a,#f0d99c
 
 /* Chain-strip — runda medaljer för icke-aktiv, rektangel med diamond-ends för aktiv (designens look) */
 body.theme-obsidian .chain-tab .chain-tab-letter{
-  /* 3.34.2: distant brighter (var #5a4a28 → #8a7340), Niklas: "oklara sessions tydligare" */
+  /* 3.34.2: distant brighter (var #5a4a28 → #8a7340), Niklas: "oklara sessions tydligare"
+     3.35.3: distant ytterligare upp #8a7340 → #b08840, bg .7 → .82 — närma adjacent */
   width:36px; height:36px; border-radius:50%; clip-path:none !important;
-  border:1px solid #4a3a18; background:rgba(30,22,10,0.7);
-  color:#8a7340; font-family:'Cinzel',serif; font-weight:600;
+  border:1px solid #5a4220; background:rgba(45,32,14,0.82);
+  color:#b08840; font-family:'Cinzel',serif; font-weight:600;
   opacity:1;
 }
 body.theme-obsidian .chain-tab.adjacent .chain-tab-letter{color:#e0c078;background:rgba(60,42,18,0.75);border-color:#6a5028;}
@@ -3813,11 +3814,12 @@ body.theme-cosmic-horror .chain-fill{background:linear-gradient(90deg,#7fc8b4,#a
 
 /* Chain-strip — organiska asymmetriska blobs (skriver över hexagon) */
 body.theme-cosmic-horror .chain-tab .chain-tab-letter{
-  /* distant = upcoming/not yet — brighter post-3.33.4 so passes "tänds upp" after chain restart */
+  /* distant = upcoming/not yet — brighter post-3.33.4 so passes "tänds upp" after chain restart
+     3.35.3: ytterligare bump - bg .55 → .72, color #8aacaa → #b0d0c8 - närma adjacent */
   width:38px; height:38px; clip-path:none !important;
-  border:1px solid rgba(127,200,180,0.32);
-  background:rgba(20,40,38,0.55);
-  color:#8aacaa; font-family:'Cormorant SC',serif; font-size:.9rem; font-weight:500;
+  border:1px solid rgba(127,200,180,0.45);
+  background:rgba(35,68,62,0.72);
+  color:#b0d0c8; font-family:'Cormorant SC',serif; font-size:.9rem; font-weight:500;
   border-radius:50% 38% 60% 42% / 42% 60% 38% 58%;
   opacity:1;
 }
@@ -4882,7 +4884,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.35.2';
+const APP_VERSION = '3.35.3';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

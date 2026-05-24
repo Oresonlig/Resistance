@@ -6,6 +6,23 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.35.3 — 2026-05-24
+**P3 — Chain-strip distant intensitet upp för tydligare "återstår".**
+
+Niklas-feedback: vid helt ny runda såg alla 6 ej-done-sessioner väldigt dova ut, knappt synligt att de var kvar. Spotlight (active+adjacent på glänt) behållen, men distant höjd nära adjacent-nivå.
+
+**Default (Iron + ärver):** `.chain-tab-letter` opacity `.82 → .92`, background `red-mix 16% → 26%`.
+
+**Per tema:**
+- Arctic: distant bg `0.58 → 0.78`, text `#5a7a88 → #3a5a68` (mer kontrast)
+- Void: distant bg `0.07 → 0.18`, color `#888 → #bbb`
+- Obsidian: distant bg `.7 → .82`, color `#8a7340 → #b08840`, border lite ljusare
+- Cosmic Horror: distant bg `.55 → .72`, color `#8aacaa → #b0d0c8`, border lite mer mättad
+
+Adjacent och active orörda — Niklas nämnde bara distant.
+
+---
+
 ## 3.35.2 — 2026-05-24
 **P1 + P6 — Typografi-pass: övningsnamn matchar collapsed, historik upp i storlek.**
 
