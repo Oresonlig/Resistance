@@ -4334,6 +4334,25 @@ async function handleSession(session){
     return;
   }
   isLoading = true; // block save() during entire load sequence
+  // 3.35.9 - HARD FAILSAFE: 8s timeout paa hela login-sekvensen. Om naagot
+  // haenger (profile-fetch, loadStateForUser, etc) tvingas appen att visas
+  // saa anvaendaren aldrig blir stuck paa "Logging in..."-skaermen.
+  let _loginCompleted = false;
+  const _failsafe = setTimeout(() => {
+    if(_loginCompleted) return;
+    console.error('[auth] HARD FAILSAFE: 8s timeout - forcing app shell');
+    isLoading = false;
+    // Build minimal currentUser om buildCurrentUser inte hunnit
+    if(!currentUser && session?.user){
+      const email = session.user.email || '';
+      currentUser = { id: session.user.id, name: email.split('@')[0] || 'User' };
+    }
+    try{ showAppShell(); }catch(e){ console.error(e); }
+    try{ initTheme(); }catch(e){ console.error(e); }
+    const hv=document.getElementById('headerVersion');if(hv)hv.textContent=APP_VERSION+' (failsafe)';
+    try{ if(state?.onboardingDone) renderChain(); }catch(e){ console.error('renderChain failsafe threw:', e); }
+    try{ showToast && showToast('Login took too long — showing local data. Sync may not work.', 6000); }catch(e){}
+  }, 8000);
   try{
     console.log('[auth] before buildCurrentUser');
     currentUser = await buildCurrentUser(session);
@@ -4358,8 +4377,12 @@ async function handleSession(session){
       renderChain();
       console.log('[auth] renderChain done');
     }
+    _loginCompleted = true;
+    clearTimeout(_failsafe);
   } catch(e) {
     console.error('[auth] handleSession threw:', e);
+    _loginCompleted = true;
+    clearTimeout(_failsafe);
   } finally {
     isLoading = false; // always unblock, even if something throws
   }
@@ -4381,15 +4404,19 @@ function cleanLegacyLocalStorage(){
 // Load state for the now-logged-in user
 async function loadStateForUser(){
   if(!currentUser) return;
+  console.log('[loadState] start for user', currentUser.id);
   const raw = localStorage.getItem(lsKey(currentUser.id));
+  console.log('[loadState] localStorage raw:', raw ? raw.length+' chars' : 'EMPTY');
   if(raw){
     try{
       state = JSON.parse(raw);
+      console.log('[loadState] parsed OK, log entries:', state.log?.length);
       migratePassKeysToSession && migratePassKeysToSession();
       ensureStateDefaults && ensureStateDefaults();
       if(state.migrations && !state.migrations.exerciseSplit_v2)
         migrateExerciseNames && migrateExerciseNames();
       runSchemaMigrations && runSchemaMigrations();
+      console.log('[loadState] migrations done');
     }catch(e){
       console.warn('Local state parse failed', e);
       state = freshState();
@@ -4864,7 +4891,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.35.8';
+const APP_VERSION = '3.35.9';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

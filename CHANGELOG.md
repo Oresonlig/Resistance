@@ -6,6 +6,19 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.35.9 — 2026-05-24
+**HARD FAILSAFE: tvinga in i appen efter 8s om login hänger.**
+
+Niklas kunde inte logga in även efter 3.35.8 (timeout på profile-fetch). Hängningen är någon annanstans i `handleSession`-flödet. Eftersom alla tre auth-paths (email, Google, password-reset) hänger samma sätt, är det handleSession själv som fryser — exakt var är fortfarande okänt utan console-output.
+
+**Brute force-fix:** 8s timeout som körs parallellt med hela handleSession. Om login inte är klar inom 8s → tvinga `showAppShell()` + `renderChain()` med minimal currentUser (id + email-prefix som name) + visa toast "Login took too long — showing local data". Niklas kommer alltid in.
+
+**Bonus debug:** Mer console.log i `loadStateForUser` så vi ser om migrations är boven.
+
+**Caveat:** Vid failsafe kan synk vara ostabil. Det är en eskaperingsväg, inte slutfix. Niklas måste fortfarande dela console-loggar så vi kan hitta root cause.
+
+---
+
 ## 3.35.8 — 2026-05-24
 **Login-bug-diagnostik + hängnings-fix på buildCurrentUser.**
 
