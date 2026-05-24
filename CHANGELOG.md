@@ -6,6 +6,27 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.35.11 — 2026-05-24
+**Failsafe på SJÄLVA login-knappen + tydlig console-trace.**
+
+3.35.9-failsafe satt inne i handleSession. Om `signInWithPassword` Promise aldrig resolverar, anropas handleSession ALDRIG → failsafen registreras aldrig. Niklas fastnar för evigt på "Logging in...".
+
+**Fix:** 10s timer från LOGIN-KNAPPENS click → om Supabase auth-call inte returnerat: visa felmeddelande "Login request timed out". Plus `[login]` console.log före + efter `signInWithPassword`-anrop så vi ser om Promise resolverar eller hänger.
+
+Console-trace för login-flödet nu:
+```
+[login] btn click, email: ...
+[login] calling signInWithPassword
+[login] signInWithPassword returned. data: true/false, error: ...
+[auth] handleSession start, hasSession: true
+[auth] before buildCurrentUser
+...
+```
+
+Var sista loggen stannar = exakt fryspunkt.
+
+---
+
 ## 3.35.10 — 2026-05-24
 **Version synlig på auth-screen.**
 

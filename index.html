@@ -4620,12 +4620,34 @@ function bindAuthHandlers(){
     const password = document.getElementById('auth-password').value;
     if(!email || !password){ authMsg('Email and password required', 'error'); return; }
     authMsg('Logging in…');
+    console.log('[login] btn click, email:', email);
 
-    const { error } = await window.sb.auth.signInWithPassword({ email, password });
-    if(error){
-      authMsg(error.message, 'error');
+    // 3.35.11 - Failsafe paa login-knapp-nivaa: om signInWithPassword haenger
+    // > 10s, visa fel + erbjud retry. Faangar fall daer Supabase auth-endpoint
+    // aldrig svarar (Promise never resolves).
+    let _signinDone = false;
+    const _signinFailsafe = setTimeout(() => {
+      if(_signinDone) return;
+      console.error('[login] signInWithPassword HUNG for 10s');
+      authMsg('Login request timed out. Check network or try again.', 'error');
+    }, 10000);
+
+    try{
+      console.log('[login] calling signInWithPassword');
+      const { data, error } = await window.sb.auth.signInWithPassword({ email, password });
+      _signinDone = true;
+      clearTimeout(_signinFailsafe);
+      console.log('[login] signInWithPassword returned. data:', !!data?.session, 'error:', error?.message);
+      if(error){
+        authMsg(error.message, 'error');
+      }
+      // On success, onAuthStateChange fires → handleSession runs
+    }catch(e){
+      _signinDone = true;
+      clearTimeout(_signinFailsafe);
+      console.error('[login] signInWithPassword threw:', e);
+      authMsg('Login error: ' + (e?.message || 'unknown'), 'error');
     }
-    // On success, onAuthStateChange fires → handleSession runs
   };
 
   // Forgot password
@@ -4895,7 +4917,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.35.10';
+const APP_VERSION = '3.35.11';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
