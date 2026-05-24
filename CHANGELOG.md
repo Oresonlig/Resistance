@@ -6,6 +6,43 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.36.0 — 2026-05-24
+**RE-APPLY: P8/P1/P6/P3/P2/P5/P9 + ny P7 hollow done-state.**
+
+Efter TDZ-buggen i 3.35.7 var alla mina 6 commits (3.35.0-3.35.6) reverted. Nu re-applicerade när root cause är fixad i 3.35.12. Plus omarbetad P7 enligt Niklas-feedback.
+
+**P8 — Multi-draft (state reset vid pass-byte):** Identisk implementation som 3.35.0. `ensureDraft` använder `state.drafts[passId]`-slots. `finishSession` rensar slot. `syncFromCloud` preserverar lokala drafts (SL6). `pushState` exkluderar drafts från payload. `undoSession` skriver till rätt slot.
+
+**P1 — Övningsnamn-typografi:** `.ex-name` `.82rem → .95rem` + letter-spacing. Matchar `.ex-collapsed-name`.
+
+**P6 — Historik upp:** `.ex-prev` + `.ex-prev-history-set` `.48rem → .65rem`, ljusare färger.
+
+**P3 — Chain-strip distant:** opacity `.82 → .92`, bg `red-mix 16% → 26%`. Per tema bumpar (Arctic, Void, Obsidian, Cosmic Horror).
+
+**P2 — Input borders starkare:** Iron `#3a1a1a → #5a2828`. Cosmic Horror `0.14 → 0.34`. Arctic `0.22 → 0.45`. Obsidian `#2a2010 → #4a3818`. Void `#1a1a1a → #3a3a3a`.
+
+**P5 — Tag-hint separerad:** `TAG_HINTS`-map + `getExerciseDescriptionLine` + `getExerciseTip`. Ny `.ex-tip` CSS. Rendering visar tag-driven rad 1 + övning-tip rad 2.
+
+**P9 — Kollapsbar PR:** Default `state.prCollapsed = true`. Section-sub klickbar med chevron.
+
+**P7 (ny implementation, hollow) — Done-state är "ihålig" version av temats Log-form:**
+- Iron: hexagon outline via `box-shadow:inset 0 0 0 1px rgba(192,57,43,0.55)`, transparent bg
+- Nanosuit: octagonal outline cyan
+- Night City: parallelogram outline yellow
+- Ember: rectangle outline orange
+- Void: pill outline white
+- Arctic: frosted pill outline cyan (subtle bg + backdrop-filter)
+- Daylight: pill outline red
+- Crusader: rectangle outline red
+- Obsidian: rectangle outline gold + subtle glow
+- Cosmic Horror: asymmetric blob outline teal
+
+Behåller temats unika form (clip-path eller border-radius). Transparent bg + accent-color konturlinje. ✓-färg matchar temat.
+
+**Behåller från 3.35.x-diagnostik:** TDZ-fix i `newCycle()`, 8s failsafe i `handleSession`, 10s failsafe på login-knappen, console.logs i hela auth-flödet, version-label på auth-screen, 3s timeout på `profiles`-fetch.
+
+---
+
 ## 3.35.12 — 2026-05-24
 **ROOT CAUSE LÖST: TDZ-bug i `newCycle()` → `getEffectiveChain()`.**
 
