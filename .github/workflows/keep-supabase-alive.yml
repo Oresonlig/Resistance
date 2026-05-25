@@ -1,0 +1,38 @@
+name: Keep Supabase Alive
+
+# PM13: Supabase free tier pausar projektet efter 7 dagars inaktivitet,
+# vilket gör att ingen kan logga in. Denna workflow pingar REST-API:t
+# dagligen så projektet räknas som aktivt.
+#
+# Anon-nyckeln nedan är SAMMA publika nyckel som redan ligger i index.html
+# (rad ~4205). I en client-side-app är anon-nyckeln designad att vara publik
+# och skyddas av RLS — den här filen exponerar alltså inget nytt. Vill du ändå
+# flytta den till en repo-secret (Settings → Secrets → Actions), byt raden mot
+# ${{ secrets.SUPABASE_ANON_KEY }}.
+#
+# OBS: GitHub stänger av schemalagda workflows efter 60 dagar UTAN commits i
+# repot. Eftersom du committar ofta är det inget problem i praktiken.
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # varje dag 06:00 UTC (~7-dagars-gränsen med stor marginal)
+  workflow_dispatch:        # tillåt manuell körning från Actions-fliken
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST endpoint
+        run: |
+          ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbWpxaWRlcXJnb3pleHVkYXFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwOTIwODQsImV4cCI6MjA5MTY2ODA4NH0.byRwDswpbfMWDoln4n7Opp0ntrNis_du4EnLVMFuIp8"
+          URL="https://qjmjqideqrgozexudaqr.supabase.co/rest/v1/app_state?select=updated_at&limit=1"
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL" \
+            -H "apikey: $ANON_KEY" \
+            -H "Authorization: Bearer $ANON_KEY")
+          echo "Supabase responded HTTP $CODE"
+          # Anon SELECT mot app_state ger 200 [] under RLS (verifierat i PM2).
+          if [ "$CODE" != "200" ]; then
+            echo "::error::Unexpected status $CODE — Supabase kan vara pausad eller nere."
+            exit 1
+          fi
+          echo "Supabase är aktiv."

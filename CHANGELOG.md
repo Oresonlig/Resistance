@@ -6,6 +6,15 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.37.0 — 2026-05-25
+**PM17 + PM13: Synk-status som förklarar sig + keep-alive mot Supabase.**
+
+**PM17 — Sync-dot är inte längre opaq:** Sync Status-kortet i Settings hade bara read/write-tider. Nu visas överst en hälso-rad (`✓ All changes synced` grön / `⚠ <felmeddelande>` röd från `_lastSyncError`) plus en lugnande data-säkerhets-rad: "Your data is saved on this device first. Sync errors never lose data — pushes retry automatically...". Felmeddelandet escapas (escapeHTML). Headerns sync-area navigerar redan hit vid tap (mobil-vänligt). Desktop-`title`-tooltipen på pricken fanns redan sedan tidigare.
+
+**PM13 — Supabase keep-alive:** Ny `.github/workflows/keep-supabase-alive.yml`. GitHub Actions-cron pingar `app_state` REST-endpoint dagligen (06:00 UTC) så free-tier-projektet inte pausas efter 7 dagars inaktivitet. Anon-nyckeln i workflowen är samma publika nyckel som redan ligger i index.html (skyddad av RLS). `workflow_dispatch` för manuell test. Caveat: GitHub stänger av schemalagda workflows efter 60 dagar utan commits — inget problem vid normal aktivitet.
+
+---
+
 ## 3.36.1 — 2026-05-24
 **Obsidian + Cosmic Horror Log-knappar: clip-path inheritance fix.**
 
