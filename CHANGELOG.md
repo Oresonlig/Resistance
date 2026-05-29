@@ -6,6 +6,17 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.38.0 — 2026-05-29
+**Gym-feedback paket: copy-format, RAMP-hint, Decline Cable Press, notes-tombstones.**
+
+**Copy-format (P3):** Finish-card + history-copy får klockslag + auto-genererad session-label + hashtags. Klockslag på egen rad under datum (`🕒 19:56 — Prime Time`). Label slumpas från 7 alternativ per tidsspann (Morning Session / High Noon / Afternoon Delight / Crowd Work / Prime Time / Evening Session / Night Owl + 6 syskon per spann inkl. gaming-references). 49 strängar totalt. Hashtags `#thechain` `#gymlife` läggs sist. Warmups (W1, W2) behålls — Niklas testade Instagram-paste, ville inte droppa dem. `finishSession` sparar nu `timestamp` i `cycle.done[passId]` (förut bara i `state.log`). Två copy-funktioner avduplicerade via ny `buildCopyLines()` + `writeClipboard()`.
+
+**RAMP-hint (P5):** `TAG_HINTS.ramp` ändrad från `'Ramping → 1 set failure'` (fel — det är inte ETT set utan stegvis ökning) till `'Increase weight each set'` (kort version av picker-texten på rad 7278).
+
+**Decline Cable Press (P2):** Tillagd i `EXERCISE_LIBRARY` mellan `Decline Cable Flyes` och `Decline DB Press`. Decline Smith Press + Decline DB Press fanns redan.
+
+**Notes-tombstones (P4):** `finishSession` skrev `delete state.exerciseNotes[ex.id]` + `delete state.lastSessionNotes[ex.id]` UTAN tombstone — cloud-merge i `syncFromCloud` kunde resurrecta noten från en annan device eller äldre cloud-state. Niklas såg detta som "Chins-noten överlevde 3 cykler" trots att `finishSession`-cleanup ser korrekt ut vid läsning. Fix: skriv `state.deletions.exerciseNotes[ex.id]=Date.now()` vid båda auto-deletes (samma mönster som `saveNote` redan använde för manuell radering). Plus `mergeKeyedMap(_local.lastSessionNotes, state.lastSessionNotes, state.deletions.exerciseNotes)` — `lastSessionNotes` mergades förut utan tombstone-check (rad 5396), samma deletion-set används för båda eftersom samma id.
+
 ## 3.37.0 — 2026-05-25
 **PM17 + PM13: Synk-status som förklarar sig + keep-alive mot Supabase.**
 

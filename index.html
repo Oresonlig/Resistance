@@ -4793,6 +4793,7 @@ const EXERCISE_LIBRARY = [
   {name:'Cable Flyes', cat:'Chest'},
   {name:'Chest Dips', cat:'Chest'},
   {name:'Decline Cable Flyes', cat:'Chest'},
+  {name:'Decline Cable Press', cat:'Chest'},
   {name:'Decline DB Press', cat:'Chest'},
   {name:'Decline Smith Press', cat:'Chest'},
   {name:'Flat BB Bench Press', cat:'Chest'},
@@ -4992,7 +4993,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.37.0';
+const APP_VERSION = '3.38.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5393,7 +5394,7 @@ async function syncFromCloud(userId){
         state.ignoredPRs = mergeArrayUnion(_local.ignoredPRs, state.ignoredPRs);
         state.importedPRs = mergeArrayUnion(_local.importedPRs, state.importedPRs);
         state.lastSessionSetCount = mergeKeyedMap(_local.lastSessionSetCount, state.lastSessionSetCount);
-        state.lastSessionNotes = mergeKeyedMap(_local.lastSessionNotes, state.lastSessionNotes);
+        state.lastSessionNotes = mergeKeyedMap(_local.lastSessionNotes, state.lastSessionNotes, state.deletions.exerciseNotes);
         // SL6: drafts är device-lokala
         state.draft = _local.draft;
         state.drafts = _local.drafts || {};
@@ -7622,6 +7623,10 @@ function finishSession(passId){
   // Propagate work-set count + carry notes one session forward, attach notes to log entry
   if(!state.lastSessionSetCount) state.lastSessionSetCount={};
   if(!state.lastSessionNotes) state.lastSessionNotes={};
+  // 3.38.0 — Tombstones vid auto-cleanup. Utan dem kan cloud-merge resurrecta noten
+  // (P4: Niklas såg Chins-note överleva 3 cykler på en device som syncade med cloud).
+  if(!state.deletions) state.deletions = {};
+  if(!state.deletions.exerciseNotes) state.deletions.exerciseNotes = {};
   exercises.forEach(ex=>{
     if(!ex.skipped && Array.isArray(ex.sets)){
       const workCount=ex.sets.filter(s=>!s.warmup).length;
@@ -7632,14 +7637,17 @@ function finishSession(passId){
       ex.note=note; // freeze note in log entry for history
       state.lastSessionNotes[ex.id]=note;
       delete state.exerciseNotes[ex.id];
+      state.deletions.exerciseNotes[ex.id] = Date.now();
     } else if(state.lastSessionNotes[ex.id]){
       // Previous-session note was shown but not refreshed — drop it after this session
       delete state.lastSessionNotes[ex.id];
+      state.deletions.exerciseNotes[ex.id] = Date.now();
     }
   });
   const today=new Date().toLocaleDateString('en-GB',{month:'short',day:'numeric'});
-  curCycle().done[passId]={date:today,exercises};
-  state.log.push({passId,passName:getSessionName(pass.id),timestamp:Date.now(),exercises});
+  const finishTs=Date.now();
+  curCycle().done[passId]={date:today,timestamp:finishTs,exercises};
+  state.log.push({passId,passName:getSessionName(pass.id),timestamp:finishTs,exercises});
   state.draft=null;
   if(state.drafts) delete state.drafts[passId];
   save();pushState();showToast('Session done! 💪');renderChain();
@@ -7651,7 +7659,7 @@ function finishSession(passId){
 // 3.36.0 — Tag-driven beskrivnings-linje (P5). Primaer tag dikterar text;
 // oevningsspecifika teknik-tips (ex.tip eller utvunnen ur ex.detail) renderas separat.
 const TAG_HINTS = {
-  ramp:    'Ramping → 1 set failure',
+  ramp:    'Increase weight each set',
   bw:      'Bodyweight + added load',
   uni:     'One side at a time',
   timed:   'Time-based, seconds',
@@ -7962,49 +7970,85 @@ function formatSetLine(set,u){
   return str;
 }
 
-function copySessionToClipboard(passId){
-  const cycle=curCycle();const data=cycle.done[passId];if(!data)return;
-  const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);
-  const u=unitLabel();
-  let lines=['💪 The Chain — '+(pass?.name||passId),'📅 '+data.date,''];
-  (data.exercises||[]).forEach(ex=>{
-    if(ex.skipped)return;
-    lines.push(ex.name);
-    let w=0,s=0;
+// 3.38.0 — Session-label random från tidsspann + klockslag + hashtags i copy
+const SESSION_LABELS = {
+  morning:   ['Morning Session','Dawn Patrol','Early Bird','Sunrise Lift',"Cock's Crow",'Respawn','Sunbreak'],
+  noon:      ['High Noon','Daily Grind','Lunch Hour','Midday Burn','Noon Strike','Side Quest','Daily Quest'],
+  afternoon: ['Afternoon Delight','Siesta Skip','Tea Time','Coffee Crush',"Two O'Clock",'Daily Reset','Loot Run'],
+  afterwork: ['Crowd Work','Happy Hour','After Hours','Drive Time','Rush Hour','Raid Time','Lobby Full'],
+  prime:     ['Prime Time','Sweet Spot','Headliner','Main Event','Showcase','Boss Fight','Final Boss'],
+  evening:   ['Evening Session','Last Call','Curtain Call','Late Show','Final Round','Quicksave','Last Save'],
+  night:     ['Night Owl','Witching Hour','Graveyard Shift','Lights Out',"Insomniac's Lift",'Hardcore Mode','No-Sleep Mode'],
+};
+function pickSessionLabel(timestamp){
+  if(!timestamp) return '';
+  const h = new Date(timestamp).getHours();
+  let arr;
+  if(h>=4 && h<=10)       arr = SESSION_LABELS.morning;
+  else if(h>=11 && h<=13) arr = SESSION_LABELS.noon;
+  else if(h>=14 && h<=16) arr = SESSION_LABELS.afternoon;
+  else if(h>=17 && h<=19) arr = SESSION_LABELS.afterwork;
+  else if(h>=20 && h<=21) arr = SESSION_LABELS.prime;
+  else if(h>=22 && h<=23) arr = SESSION_LABELS.evening;
+  else                    arr = SESSION_LABELS.night; // 0-3
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+function formatClockHM(timestamp){
+  if(!timestamp) return '';
+  const d = new Date(timestamp);
+  const pad = n => String(n).padStart(2,'0');
+  return pad(d.getHours())+':'+pad(d.getMinutes());
+}
+function buildCopyLines(passName, dateStr, timestamp, exercises, u){
+  let lines = ['💪 The Chain — '+passName, '📅 '+dateStr];
+  if(timestamp){
+    const hm = formatClockHM(timestamp);
+    const lbl = pickSessionLabel(timestamp);
+    lines.push('🕒 '+hm+(lbl?' — '+lbl:''));
+  }
+  lines.push('');
+  (exercises||[]).forEach(ex=>{
+    if(ex.skipped) return;
+    lines.push(ex.name+(ex.extra?' +':''));
+    let w=0, s=0;
     (ex.sets||[]).forEach(set=>{
-      if(set.warmup){w++;const wt=set.weight!=null?toDisplay(set.weight)+' '+u+' × ':'BW × ';lines.push('  W'+w+': '+(set.secs?set.secs+'s':wt+(set.reps||'?')+'r'));}
-      else{s++;lines.push('  S'+s+': '+formatSetLine(set,u));}
+      if(set.warmup){
+        w++;
+        const wt = set.weight!=null ? toDisplay(set.weight)+' '+u+' × ' : 'BW × ';
+        lines.push('  W'+w+': '+(set.secs?set.secs+'s':wt+(set.reps||'?')+'r'));
+      } else {
+        s++;
+        lines.push('  S'+s+': '+formatSetLine(set,u));
+      }
     });
     lines.push('');
   });
   lines.push('thechain.training');
-  const text=lines.join('\n');
+  lines.push('');
+  lines.push('#thechain');
+  lines.push('#gymlife');
+  return lines;
+}
+function writeClipboard(text){
   if(navigator.clipboard&&navigator.clipboard.writeText){
     navigator.clipboard.writeText(text).then(()=>showToast('Copied ✓')).catch(()=>showToast('Copy failed'));
-  }else{
+  } else {
     const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
     document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
     showToast('Copied ✓');
   }
 }
+
+function copySessionToClipboard(passId){
+  const cycle=curCycle();const data=cycle.done[passId];if(!data)return;
+  const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);
+  const lines = buildCopyLines(pass?.name||passId, data.date, data.timestamp, data.exercises, unitLabel());
+  writeClipboard(lines.join('\n'));
+}
 function copyLogEntryToClipboard(idx){
   const entry=state.log[idx];if(!entry)return;
-  const u=unitLabel();
-  let lines=['💪 The Chain — '+(entry.passName||entry.passId),'📅 '+fmtDate(entry.timestamp),''];
-  (entry.exercises||[]).forEach(ex=>{
-    if(ex.skipped)return;
-    lines.push(ex.name+(ex.extra?' +':''));
-    let w=0,s=0;
-    (ex.sets||[]).forEach(set=>{
-      if(set.warmup){w++;const wt=set.weight!=null?toDisplay(set.weight)+' '+u+' × ':'BW × ';lines.push('  W'+w+': '+(set.secs?set.secs+'s':wt+(set.reps||'?')+'r'));}
-      else{s++;lines.push('  S'+s+': '+formatSetLine(set,u));}
-    });
-    lines.push('');
-  });
-  lines.push('thechain.training');
-  const text=lines.join('\n');
-  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>showToast('Copied ✓')).catch(()=>showToast('Copy failed'));}
-  else{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Copied ✓');}
+  const lines = buildCopyLines(entry.passName||entry.passId, fmtDate(entry.timestamp), entry.timestamp, entry.exercises, unitLabel());
+  writeClipboard(lines.join('\n'));
 }
 function doNewCycle(){
   // Ensure new cycle has all current chain keys
