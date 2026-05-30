@@ -6,6 +6,16 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.39.0 — 2026-05-30
+**Lager A av set/övnings-refaktorn — stabila set-id.** Rotorsaksfix för två live-test-buggar.
+
+- **P1 — Set 1 försvinner vid loggning (KRITISK, äntligen löst):** rotorsaken var att varje set identifierades av sin array-POSITION (`origIdx`). När `ensureExtraSets` filtrerade bort warmups på en ramp-övning mitt i Log-flödet reindexerades arrayen → positionen från DOM matchade inte längre buffern → Set 1 läste fel cell och såg ut att försvinna. Nu har varje set ett stabilt `sid`; `inputBuffer`/`loggedSets`/DOM-id nycklas på sid och överlever filtrering och omordning.
+- **#4 — Warmup/work-ordning spretade mellan skärm och copy:** renderingen sorterade warmups-först men `buildCopyLines` läste lagrings-ordning rått → copy kunde skriva S1 före W1. Nu driver EN delad `sortSetsForDisplay` både skärm och copy; sets sparas dessutom i display-ordning vid `saveExercise`.
+- **#6 — Copy-etiketter:** "Cock's Crow" → "First Light", "Two O'Clock" → "Post Refeed", "Drive Time" → "Commuter Hours".
+- **Test:** ny `src/set-model.js` + `tests/set-model.test.js` (16 tester inkl. explicit P1-regressionstest). Totalt 39 gröna. Idempotent draft-migration (positionell → sid) vid load remappar buffer/loggedSets utan dataförlust.
+
+> Lager B (övnings-id + brygga för #3 + #5 + rename-skräpet) kommer separat.
+
 ## 3.38.0 — 2026-05-29
 **Gym-feedback paket: copy-format, RAMP-hint, Decline Cable Press, notes-tombstones.**
 

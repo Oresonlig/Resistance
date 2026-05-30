@@ -4544,6 +4544,8 @@ function ensureStateDefaults(){
   if(state.draft && state.draft.passId && !state.drafts[state.draft.passId]){
     state.drafts[state.draft.passId] = state.draft;
   }
+  // 3.39.0 — migrera drafts till sid-modell (positionell → stabila set-id)
+  try{ Object.values(state.drafts).forEach(migrateDraftSetIds); }catch(e){ console.warn('draft sid-migration', e); }
   if(typeof state.prCollapsed !== 'boolean') state.prCollapsed = true;
   if(typeof state.restCount !== 'number') state.restCount = 1;
   if(!state.permanentSwaps) state.permanentSwaps = {};
@@ -4993,7 +4995,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.38.0';
+const APP_VERSION = '3.39.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5731,13 +5733,13 @@ function buildExtraBlock(ex,i,passId,isDone,savedExs,draftExtraSets,completedDat
   const extraId='extra_'+passId+'_'+i;
   const isSavedEx=!!savedExs[extraId]&&!savedExs[extraId].skipped&&!savedExs[extraId].editing;
   const isSkippedEx=savedExs[extraId]?.skipped===true;
-  const defaultExtraSets=[{warmup:true},{warmup:true},{warmup:false}];
-  const rawExSets=draftExtraSets[extraId]!==undefined?draftExtraSets[extraId]:defaultExtraSets;
+  const defaultExtraSets=defSets(2,1);
+  const rawExSets=ensureSetIds(draftExtraSets[extraId]!==undefined?draftExtraSets[extraId]:defaultExtraSets);
   const savedExData=isDone?completedData?.exercises?.find(e=>e.id===extraId):savedExs[extraId];
-  const warmupListEx=rawExSets.map((s,j)=>({...s,origIdx:j})).filter(s=>s.warmup);
-  const workListEx=rawExSets.map((s,j)=>({...s,origIdx:j})).filter(s=>!s.warmup);
-  const sortedSetsEx=[...warmupListEx,...workListEx];
-  const allWorkLoggedEx=workListEx.length>0&&workListEx.filter(s=>!!(state.draft?.loggedSets?.[extraId]?.[s.origIdx])).length>=workListEx.length;
+  const sortedSetsEx=sortSetsForDisplay(rawExSets);
+  const warmupListEx=sortedSetsEx.filter(s=>s.warmup);
+  const workListEx=sortedSetsEx.filter(s=>!s.warmup);
+  const allWorkLoggedEx=workListEx.length>0&&workListEx.filter(s=>!!(state.draft?.loggedSets?.[extraId]?.[s.sid])).length>=workListEx.length;
   const unitL=unitLabel();
   let h=`<div class="${'ex-block'+(isSkippedEx?' skipped':'')+(isSavedEx?' saved':'')}" id="exblock-${extraId}">`;
   h+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(ex.name)} <span class="ex-tag" style="color:#446;border-color:#223">Extra</span></div></div><div class="ex-action-col"><div class="ex-mini-btns">`;
@@ -5759,23 +5761,23 @@ function buildExtraBlock(ex,i,passId,isDone,savedExs,draftExtraSets,completedDat
     if(warmupListEx.length>0)h+=`<div class="sets-group-label warmup-group">Warm-up</div>`;
     let wuCntEx=0,wkCntEx=0,shownWkEx=false;
     for(let si=0;si<sortedSetsEx.length;si++){
-      const sm=sortedSetsEx[si];const wu=sm.warmup;const origIdx=sm.origIdx;
+      const sm=sortedSetsEx[si];const wu=sm.warmup;const sid=sm.sid;
       if(!wu&&!shownWkEx){h+=`<div class="sets-group-label work-group">Work</div>`;shownWkEx=true;}
       const lbl=wu?('W'+(++wuCntEx)):('S'+(++wkCntEx));
       const wCls=wu?' warmup':' work-set';
-      const savedSet=savedExData?.sets?.[origIdx]||null;
-      const bufVal=(!savedSet&&state.draft?.inputBuffer?.[extraId]?.[origIdx])||null;
-      const isLogged=!savedSet&&!!(state.draft?.loggedSets?.[extraId]?.[origIdx]);
+      const savedSet=savedExData?.sets?(savedExData.sets.find(ss=>ss.sid===sid)||savedExData.sets[si]||null):null;
+      const bufVal=(!savedSet&&state.draft?.inputBuffer?.[extraId]?.[sid])||null;
+      const isLogged=!savedSet&&!!(state.draft?.loggedSets?.[extraId]?.[sid]);
       const loggedCls=isLogged?' set-logged':'';
       const dis=(isDone||isSavedEx)?'disabled':'';
       const canDel=!isDone&&!isSavedEx&&rawExSets.length>1;
       h+=`<div class="set-row normal-set${loggedCls}">
         <span class="set-num${wu?' warmup-label':''}">${lbl}</span>
-        <div><input class="set-input${wCls}" type="number" id="w-${extraId}-${origIdx}" placeholder="—" value="${savedSet?.weight!=null?toDisplay(savedSet.weight):bufVal?.weight!=null?toDisplay(bufVal.weight):''}" min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis} oninput="updateLogBtnState('${extraId}',${origIdx})"><div class="set-unit">${unitL}</div></div>
-        <div><input class="set-input${wCls}" type="number" id="r-${extraId}-${origIdx}" placeholder="—" value="${savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:''}" min="1" max="50" ${dis}><div class="set-unit">reps</div></div>
-        <div><input class="set-input${wCls} forced" type="number" id="f-${extraId}-${origIdx}" placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}><div class="set-unit forced-unit">+f</div></div>
-        ${(!isSavedEx&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${extraId}',${origIdx},'${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${extraId}',${origIdx},'${passId}',${wu})">Log</button>`):'<div></div>'}
-        ${canDel?`<button class="set-delete" onclick="removeExtraSet('${extraId}',${origIdx},'${passId}')">✕</button>`:'<div></div>'}
+        <div><input class="set-input${wCls}" type="number" id="w-${extraId}-${sid}" placeholder="—" value="${savedSet?.weight!=null?toDisplay(savedSet.weight):bufVal?.weight!=null?toDisplay(bufVal.weight):''}" min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis} oninput="updateLogBtnState('${extraId}','${sid}')"><div class="set-unit">${unitL}</div></div>
+        <div><input class="set-input${wCls}" type="number" id="r-${extraId}-${sid}" placeholder="—" value="${savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:''}" min="1" max="50" ${dis}><div class="set-unit">reps</div></div>
+        <div><input class="set-input${wCls} forced" type="number" id="f-${extraId}-${sid}" placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}><div class="set-unit forced-unit">+f</div></div>
+        ${(!isSavedEx&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${extraId}','${sid}','${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${extraId}','${sid}','${passId}',${wu})">Log</button>`):'<div></div>'}
+        ${canDel?`<button class="set-delete" onclick="removeExtraSet('${extraId}','${sid}','${passId}')">✕</button>`:'<div></div>'}
       </div>`;
     }
     if(!isDone&&!isSavedEx){
@@ -5838,7 +5840,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
       const completedExs=completedData?.exercises||[];
       const draftExtraSets=draft?draft.extraSets:Object.fromEntries(
         completedExs.filter(e=>e.id&&e.id.startsWith('extra_'+passId+'_'))
-          .map(e=>[e.id,(e.sets||[]).map(s=>({warmup:!!s.warmup}))])
+          .map(e=>[e.id,(e.sets||[]).map(s=>({sid:s.sid,warmup:!!s.warmup}))])
       );
       const extras=draft?draft.extras:completedExs
         .filter(e=>e.id&&e.id.startsWith('extra_'+passId+'_'))
@@ -6044,13 +6046,13 @@ function buildPassBodyHTML(pass,cycle,nextId){
           // Model: extraSets array stores all sets (including work + warmup)
           // Each: {warmup:bool}. Default driven by primary tag (TAG_DEFAULTS, 3.34.0).
           const defaultSets = getDefaultSets(ex);
-          const rawSets = (draftExtraSets[ex.id] !== undefined && draftExtraSets[ex.id].length > 0)
+          const rawSets = ensureSetIds((draftExtraSets[ex.id] !== undefined && draftExtraSets[ex.id].length > 0)
             ? draftExtraSets[ex.id]
-            : defaultSets;
-          // Sort: warmups first, work sets after — stable sort preserving relative order
-          const warmupList = rawSets.map((s,i)=>({...s,origIdx:i})).filter(s=>s.warmup);
-          const workList   = rawSets.map((s,i)=>({...s,origIdx:i})).filter(s=>!s.warmup);
-          const sortedSets = [...warmupList, ...workList];
+            : defaultSets);
+          // EN delad warmups-först-sortering (skärm + copy), keyad på stabilt sid.
+          const sortedSets = sortSetsForDisplay(rawSets);
+          const warmupList = sortedSets.filter(s=>s.warmup);
+          const workList   = sortedSets.filter(s=>!s.warmup);
           const unitL = unitLabel();
           const placeholderW = '—';
           html+=`<div class="sets-table">`;
@@ -6073,14 +6075,14 @@ function buildPassBodyHTML(pass,cycle,nextId){
           // Compute whether all work sets have been logged (for Done button ready state)
           const workSetCount = workList.length;
           const loggedWorkCount = workList.filter(s => {
-            const lg = state.draft?.loggedSets?.[ex.id]?.[s.origIdx];
+            const lg = state.draft?.loggedSets?.[ex.id]?.[s.sid];
             return !!lg;
           }).length;
           const allWorkLogged = workSetCount > 0 && loggedWorkCount >= workSetCount;
           for(let si=0; si<sortedSets.length; si++){
             const setMeta = sortedSets[si];
             const warmup  = setMeta.warmup;
-            const origIdx = setMeta.origIdx; // stable index for DOM IDs & delete
+            const sid = setMeta.sid; // stabilt set-id för DOM/buffer/logg
             // Inject Work header before first work set
             if(!warmup && !shownWorkHeader){
               if(isRamp){
@@ -6092,12 +6094,12 @@ function buildPassBodyHTML(pass,cycle,nextId){
             }
             const lbl   = warmup ? ('W'+(++warmupCount)) : ('S'+(++workCount));
             const wCls  = warmup ? ' warmup' : ' work-set';
-            // savedData uses origIdx to read the correct saved set
-            const savedSet = savedData?.sets?.[origIdx] || null;
+            // Matcha saved-set på sid; fallback på position för gammal data (pre-3.39.0)
+            const savedSet = savedData?.sets ? (savedData.sets.find(ss=>ss.sid===sid) || savedData.sets[si] || null) : null;
             // Use input buffer values if available (preserves unsaved inputs when adding sets)
-            const bufVal = (!savedSet && state.draft?.inputBuffer?.[ex.id]?.[origIdx]) || null;
+            const bufVal = (!savedSet && state.draft?.inputBuffer?.[ex.id]?.[sid]) || null;
             // Per-set logging state
-            const isLogged = !savedSet && !!(state.draft?.loggedSets?.[ex.id]?.[origIdx]);
+            const isLogged = !savedSet && !!(state.draft?.loggedSets?.[ex.id]?.[sid]);
             // Apply logged-set CSS class to set-row
             const loggedCls = isLogged ? ' set-logged' : '';
             const dis   = (isDone||isSaved) ? 'disabled' : '';
@@ -6107,38 +6109,38 @@ function buildPassBodyHTML(pass,cycle,nextId){
               const snapDisp = toDisplay(snapKg)||'?';
               html+=`<div class="set-row bw-set${loggedCls}">
                 <span class="set-num${warmup?' warmup-label':''}">${lbl}</span>
-                <div><input class="set-input${wCls}" type="number" id="bw-${ex.id}-${origIdx}" placeholder="0"
+                <div><input class="set-input${wCls}" type="number" id="bw-${ex.id}-${sid}" placeholder="0"
                   value="${savedSet?.extra!=null?toDisplay(savedSet.extra):bufVal?.extra!=null?toDisplay(bufVal.extra):''}"
                   min="-50" step="${unitL==='lbs'?'1':'1.25'}" ${dis}>
                   <div class="set-unit">+ ${unitL}</div></div>
-                <div><input class="${'set-input'+wCls+(isTimed?' timed':'')}" type="number" id="r-${ex.id}-${origIdx}"
+                <div><input class="${'set-input'+wCls+(isTimed?' timed':'')}" type="number" id="r-${ex.id}-${sid}"
                   placeholder="${isTimed?('—'):('—')}" value="${isTimed?(savedSet?.secs||bufVal?.secs||''):(savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:'')}" min="1" ${isTimed?'max="3600"':'max="50"'} ${dis}>
                   <div class="set-unit${isTimed?' time-unit':''}">${isTimed?'sec':'reps'}</div></div>
-                <div><input class="set-input${wCls} forced" type="number" id="f-${ex.id}-${origIdx}"
+                <div><input class="set-input${wCls} forced" type="number" id="f-${ex.id}-${sid}"
                   placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}>
                   <div class="set-unit forced-unit">+f</div></div>
-                ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${origIdx}" onclick="toggleSide('${ex.id}',${origIdx})" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
-                ${(!isSaved&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${ex.id}',${origIdx},'${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn has-value" onclick="logSet('${ex.id}',${origIdx},'${passId}',${warmup})">Log</button>`):'<div></div>'}
-                ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}',${origIdx},'${passId}')">✕</button>`:'<div></div>'}
+                ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${sid}" onclick="toggleSide('${ex.id}','${sid}')" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
+                ${(!isSaved&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn has-value" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`):'<div></div>'}
+                ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}','${sid}','${passId}')">✕</button>`:'<div></div>'}
               </div>`;
             } else {
               const rowClass = isUni ? 'uni-set' : 'normal-set';
               html+=`<div class="set-row ${rowClass}${loggedCls}">
                 <span class="set-num${warmup?' warmup-label':''}">${lbl}</span>
-                <div><input class="set-input${wCls}" type="number" id="w-${ex.id}-${origIdx}"
+                <div><input class="set-input${wCls}" type="number" id="w-${ex.id}-${sid}"
                   placeholder="${placeholderW}" value="${savedSet?.weight!=null?toDisplay(savedSet.weight):bufVal?.weight!=null?toDisplay(bufVal.weight):''}"
                   min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis}
-                  oninput="updateLogBtnState('${ex.id}',${origIdx})">
+                  oninput="updateLogBtnState('${ex.id}','${sid}')">
                   <div class="set-unit">${unitL}</div></div>
-                <div><input class="${'set-input'+wCls+(isTimed?' timed':'')}" type="number" id="r-${ex.id}-${origIdx}"
+                <div><input class="${'set-input'+wCls+(isTimed?' timed':'')}" type="number" id="r-${ex.id}-${sid}"
                   placeholder="${isTimed?('—'):('—')}" value="${isTimed?(savedSet?.secs||bufVal?.secs||''):(savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:'')}" min="1" ${isTimed?'max="3600"':'max="50"'} ${dis}>
                   <div class="set-unit${isTimed?' time-unit':''}">${isTimed?'sec':'reps'}</div></div>
-                <div><input class="set-input${wCls} forced" type="number" id="f-${ex.id}-${origIdx}"
+                <div><input class="set-input${wCls} forced" type="number" id="f-${ex.id}-${sid}"
                   placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}>
                   <div class="set-unit forced-unit">+f</div></div>
-                ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${origIdx}" onclick="toggleSide('${ex.id}',${origIdx})" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
-                ${(!isSaved&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${ex.id}',${origIdx},'${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${ex.id}',${origIdx},'${passId}',${warmup})">Log</button>`):'<div></div>'}
-                ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}',${origIdx},'${passId}')">✕</button>`:'<div></div>'}
+                ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${sid}" onclick="toggleSide('${ex.id}','${sid}')" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
+                ${(!isSaved&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`):'<div></div>'}
+                ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}','${sid}','${passId}')">✕</button>`:'<div></div>'}
               </div>`;
             }
           }
@@ -7257,21 +7259,21 @@ document.addEventListener('click', e=>{
     document.querySelectorAll('.ex-edit-menu.open').forEach(m=>m.classList.remove('open'));
   }
 });
-function toggleSide(exId, origIdx){
-  const btn=document.getElementById('side-'+exId+'-'+origIdx);
+function toggleSide(exId, sid){
+  const btn=document.getElementById('side-'+exId+'-'+sid);
   if(!btn)return;
   const cur=btn.textContent.trim();
   const next=cur==='L'?'R':cur==='R'?'—':'L';
   btn.textContent=next;
   btn.className='side-btn'+(next==='L'?' left':next==='R'?' right':'');
-  // Store in inputBuffer so it's captured on save
+  // Store in inputBuffer so it's captured on save (keyat på sid, objekt)
   const passId=btn.closest('.pass-body')?.closest('.pass-card')?.id?.replace('card-','');
   if(!passId)return;
   if(!state.draft)return;
   if(!state.draft.inputBuffer)state.draft.inputBuffer={};
-  if(!state.draft.inputBuffer[exId])state.draft.inputBuffer[exId]=[];
-  if(!state.draft.inputBuffer[exId][origIdx])state.draft.inputBuffer[exId][origIdx]={};
-  state.draft.inputBuffer[exId][origIdx].side=next==='—'?null:next;
+  if(!state.draft.inputBuffer[exId]||Array.isArray(state.draft.inputBuffer[exId]))state.draft.inputBuffer[exId]={};
+  if(!state.draft.inputBuffer[exId][sid])state.draft.inputBuffer[exId][sid]={};
+  state.draft.inputBuffer[exId][sid].side=next==='—'?null:next;
 }
 function buildTagEditorHTML(ex, passId){
   const tagOvr = state.exerciseTagOverrides?.[ex.id]||{};
@@ -7416,33 +7418,36 @@ function saveExercise(passId,exId){
   const isTimed=isExtra?false:!!(state.exerciseTagOverrides?.[exId]?.timed??ex.timed);
   const todayWkg=getTodayWeight();
   ensureExtraSets(exId, passId);
-  const rawSets = state.draft.extraSets[exId];
-  const buf = state.draft.inputBuffer?.[exId] || [];
-  // Read values: DOM first, fall back to buffer (handles iOS background case)
-  const sets = rawSets.map((s, origIdx) => {
+  // Spara i DISPLAY-ordning (warmups först) så history/copy alltid stämmer.
+  const rawSets = sortSetsForDisplay(state.draft.extraSets[exId]);
+  const buf = state.draft.inputBuffer?.[exId] || {};
+  // Read values: DOM first, fall back to buffer (handles iOS background case).
+  // Allt keyat på stabilt sid.
+  const sets = rawSets.map((s) => {
+    const sid = s.sid;
     const warmup = s.warmup;
-    const b = buf[origIdx] || {};
-    const domF = document.getElementById('f-'+exId+'-'+origIdx)?.value;
+    const b = buf[sid] || {};
+    const domF = document.getElementById('f-'+exId+'-'+sid)?.value;
     const forced = (domF && domF !== '') ? (parseInt(domF)||null) : (b.forced ?? null);
     if(isBW){
-      const domBw = document.getElementById('bw-'+exId+'-'+origIdx)?.value;
-      const domR = document.getElementById('r-'+exId+'-'+origIdx)?.value;
+      const domBw = document.getElementById('bw-'+exId+'-'+sid)?.value;
+      const domR = document.getElementById('r-'+exId+'-'+sid)?.value;
       const extraDisp = (domBw && domBw !== '') ? parseFloat(domBw) : null;
       const extraKg = extraDisp !== null && !isNaN(extraDisp) ? toKg(extraDisp) : (b.extra ?? 0);
       const repsOrSecs = (domR && domR !== '') ? (n=>isNaN(n)?null:n)(parseInt(domR)) : (isTimed ? (b.secs ?? null) : (b.reps ?? null));
-      return isTimed ? {extra:extraKg, bwSnap:todayWkg||0, secs:repsOrSecs, forced, warmup}
-                     : {extra:extraKg, bwSnap:todayWkg||0, reps:repsOrSecs, forced, warmup};
+      return isTimed ? {sid, extra:extraKg, bwSnap:todayWkg||0, secs:repsOrSecs, forced, warmup}
+                     : {sid, extra:extraKg, bwSnap:todayWkg||0, reps:repsOrSecs, forced, warmup};
     }else{
-      const domW = document.getElementById('w-'+exId+'-'+origIdx)?.value;
-      const domR = document.getElementById('r-'+exId+'-'+origIdx)?.value;
+      const domW = document.getElementById('w-'+exId+'-'+sid)?.value;
+      const domR = document.getElementById('r-'+exId+'-'+sid)?.value;
       const weightDisp = (domW && domW !== '') ? parseFloat(domW) : null;
       const weightKg = weightDisp !== null && !isNaN(weightDisp) ? toKg(weightDisp) : (b.weight ?? null);
       const repsOrSecs = (domR && domR !== '') ? (n=>isNaN(n)?null:n)(parseInt(domR)) : (isTimed ? (b.secs ?? null) : (b.reps ?? null));
-      const sideBtn = document.getElementById('side-'+exId+'-'+origIdx);
+      const sideBtn = document.getElementById('side-'+exId+'-'+sid);
       const side = sideBtn ? sideBtn.textContent.trim() : null;
       const sideVal = (side && side !== '—') ? side : (b.side ?? null);
-      return isTimed ? {weight:weightKg, secs:repsOrSecs, forced, warmup, side:sideVal}
-                     : {weight:weightKg, reps:repsOrSecs, forced, warmup, side:sideVal};
+      return isTimed ? {sid, weight:weightKg, secs:repsOrSecs, forced, warmup, side:sideVal}
+                     : {sid, weight:weightKg, reps:repsOrSecs, forced, warmup, side:sideVal};
     }
   });
   let displayName;
@@ -7461,12 +7466,17 @@ function unsaveExercise(passId,exId){
   ensureDraft(passId);
   const saved = state.draft.savedExercises[exId];
   if(saved){
-    // Restore inputBuffer from saved sets so inputs show old values
+    // Restore inputBuffer from saved sets so inputs show old values.
+    // Keyat på sid + återställ extraSets-strukturen (sid+warmup) från saved.
     if(saved.sets && saved.sets.length > 0){
-      state.draft.inputBuffer[exId] = saved.sets.map(s => ({
-        weight: s.weight, reps: s.reps, secs: s.secs,
-        extra: s.extra, forced: s.forced, side: s.side
-      }));
+      const withIds = ensureSetIds(saved.sets);
+      saved.sets = withIds;
+      state.draft.extraSets[exId] = withIds.map(s => ({sid:s.sid, warmup:!!s.warmup}));
+      const nb = {};
+      withIds.forEach(s => {
+        nb[s.sid] = {weight:s.weight, reps:s.reps, secs:s.secs, extra:s.extra, forced:s.forced, side:s.side};
+      });
+      state.draft.inputBuffer[exId] = nb;
     }
     // Clear logged state — user needs to re-log after editing
     delete state.draft.loggedSets[exId];
@@ -7479,14 +7489,14 @@ function unsaveExercise(passId,exId){
 }
 
 // ── PER-SET LOGGING ───────────────────────────────────────────
-// draft.loggedSets[exId][origIdx] = {weight, reps, secs, extra, bwSnap, forced, side}
+// draft.loggedSets[exId][sid] = {weight, reps, secs, extra, bwSnap, forced, side}
 // Logging a set captures inputs and starts rest timer (work sets only)
 
 // Update log button has-value state when weight/reps change
-function updateLogBtnState(exId, origIdx){
-  const wInp = document.getElementById('w-'+exId+'-'+origIdx);
-  const rInp = document.getElementById('r-'+exId+'-'+origIdx);
-  const logBtn = document.querySelector(`button.set-log-btn[onclick*="logSet('${exId}',${origIdx}"]`);
+function updateLogBtnState(exId, sid){
+  const wInp = document.getElementById('w-'+exId+'-'+sid);
+  const rInp = document.getElementById('r-'+exId+'-'+sid);
+  const logBtn = document.querySelector(`button.set-log-btn[onclick*="logSet('${exId}','${sid}'"]`);
   if(!logBtn) return;
   const hasW = wInp && wInp.value !== '';
   const hasR = rInp && rInp.value !== '';
@@ -7497,17 +7507,17 @@ function updateLogBtnState(exId, origIdx){
   }
 }
 
-function logSet(exId, origIdx, passId, isWarmup){
+function logSet(exId, sid, passId, isWarmup){
   if(!state.draft || state.draft.passId !== passId) ensureDraft(passId);
   captureInputsToSetsBuffer(exId, passId);
-  
+
   if(!state.draft.loggedSets) state.draft.loggedSets = {};
   if(!state.draft.loggedSets[exId]) state.draft.loggedSets[exId] = {};
-  
-  // Read current values from buffer
-  const buf = state.draft.inputBuffer?.[exId]?.[origIdx] || {};
-  state.draft.loggedSets[exId][origIdx] = {...buf, warmup: !!isWarmup, origIdx};
-  
+
+  // Read current values from buffer (keyat på stabilt sid — överlever omordning)
+  const buf = state.draft.inputBuffer?.[exId]?.[sid] || {};
+  state.draft.loggedSets[exId][sid] = {...buf, warmup: !!isWarmup, sid};
+
   save();
   rerenderSession(passId);
   
@@ -7517,9 +7527,9 @@ function logSet(exId, origIdx, passId, isWarmup){
   }
 }
 
-function unlogSet(exId, origIdx, passId){
+function unlogSet(exId, sid, passId){
   if(!state.draft?.loggedSets?.[exId]) return;
-  delete state.draft.loggedSets[exId][origIdx];
+  delete state.draft.loggedSets[exId][sid];
   if(Object.keys(state.draft.loggedSets[exId]).length === 0){
     delete state.draft.loggedSets[exId];
   }
@@ -7653,6 +7663,65 @@ function finishSession(passId){
   save();pushState();showToast('Session done! 💪');renderChain();
 }
 
+// ── SET MODEL: stabila set-id (3.39.0, Lager A) ───────────────
+// Tidigare identifierades varje set av sin ARRAY-POSITION (origIdx). Vid
+// filtrering/omordning av extraSets-arrayen (t.ex. ramp-filter mitt i Log-flödet)
+// drev positionen isär från DOM/buffer → Set 1 läste fel cell (P1). Och copy
+// läste array-ordning rått medan skärmen sorterade → W/S spretade (#4).
+// Lösning: varje set har ett stabilt `sid`. inputBuffer/loggedSets/DOM-id nycklas
+// på sid, aldrig position. EN delad sortering driver skärm + copy.
+// Speglar src/set-model.js (testtäckt). Vid ändring: uppdatera båda.
+let _sidCounter = 0;
+function nextSid(){ return 's' + (++_sidCounter) + '_' + Date.now().toString(36); }
+function makeSet(warmup){ return { sid: nextSid(), warmup: !!warmup }; }
+// Default-set med DETERMINISTISKA sid. Krävs för att en fräsch övning (ingen
+// draft än, next-up-preview) ska rendera samma sid som ensureExtraSets sedan
+// genererar vid första Log — annars läser första loggningen en tom cell.
+// Sid namespacas per exId i buffrarna, så 'wu0/wk0' räcker som unikt inom övningen.
+function defSets(w,k){
+  const out=[];
+  for(let i=0;i<w;i++) out.push({sid:'wu'+i, warmup:true});
+  for(let i=0;i<k;i++) out.push({sid:'wk'+i, warmup:false});
+  return out;
+}
+function ensureSetIds(sets){
+  return (sets||[]).map(s => (s && s.sid) ? s : { ...(s||{}), sid: nextSid(), warmup: !!(s&&s.warmup) });
+}
+// Stabil warmups-först-sortering (filter bevarar inbördes ordning). Muterar ej.
+function sortSetsForDisplay(sets){
+  const arr = sets||[];
+  return [...arr.filter(s=>s&&s.warmup), ...arr.filter(s=>s&&!s.warmup)];
+}
+// Migrera en draft från positionell modell → sid-modell. Idempotent: rör bara
+// sets utan sid. Remappar inputBuffer (array→obj) + loggedSets (numkey→sidkey)
+// via samma index, så inga loggade/osparade värden tappas vid uppdateringen.
+function migrateDraftSetIds(draft){
+  if(!draft || !draft.extraSets) return;
+  for(const exId of Object.keys(draft.extraSets)){
+    const sets = draft.extraSets[exId];
+    if(!Array.isArray(sets) || sets.every(s=>s&&s.sid)) continue;
+    const withIds = ensureSetIds(sets);
+    draft.extraSets[exId] = withIds;
+    // inputBuffer: array indexerad på position → objekt keyat på sid
+    const oldBuf = draft.inputBuffer?.[exId];
+    if(Array.isArray(oldBuf)){
+      const nb = {};
+      withIds.forEach((s,i)=>{ if(oldBuf[i]!==undefined) nb[s.sid]=oldBuf[i]; });
+      draft.inputBuffer[exId] = nb;
+    }
+    // loggedSets: objekt keyat på origIdx (nummer) → keyat på sid
+    const oldLog = draft.loggedSets?.[exId];
+    if(oldLog && typeof oldLog==='object'){
+      const nl = {};
+      withIds.forEach((s,i)=>{ if(oldLog[i]!==undefined) nl[s.sid]=oldLog[i]; });
+      draft.loggedSets[exId] = nl;
+    }
+    // savedExercises.sets: tilldela sid i (display-)ordning
+    const saved = draft.savedExercises?.[exId];
+    if(saved && Array.isArray(saved.sets)) saved.sets = ensureSetIds(saved.sets);
+  }
+}
+
 // ── SET MANAGEMENT ────────────────────────────────────────────
 // 3.34.0 — Tag-driven set defaults. First active tag (in TAG_ORDER) wins.
 // Niklas: "Standard är ju HIT. 2 warm + 1 work." Övriga tags overridar.
@@ -7710,9 +7779,7 @@ function getDefaultSets(ex){
   // Carry forward work-set count from last completed session (cap 8 for sanity)
   const lastWork = Math.min(state.lastSessionSetCount?.[ex.id]||0, 8);
   const workCount = lastWork || def.work;
-  const warmupSets = Array.from({length: def.warmup}, () => ({warmup: true}));
-  const workSets = Array.from({length: workCount}, () => ({warmup: false}));
-  return [...warmupSets, ...workSets];
+  return defSets(def.warmup, workCount);
 }
 function ensureExtraSets(exId, passId){
   ensureDraft(passId);
@@ -7721,15 +7788,19 @@ function ensureExtraSets(exId, passId){
   const pass=chain.find(p=>p.id===passId);
   const ex=isExtra?null:pass?.exercises.find(e=>e.id===exId);
   if(state.draft.extraSets[exId]===undefined||state.draft.extraSets[exId].length===0){
-    state.draft.extraSets[exId]=ex?getDefaultSets(ex):[{warmup:true},{warmup:true},{warmup:false}];
+    state.draft.extraSets[exId]=ex?getDefaultSets(ex):defSets(2,1);
+  } else {
+    // Säkerställ sid på legacy-sets (idempotent)
+    state.draft.extraSets[exId]=ensureSetIds(state.draft.extraSets[exId]);
   }
   if(!isExtra){
     const exTagOvr2=state.exerciseTagOverrides?.[exId]||{};
     const isRampCheck=exTagOvr2.ramp!==undefined?exTagOvr2.ramp:!!ex?.ramp;
     if(isRampCheck&&state.draft.extraSets[exId].some(s=>s.warmup)){
+      // Filtrering är nu säker: sid-nyckling gör att buffer/loggedSets följer med.
       state.draft.extraSets[exId]=state.draft.extraSets[exId].filter(s=>!s.warmup);
       if(state.draft.extraSets[exId].length===0)
-        state.draft.extraSets[exId]=[{warmup:false},{warmup:false}];
+        state.draft.extraSets[exId]=defSets(0,2);
     }
   }
 }
@@ -7765,67 +7836,69 @@ function captureInputsToSetsBuffer(exId,passId){
   const pass=chain.find(p=>p.id===passId);
   const ex=isExtra?null:pass?.exercises.find(e=>e.id===exId);
   const isBW=isExtra?false:!!ex?.bw;
-  const rawSets=state.draft.extraSets[exId];
+  const rawSets=ensureSetIds(state.draft.extraSets[exId]);
+  state.draft.extraSets[exId]=rawSets;
   if(!state.draft.inputBuffer)state.draft.inputBuffer={};
-  // Merge with existing buffer — keep prior values if DOM is empty
-  const prior = state.draft.inputBuffer[exId] || [];
-  state.draft.inputBuffer[exId]=rawSets.map((_,origIdx)=>{
-    const p = prior[origIdx] || {};
-    const domF = document.getElementById('f-'+exId+'-'+origIdx)?.value;
+  // Merge with existing buffer — keep prior values if DOM is empty.
+  // Keyat på stabilt sid (objekt), inte position.
+  const prior = state.draft.inputBuffer[exId] || {};
+  const nb = {};
+  rawSets.forEach(s=>{
+    const sid=s.sid;
+    const p = prior[sid] || {};
+    const domF = document.getElementById('f-'+exId+'-'+sid)?.value;
     const forced = (domF && domF !== '') ? (parseInt(domF)||null) : (p.forced ?? null);
     if(isBW){
-      const domBw = document.getElementById('bw-'+exId+'-'+origIdx)?.value;
-      const domR = document.getElementById('r-'+exId+'-'+origIdx)?.value;
+      const domBw = document.getElementById('bw-'+exId+'-'+sid)?.value;
+      const domR = document.getElementById('r-'+exId+'-'+sid)?.value;
       const extraDisp = (domBw && domBw !== '') ? parseFloat(domBw) : null;
       const extraKg = extraDisp!==null && !isNaN(extraDisp) ? toKg(extraDisp) : (p.extra ?? null);
       const repsOrSecs2 = (domR && domR !== '') ? (n=>isNaN(n)?null:n)(parseInt(domR)) : null;
       const isTimed3=!!(state.exerciseTagOverrides?.[exId]?.timed ?? ex?.timed);
-      return isTimed3
+      nb[sid] = isTimed3
         ? {extra:extraKg, bwSnap:p.bwSnap||0, secs: repsOrSecs2 ?? (p.secs ?? null), forced}
         : {extra:extraKg, bwSnap:p.bwSnap||0, reps: repsOrSecs2 ?? (p.reps ?? null), forced};
     }else{
-      const domW = document.getElementById('w-'+exId+'-'+origIdx)?.value;
-      const domR = document.getElementById('r-'+exId+'-'+origIdx)?.value;
+      const domW = document.getElementById('w-'+exId+'-'+sid)?.value;
+      const domR = document.getElementById('r-'+exId+'-'+sid)?.value;
       const weightDisp = (domW && domW !== '') ? (parseFloat(domW)||null) : null;
       const weightKg = weightDisp !== null ? toKg(weightDisp) : (p.weight ?? null);
       const repsOrSecs = (domR && domR !== '') ? (n=>isNaN(n)?null:n)(parseInt(domR)) : null;
       const isTimed2=!!(state.exerciseTagOverrides?.[exId]?.timed ?? ex?.timed);
-      return isTimed2
+      nb[sid] = isTimed2
         ? {weight:weightKg, secs: repsOrSecs ?? (p.secs ?? null), forced}
         : {weight:weightKg, reps: repsOrSecs ?? (p.reps ?? null), forced};
     }
   });
+  state.draft.inputBuffer[exId]=nb;
   // Also capture side buttons
-  rawSets.forEach((_,origIdx)=>{
-    const sideBtn=document.getElementById('side-'+exId+'-'+origIdx);
-    if(sideBtn && state.draft.inputBuffer[exId]){
+  rawSets.forEach(s=>{
+    const sideBtn=document.getElementById('side-'+exId+'-'+s.sid);
+    if(sideBtn && nb[s.sid]){
       const sv=sideBtn.textContent.trim();
-      if(state.draft.inputBuffer[exId][origIdx])
-        state.draft.inputBuffer[exId][origIdx].side=(sv==='—')?null:sv||null;
+      nb[s.sid].side=(sv==='—')?null:sv||null;
     }
   });
 }
 function addWorkSet(exId,passId){
   captureInputsToSetsBuffer(exId,passId);
-  state.draft.extraSets[exId].push({warmup:false});
+  state.draft.extraSets[exId].push(makeSet(false));
   save();rerenderSession(passId);
 }
 function addWarmupSet(exId,passId){
   captureInputsToSetsBuffer(exId,passId);
-  state.draft.extraSets[exId].push({warmup:true});
+  state.draft.extraSets[exId].push(makeSet(true));
   save();rerenderSession(passId);
 }
-function removeExtraSet(exId,idx,passId){
+function removeExtraSet(exId,sid,passId){
   ensureExtraSets(exId,passId);
   // Capture current DOM values BEFORE mutation so unsaved inputs survive
   captureInputsToSetsBuffer(exId,passId);
   if(state.draft.extraSets[exId].length>1){
-    state.draft.extraSets[exId].splice(idx,1);
-    // Keep buffer in sync — remove the corresponding buffer slot so
-    // remaining sets render with their correct values
-    if(state.draft.inputBuffer && state.draft.inputBuffer[exId]){
-      state.draft.inputBuffer[exId].splice(idx,1);
-    }
+    state.draft.extraSets[exId]=state.draft.extraSets[exId].filter(s=>s.sid!==sid);
+    // Keep buffer + logged-state in sync — drop the removed set's sid keys
+    if(state.draft.inputBuffer?.[exId]) delete state.draft.inputBuffer[exId][sid];
+    if(state.draft.loggedSets?.[exId]) delete state.draft.loggedSets[exId][sid];
   }
   save();rerenderSession(passId);
 }
@@ -7946,7 +8019,11 @@ function undoSession(passId){
     const savedExercises={},extras=[],extraSets={};
     (completed.exercises||[]).forEach(ex=>{
       savedExercises[ex.id]={...ex};
-      if(ex.sets&&ex.sets.length) extraSets[ex.id]=ex.sets.map(s=>({warmup:!!s.warmup}));
+      if(ex.sets&&ex.sets.length){
+        const withIds=ensureSetIds(ex.sets);
+        savedExercises[ex.id].sets=withIds; // dela sid mellan saved + extraSets
+        extraSets[ex.id]=withIds.map(s=>({sid:s.sid,warmup:!!s.warmup}));
+      }
       if(ex.id.startsWith('extra_'+passId+'_')) extras[parseInt(ex.id.split('_').pop())]={name:ex.name};
     });
     state.draft={passId,savedExercises,swaps:{},extras:extras.filter(Boolean),extraSets,loggedSets:{},inputBuffer:{}};
@@ -7972,10 +8049,10 @@ function formatSetLine(set,u){
 
 // 3.38.0 — Session-label random från tidsspann + klockslag + hashtags i copy
 const SESSION_LABELS = {
-  morning:   ['Morning Session','Dawn Patrol','Early Bird','Sunrise Lift',"Cock's Crow",'Respawn','Sunbreak'],
+  morning:   ['Morning Session','Dawn Patrol','Early Bird','Sunrise Lift','First Light','Respawn','Sunbreak'],
   noon:      ['High Noon','Daily Grind','Lunch Hour','Midday Burn','Noon Strike','Side Quest','Daily Quest'],
-  afternoon: ['Afternoon Delight','Siesta Skip','Tea Time','Coffee Crush',"Two O'Clock",'Daily Reset','Loot Run'],
-  afterwork: ['Crowd Work','Happy Hour','After Hours','Drive Time','Rush Hour','Raid Time','Lobby Full'],
+  afternoon: ['Afternoon Delight','Siesta Skip','Tea Time','Coffee Crush','Post Refeed','Daily Reset','Loot Run'],
+  afterwork: ['Crowd Work','Happy Hour','After Hours','Commuter Hours','Rush Hour','Raid Time','Lobby Full'],
   prime:     ['Prime Time','Sweet Spot','Headliner','Main Event','Showcase','Boss Fight','Final Boss'],
   evening:   ['Evening Session','Last Call','Curtain Call','Late Show','Final Round','Quicksave','Last Save'],
   night:     ['Night Owl','Witching Hour','Graveyard Shift','Lights Out',"Insomniac's Lift",'Hardcore Mode','No-Sleep Mode'],
@@ -8011,7 +8088,8 @@ function buildCopyLines(passName, dateStr, timestamp, exercises, u){
     if(ex.skipped) return;
     lines.push(ex.name+(ex.extra?' +':''));
     let w=0, s=0;
-    (ex.sets||[]).forEach(set=>{
+    // #4: samma warmups-först-sortering som skärmen — copy och UI är aldrig oense
+    sortSetsForDisplay(ex.sets||[]).forEach(set=>{
       if(set.warmup){
         w++;
         const wt = set.weight!=null ? toDisplay(set.weight)+' '+u+' × ' : 'BW × ';
