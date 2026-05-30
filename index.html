@@ -5869,15 +5869,6 @@ function buildPassBodyHTML(pass,cycle,nextId){
         const isUni  = tagOvr.uni!==undefined    ? tagOvr.uni  : !!effEx.uni;
         const isSingles = tagOvr.singles!==undefined ? tagOvr.singles : !!effEx.singles;
 
-        // Default to 2 warmup sets when none specified
-        let extraSets=draftExtraSets[ex.id];
-        if(!extraSets){
-          // Default: 2 warmup sets for all exercises
-          extraSets=[{warmup:true},{warmup:true}];
-          if(!isDone&&!hasDraft){
-            // lazy-init default warmups in draft
-          }
-        }
         let tags='';if(isRampEx)tags+=`<span class="ex-tag ramp">Ramp</span>`;if(isSingles)tags+=`<span class="ex-tag singles">Singles</span>`;if(isBW){const bwDisp=todayWkg?`${toDisplay(todayWkg)} ${unitLabel()}`:'';tags+=`<span class="ex-tag bw">BW${bwDisp?' '+bwDisp:''}</span>`;}if(isUni)tags+=`<span class="ex-tag uni">Unilateral</span>`;if(isTimed)tags+=`<span class="ex-tag" style="border-color:#1a2a3a;background:#08101a;color:#7ab;">Timed</span>`;
         const lastSession=getLastSession(ex.id, sessionSwap||permSwap||null);
         let prevText='';
