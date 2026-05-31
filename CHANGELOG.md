@@ -6,6 +6,19 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.40.0 — 2026-05-31
+**Lager B av set/övnings-refaktorn — kanoniska övnings-id (exId).** Rotorsaksfix för #3 + #5 + det gamla rename-skräpet.
+
+- **Rotorsak:** historik/PR nycklades på NAMN (splittrades vid rename → tvingade fram en ständigt växande `migrateExerciseNames`-tabell) och notes på SLOT-id (A1, B4… → läckte vid swap). Nu får varje övning ett stabilt kanoniskt `exId` (slug av kanoniskt namn). Historik, PR, notes och set-antal nycklas på exId. Namn blir bara en etikett.
+- **#3 — note följer inte övningen vid swap:** löst. Notes nycklas på exId; en swap ändrar slottens resolvade exId → originalets note visas inte på den inswappade övningen, och återkommer vid swap tillbaka.
+- **#5 — samma id / data-bleed vid swap:** löst. `doSwap` rensar nu även `extraSets` för slotten så inswappad övning får fräscha defaults istället för att ärva original-övningens set-struktur.
+- **Delad identitet:** samma övning i två pass (Cable Flyes A3+E3, Unilateral Cable Row B3+F2, Lat Prayers B4+F4) delar nu historik, PR **och** notes. Tidigare var PR slot-keyat → B4/F4 var separata PR-rader.
+- **Notes persisterar:** den gamla ephemeral-modellen (note visades en gång, droppades efter nästa session) är borttagen. Niklas: "oavsett när nästa pass kommer vill jag ha infon kvar." Noten stannar på övningen tills du ändrar/rensar den; en kopia fryses i log-raden för historik.
+- **Swap ärver rätt historik:** swappa t.ex. Flat DB → Flat BB och passet visar din riktiga Flat BB-historik/PR (samma exId).
+- **Migration:** schema v1→v2 resolvar exId på all logg/cykel-historik + remappar slot-keyade notes/tombstones → exId. Idempotent. PM4-snapshot (`state_before_exId_*`) tas före. `migrateExerciseNames`-eran kan pensioneras framåt.
+- **Bibliotek:** "Cable Rotator Cuff" tillagd i EXERCISE_LIBRARY (D4 saknade biblioteksmatch). Kanoniska val (Niklas 2026-05-30): D1 Military Press=barbell, F3 Shrugs=DB, F1 Pull-ups=pronated; Internal/External Rotator Cuff förblir separata övningar.
+- **Test:** ny `src/exercise-identity.js` + `tests/exercise-identity.test.js` (18 tester). Totalt 57 gröna.
+
 ## 3.39.0 — 2026-05-30
 **Lager A av set/övnings-refaktorn — stabila set-id.** Rotorsaksfix för två live-test-buggar.
 

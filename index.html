@@ -4835,6 +4835,7 @@ const EXERCISE_LIBRARY = [
   {name:'Helms Rear Delt Row', cat:'Shoulders'},
   {name:'Internal Rotator Cuff', cat:'Shoulders'},
   {name:'Lateral Raises', cat:'Shoulders'},
+  {name:'Cable Rotator Cuff', cat:'Shoulders'},
   {name:'Light Face Pulls', cat:'Shoulders'},
   {name:'Military Press (barbell)', cat:'Shoulders'},
   {name:'Military Press - Smith', cat:'Shoulders'},
@@ -4995,7 +4996,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.39.0';
+const APP_VERSION = '3.40.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5013,11 +5014,125 @@ let _chainSelectedId=null;
 // Tidigare ad-hoc migrations (migrateExerciseNames, migratePassKeysToSession)
 // är inte en del av denna pipeline — de körs separat innan schema-pipeline för
 // bakåtkompatibilitet.
-const SCHEMA_VERSION = 1;
+// ── EXERCISE IDENTITY: kanoniska exId (Lager B, 3.40.0) ───────
+// Speglar src/exercise-identity.js (testtäckt). Vid ändring: uppdatera båda.
+// Historik/PR/notes nycklas på stabilt exId istället för namn (splittrades vid
+// rename) eller slot-id (läckte vid swap, #3/#5). Se exercise-identity.js för design.
+function slugifyExId(name){
+  return 'ex_' + String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+}
+const NAME_ALIASES = {
+  'Flat BB':'Flat BB Bench Press','Flat DB':'Flat DB Press','Seated Calf Raises':'Seated Calf Raise',
+  'Military Press':'Military Press (barbell)','Shrugs':'DB Shrugs','Pull-ups':'Pull-ups (pronated)',
+  'Incline Smith or Incline DB':'Incline Smith Press','Pec Deck / Cable Flyes':'Cable Flyes',
+  'Chins or Pullups':'Pull-ups','Decline Smith / DB':'Decline Smith Press','Pull-ups / Chins':'Pull-ups',
+  'Tri-finisher (Pushdowns/Overhead)':'Tricep Pushdowns','Tri-finisher (Pushdowns)':'Overhead Tricep Extension',
+  'Calfs (standing + seated)':'Seated Calf Raise','Calfs':'Seated Calf Raise',
+  'Lateral Raises DB/Cable':'Lateral Raises','Helms Rear Delt Row / Face Pulls':'Face Pulls',
+};
+const SLOT_NAME_ALIASES = {
+  'A4|Tri-finisher':'Tricep Pushdowns','E4|Tri-finisher':'Overhead Tricep Extension','C4|Calfs':'Seated Calf Raise',
+};
+const BASE_SLOT_DEFAULT_NAME = {
+  A1:'Flat BB Bench Press',A2:'Incline Smith Press',A3:'Cable Flyes',A4:'Tricep Pushdowns',
+  B1:'Dead Hang',B2:'Deadlift',B3:'Unilateral Cable Row',B4:'Lat Prayers',
+  C1:'Zercher Squat',C2:'Lying Leg Curl',C3:'Leg Extension',C4:'Seated Calf Raise',
+  D1:'Military Press (barbell)',D2:'Lateral Raises',D3:'Face Pulls',D4:'Cable Rotator Cuff',
+  E1:'Flat DB Press',E2:'Decline Smith Press',E3:'Cable Flyes',E4:'Overhead Tricep Extension',
+  F1:'Pull-ups (pronated)',F2:'Unilateral Cable Row',F3:'DB Shrugs',F4:'Lat Prayers',
+};
+function canonicalName(name, slotId){
+  if(slotId && SLOT_NAME_ALIASES[slotId+'|'+name]) return SLOT_NAME_ALIASES[slotId+'|'+name];
+  let cur = name;
+  for(let i=0;i<8 && NAME_ALIASES[cur];i++) cur = NAME_ALIASES[cur];
+  return cur;
+}
+function resolveExId(name, slotId, existingCustomId){
+  if(existingCustomId && /^custom_/.test(existingCustomId)) return existingCustomId;
+  return slugifyExId(canonicalName(name, slotId));
+}
+// Resolva en slot-key (A1…F4) → exId (tar hänsyn till perm-swap som pekar om slotten).
+function slotKeyToExId(s, slotId, customIds){
+  const swapName = s.permanentSwaps && s.permanentSwaps[slotId];
+  if(swapName){
+    const custom = (s.customExercises||[]).find(c=>c.name===swapName);
+    return resolveExId(swapName, slotId, custom?.id);
+  }
+  const baseName = BASE_SLOT_DEFAULT_NAME[slotId];
+  if(baseName) return slugifyExId(baseName);
+  return null;
+}
+// Resolva nuvarande exId för en renderad övning (bas/added/extra + ev swap/custom).
+function getRenderExId(slotId){
+  const swapName = state.draft?.swaps?.[slotId] || state.permanentSwaps?.[slotId];
+  if(swapName){
+    const custom = (state.customExercises||[]).find(c=>c.name===swapName);
+    return resolveExId(swapName, slotId, custom?.id);
+  }
+  const baseName = BASE_SLOT_DEFAULT_NAME[slotId];
+  if(baseName) return slugifyExId(baseName);
+  // added_*: slå upp namn i addedExercises
+  for(const pid of Object.keys(state.addedExercises||{})){
+    const found = (state.addedExercises[pid]||[]).find(e=>e.id===slotId);
+    if(found) return resolveExId(found.name, slotId, null);
+  }
+  return null;
+}
+// Idempotent migration: resolva exId på log/cycle/notes/tombstones. Speglar
+// migrateExerciseIdentity i src/exercise-identity.js.
+function migrateExerciseIdentity(){
+  if(!state) return { changed:false };
+  const customIds = new Set((state.customExercises||[]).map(c=>c.id));
+  let changed = false;
+  const resolveForEntry = (ex) => (ex.id && customIds.has(ex.id)) ? ex.id : resolveExId(ex.name, ex.id, ex.id);
+  for(const entry of (state.log||[])){
+    for(const ex of (entry.exercises||[])){
+      if(!ex.exId){ ex.exId = resolveForEntry(ex); changed = true; }
+    }
+  }
+  for(const cycle of (state.cycles||[])){
+    for(const snap of Object.values(cycle.done||{})){
+      if(!snap || !snap.exercises) continue;
+      for(const ex of snap.exercises){ if(!ex.exId){ ex.exId = resolveForEntry(ex); changed = true; } }
+    }
+  }
+  const remapNotes = (mapName) => {
+    const m = state[mapName];
+    if(!m || typeof m !== 'object') return;
+    for(const key of Object.keys(m)){
+      if(/^ex_/.test(key) || /^custom_/.test(key)) continue;
+      const exId = slotKeyToExId(state, key, customIds);
+      if(exId && exId !== key){
+        if(m[exId] === undefined) m[exId] = m[key];
+        delete m[key]; changed = true;
+      }
+    }
+  };
+  remapNotes('exerciseNotes');
+  remapNotes('lastSessionNotes');
+  if(state.deletions && state.deletions.exerciseNotes){
+    const d = state.deletions.exerciseNotes;
+    for(const key of Object.keys(d)){
+      if(/^ex_/.test(key) || /^custom_/.test(key)) continue;
+      const exId = slotKeyToExId(state, key, customIds);
+      if(exId && exId !== key){ if(d[exId]===undefined) d[exId]=d[key]; delete d[key]; changed = true; }
+    }
+  }
+  return { changed };
+}
+
+const SCHEMA_VERSION = 2;
 
 const SCHEMA_MIGRATIONS = {
-  // Exempel:
-  // 1: (s) => { s.newField = s.oldField ?? 'default'; delete s.oldField; return s; },
+  // 1→2 (3.40.0): kanoniska exId på all historik + notes (Lager B).
+  // Snapshot före (PM4-mönster) ifall mappningen behöver granskas i efterhand.
+  1: (s) => {
+    try{
+      localStorage.setItem('state_before_exId_'+Date.now(), JSON.stringify(s));
+    }catch(e){ /* snapshot är safety-net, inte gating */ }
+    migrateExerciseIdentity();
+    return state;
+  },
 };
 
 // 3.34.8 — Use freshState() as single source of truth (var 26-fält inline-init).
@@ -5870,7 +5985,8 @@ function buildPassBodyHTML(pass,cycle,nextId){
         const isSingles = tagOvr.singles!==undefined ? tagOvr.singles : !!effEx.singles;
 
         let tags='';if(isRampEx)tags+=`<span class="ex-tag ramp">Ramp</span>`;if(isSingles)tags+=`<span class="ex-tag singles">Singles</span>`;if(isBW){const bwDisp=todayWkg?`${toDisplay(todayWkg)} ${unitLabel()}`:'';tags+=`<span class="ex-tag bw">BW${bwDisp?' '+bwDisp:''}</span>`;}if(isUni)tags+=`<span class="ex-tag uni">Unilateral</span>`;if(isTimed)tags+=`<span class="ex-tag" style="border-color:#1a2a3a;background:#08101a;color:#7ab;">Timed</span>`;
-        const lastSession=getLastSession(ex.id, sessionSwap||permSwap||null);
+        const _exId = getRenderExId(ex.id) || ex.id;
+        const lastSession=getLastSession(_exId);
         let prevText='';
         if(lastSession){
           // Show only the last work set (most recent, highest index)
@@ -5905,8 +6021,8 @@ function buildPassBodyHTML(pass,cycle,nextId){
           prevText=`<div class="ex-prev"><span class="last-val">Last (${whenStr}):</span>${historyHTML || ' '+lastStr}</div>`;
         }
 
-        const existingNote = state.exerciseNotes?.[ex.id]||'';
-        const lastNote = !existingNote ? (state.lastSessionNotes?.[ex.id]||'') : '';
+        const existingNote = state.exerciseNotes?.[_exId]||'';
+        const lastNote = !existingNote ? (state.lastSessionNotes?.[_exId]||'') : '';
         const escapedNote = escapeHTML(existingNote);
         const escapedLastNote = escapeHTML(lastNote);
         // 3.34.6 — Reminder semantik: notes är ephemeral, försvinner efter nästa session.
@@ -5920,7 +6036,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
           ? existingNote
             ? `<div class="ex-note-banner" onclick="toggleNote('${ex.id}')" title="Tap to edit reminder">📝 ${escapedNote}</div>`
             : lastNote
-              ? `<div class="ex-note-banner reminder-prev" onclick="toggleNote('${ex.id}')" title="Tap to edit (försvinner efter denna session om inte refreshad)">⏰ Reminder${reminderWhen?' från '+reminderWhen:''}: ${escapedLastNote}</div>`
+              ? `<div class="ex-note-banner reminder-prev" onclick="toggleNote('${ex.id}')" title="Tap to edit (kvar tills du uppdaterar den)">⏰ Reminder${reminderWhen?' från '+reminderWhen:''}: ${escapedLastNote}</div>`
               : `<div class="ex-note-add" onclick="toggleNote('${ex.id}')">+ Reminder for next time</div>`
           : existingNote
             ? `<div class="ex-note-banner done-note">📝 ${escapedNote}</div>` : '';
@@ -6000,8 +6116,8 @@ function buildPassBodyHTML(pass,cycle,nextId){
           html+=`<div id="notewrap-${ex.id}" style="display:none" class="ex-note-wrap">
             <textarea class="ex-note-input" id="noteinput-${ex.id}" placeholder="Reminder for next time (e.g. 'för lätt vikt, gå upp')...">${escapedNote}</textarea>
             <div class="ex-note-actions">
-              <button class="ex-note-save" onclick="saveNote('${ex.id}')">Save Reminder</button>
-              ${existingNote?`<button class="ex-note-clear" onclick="clearNote('${ex.id}')">Clear</button>`:''}
+              <button class="ex-note-save" onclick="saveNote('${ex.id}','${_exId}')">Save Reminder</button>
+              ${existingNote?`<button class="ex-note-clear" onclick="clearNote('${ex.id}','${_exId}')">Clear</button>`:''}
               <button class="ex-note-clear" onclick="toggleNote('${ex.id}')">Cancel</button>
             </div>
           </div>`;
@@ -7349,8 +7465,11 @@ function toggleNote(exId){
     if(!isOpen)setTimeout(()=>document.getElementById('noteinput-'+exId)?.focus(),50);
   }
 }
-function saveNote(exId){
-  const inp=document.getElementById('noteinput-'+exId);
+// 3.40.0: DOM-element nycklas på slotId (per renderad rad), notes-state på exId
+// (följer övningen). Render passar båda. Bakåtkompatibel default exId=slotId.
+function saveNote(slotId, exId){
+  exId = exId || slotId;
+  const inp=document.getElementById('noteinput-'+slotId);
   const val=inp?.value.trim();
   if(!state.exerciseNotes)state.exerciseNotes={};
   if(val){
@@ -7364,10 +7483,10 @@ function saveNote(exId){
   }
   save();
   showToast(val?'Reminder saved':'Reminder cleared');
-  const wrap=document.getElementById('notewrap-'+exId);
+  const wrap=document.getElementById('notewrap-'+slotId);
   if(wrap)wrap.style.display='none';
   // Update banner without full rerender (3.34.6: + cleanup av reminder-prev klass)
-  const block=document.getElementById('exblock-'+exId);
+  const block=document.getElementById('exblock-'+slotId);
   if(block){
     const existing=block.querySelector('.ex-note-banner');
     const existingAdd=block.querySelector('.ex-note-add');
@@ -7377,7 +7496,7 @@ function saveNote(exId){
       const banner=document.createElement('div');
       banner.className='ex-note-banner';
       banner.title='Tap to edit reminder';
-      banner.onclick=()=>toggleNote(exId);
+      banner.onclick=()=>toggleNote(slotId);
       banner.textContent='📝 '+val;
       const detail=block.querySelector('.ex-detail');
       if(detail)detail.after(banner);
@@ -7385,17 +7504,17 @@ function saveNote(exId){
       // No value → render "+ Reminder for next time" add-button
       const add=document.createElement('div');
       add.className='ex-note-add';
-      add.onclick=()=>toggleNote(exId);
+      add.onclick=()=>toggleNote(slotId);
       add.textContent='+ Reminder for next time';
       const detail=block.querySelector('.ex-detail');
       if(detail)detail.after(add);
     }
   }
 }
-function clearNote(exId){
-  const inp=document.getElementById('noteinput-'+exId);
+function clearNote(slotId, exId){
+  const inp=document.getElementById('noteinput-'+slotId);
   if(inp)inp.value='';
-  saveNote(exId);
+  saveNote(slotId, exId);
 }// ── EXERCISE ACTIONS ──────────────────────────────────────────
 function saveExercise(passId,exId){
   captureInputsToSetsBuffer(exId, passId);
@@ -7629,21 +7748,18 @@ function finishSession(passId){
   if(!state.deletions) state.deletions = {};
   if(!state.deletions.exerciseNotes) state.deletions.exerciseNotes = {};
   exercises.forEach(ex=>{
+    // 3.40.0: knyt log-raden till kanoniskt exId (historik/PR följer övningen, inte slotten)
+    const exId = getRenderExId(ex.id) || ex.id;
+    ex.exId = exId;
     if(!ex.skipped && Array.isArray(ex.sets)){
       const workCount=ex.sets.filter(s=>!s.warmup).length;
-      if(workCount>0) state.lastSessionSetCount[ex.id]=workCount;
+      if(workCount>0) state.lastSessionSetCount[exId]=workCount;
     }
-    const note=state.exerciseNotes?.[ex.id];
-    if(note){
-      ex.note=note; // freeze note in log entry for history
-      state.lastSessionNotes[ex.id]=note;
-      delete state.exerciseNotes[ex.id];
-      state.deletions.exerciseNotes[ex.id] = Date.now();
-    } else if(state.lastSessionNotes[ex.id]){
-      // Previous-session note was shown but not refreshed — drop it after this session
-      delete state.lastSessionNotes[ex.id];
-      state.deletions.exerciseNotes[ex.id] = Date.now();
-    }
+    // 3.40.0: noten PERSISTERAR på övningen (exId) tills användaren ändrar/rensar den.
+    // Niklas: "oavsett när nästa pass kommer vill jag ha infon kvar." Frys en kopia i
+    // log-raden för historik, men behåll i exerciseNotes — ingen auto-drop, ingen tombstone.
+    const note=state.exerciseNotes?.[exId];
+    if(note) ex.note=note;
   });
   const today=new Date().toLocaleDateString('en-GB',{month:'short',day:'numeric'});
   const finishTs=Date.now();
@@ -7767,8 +7883,10 @@ function getTagDefaults(ex){
 }
 function getDefaultSets(ex){
   const def = getTagDefaults(ex);
-  // Carry forward work-set count from last completed session (cap 8 for sanity)
-  const lastWork = Math.min(state.lastSessionSetCount?.[ex.id]||0, 8);
+  // Carry forward work-set count from last completed session (cap 8 for sanity).
+  // 3.40.0: keyat på exId (följer övningen) med slot-fallback för pre-migration-data.
+  const _exId = getRenderExId(ex.id) || ex.id;
+  const lastWork = Math.min(state.lastSessionSetCount?.[_exId] ?? state.lastSessionSetCount?.[ex.id] ?? 0, 8);
   const workCount = lastWork || def.work;
   return defSets(def.warmup, workCount);
 }
@@ -7936,6 +8054,11 @@ async function doSwap(exId,val,passId){
   delete state.draft.savedExercises[exId];
   if(state.draft.loggedSets) delete state.draft.loggedSets[exId];
   if(state.draft.inputBuffer) delete state.draft.inputBuffer[exId];
+  // 3.40.0 (#5): rensa set-strukturen så inswappad övning får fräscha defaults
+  // (annars ärvs original-övningens warmup/work-uppsättning). Notes behöver INTE
+  // rensas — de nycklas på exId och slotten resolvar nu till den nya övningens exId,
+  // så originalets note visas inte längre (och återkommer vid swap tillbaka). #3.
+  if(state.draft.extraSets) delete state.draft.extraSets[exId];
   if(mode==='perm'){
     if(!state.permanentSwaps)state.permanentSwaps={};
     state.permanentSwaps[exId]=val;
@@ -8201,35 +8324,14 @@ function selectSession(passId){
 }
 
 // ── PR / BEST ─────────────────────────────────────────────────
-function getLastSession(exId, swappedName){
-  const chain = getEffectiveChain();
-  const targetNames = new Set();
-  if(swappedName){
-    // Exercise is swapped — search only by the swapped name so we don't bleed
-    // the original exercise's history into the swapped-to exercise's preview
-    targetNames.add(swappedName);
-  } else {
-    if(state.exerciseOverrides?.[exId]) targetNames.add(state.exerciseOverrides[exId]);
-    for(const p of chain){
-      const found = p.exercises?.find(e=>e.id===exId);
-      if(found){
-        targetNames.add(state.exerciseOverrides?.[exId] || found.name);
-        const myName = state.exerciseOverrides?.[exId] || found.name;
-        for(const p2 of chain){
-          for(const e2 of (p2.exercises||[])){
-            const n2 = state.exerciseOverrides?.[e2.id] || e2.name;
-            if(n2===myName) targetNames.add(n2);
-          }
-        }
-        break;
-      }
-    }
-  }
+// 3.40.0: matchar på kanoniskt exId (samma övning delar historik över pass + över
+// rename/swap). resolveExId-fallback täcker log-rader som ännu saknar exId.
+function getLastSession(exId){
+  if(!exId) return null;
+  const entryExId = (ex)=> ex.exId || resolveExId(ex.name, ex.id, ex.id);
   function matchExercise(ex){
     if(ex.skipped) return false;
-    if(!swappedName && ex.id===exId) return true;
-    const loggedName = state.exerciseOverrides?.[ex.id] || ex.name;
-    return targetNames.has(loggedName);
+    return entryExId(ex) === exId;
   }
   function getWorkSets(ex){
     return (ex.sets||[]).filter(s=>!s.warmup);
