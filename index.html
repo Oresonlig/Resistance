@@ -4996,7 +4996,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.40.0';
+const APP_VERSION = '3.40.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5439,6 +5439,7 @@ async function syncFromCloud(userId){
   if(_syncInFlight) return;
   _syncInFlight = true;
   setSyncDot('syncing');
+  const _dbgSyncBefore = _dbgDraftSig(); // DEBUG: draft-set-antal före ev. merge
   try{
     const rows=await sbGet('app_state','id=eq.'+userId+'&select=data,updated_at');
     lastSyncRead = Date.now();
@@ -5515,6 +5516,18 @@ async function syncFromCloud(userId){
         // SL6: drafts är device-lokala
         state.draft = _local.draft;
         state.drafts = _local.drafts || {};
+
+        // DEBUG: jämför draft-set-antal efter merge — fånga om sync tappade en rad
+        const _dbgSyncAfter = _dbgDraftSig();
+        if(_dbgSyncBefore && _dbgSyncAfter){
+          for(const k of Object.keys(_dbgSyncBefore.counts||{})){
+            const b=_dbgSyncBefore.counts[k], a=_dbgSyncAfter.counts[k];
+            if(typeof b==='number' && (a===undefined||a===null||a<b)){
+              _dbgPush({type:'SET_VANISHED@sync', exId:k, before:_dbgSyncBefore, after:_dbgSyncAfter});
+              break;
+            }
+          }
+        }
 
         // PM7: BASE_SESSIONS muteras inte längre — getSessionName(passId) resolve:ar
         // overrides vid läsning. Tidigare reset + re-apply hade race-potential.
@@ -7617,8 +7630,44 @@ function updateLogBtnState(exId, sid){
   }
 }
 
+// ── DEBUG: auto-fångst av försvinnande set (3.40.1) ───────────
+// Ring-buffer i localStorage. Fångar AUTOMATISKT när ett sets-antal sjunker
+// oväntat (utan user-delete) — vid logSet och vid syncFromCloud. copyDebugState()
+// (Settings → Debug) dumpar hela loggen. Ingen beteendeändring.
+const _DBG_KEY = 'thechain_dbglog';
+const _DBG_MAX = 50;
+function _dbgPush(evt){
+  try{
+    const arr = JSON.parse(localStorage.getItem(_DBG_KEY)||'[]');
+    arr.push({t:new Date().toISOString(), v:APP_VERSION, ...evt});
+    while(arr.length>_DBG_MAX) arr.shift();
+    localStorage.setItem(_DBG_KEY, JSON.stringify(arr));
+  }catch(e){}
+}
+function _dbgSetSig(exId){
+  const es = state.draft?.extraSets?.[exId];
+  if(!Array.isArray(es)) return null;
+  return {
+    n: es.length,
+    sids: es.map(s=>s&&s.sid),
+    warm: es.map(s=>!!(s&&s.warmup)),
+    logged: Object.keys(state.draft?.loggedSets?.[exId]||{}),
+    buf: Object.keys(state.draft?.inputBuffer?.[exId]||{}),
+  };
+}
+function _dbgDraftSig(){
+  const d = state.draft;
+  if(!d || !d.extraSets) return null;
+  const o = {passId:d.passId, counts:{}};
+  for(const k of Object.keys(d.extraSets)){
+    o.counts[k] = Array.isArray(d.extraSets[k]) ? d.extraSets[k].length : null;
+  }
+  return o;
+}
+
 function logSet(exId, sid, passId, isWarmup){
   if(!state.draft || state.draft.passId !== passId) ensureDraft(passId);
+  const _dbgBefore = _dbgSetSig(exId); // DEBUG: före
   captureInputsToSetsBuffer(exId, passId);
 
   if(!state.draft.loggedSets) state.draft.loggedSets = {};
@@ -7630,7 +7679,13 @@ function logSet(exId, sid, passId, isWarmup){
 
   save();
   rerenderSession(passId);
-  
+
+  // DEBUG: jämför efter rerender — fånga om en rad försvann
+  const _dbgAfter = _dbgSetSig(exId);
+  if(_dbgBefore && _dbgAfter && _dbgAfter.n < _dbgBefore.n){
+    _dbgPush({type:'SET_VANISHED@logSet', exId, sid, isWarmup:!!isWarmup, before:_dbgBefore, after:_dbgAfter});
+  }
+
   // Start rest timer for work sets (not warmup), if timer is enabled
   if(!isWarmup && state.timerEnabled){
     startRestTimer(state.timerDefault || 120);
@@ -8761,6 +8816,9 @@ function renderData(){
   const unitBtn=(u)=>`<button onclick="state.unit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.unit===u?selBg:'none'};border:1px solid ${state.unit===u?selBorder:'#2a2a2a'};color:${state.unit===u?selFg:'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u.toUpperCase()}</button>`;
   el.innerHTML=`<div class="section-title">Settings</div>
   <div style="font-family:var(--mono);font-size:.58rem;color:#444;margin-bottom:18px">Supabase · ${escapeHTML(currentUser?.name||'')} · ${size} KB · ${state.log.length} sessions</div>
+  <div class="section-sub">Debug</div>
+  <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);line-height:1.7;margin-bottom:8px">Om ett set försvinner: tryck här DIREKT efteråt — kopierar draft-state till urklipp. Klistra in i en chat till Claude.</div>
+  <div class="data-row" style="margin-bottom:18px;"><button class="data-btn" onclick="copyDebugState()">🐛 Copy draft state</button><button class="data-btn" onclick="clearDebugLog()">Rensa logg</button></div>
   <div class="section-sub">Rest Timer</div>
   <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border:1px solid var(--gray-mid);padding:10px 12px;margin-bottom:10px;">
     <div>
@@ -8884,6 +8942,38 @@ function renderData(){
   <div class="data-row"><button class="data-btn danger" onclick="resetAll()">✕ Reset all data</button></div>`;
 }
 function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`thechain-${currentUser?.id}-${todayStr()}.json`;a.click();showToast('Export done!');}
+
+// Debug: kopiera draft-state till urklipp för felsökning av försvinnande set.
+// Fångar DOM-inputs först så buffern speglar vad som syns på skärmen.
+function copyDebugState(){
+  try{ captureAllDraftInputs(); }catch(e){}
+  const d = state.draft;
+  let incidents = [];
+  try{ incidents = JSON.parse(localStorage.getItem(_DBG_KEY)||'[]'); }catch(e){}
+  const dump = {
+    version: APP_VERSION,
+    ts: new Date().toISOString(),
+    // AUTO-FÅNGADE incidenter (set som försvann) — det viktigaste:
+    incidents,
+    // Nuvarande draft-state:
+    activePass: d?.passId || null,
+    activeExerciseId: d?.activeExerciseId || null,
+    extraSets: d?.extraSets || null,
+    loggedSets: d?.loggedSets || null,
+    inputBuffer: d?.inputBuffer || null,
+    savedExerciseKeys: d ? Object.keys(d.savedExercises||{}) : null,
+    lastSessionSetCount: state.lastSessionSetCount || null,
+    lastSyncRead: (typeof lastSyncRead!=='undefined')?lastSyncRead:null,
+    lastSyncWrite: (typeof lastSyncWrite!=='undefined')?lastSyncWrite:null,
+    lastSyncedCloudTime: state.lastSyncedCloudTime || null,
+  };
+  writeClipboard(JSON.stringify(dump,null,2));
+  showToast(incidents.length?`Kopierat · ${incidents.length} incident(er)`:'Kopierat · 0 incidenter');
+}
+function clearDebugLog(){
+  try{ localStorage.removeItem(_DBG_KEY); }catch(e){}
+  showToast('Debug-logg rensad');
+}
 
 // ── CHAIN TEMPLATE EXPORT / IMPORT ───────────────────────────
 function buildPRMap(){

@@ -6,6 +6,13 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.40.1 — 2026-05-31
+**Debug-instrumentering för försvinnande set (P1 lever kvar trots 3.39.0).** Live-test 2026-05-31: ett set försvann på en HIT-övning (W2 borta, bara W1+S1 kvar) — alltså en ANNAN väg än positions-buggen Lager A fixade.
+
+- **Auto-fångst:** ny ring-buffer (`thechain_dbglog` i localStorage, max 50 events). `logSet` jämför set-antal före/efter rerender och loggar `SET_VANISHED@logSet` om en rad försvann. `syncFromCloud` jämför draftens set-antal före/efter merge → `SET_VANISHED@sync`. Ingen beteendeändring, skriver bara debug-logg.
+- **Debug-knapp (Settings → Debug):** "🐛 Copy draft state" kopierar incidenter + nuvarande draft (extraSets/loggedSets/inputBuffer) till urklipp. "Rensa logg" nollställer. Användaren behöver aldrig öppna konsolen eller racea en knapp — incidenten fångas automatiskt, kopieras i lugn och ro efteråt.
+- Syfte: få exakt data på vilken kodväg som tappar set innan nästa fix-försök. Ingen blind tredje gissning.
+
 ## 3.40.0 — 2026-05-31
 **Lager B av set/övnings-refaktorn — kanoniska övnings-id (exId).** Rotorsaksfix för #3 + #5 + det gamla rename-skräpet.
 
