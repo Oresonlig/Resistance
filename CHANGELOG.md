@@ -6,6 +6,12 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.42.2 — 2026-05-31
+**Fix: refresh loggade ut efter lösenordsbyte.** Rotorsak: `#access_token=...&type=recovery`-hashen låg kvar i URL:en efter lösenordsåterställning. Vid refresh läste Supabase den igen → `PASSWORD_RECOVERY`-event → `inPasswordRecovery=true` → alla auth-events blockerades → `handleSession` anropades aldrig → login-skärm. Fix: `window.history.replaceState` rensar URL-hash direkt när `PASSWORD_RECOVERY` detekteras.
+
+## 3.42.1 — 2026-05-31
+**AM pill mer rektangulär.** Padding `5px→3px` vertikalt, `border-radius 12→8px`. Mindre blob, mer avlång form.
+
 ## 3.42.0 — 2026-05-31
 **Session time.** Start vid första LOG (`state.draft.sessionStartTime`), slut vid Finish (`finishTs`). Sparas som `duration` (ms) i `cycle.done[passId]` och `state.log`-entry. Ny `formatDuration(ms)` → `"48m"` / `"1h 12m"`. Visas i done-badge (`Done · 31 May · 48 min`) och i copy-to-clipboard (`⏱ 48m` efter klocktids-raden). Historiska sessioner utan duration visar ingenting — bakåtkompatibelt.
 
