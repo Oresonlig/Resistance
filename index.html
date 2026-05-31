@@ -65,7 +65,7 @@ header{border-bottom:1px solid #1e1e1e;padding:11px 14px;display:flex;align-item
 .header-sync{font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;}
 .header-bottom-row{display:flex;align-items:center;gap:8px;}
 /* AM-pill — morning weight i header */
-.am-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 13px;border:1px solid var(--border-subtle);border-radius:12px;background:var(--surface-base);font-family:var(--mono);font-size:.7rem;color:var(--gray-light);cursor:pointer;transition:border-color .15s,color .15s,background .15s;letter-spacing:.04em;}
+.am-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 12px;border:1px solid var(--border-subtle);border-radius:8px;background:var(--surface-base);font-family:var(--mono);font-size:.7rem;color:var(--gray-light);cursor:pointer;transition:border-color .15s,color .15s,background .15s;letter-spacing:.04em;}
 .am-pill:hover{border-color:var(--gray-light);color:var(--white);}
 .am-pill.logged{color:var(--green-bright);border-color:#2a3a2a;}
 .am-pill.logged:hover{border-color:var(--green-bright);}
@@ -4999,7 +4999,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.42.0';
+const APP_VERSION = '3.42.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
