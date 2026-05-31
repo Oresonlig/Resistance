@@ -4999,7 +4999,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.41.1';
+const APP_VERSION = '3.42.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5935,7 +5935,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
   const todayWkg=getTodayWeight();
 
   let statusBadge='';
-  if(isDone)statusBadge=`<span class="session-ex-status done">Done${completedData?.date?' · '+completedData.date:''}</span>`;
+  if(isDone){const _dur=formatDuration(completedData?.duration);statusBadge=`<span class="session-ex-status done">Done${completedData?.date?' · '+completedData.date:''}${_dur?' · '+_dur:''}</span>`;}
   else if(inProgress)statusBadge=`<span class="session-ex-status progress">Draft</span>`;
   else if(isNext)statusBadge=`<span class="session-ex-status next-up">Next up</span>`;
 
@@ -7662,6 +7662,7 @@ function _dbgDraftSig(){
 
 function logSet(exId, sid, passId, isWarmup){
   if(!state.draft || state.draft.passId !== passId) ensureDraft(passId);
+  if(!state.draft.sessionStartTime) state.draft.sessionStartTime = Date.now();
   const _dbgBefore = _dbgSetSig(exId); // DEBUG: före
   captureInputsToSetsBuffer(exId, passId);
 
@@ -7813,8 +7814,9 @@ function finishSession(passId){
   });
   const today=new Date().toLocaleDateString('en-GB',{month:'short',day:'numeric'});
   const finishTs=Date.now();
-  curCycle().done[passId]={date:today,timestamp:finishTs,exercises};
-  state.log.push({passId,passName:getSessionName(pass.id),timestamp:finishTs,exercises});
+  const duration=state.draft.sessionStartTime ? finishTs-state.draft.sessionStartTime : null;
+  curCycle().done[passId]={date:today,timestamp:finishTs,duration,exercises};
+  state.log.push({passId,passName:getSessionName(pass.id),timestamp:finishTs,duration,exercises});
   state.draft=null;
   if(state.drafts) delete state.drafts[passId];
   save();pushState();showToast('Session done! 💪');renderChain();
@@ -8240,13 +8242,23 @@ function formatClockHM(timestamp){
   const pad = n => String(n).padStart(2,'0');
   return pad(d.getHours())+':'+pad(d.getMinutes());
 }
-function buildCopyLines(passName, dateStr, timestamp, exercises, u){
+function formatDuration(ms){
+  if(!ms || ms < 60000) return null;
+  const totalMin = Math.round(ms / 60000);
+  if(totalMin < 60) return totalMin+'m';
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return m > 0 ? h+'h '+m+'m' : h+'h';
+}
+function buildCopyLines(passName, dateStr, timestamp, exercises, u, duration){
   let lines = ['💪 The Chain — '+passName, '📅 '+dateStr];
   if(timestamp){
     const hm = formatClockHM(timestamp);
     const lbl = pickSessionLabel(timestamp);
     lines.push('🕒 '+hm+(lbl?' — '+lbl:''));
   }
+  const durStr = formatDuration(duration);
+  if(durStr) lines.push('⏱ '+durStr);
   lines.push('');
   (exercises||[]).forEach(ex=>{
     if(ex.skipped) return;
@@ -8284,12 +8296,12 @@ function writeClipboard(text){
 function copySessionToClipboard(passId){
   const cycle=curCycle();const data=cycle.done[passId];if(!data)return;
   const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);
-  const lines = buildCopyLines(pass?.name||passId, data.date, data.timestamp, data.exercises, unitLabel());
+  const lines = buildCopyLines(pass?.name||passId, data.date, data.timestamp, data.exercises, unitLabel(), data.duration);
   writeClipboard(lines.join('\n'));
 }
 function copyLogEntryToClipboard(idx){
   const entry=state.log[idx];if(!entry)return;
-  const lines = buildCopyLines(entry.passName||entry.passId, fmtDate(entry.timestamp), entry.timestamp, entry.exercises, unitLabel());
+  const lines = buildCopyLines(entry.passName||entry.passId, fmtDate(entry.timestamp), entry.timestamp, entry.exercises, unitLabel(), entry.duration);
   writeClipboard(lines.join('\n'));
 }
 function doNewCycle(){

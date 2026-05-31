@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.42.0 — 2026-05-31
+**Session time.** Start vid första LOG (`state.draft.sessionStartTime`), slut vid Finish (`finishTs`). Sparas som `duration` (ms) i `cycle.done[passId]` och `state.log`-entry. Ny `formatDuration(ms)` → `"48m"` / `"1h 12m"`. Visas i done-badge (`Done · 31 May · 48 min`) och i copy-to-clipboard (`⏱ 48m` efter klocktids-raden). Historiska sessioner utan duration visar ingenting — bakåtkompatibelt.
+
 ## 3.41.0 — 2026-05-31
 **Gym-feedback-paket #2 (4 punkter).**
 - **BW pill storlek**: `font-size:.55→.7rem`, padding `3px 9px→5px 13px`, input-width `44→56px`, LOG-knapp `font-size:.46→.6rem`. Mer läsbar på mobil.
