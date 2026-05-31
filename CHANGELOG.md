@@ -6,6 +6,13 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.41.0 — 2026-05-31
+**Gym-feedback-paket #2 (4 punkter).**
+- **BW pill storlek**: `font-size:.55→.7rem`, padding `3px 9px→5px 13px`, input-width `44→56px`, LOG-knapp `font-size:.46→.6rem`. Mer läsbar på mobil.
+- **Notes auto-save vid blur**: `autoSaveNote()` sparar till state (utan toast/save()) när textarea tappar fokus. Notes överlever nu övningsbyte utan att "Save Reminder" behöver klickas. Explicit Save-knapp kvar för confirmation + localStorage-commit.
+- **Onboarding: rest days borttagna**: Step 4 är nu bara timer-val. `state.restSlots=[]` i `finishOnboarding` — nya användare startar utan vilodagar (kan läggas till via Edit Program). Skip-sökvägen uppdaterad. Preview i step 4 visar ej längre V-rader.
+- **Header sticky**: `body.theme-ember header` och `body.theme-nightcity header` hade `position:relative` som bröt sticky-beteendet. Ändrat till `position:sticky;top:0`. `body:not([class*="theme-"])` också fixat. Cosmic Horror var korrekt sedan tidigare (ingen position-override).
+
 ## 3.40.1 — 2026-05-31
 **Debug-instrumentering för försvinnande set (P1 lever kvar trots 3.39.0).** Live-test 2026-05-31: ett set försvann på en HIT-övning (W2 borta, bara W1+S1 kvar) — alltså en ANNAN väg än positions-buggen Lager A fixade.
 
