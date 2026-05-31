@@ -4999,7 +4999,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.41.0';
+const APP_VERSION = '3.41.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8812,7 +8812,7 @@ function renderData(){
   el.innerHTML=`<div class="section-title">Settings</div>
   <div style="font-family:var(--mono);font-size:.58rem;color:#444;margin-bottom:18px">Supabase · ${escapeHTML(currentUser?.name||'')} · ${size} KB · ${state.log.length} sessions</div>
   <div class="section-sub">Debug</div>
-  <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);line-height:1.7;margin-bottom:8px">Om ett set försvinner: tryck här DIREKT efteråt — kopierar draft-state till urklipp. Klistra in i en chat till Claude.</div>
+  <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);line-height:1.7;margin-bottom:8px">If a set disappears: tap here IMMEDIATELY after — copies draft state to clipboard. Paste it in a chat to Claude.</div>
   <div class="data-row" style="margin-bottom:18px;"><button class="data-btn" onclick="copyDebugState()">🐛 Copy draft state</button><button class="data-btn" onclick="clearDebugLog()">Rensa logg</button></div>
   <div class="section-sub">Rest Timer</div>
   <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border:1px solid var(--gray-mid);padding:10px 12px;margin-bottom:10px;">
