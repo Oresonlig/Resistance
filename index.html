@@ -4778,6 +4778,8 @@ whenSbReady(async () => {
   window.sb.auth.onAuthStateChange((event, session) => {
     if(event === 'PASSWORD_RECOVERY'){
       inPasswordRecovery = true;
+      // Rensa recovery-hash ur URL så att refresh inte re-triggar PASSWORD_RECOVERY
+      if(window.location.hash) window.history.replaceState(null, '', window.location.pathname);
       showResetPasswordScreen();
       return;
     }
@@ -4999,7 +5001,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.42.1';
+const APP_VERSION = '3.42.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
