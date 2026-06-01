@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.44.3 — 2026-06-01
+**Fix: Undertow view-container bakgrund borttagen.** `rgba(255,255,255,0.38)` på `#view-*`-containrarna syntes som en vit rektangel på desktop (ingen scroll = ingen naturlig kantavstängning). Korten har `0.78` opacity och ger tillräcklig textläsbarhet utan extra backing.
+
 ## 3.44.2 — 2026-06-01
 **Fix P1 (ny väg): stale draft spökar work sets in i ny cykel.** Rotorsak: `doNewCycle()` rensade inte `state.drafts` → en gammal draft för session C (skapad när `lastSessionSetCount` var 0) överlevde in i ny cykel med bara 1 work set. `ensureExtraSets` såg `length > 0` och anropade aldrig `getDefaultSets` → Zercher fick 1 work set istället för 2. Användaren såg ett set "försvinna" direkt (det saknades redan från start). Tvåstegs-fix: (1) `doNewCycle` rensar `state.drafts = {}` + `state.draft = null` (säkert — körs bara när alla sessions är klara); (2) `ensureExtraSets` lägger till saknade work sets när stale draft har färre än `lastSessionSetCount` + ingen loggning påbörjad + ej sparad.
 

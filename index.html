@@ -2960,9 +2960,6 @@ body.theme-undertow .btn-secondary:hover{border-color:#163763;color:#163763;}
 body.theme-undertow .btn-chain-edit{border-color:rgba(22,55,99,0.30);color:#102430;}
 body.theme-undertow .btn-chain-edit:hover{border-color:#163763;color:#163763;}
 body.theme-undertow .ex-block{background:rgba(255,255,255,0.78);border:1px solid rgba(18,48,90,0.14);box-shadow:0 10px 30px -16px rgba(22,55,99,0.35),inset 0 1px 0 rgba(255,255,255,0.7);}
-/* Semi-opaque backing on content views so section labels/headings are readable */
-body.theme-undertow #view-chain,body.theme-undertow #view-progress,
-body.theme-undertow #view-weight,body.theme-undertow #view-data{background:rgba(255,255,255,0.38);}
 body.theme-undertow .ex-name{color:#102430;}
 body.theme-undertow .ex-detail{color:#6f8c98;}
 body.theme-undertow .ex-prev{color:#8aa4ae;}
@@ -5125,7 +5122,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.44.2';
+const APP_VERSION = '3.44.3';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
