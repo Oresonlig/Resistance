@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.46.1 — 2026-06-01
+**Chain-strip: adjacent/distant följer temats form, inte Iron-hexagonen.** Niklas-observation: på Cosmic (och Obsidian) hade aktiv session unik form (blob/medaljong) men "på glänt"-sessionerna behöll base-hexagonen. Rotorsak: `.chain-tab`-containern har base hexagon `clip-path`; Cosmic/Obsidian satte `clip-path:none` på bokstaven + `.active` men inte på containern → adjacent/distant klipptes till Iron-form. Fix: `clip-path:none` på containern + organisk `border-radius` på adjacent name-short (Cosmic blob, Obsidian liten radie). Nu talar hela chain-stripen temats formspråk.
+
 ## 3.46.0 — 2026-06-01
 **Knappform-enhetlighet (steg 1) — Cosmic-guldstandarden.** DONE + Finish Session ärver nu LOG-knappens form per tema, så de tre knapparna talar samma formspråk. Klart: Iron + Nanosuit (hexagon clip-path), Night City (parallelogram). Tillsammans med Undertow (pill) + Understory (blad) från 3.45.2 och Cosmic (referensen) har nu 6 teman enhetliga knappformer. **Upptäckt latent bugg (dokumenterad, ej fixad än):** Ember/Void/Arctic/Daylight/Crusader LOG-knappar ärver base-hexagonen (saknar `clip-path:none`) → ser ut som Iron trots designintention (pill/rektangel). Förklarar varför de känns mindre crafted. Fix per tema kommer.
 

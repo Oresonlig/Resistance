@@ -3735,6 +3735,9 @@ body.theme-obsidian .chain-bar{background:#2a2010;}
 body.theme-obsidian .chain-fill{background:linear-gradient(90deg,#c9a35a,#f0d99c);}
 
 /* Chain-strip — runda medaljer för icke-aktiv, rektangel med diamond-ends för aktiv (designens look) */
+/* Container-hexagon bort: adjacent/distant ska följa medaljong-formen, inte Iron-hexagonen (3.46.1) */
+body.theme-obsidian .chain-tab{clip-path:none;}
+body.theme-obsidian .chain-tab.adjacent .chain-tab-name-short{border-radius:3px;}
 body.theme-obsidian .chain-tab .chain-tab-letter{
   /* 3.34.2: distant brighter (var #5a4a28 → #8a7340), Niklas: "oklara sessions tydligare"
      3.36.0: distant ytterligare upp #8a7340 → #b08840, bg .7 → .82 — närma adjacent */
@@ -4094,6 +4097,9 @@ body.theme-cosmic-horror .chain-bar{background:#0a2020;}
 body.theme-cosmic-horror .chain-fill{background:linear-gradient(90deg,#7fc8b4,#aedcd0);}
 
 /* Chain-strip — organiska asymmetriska blobs (skriver över hexagon) */
+/* Container-hexagon bort: adjacent/distant ska följa temats blob, inte Iron-hexagonen (3.46.1) */
+body.theme-cosmic-horror .chain-tab{clip-path:none;}
+body.theme-cosmic-horror .chain-tab.adjacent .chain-tab-name-short{border-radius:4px 14px 4px 14px;}
 body.theme-cosmic-horror .chain-tab .chain-tab-letter{
   /* distant = upcoming/not yet — brighter post-3.33.4 so passes "tänds upp" after chain restart
      3.36.0: ytterligare bump - bg .55 → .72, color #8aacaa → #b0d0c8 - närma adjacent */
@@ -5273,7 +5279,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.46.0';
+const APP_VERSION = '3.46.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
