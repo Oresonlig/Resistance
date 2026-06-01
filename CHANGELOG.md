@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.45.1 — 2026-06-01
+**Fix: Service Worker cachade stale version vid install.** Rotorsak: `cache.addAll` under SW-install gick via den gamla SW:n och kunde få gammal cached version. Fix: `fetch(url, {cache:'no-store'})` under install — hämtar alltid färskt från nätverket. Plus: `controllerchange`-lyssnare i index.html som reladdar sidan automatiskt när ny SW tar över → uppdateringar syns direkt utan manuell cache-rensning.
+
 ## 3.45.0 — 2026-06-01
 **NYTT TEMA: Understory** — Rainforest floor light theme. Varm grön gradient (#e9f2db→#a6c690), dappled canopy-ljus via CSS sun-fleck-spans (screen blend) + statisk SVG leaf-shadow (multiply blend). Klättrande viner på canvas (world-coord från start — Undertow-lärdomen). LOG-knapp som organiskt blad (`border-radius:3px 50% 3px 50%` + diagonal midrib-highlight via ::after). Tendril som hänger från headern (CSS ::after, kräver `overflow:visible`). Bricolage Grotesque (display) + Spline Sans Mono (mono). Alla checklistepunkter applicerade: sticky header ej brutit, btn-chain-edit override, selFg=#f3f8ea, toast+add-ex-confirm override.
 

@@ -5254,7 +5254,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.45.0';
+const APP_VERSION = '3.45.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -10083,6 +10083,10 @@ if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js?v=' + APP_VERSION)
       .catch(err => console.warn('SW registration failed:', err));
+  });
+  // Auto-reload när ny SW tar över — säkerställer att ny version visas direkt
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
   });
 }
 

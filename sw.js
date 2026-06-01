@@ -12,7 +12,9 @@ const CORE_ASSETS = ['./', './index.html'];
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(CORE_ASSETS))
+      .then(cache => Promise.all(CORE_ASSETS.map(url =>
+        fetch(url, {cache: 'no-store'}).then(r => cache.put(url, r)).catch(() => {})
+      )))
       .then(() => self.skipWaiting())
       .catch(err => console.warn('[SW] install failed:', err))
   );
