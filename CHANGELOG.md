@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.46.4 — 2026-06-01
+**Chain-strip "på glänt" = EN komprimerad form (Cosmic + Obsidian).** Niklas-princip: Iron briljerar genom att adjacent-fliken är en HEL hexagon som komprimerats (bokstav + "CHE"), inte två lösa bitar. Cosmic/Obsidian visade istället cirkel-blob + separat namn = två blobar. Fix: containern (`.chain-tab.adjacent`) bär nu EN blob/scroll-form; bokstav + kortnamn är transparenta så de läser som en hel hoptryckt form. Plus: Obsidian aktiv medaljong smälter in i scrollen (ingen separat guldcirkel) — samma behandling som Cosmic fick i 3.46.3. Aktiv + adjacent läser nu som sammanhållna enheter på båda teman.
+
 ## 3.46.3 — 2026-06-01
 **Cosmic aktiv chain-tab: "på glänt"-look fixad.** Niklas-observation: aktiv session såg halv-expanderad ut — bokstaven låg i en separat cirkel med egen kant (identisk med kollapsade D/F-cirklar) inuti stadium-formen → såg ut som en kollapsad flik mitt i expansion. Plus namnet kapades hårt ("TR" istället för "TRAPS"). Fix: aktiv bokstav har nu ingen egen kant/bg — den smälter in i kapseln som en del av formen (som Iron). Namnets max-width 130→175px + mindre letter-spacing → "SHOULDERS + TRAPS" får plats. Aktiv tab läser nu som EN fullt öppen enhet.
 
