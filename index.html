@@ -2989,6 +2989,8 @@ body.theme-undertow .header-user{color:#6f8c98;}
 body.theme-undertow .header-user strong{color:#102430;}
 body.theme-undertow .header-logout{border-color:rgba(158,74,69,0.3);color:#9e4a45;}
 body.theme-undertow .header-logout:hover{border-color:#9e4a45;color:#9e4a45;}
+body.theme-undertow .toast{color:#eaf2fb;}
+body.theme-undertow .add-ex-confirm{color:#eaf2fb;}
 body.theme-undertow .section-title{font-family:'Archivo',sans-serif;font-weight:700;letter-spacing:.04em;color:#102430;}
 body.theme-undertow .section-sub{color:#6f8c98;}
 body.theme-undertow .pr-value{color:#97702a;}
@@ -5122,7 +5124,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.44.4';
+const APP_VERSION = '3.44.5';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -9108,11 +9110,11 @@ function renderData(){
       const active = (state.theme||'iron')===t.id;
       return `<button onclick="applyTheme('${t.id}');renderData();"
         style="background:${active?selBg:'none'};border:1px solid ${active?selBorder:'var(--gray-mid)'};
-        color:${active?'#000':'inherit'};padding:10px 8px;cursor:pointer;text-align:left;
+        color:${active?selFg:'inherit'};padding:10px 8px;cursor:pointer;text-align:left;
         font-family:var(--mono);font-size:.48rem;letter-spacing:.04em;transition:all .2s;position:relative;">
-        <div style="font-family:var(--sans);font-size:.8rem;color:${active?'#000':'inherit'};margin-bottom:3px;">${t.name}</div>
-        <div style="font-size:.44rem;color:${active?'#555':'var(--gray-light)'};line-height:1.4;">${t.desc}</div>
-        ${active?`<div style="position:absolute;top:6px;right:8px;color:${selBorder};font-size:.6rem;">✓</div>`:''}
+        <div style="font-family:var(--sans);font-size:.8rem;color:${active?selFg:'inherit'};margin-bottom:3px;">${t.name}</div>
+        <div style="font-size:.44rem;color:${active?selFg:'var(--gray-light)'};line-height:1.4;">${t.desc}</div>
+        ${active?`<div style="position:absolute;top:6px;right:8px;color:${selFg};font-size:.6rem;">✓</div>`:''}
       </button>`;
     }).join('')}
   </div>
@@ -9122,11 +9124,11 @@ function renderData(){
       const active = (state.theme||'iron')===t.id;
       return `<button onclick="applyTheme('${t.id}');renderData();"
         style="background:${active?selBg:'none'};border:1px solid ${active?selBorder:'var(--gray-mid)'};
-        color:${active?'#000':'inherit'};padding:10px 8px;cursor:pointer;text-align:left;
+        color:${active?selFg:'inherit'};padding:10px 8px;cursor:pointer;text-align:left;
         font-family:var(--mono);font-size:.48rem;letter-spacing:.04em;transition:all .2s;position:relative;">
-        <div style="font-family:var(--sans);font-size:.8rem;color:${active?'#000':'inherit'};margin-bottom:3px;">${t.name}</div>
-        <div style="font-size:.44rem;color:${active?'#555':'var(--gray-light)'};line-height:1.4;">${t.desc}</div>
-        ${active?`<div style="position:absolute;top:6px;right:8px;color:${selBorder};font-size:.6rem;">✓</div>`:''}
+        <div style="font-family:var(--sans);font-size:.8rem;color:${active?selFg:'inherit'};margin-bottom:3px;">${t.name}</div>
+        <div style="font-size:.44rem;color:${active?selFg:'var(--gray-light)'};line-height:1.4;">${t.desc}</div>
+        ${active?`<div style="position:absolute;top:6px;right:8px;color:${selFg};font-size:.6rem;">✓</div>`:''}
       </button>`;
     }).join('')}
   </div>

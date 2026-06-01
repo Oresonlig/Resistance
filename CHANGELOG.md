@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.44.5 — 2026-06-01
+**Undertow: systematisk fix av aktiva/valda element.** Rotorsak: flera ställen i koden använde hardkodad `#000`/`#555` text (tema-kort) eller `color:var(--white)` (toast, add-ex-confirm) på `background:var(--red)` — i Undertow är båda mörknavy → svart-på-svart. Fix: (1) Tema-korten i Settings använde `#000` hårdkodat, borde ha använt `selFg` — bytt till `selFg` i alla tre ställen (knapp, namn, beskrivning, bock). (2) `.toast` och `.add-ex-confirm` fick `color:#eaf2fb` override i Undertow CSS. `selFg` var redan korrekt satt till `#eaf2fb` för Undertow sedan 3.44.1 — gäller nu konsekvent för rest-timer, unit-knappar OCH tema-kort.
+
 ## 3.44.4 — 2026-06-01
 **Undertow bubblor: world-coordinates (film-känsla fix).** Samma fix som Obsidian fick i 3.31.3. Bubblorna spawnade i viewport-koords → scrollade inte med content → kändes som ett filter lagt på skärmen. Nu: spawnar längs hela `document.scrollHeight`, `ctx.setTransform` shiftas med `-scrollY*dpr` varje frame → bubblor rör sig naturligt med appen. Canvas förblir viewport-stor för perf. Periodisk `scrollHeight`-remätning för dynamiskt content.
 
