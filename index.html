@@ -5122,7 +5122,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.44.3';
+const APP_VERSION = '3.44.4';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8969,7 +8969,7 @@ function stopCosmicHorrorVeins(){
 // Three layers: CausticLayer (static SVG) + Waterline (CSS) + BubbleField (canvas).
 // isolation:isolate on #undertow-bg (NOT body) scopes mix-blend-mode:screen inside SVG.
 // Caustics + waterline always mounted. Bubbles controlled by ambientEffects toggle.
-let _utBubbleRaf=0, _utBubbleAlive=false;
+let _utBubbleRaf=0, _utBubbleAlive=false, _utWorldHTimer=0;
 function mountUndertowBg(){
   if(document.getElementById('undertow-bg')) return;
   const bg=document.createElement('div');
@@ -8985,24 +8985,29 @@ function mountUndertowBg(){
 }
 function unmountUndertowBg(){
   _utBubbleAlive=false; cancelAnimationFrame(_utBubbleRaf);
+  if(_utWorldHTimer){clearInterval(_utWorldHTimer);_utWorldHTimer=0;}
   const el=document.getElementById('undertow-bg'); if(el) el.remove();
 }
+// 3.44.4: WORLD-COORD bubblor — samma princip som Obsidian 3.31.3.
+// Canvas viewport-stor (perf), partiklar i världskoords (spawnar längs hela scrollHeight).
+// ctx.setTransform shiftas med -scrollY varje frame → bubblor scrollar med content.
 function _startUndertowBubbles(canvas){
   if(!canvas) return;
   const ctx=canvas.getContext('2d');
   const dpr=Math.min(window.devicePixelRatio||1,2);
-  let w=0,h=0; _utBubbleAlive=true;
+  let w=0,h=0,worldH=0; _utBubbleAlive=true;
   function resize(){
     w=window.innerWidth; h=window.innerHeight;
     canvas.width=w*dpr; canvas.height=h*dpr;
     canvas.style.width=w+'px'; canvas.style.height=h+'px';
-    ctx.setTransform(dpr,0,0,dpr,0,0);
+    worldH=Math.max(document.documentElement.scrollHeight,h);
   }
   resize(); window.addEventListener('resize',resize);
+  _utWorldHTimer=setInterval(()=>{worldH=Math.max(document.documentElement.scrollHeight,h);},1500);
   const rand=(a,b)=>a+Math.random()*(b-a);
   const bubbles=[];
   function gasp(intensity){
-    const ox=rand(w*.22,w*.78),oy=h-rand(-10,30),n=Math.floor(rand(16,28)*intensity);
+    const ox=rand(w*.22,w*.78),oy=worldH-rand(-10,30),n=Math.floor(rand(16,28)*intensity);
     for(let i=0;i<n;i++){
       const big=Math.random()<.22,r=big?rand(4.5,9.5):rand(.9,3.4);
       const ang=-Math.PI/2+rand(-.85,.85),speed=(big?rand(2.2,3.8):rand(1.4,3.0))+r*.05;
@@ -9018,14 +9023,19 @@ function _startUndertowBubbles(canvas){
   }
   function tick(){
     if(!_utBubbleAlive) return;
-    ctx.clearRect(0,0,w,h); schedule();
+    const scrollY=window.scrollY||window.pageYOffset||0;
+    ctx.setTransform(dpr,0,0,dpr,0,-scrollY*dpr);
+    ctx.clearRect(0,scrollY,w,h);
+    schedule();
     for(let i=bubbles.length-1;i>=0;i--){
       const b=bubbles[i];
       b.wobP+=b.wobS; b.vy*=b.decel; b.vx*=.94;
       if(b.vy>b.term) b.vy=b.term;
       b.y+=b.vy; b.x+=b.vx+b.drift+Math.sin(b.wobP)*b.wobA*.12;
-      const a=b.a*Math.min(1,(b.y/h)*1.6);
       if(b.y<-10||b.x<-24||b.x>w+24){bubbles.splice(i,1);continue;}
+      if(b.y<scrollY-50||b.y>scrollY+h+50) continue; // utanför viewport — skippa ritning
+      const depth=b.y/Math.max(worldH,h);
+      const a=b.a*Math.min(1,depth*1.6);
       ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
       ctx.fillStyle=`rgba(255,255,255,${a*.14})`; ctx.fill();
       ctx.lineWidth=Math.max(.6,b.r*.16); ctx.strokeStyle=`rgba(24,56,92,${a*.5})`; ctx.stroke();

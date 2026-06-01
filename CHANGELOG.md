@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.44.4 — 2026-06-01
+**Undertow bubblor: world-coordinates (film-känsla fix).** Samma fix som Obsidian fick i 3.31.3. Bubblorna spawnade i viewport-koords → scrollade inte med content → kändes som ett filter lagt på skärmen. Nu: spawnar längs hela `document.scrollHeight`, `ctx.setTransform` shiftas med `-scrollY*dpr` varje frame → bubblor rör sig naturligt med appen. Canvas förblir viewport-stor för perf. Periodisk `scrollHeight`-remätning för dynamiskt content.
+
 ## 3.44.3 — 2026-06-01
 **Fix: Undertow view-container bakgrund borttagen.** `rgba(255,255,255,0.38)` på `#view-*`-containrarna syntes som en vit rektangel på desktop (ingen scroll = ingen naturlig kantavstängning). Korten har `0.78` opacity och ger tillräcklig textläsbarhet utan extra backing.
 
