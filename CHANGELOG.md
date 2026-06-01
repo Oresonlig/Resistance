@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.45.2 — 2026-06-01
+**Understory vin-pop fix + Undertow/Understory knappform-enhetlighet.** (1) Viner poppade bort vid scroll — skip-villkoret var bakvänt: rankan växer uppåt (tip=topp/liten y, base=botten/stor y), men koden skippade hela rankan så fort basen var under viewporten trots att kroppen syntes. Nu skippas bara rankor helt utanför vyn. (2) DONE + Finish Session delar nu LOG-knappens form per tema (Undertow pill 11px, Understory blad). (3) Latent bugg fixad: `.ex-done-primary.ready` ärvde `color:var(--white)` på `background:var(--red)` → mörk-på-mörk text på Undertow/Understory så fort alla set loggats. Båda får nu explicit ljus text + tema-gradient + hover.
+
 ## 3.45.1 — 2026-06-01
 **Fix: Service Worker cachade stale version vid install.** Rotorsak: `cache.addAll` under SW-install gick via den gamla SW:n och kunde få gammal cached version. Fix: `fetch(url, {cache:'no-store'})` under install — hämtar alltid färskt från nätverket. Plus: `controllerchange`-lyssnare i index.html som reladdar sidan automatiskt när ny SW tar över → uppdateringar syns direkt utan manuell cache-rensning.
 

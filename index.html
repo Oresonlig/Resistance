@@ -2952,7 +2952,12 @@ body.theme-undertow .pass-name{font-family:'Archivo',sans-serif;font-weight:700;
 body.theme-undertow .pass-preview{color:#6f8c98;}
 body.theme-undertow .chain-fill{background:linear-gradient(90deg,#214b86,#163763);}
 body.theme-undertow .chain-bar{background:rgba(18,48,90,0.12);}
-body.theme-undertow .btn-primary{background:linear-gradient(180deg,#214b86 0%,#163763 100%);color:#eaf2fb;font-family:'Archivo',sans-serif;font-weight:700;letter-spacing:.12em;box-shadow:0 8px 18px -8px rgba(22,55,99,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:1px solid #163763;}
+body.theme-undertow .btn-primary{background:linear-gradient(180deg,#214b86 0%,#163763 100%);color:#eaf2fb;font-family:'Archivo',sans-serif;font-weight:700;letter-spacing:.12em;box-shadow:0 8px 18px -8px rgba(22,55,99,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:1px solid #163763;border-radius:11px;}
+/* DONE + Finish delar LOG-knappens pill-form (border-radius:11px). .ready-färg
+   fixas (annars ärver den var(--white)=#102430 mörk text på navy = oläsligt). */
+body.theme-undertow .ex-done-primary{border-radius:11px;}
+body.theme-undertow .ex-done-primary.ready{background:linear-gradient(180deg,#214b86 0%,#163763 100%);border-color:#163763;color:#eaf2fb;}
+body.theme-undertow .ex-done-primary.ready:hover{background:linear-gradient(180deg,#2a5a9e 0%,#1e4577 100%);border-color:#1e4577;}
 body.theme-undertow .btn-primary:hover{background:linear-gradient(180deg,#2a5a9e 0%,#1e4577 100%);}
 body.theme-undertow .btn-primary:disabled{background:rgba(18,48,90,0.12);color:#8aa4ae;cursor:not-allowed;box-shadow:none;border-color:rgba(18,48,90,0.16);}
 body.theme-undertow .btn-secondary{border-color:rgba(18,48,90,0.22);color:#2b4450;}
@@ -3072,7 +3077,12 @@ body.theme-understory .pass-name{font-family:'Bricolage Grotesque',sans-serif;fo
 body.theme-understory .pass-preview{color:#6f8a69;}
 body.theme-understory .chain-fill{background:linear-gradient(90deg,#2f5e37,#1f4226);}
 body.theme-understory .chain-bar{background:rgba(31,66,38,0.12);}
-body.theme-understory .btn-primary{background:linear-gradient(180deg,#2f5e37 0%,#1c3c22 100%);color:#eef5e4;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;letter-spacing:.1em;box-shadow:0 8px 18px -8px rgba(28,60,34,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:1px solid #1c3c22;}
+body.theme-understory .btn-primary{background:linear-gradient(180deg,#2f5e37 0%,#1c3c22 100%);color:#eef5e4;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;letter-spacing:.1em;box-shadow:0 8px 18px -8px rgba(28,60,34,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:1px solid #1c3c22;border-radius:4px 20px 4px 20px;}
+/* DONE + Finish delar LOG-knappens bladform (sharp TL/BR, round TR/BL). .ready-färg
+   fixas (annars ärver den var(--white)=#143018 mörk text på sap-green = oläsligt). */
+body.theme-understory .ex-done-primary{border-radius:4px 20px 4px 20px;}
+body.theme-understory .ex-done-primary.ready{background:linear-gradient(180deg,#2f5e37 0%,#1c3c22 100%);border-color:#1c3c22;color:#eef5e4;}
+body.theme-understory .ex-done-primary.ready:hover{background:linear-gradient(180deg,#3a7044 0%,#254d2a 100%);border-color:#254d2a;}
 body.theme-understory .btn-primary:hover{background:linear-gradient(180deg,#3a7044 0%,#254d2a 100%);}
 body.theme-understory .btn-primary:disabled{background:rgba(31,66,38,0.12);color:#8aa47e;cursor:not-allowed;box-shadow:none;border-color:rgba(31,66,38,0.16);}
 body.theme-understory .btn-secondary{border-color:rgba(31,66,38,0.22);color:#2b4a30;}
@@ -5254,7 +5264,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.45.1';
+const APP_VERSION = '3.45.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -9288,7 +9298,9 @@ function _startUnderstoryVines(canvas){
     for(let i=vines.length-1;i>=0;i--){
       grow(vines[i]);
       const tip=vines[i].pts[vines[i].pts.length-1],base=vines[i].pts[0];
-      if(!(tip.y<scrollY-50||base.y>scrollY+h+50)) drawVine(vines[i]);
+      // Rankan spänner [tip.y (topp), base.y (botten)]. Skippa BARA om hela rankan
+      // är utanför viewporten: basen (lägsta punkten) ovanför, ELLER toppen nedanför.
+      if(!(base.y<scrollY-100||tip.y>scrollY+h+100)) drawVine(vines[i]);
       if(vines[i].alpha<=0) vines.splice(i,1);
     }
     if(vines.length===0) vines.push(makeVine(worldH+6));
