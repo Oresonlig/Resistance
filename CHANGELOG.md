@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.43.2 — 2026-06-01
+**Fix: Arctic sticky header + Edit-knapp synlighet.** Sticky: `body.theme-arctic header` fick `position:relative` via z-index-regel — tog bort `header` från den regeln så base `position:sticky` gäller igen. Edit-knapp: konverterad från inline-stilar + onmouseover/onmouseout till CSS-klass `.btn-chain-edit` med Arctic-override (`color:#1a2e3a`, tydlig blå border).
+
 ## 3.43.1 — 2026-06-01
 **Fix: AM-pill blob-form efter loggning.** Rotorsak: `valEl.textContent = "99.1 kg"` i ett span utan `white-space:nowrap` — texten bröt på mellanslaget → kvadratisk pill. Fix: siffran och enheten är nu separata flex-barn även i kollapsad visning (som i input-läget). `white-space:nowrap` på `.am-pill-value` som extra skydd.
 

@@ -305,6 +305,8 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .btn-primary:disabled{background:#3a1a1a;color:#5a3a3a;cursor:not-allowed;border-color:#2a1010;box-shadow:none;text-shadow:none;}
 .btn-secondary{background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.52rem;letter-spacing:.06em;padding:0 10px;cursor:pointer;text-transform:uppercase;transition:all .15s;}
 .btn-secondary:hover{border-color:#555;color:var(--gray-light);}
+.btn-chain-edit{background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.7rem;padding:3px 9px;cursor:pointer;transition:all .15s;line-height:1;}
+.btn-chain-edit:hover{border-color:var(--red);color:var(--white);}
 .btn-ghost{flex:1;background:none;border:1px solid #3a3a3a;color:#888;font-family:var(--display);font-size:.95rem;letter-spacing:.1em;padding:10px;cursor:pointer;transition:all .15s;}
 .btn-ghost:hover{border-color:#444;color:#777;}
 .draft-notice{font-family:var(--mono);font-size:.5rem;color:#4a7a4a;text-align:center;padding:5px;border:1px solid #2a4a2a;margin-top:7px;}
@@ -1176,9 +1178,12 @@ body.theme-arctic .chain-tab.active .chain-tab-name-full{color:#fff;background:r
 body.theme-arctic .chain-tab-name-short{color:rgba(26,46,58,0.75);background:rgba(180,220,240,0.52);}
 body.theme-arctic .chain-tab.adjacent .chain-tab-name-short{color:rgba(26,46,58,0.75);background:rgba(160,210,235,0.62);}
 
-/* Z-index: header and auth above frost layers */
-body.theme-arctic header,
+/* Z-index: auth above frost layers. Header behåller base position:sticky */
 body.theme-arctic .auth-wrap{position:relative;z-index:2;}
+
+/* Edit-knapp: mörk text + tydlig border på ljust tema */
+body.theme-arctic .btn-chain-edit{border-color:rgba(0,168,216,0.4);color:#1a2e3a;}
+body.theme-arctic .btn-chain-edit:hover{border-color:#0088b8;color:#003a5a;}
 
 /* ════════════════════════════════════════════════════════════
    ARCTIC — paritet med Daylight (3.30.16)
@@ -5001,7 +5006,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.43.1';
+const APP_VERSION = '3.43.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -6316,7 +6321,7 @@ function renderChain(){
   if(!_chainSelectedId||!validIds.includes(_chainSelectedId)) _chainSelectedId=nextId;
 
   // Morning weight nu i headerns AM-pill (refreshAmPill anropas vid view-byte och efter login)
-  let html=`<div class="chain-intro"><div><div class="chain-intro-title">The Chain</div><div class="chain-intro-sub">${doneSessions}/${totalSessions} sessions done · Round ${state.cycles.length}</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--mono);font-size:.52rem;color:var(--gray-mid)">${pct}%</span><button style="background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.7rem;padding:3px 9px;cursor:pointer;transition:all .15s;line-height:1;" title="Configure chain" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='#444';this.style.color='#888'" onclick="showEditPage()"><svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit</button></div></div><div class="chain-bar"><div class="chain-fill" style="width:${pct}%"></div></div>`;
+  let html=`<div class="chain-intro"><div><div class="chain-intro-title">The Chain</div><div class="chain-intro-sub">${doneSessions}/${totalSessions} sessions done · Round ${state.cycles.length}</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--mono);font-size:.52rem;color:var(--gray-mid)">${pct}%</span><button class="btn-chain-edit" title="Configure chain" onclick="showEditPage()"><svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit</button></div></div><div class="chain-bar"><div class="chain-fill" style="width:${pct}%"></div></div>`;
 
   // Horizontal session strip — spotlight design (active expanded, neighbours ajar, rest closed)
   const activeIdx=effectiveChain.findIndex(p=>p.id===_chainSelectedId);
