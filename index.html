@@ -2863,6 +2863,15 @@ body.theme-daylight .app-modal-btn-danger:hover{
   cursor:pointer;
 }
 .ex-done-primary.ready:hover{background:#a02525;border-color:#a02525;}
+/* ── Knappform-enhetlighet: DONE + Finish ärver LOG-knappens form per tema (3.46.0).
+   Cosmic-guldstandard: de tre knapparna talar samma formspråk. Clip-path-teman här;
+   pill/blad-teman har sina border-radius i respektive tema-block. ── */
+body:not([class*="theme-"]) .ex-done-primary,
+body:not([class*="theme-"]) .btn-primary{clip-path:polygon(7px 0,calc(100% - 7px) 0,100% 50%,calc(100% - 7px) 100%,7px 100%,0 50%);}
+body.theme-nanosuit .ex-done-primary,
+body.theme-nanosuit .btn-primary{clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 50%,calc(100% - 6px) 100%,6px 100%,0 50%);}
+body.theme-nightcity .ex-done-primary,
+body.theme-nightcity .btn-primary{clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);}
 body.theme-daylight .ex-done-primary{border-color:#e0dcd0;color:#d0ccc0;}
 body.theme-daylight .ex-done-primary.ready{background:var(--red);border-color:var(--red);color:#fff;}
 body.theme-ember .ex-done-primary.ready{background:#c0392b;border-color:#c0392b;color:#ffe8cc;}
@@ -5264,7 +5273,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.45.2';
+const APP_VERSION = '3.46.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

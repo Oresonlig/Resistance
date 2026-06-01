@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.46.0 — 2026-06-01
+**Knappform-enhetlighet (steg 1) — Cosmic-guldstandarden.** DONE + Finish Session ärver nu LOG-knappens form per tema, så de tre knapparna talar samma formspråk. Klart: Iron + Nanosuit (hexagon clip-path), Night City (parallelogram). Tillsammans med Undertow (pill) + Understory (blad) från 3.45.2 och Cosmic (referensen) har nu 6 teman enhetliga knappformer. **Upptäckt latent bugg (dokumenterad, ej fixad än):** Ember/Void/Arctic/Daylight/Crusader LOG-knappar ärver base-hexagonen (saknar `clip-path:none`) → ser ut som Iron trots designintention (pill/rektangel). Förklarar varför de känns mindre crafted. Fix per tema kommer.
+
 ## 3.45.2 — 2026-06-01
 **Understory vin-pop fix + Undertow/Understory knappform-enhetlighet.** (1) Viner poppade bort vid scroll — skip-villkoret var bakvänt: rankan växer uppåt (tip=topp/liten y, base=botten/stor y), men koden skippade hela rankan så fort basen var under viewporten trots att kroppen syntes. Nu skippas bara rankor helt utanför vyn. (2) DONE + Finish Session delar nu LOG-knappens form per tema (Undertow pill 11px, Understory blad). (3) Latent bugg fixad: `.ex-done-primary.ready` ärvde `color:var(--white)` på `background:var(--red)` → mörk-på-mörk text på Undertow/Understory så fort alla set loggats. Båda får nu explicit ljus text + tema-gradient + hover.
 
