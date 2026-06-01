@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.46.2 — 2026-06-01
+**Knappform-enhetlighet (steg 2) — fixar 5 temans latenta hexagon-LOG + unifierar.** Ember, Void, Arctic, Daylight, Crusader LOG-knappar ärvde base-hexagonen (saknade `clip-path:none`) trots designintention. Nu: `clip-path:none` återställer avsedd form — Void/Arctic/Daylight blir pills (18/14/14px), Ember/Crusader blir rektanglar (forged stamp / molten). DONE + Finish unifierade: pill-temana får matchande border-radius, Ember/Crusader var redan rektangulära. **ALLA 12 teman har nu enhetligt formspråk på LOG/DONE/Finish** (Cosmic-guldstandarden uppnådd för knappformer). Återstår av guldstandard-paketet: kursiv text på kommande övningar + unika chain-strip-symboler för fler teman.
+
 ## 3.46.1 — 2026-06-01
 **Chain-strip: adjacent/distant följer temats form, inte Iron-hexagonen.** Niklas-observation: på Cosmic (och Obsidian) hade aktiv session unik form (blob/medaljong) men "på glänt"-sessionerna behöll base-hexagonen. Rotorsak: `.chain-tab`-containern har base hexagon `clip-path`; Cosmic/Obsidian satte `clip-path:none` på bokstaven + `.active` men inte på containern → adjacent/distant klipptes till Iron-form. Fix: `clip-path:none` på containern + organisk `border-radius` på adjacent name-short (Cosmic blob, Obsidian liten radie). Nu talar hela chain-stripen temats formspråk.
 

@@ -2872,6 +2872,13 @@ body.theme-nanosuit .ex-done-primary,
 body.theme-nanosuit .btn-primary{clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 50%,calc(100% - 6px) 100%,6px 100%,0 50%);}
 body.theme-nightcity .ex-done-primary,
 body.theme-nightcity .btn-primary{clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);}
+/* Pill-teman: DONE + Finish matchar LOG-pillen (3.46.2) */
+body.theme-void .ex-done-primary,
+body.theme-void .btn-primary{border-radius:18px;}
+body.theme-arctic .ex-done-primary,
+body.theme-arctic .btn-primary{border-radius:14px;}
+body.theme-daylight .ex-done-primary,
+body.theme-daylight .btn-primary{border-radius:14px;}
 body.theme-daylight .ex-done-primary{border-color:#e0dcd0;color:#d0ccc0;}
 body.theme-daylight .ex-done-primary.ready{background:var(--red);border-color:var(--red);color:#fff;}
 body.theme-ember .ex-done-primary.ready{background:#c0392b;border-color:#c0392b;color:#ffe8cc;}
@@ -4331,6 +4338,7 @@ body.theme-nightcity .set-log-btn.has-value{background:linear-gradient(135deg,#f
 
 /* Ember — glowing molten orange furnace switch med heat-pulse */
 body.theme-ember .set-log-btn{
+  clip-path:none;
   background:linear-gradient(180deg,#ff8c1a 0%,#cc3300 100%);
   border:none; color:#0c0600;
   font-family:'Rajdhani',sans-serif; font-weight:900; letter-spacing:.14em;
@@ -4347,6 +4355,7 @@ body.theme-ember .set-log-btn.has-value{background:linear-gradient(180deg,#ffaa4
 
 /* Void — pure white italic pill, Playfair, minimal */
 body.theme-void .set-log-btn{
+  clip-path:none;
   background:#fff; border:none; color:#000;
   font-family:'Playfair Display',serif; font-style:italic; font-weight:700;
   font-size:.72rem; letter-spacing:.04em; text-transform:none;
@@ -4358,6 +4367,7 @@ body.theme-void .set-log-btn.has-value{background:#fff;box-shadow:0 0 8px rgba(2
 
 /* Arctic — frosted glass pill med cyan accent */
 body.theme-arctic .set-log-btn{
+  clip-path:none;
   background:linear-gradient(180deg,rgba(0,200,232,0.92) 0%,rgba(0,136,184,0.88) 100%);
   backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
   border:1px solid rgba(255,255,255,0.4); color:#fff;
@@ -4371,6 +4381,7 @@ body.theme-arctic .set-log-btn.has-value{background:linear-gradient(180deg,rgba(
 
 /* Daylight — clean solid red pill, Bebas Neue, modern */
 body.theme-daylight .set-log-btn{
+  clip-path:none;
   background:var(--red); border:none; color:#fff;
   font-family:'Bebas Neue',sans-serif; letter-spacing:.14em;
   border-radius:14px;
@@ -4382,6 +4393,7 @@ body.theme-daylight .set-log-btn.has-value{background:#a02525;}
 
 /* Crusader — forged stamped metal med rust edge + red glow */
 body.theme-crusader .set-log-btn{
+  clip-path:none;
   background:linear-gradient(180deg,#a82828 0%,#5a1010 100%);
   border:1px solid #6a1a14;
   border-top-color:#c83838; border-bottom-color:#3a0808;
@@ -5279,7 +5291,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.46.1';
+const APP_VERSION = '3.46.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
