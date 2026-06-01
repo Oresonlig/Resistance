@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.46.3 — 2026-06-01
+**Cosmic aktiv chain-tab: "på glänt"-look fixad.** Niklas-observation: aktiv session såg halv-expanderad ut — bokstaven låg i en separat cirkel med egen kant (identisk med kollapsade D/F-cirklar) inuti stadium-formen → såg ut som en kollapsad flik mitt i expansion. Plus namnet kapades hårt ("TR" istället för "TRAPS"). Fix: aktiv bokstav har nu ingen egen kant/bg — den smälter in i kapseln som en del av formen (som Iron). Namnets max-width 130→175px + mindre letter-spacing → "SHOULDERS + TRAPS" får plats. Aktiv tab läser nu som EN fullt öppen enhet.
+
 ## 3.46.2 — 2026-06-01
 **Knappform-enhetlighet (steg 2) — fixar 5 temans latenta hexagon-LOG + unifierar.** Ember, Void, Arctic, Daylight, Crusader LOG-knappar ärvde base-hexagonen (saknade `clip-path:none`) trots designintention. Nu: `clip-path:none` återställer avsedd form — Void/Arctic/Daylight blir pills (18/14/14px), Ember/Crusader blir rektanglar (forged stamp / molten). DONE + Finish unifierade: pill-temana får matchande border-radius, Ember/Crusader var redan rektangulära. **ALLA 12 teman har nu enhetligt formspråk på LOG/DONE/Finish** (Cosmic-guldstandarden uppnådd för knappformer). Återstår av guldstandard-paketet: kursiv text på kommande övningar + unika chain-strip-symboler för fler teman.
 

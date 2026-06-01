@@ -4133,16 +4133,18 @@ body.theme-cosmic-horror .chain-tab.active{
   overflow:visible;
 }
 body.theme-cosmic-horror .chain-tab.active .chain-tab-letter{
-  width:30px; height:30px;
-  border:1px solid #7fc8b4;
-  background:rgba(40,80,72,0.5);
+  /* 3.46.3: smält in i bloben — INGEN egen kant/bg (annars ser den ut som en
+     kollapsad cirkel-flik = "på glänt"-look). Bokstaven är nu en del av kapseln. */
+  width:26px; height:30px;
+  border:none;
+  background:none;
   color:#e0f2eb;
-  font-size:1rem;
+  font-size:1.18rem;
   align-self:center;
   opacity:1;
-  border-radius:50% 40% 55% 45% / 45% 55% 40% 55%;
+  border-radius:0;
 }
-body.theme-cosmic-horror .chain-tab.active .chain-tab-name-full{background:none !important;color:#e0f2eb;padding:0 6px 0 9px;letter-spacing:.2em;}
+body.theme-cosmic-horror .chain-tab.active .chain-tab-name-full{background:none !important;color:#e0f2eb;padding:0 10px 0 4px;letter-spacing:.16em;max-width:175px;}
 body.theme-cosmic-horror .chain-tab-name-short{color:#7a948c;background:rgba(20,50,46,0.4);font-family:'Cormorant SC',serif;font-weight:500;}
 
 /* Section header (pass-ex-header) */
@@ -5291,7 +5293,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.46.2';
+const APP_VERSION = '3.46.3';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
