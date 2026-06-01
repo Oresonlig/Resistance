@@ -102,6 +102,25 @@ active-pass `box-shadow` glow.
 --ar-glass-hi:    rgba(234,244,248,0.82);  /* header/nav base */
 ```
 
+## Known pitfalls
+
+**Do not add `position:relative` to `body.theme-arctic header`.** The base
+header has `position:sticky; top:0; z-index:100`. Adding `position:relative`
+kills sticky. If you need `z-index` stacking to keep the header above frost
+layers, just set `z-index` alone — sticky elements can carry `z-index` without
+needing an explicit position override. Correct pattern:
+
+```css
+body.theme-arctic header { z-index: 2; }          /* ✓ sticky preserved */
+body.theme-arctic header { position:relative; z-index: 2; } /* ✗ kills sticky */
+```
+
+**Light-theme button overrides.** Buttons styled with hardcoded dark colors
+(`#888`, `var(--white)` on hover) are invisible against Arctic's pale
+background. Any new button class must be audited and given a
+`body.theme-arctic .btn-X` override. Known list: `.btn-chain-edit`,
+`.btn-secondary`, `.ex-btn-edit`.
+
 ## Notes for porting back to single-file `index.html`
 
 - Arctic's CSS lives in `body.theme-arctic { ... }` (~rad 1002–1286 in
