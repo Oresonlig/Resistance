@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.45.0 — 2026-06-01
+**NYTT TEMA: Understory** — Rainforest floor light theme. Varm grön gradient (#e9f2db→#a6c690), dappled canopy-ljus via CSS sun-fleck-spans (screen blend) + statisk SVG leaf-shadow (multiply blend). Klättrande viner på canvas (world-coord från start — Undertow-lärdomen). LOG-knapp som organiskt blad (`border-radius:3px 50% 3px 50%` + diagonal midrib-highlight via ::after). Tendril som hänger från headern (CSS ::after, kräver `overflow:visible`). Bricolage Grotesque (display) + Spline Sans Mono (mono). Alla checklistepunkter applicerade: sticky header ej brutit, btn-chain-edit override, selFg=#f3f8ea, toast+add-ex-confirm override.
+
 ## 3.44.5 — 2026-06-01
 **Undertow: systematisk fix av aktiva/valda element.** Rotorsak: flera ställen i koden använde hardkodad `#000`/`#555` text (tema-kort) eller `color:var(--white)` (toast, add-ex-confirm) på `background:var(--red)` — i Undertow är båda mörknavy → svart-på-svart. Fix: (1) Tema-korten i Settings använde `#000` hårdkodat, borde ha använt `selFg` — bytt till `selFg` i alla tre ställen (knapp, namn, beskrivning, bock). (2) `.toast` och `.add-ex-confirm` fick `color:#eaf2fb` override i Undertow CSS. `selFg` var redan korrekt satt till `#eaf2fb` för Undertow sedan 3.44.1 — gäller nu konsekvent för rest-timer, unit-knappar OCH tema-kort.
 
