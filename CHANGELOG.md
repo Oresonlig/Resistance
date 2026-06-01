@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.44.2 — 2026-06-01
+**Fix P1 (ny väg): stale draft spökar work sets in i ny cykel.** Rotorsak: `doNewCycle()` rensade inte `state.drafts` → en gammal draft för session C (skapad när `lastSessionSetCount` var 0) överlevde in i ny cykel med bara 1 work set. `ensureExtraSets` såg `length > 0` och anropade aldrig `getDefaultSets` → Zercher fick 1 work set istället för 2. Användaren såg ett set "försvinna" direkt (det saknades redan från start). Tvåstegs-fix: (1) `doNewCycle` rensar `state.drafts = {}` + `state.draft = null` (säkert — körs bara när alla sessions är klara); (2) `ensureExtraSets` lägger till saknade work sets när stale draft har färre än `lastSessionSetCount` + ingen loggning påbörjad + ej sparad.
+
 ## 3.44.1 — 2026-06-01
 **Undertow live-feedback.** Waterline borttagen (for subtilt, syns knappt). Blå KG-ruta fix: `selFg` för Undertow sätts till `#eaf2fb` (ljus text på navy) istället för `var(--white)=#102430` (svart-på-svart). Blur-artefakter: `backdrop-filter:blur(6px)` borttagen från pass-card + ex-block (Android renderar text sämre med blur); bakgrund höjd `0.52→0.78` opacity för frostat utseende utan blur. Semi-opak backing `rgba(255,255,255,0.38)` på view-containers så section-labels är läsbara mot kaustiket.
 

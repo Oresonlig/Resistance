@@ -5125,7 +5125,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.44.1';
+const APP_VERSION = '3.44.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8080,6 +8080,20 @@ function ensureExtraSets(exId, passId){
   } else {
     // Säkerställ sid på legacy-sets (idempotent)
     state.draft.extraSets[exId]=ensureSetIds(state.draft.extraSets[exId]);
+    // Stale-draft-fix: om sparad draft har färre work sets än lastSessionSetCount, och
+    // ingen loggning har börjat + övningen ej sparad — lägg till saknade work sets.
+    // Rotorsak: doNewCycle rensade inte draftar → gamla draftar med 1 work set (skapade
+    // innan lastSessionSetCount var populerat) spökade in i ny cykel.
+    if(!isExtra && ex && !state.draft.savedExercises?.[exId]){
+      const _noLogged=!state.draft.loggedSets?.[exId]||Object.keys(state.draft.loggedSets[exId]).length===0;
+      if(_noLogged){
+        const _sid2=getRenderExId(ex.id)||ex.id;
+        const _last=Math.min(state.lastSessionSetCount?.[_sid2]??state.lastSessionSetCount?.[ex.id]??0,8);
+        const _target=_last||getTagDefaults(ex).work;
+        const _curWork=state.draft.extraSets[exId].filter(s=>!s.warmup).length;
+        for(let _i=_curWork;_i<_target;_i++) state.draft.extraSets[exId].push({sid:nextSid(),warmup:false});
+      }
+    }
   }
   if(!isExtra){
     const exTagOvr2=state.exerciseTagOverrides?.[exId]||{};
@@ -8436,6 +8450,10 @@ function doNewCycle(){
   const newC={id:Date.now(),done:{}};
   getEffectiveChain().forEach(p=>newC.done[p.id]=null);
   state.cycles.push(newC);
+  // Rensa stale draftar — förhindrar att gamla set-antal spökar i ny cykel.
+  // (doNewCycle körs bara när alla sessions är klara, så ingen pågående draft går förlorad.)
+  if(state.drafts) state.drafts={};
+  state.draft=null;
   save();renderChain();
 }
 // V1 Collapse: aktiv övning expanderas, andra kollapsar till en rad.
