@@ -5001,7 +5001,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.42.2';
+const APP_VERSION = '3.43.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -7573,7 +7573,7 @@ function saveExercise(passId,exId){
   let displayName;
   if(isExtra){const extraIdx=parseInt(exId.split('_').pop());displayName=state.draft?.extras?.[extraIdx]?.name||exId;}
   else{displayName=state.draft?.swaps?.[exId]||state.permanentSwaps?.[exId]||state.exerciseOverrides?.[exId]||ex.name;}
-  state.draft.savedExercises[exId]={id:exId,name:displayName,sets,bw:isBW,...(isExtra?{extra:true}:{})};
+  state.draft.savedExercises[exId]={id:exId,name:displayName,sets,bw:isBW,...(isTimed?{timed:true}:{}),...(isExtra?{extra:true}:{})};
   // Clear logged sets after saving — they're now in savedExercises
   if(state.draft.loggedSets) delete state.draft.loggedSets[exId];
   // V1 Collapse: auto-promote nästa öppna övning som aktiv
@@ -8440,7 +8440,10 @@ function getAllPRs(){
       if(ex.skipped||ex.extra)continue;
       const def=defs.find(d=>d.id===ex.id);const isBW=def?.bw;
       for(const s of(ex.sets||[])){
-        if(isBW){const t=(s.extra||0)+(s.bwSnap||0);const cur=prs[ex.id];if(!cur||t>((cur.extra||0)+(cur.bwSnap||0)))prs[ex.id]={name:ex.name,extra:s.extra||0,bwSnap:s.bwSnap||0,reps:s.reps,bw:true};}
+        if(s.secs!=null){
+          if(isBW){const cur=prs[ex.id];if(!cur||s.secs>(cur.secs||0)||(s.secs===(cur.secs||0)&&(s.extra||0)>(cur.extra||0)))prs[ex.id]={name:ex.name,secs:s.secs,extra:s.extra||0,bwSnap:s.bwSnap||0,bw:true,timed:true};}
+          else{const cur=prs[ex.id];if(!cur||s.secs>(cur.secs||0)||(s.secs===(cur.secs||0)&&(s.weight||0)>(cur.weight||0)))prs[ex.id]={name:ex.name,secs:s.secs,weight:s.weight||0,timed:true};}
+        }else if(isBW){const t=(s.extra||0)+(s.bwSnap||0);const cur=prs[ex.id];if(!cur||t>((cur.extra||0)+(cur.bwSnap||0)))prs[ex.id]={name:ex.name,extra:s.extra||0,bwSnap:s.bwSnap||0,reps:s.reps,bw:true};}
         else{if(!s.weight)continue;const cur=prs[ex.id];if(!cur||s.weight>cur.weight||(s.weight===cur.weight&&(s.reps||0)>(cur.reps||0)))prs[ex.id]={name:ex.name,weight:s.weight,reps:s.reps,bw:false};}
       }
     }
@@ -8484,11 +8487,11 @@ function renderProgress(){
     const _prCollapsed = state.prCollapsed !== false; // default true
     const _chev = _prCollapsed ? '▶' : '▼';
     html+=`<div class="section-sub pr-toggle" onclick="togglePRCollapse()">${_chev} ★ Personal Records · ${prs.length}</div><div class="pr-grid${_prCollapsed?' collapsed':''}">`;
-    prs.forEach(pr=>{const val=pr.bw?`BW + ${toDisplay(pr.extra)||0}${unitLabel()}`:`${toDisplay(pr.weight)}${unitLabel()}`;const sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${unitLabel()} · ${pr.reps||'?'}r`:`${pr.reps||'?'} reps`;const safeName=escapeHTML(pr.name);const jsName=JSON.stringify(pr.name);html+=`<div class="pr-card"><button class="pr-delete" onclick="ignorePR(${escapeHTML(jsName)})" title="Remove this PR" aria-label="Remove ${safeName}">✕</button><div class="pr-ex-name">${safeName}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;});
+    prs.forEach(pr=>{let val,sub;if(pr.timed){val=`${pr.secs}s`;sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${unitLabel()}${pr.extra?` + ${toDisplay(pr.extra)}${unitLabel()}`:''}`:pr.weight?`at ${toDisplay(pr.weight)}${unitLabel()}`:''}else if(pr.bw){val=`BW + ${toDisplay(pr.extra)||0}${unitLabel()}`;sub=`BW ${toDisplay(pr.bwSnap)||0}${unitLabel()} · ${pr.reps||'?'}r`;}else{val=`${toDisplay(pr.weight)}${unitLabel()}`;sub=`${pr.reps||'?'} reps`;}const safeName=escapeHTML(pr.name);const jsName=JSON.stringify(pr.name);html+=`<div class="pr-card"><button class="pr-delete" onclick="ignorePR(${escapeHTML(jsName)})" title="Remove this PR" aria-label="Remove ${safeName}">✕</button><div class="pr-ex-name">${safeName}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;});
     html+=`</div>`;
   }
   html+=`<div class="section-sub">History</div>`;
-  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW ${toDisplay(s.bwSnap)||0} + ${toDisplay(s.extra)||0}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
+  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW ${toDisplay(s.bwSnap)||0} + ${toDisplay(s.extra)||0}${unitLabel()} × ${s.secs!=null?s.secs+'s':(s.reps||'?')+'r'}${s.forced?` +${s.forced}f`:''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.secs!=null?s.secs+'s':(s.reps||'?')+'r'}${s.forced?` +${s.forced}f`:''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
   el.innerHTML=html;
 }
 
@@ -8993,7 +8996,10 @@ function buildPRMap(){
       if(ex.skipped||ex.extra)continue;
       const def=defs.find(d=>d.id===ex.id);const isBW=def?.bw;
       for(const s of(ex.sets||[])){
-        if(isBW){
+        if(s.secs!=null){
+          if(isBW){const cur=prMap[ex.name];if(!cur||s.secs>(cur.secs||0)||(s.secs===(cur.secs||0)&&(s.extra||0)>(cur.extra||0)))prMap[ex.name]={name:ex.name,secs:s.secs,extra:s.extra||0,bwSnap:s.bwSnap||0,bw:true,timed:true};}
+          else{const cur=prMap[ex.name];if(!cur||s.secs>(cur.secs||0)||(s.secs===(cur.secs||0)&&(s.weight||0)>(cur.weight||0)))prMap[ex.name]={name:ex.name,secs:s.secs,weight:s.weight||0,timed:true};}
+        }else if(isBW){
           const t=(s.extra||0)+(s.bwSnap||0);const cur=prMap[ex.name];
           if(!cur||t>((cur.extra||0)+(cur.bwSnap||0)))prMap[ex.name]={name:ex.name,extra:s.extra||0,bwSnap:s.bwSnap||0,reps:s.reps,bw:true};
         }else{
