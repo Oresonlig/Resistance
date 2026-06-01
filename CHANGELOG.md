@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.44.0 — 2026-06-01
+**NYTT TEMA: Undertow** — Cold water light theme. Du är upphängd mitt i vattnet, sjunker, tittar upp mot en ljus yta du inte kan nå. Cool vit-blå gradient mot djupnavy, frostglas-kort, kaustiksljus och bubbelexplosioner. Tre bakgrundslager: CausticLayer (statisk SVG med feTurbulence fractal-noise + ljusschakt, mix-blend-mode:screen), Waterline (CSS 44s krypanimation), BubbleField (canvas gaspar: 2–4 pulsar bursts → stilla vatten 2.6–5.2s). Fonte: Archivo (display) + DM Mono (teknisk). Abyss navy (#163763) = primärfärg. Bubblor styrs av Settings → Ambient Effects, kaustiket visas alltid. Timed-tagg migrerad från inline-stil till `.ex-tag.timed` CSS-klass med `--tag-timed-*` token i `:root`.
+
 ## 3.43.2 — 2026-06-01
 **Fix: Arctic sticky header + Edit-knapp synlighet.** Sticky: `body.theme-arctic header` fick `position:relative` via z-index-regel — tog bort `header` från den regeln så base `position:sticky` gäller igen. Edit-knapp: konverterad från inline-stilar + onmouseover/onmouseout till CSS-klass `.btn-chain-edit` med Arctic-override (`color:#1a2e3a`, tydlig blå border).
 
@@ -152,59 +155,8 @@ Behåller temats unika form (clip-path eller border-radius). Transparent bg + ac
 
 ---
 
-## 3.35.11 — 2026-05-24
-**Failsafe på SJÄLVA login-knappen + tydlig console-trace.**
-
-3.35.9-failsafe satt inne i handleSession. Om `signInWithPassword` Promise aldrig resolverar, anropas handleSession ALDRIG → failsafen registreras aldrig. Niklas fastnar för evigt på "Logging in...".
-
-**Fix:** 10s timer från LOGIN-KNAPPENS click → om Supabase auth-call inte returnerat: visa felmeddelande "Login request timed out". Plus `[login]` console.log före + efter `signInWithPassword`-anrop så vi ser om Promise resolverar eller hänger.
-
-Console-trace för login-flödet nu:
-```
-[login] btn click, email: ...
-[login] calling signInWithPassword
-[login] signInWithPassword returned. data: true/false, error: ...
-[auth] handleSession start, hasSession: true
-[auth] before buildCurrentUser
-...
-```
-
-Var sista loggen stannar = exakt fryspunkt.
-
----
-
-## 3.35.10 — 2026-05-24
-**Version synlig på auth-screen.**
-
-Niklas-request — han kunde inte verifiera vilken version som var laddad eftersom han aldrig kommer förbi auth-screen. Lade till `v<APP_VERSION>` nedanför "Forgot password?" så det syns innan login.
-
-Setting:as från `whenSbReady` callback eftersom det är samma path som binder login-knappen, så vi vet att JS körs.
-
----
-
-## 3.35.9 — 2026-05-24
-**HARD FAILSAFE: tvinga in i appen efter 8s om login hänger.**
-
-Niklas kunde inte logga in även efter 3.35.8 (timeout på profile-fetch). Hängningen är någon annanstans i `handleSession`-flödet. Eftersom alla tre auth-paths (email, Google, password-reset) hänger samma sätt, är det handleSession själv som fryser — exakt var är fortfarande okänt utan console-output.
-
-**Brute force-fix:** 8s timeout som körs parallellt med hela handleSession. Om login inte är klar inom 8s → tvinga `showAppShell()` + `renderChain()` med minimal currentUser (id + email-prefix som name) + visa toast "Login took too long — showing local data". Niklas kommer alltid in.
-
-**Bonus debug:** Mer console.log i `loadStateForUser` så vi ser om migrations är boven.
-
-**Caveat:** Vid failsafe kan synk vara ostabil. Det är en eskaperingsväg, inte slutfix. Niklas måste fortfarande dela console-loggar så vi kan hitta root cause.
-
----
-
-## 3.35.8 — 2026-05-24
-**Login-bug-diagnostik + hängnings-fix på buildCurrentUser.**
-
-Niklas kunde inte logga in efter 3.35.7-reverten heller. Bekräftat via flera tester: thechain.training/Supabase/esm.sh alla operativa. Niklas testat cellular + WiFi + desktop, allt hänger. Password reset-mejl kommer fram och lösenord kan bytas, men "Password updated, signing you in" hänger också → samma kod-path: `handleSession()` fryser.
-
-**Hypotes:** `buildCurrentUser()` kallar `sb.from('profiles').select(...).maybeSingle()`. Om den queryn hänger för Niklas's user-id (RLS-policy som loopar, eller databas-lås) → handleSession fryser eftersom await aldrig returnerar.
-
-**Fix:** `Promise.race` med 3s timeout på profile-fetch. Om timeout → fallback till email-prefix som display name. Login fortsätter normalt.
-
-**Bonus:** `console.log` i varje steg av `handleSession` så Niklas kan öppna DevTools och se EXAKT var det hänger om timeout-fixen inte räcker.
+## 3.35.8–3.35.11 — 2026-05-24
+**Login-diagnostik (kondenserat).** Fyra stegvisa insatser för att isolera login-hänget efter 3.35.7-reverten: 3s timeout på profiles-fetch, version synlig på auth-screen, 8s hard failsafe i handleSession, 10s failsafe på login-knappens click + console-trace genom hela auth-flödet. Root cause löst i 3.35.12.
 
 ---
 
