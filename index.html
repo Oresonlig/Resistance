@@ -2941,8 +2941,8 @@ body.theme-undertow nav{background:linear-gradient(180deg,rgba(255,255,255,0.25)
 body.theme-undertow nav button{font-family:'DM Mono',monospace;font-weight:400;letter-spacing:.12em;color:#8aa4ae;}
 body.theme-undertow nav button.active{color:#163763;font-weight:500;background:none;border-top-color:#163763;}
 body.theme-undertow nav button.active::before{content:'';position:absolute;top:4px;left:50%;width:6px;height:6px;border-radius:50%;border:1px solid #163763;transform:translateX(-50%);animation:ut-tabRise 3.6s ease-in-out infinite;pointer-events:none;}
-body.theme-undertow .pass-card{background:rgba(255,255,255,0.52);border:1px solid rgba(18,48,90,0.14);box-shadow:0 10px 30px -16px rgba(22,55,99,0.45),inset 0 1px 0 rgba(255,255,255,0.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
-body.theme-undertow .pass-card.open{background:rgba(255,255,255,0.62);}
+body.theme-undertow .pass-card{background:rgba(255,255,255,0.78);border:1px solid rgba(18,48,90,0.14);box-shadow:0 10px 30px -16px rgba(22,55,99,0.45),inset 0 1px 0 rgba(255,255,255,0.7);}
+body.theme-undertow .pass-card.open{background:rgba(255,255,255,0.84);}
 body.theme-undertow .pass-card.next-up{border:1px solid rgba(22,55,99,0.45);box-shadow:0 0 18px rgba(22,55,99,0.18),0 10px 30px -16px rgba(22,55,99,0.45),inset 0 1px 0 rgba(255,255,255,0.6);}
 body.theme-undertow .pass-card.next-up::before{background:#163763;color:#fff;font-family:'DM Mono',monospace;letter-spacing:.15em;}
 body.theme-undertow .pass-card.in-progress::before{background:#0d6b7a;color:#fff;}
@@ -2959,7 +2959,10 @@ body.theme-undertow .btn-secondary{border-color:rgba(18,48,90,0.22);color:#2b445
 body.theme-undertow .btn-secondary:hover{border-color:#163763;color:#163763;}
 body.theme-undertow .btn-chain-edit{border-color:rgba(22,55,99,0.30);color:#102430;}
 body.theme-undertow .btn-chain-edit:hover{border-color:#163763;color:#163763;}
-body.theme-undertow .ex-block{background:rgba(255,255,255,0.52);border:1px solid rgba(18,48,90,0.14);box-shadow:0 10px 30px -16px rgba(22,55,99,0.35),inset 0 1px 0 rgba(255,255,255,0.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+body.theme-undertow .ex-block{background:rgba(255,255,255,0.78);border:1px solid rgba(18,48,90,0.14);box-shadow:0 10px 30px -16px rgba(22,55,99,0.35),inset 0 1px 0 rgba(255,255,255,0.7);}
+/* Semi-opaque backing on content views so section labels/headings are readable */
+body.theme-undertow #view-chain,body.theme-undertow #view-progress,
+body.theme-undertow #view-weight,body.theme-undertow #view-data{background:rgba(255,255,255,0.38);}
 body.theme-undertow .ex-name{color:#102430;}
 body.theme-undertow .ex-detail{color:#6f8c98;}
 body.theme-undertow .ex-prev{color:#8aa4ae;}
@@ -3017,12 +3020,8 @@ body.theme-undertow .auth-btn-google{background:rgba(255,255,255,0.72);border:1p
 body.theme-undertow #auth-email-form input,body.theme-undertow #auth-signup-fields input,body.theme-undertow #reset-password-form input{background:#fff;border:1px solid rgba(18,48,90,0.22);color:#102430;}
 body.theme-undertow #auth-email-form input:focus,body.theme-undertow #auth-signup-fields input:focus,body.theme-undertow #reset-password-form input:focus{border-color:#163763;box-shadow:0 0 0 1px #163763;}
 body.theme-undertow #auth-email-form input:-webkit-autofill,body.theme-undertow #auth-signup-fields input:-webkit-autofill,body.theme-undertow #reset-password-form input:-webkit-autofill{-webkit-box-shadow:0 0 0 1000px #fff inset !important;-webkit-text-fill-color:#102430 !important;caret-color:#102430;}
-/* waterline + tab-bubble keyframes */
-@keyframes ut-rise{0%{top:92%;opacity:0;}12%{opacity:.9;}88%{opacity:.6;}100%{top:6%;opacity:0;}}
+/* tab-bubble keyframe */
 @keyframes ut-tabRise{0%{transform:translate(-50%,3px) scale(.7);opacity:0;}30%{opacity:1;}100%{transform:translate(-50%,-7px) scale(1);opacity:0;}}
-body.theme-undertow .ut-waterline{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
-body.theme-undertow .ut-waterline::before{content:'';position:absolute;left:-10%;width:120%;height:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.85) 30%,rgba(255,255,255,.95) 50%,rgba(255,255,255,.8) 70%,transparent);box-shadow:0 6px 22px 2px rgba(255,255,255,.4);animation:ut-rise 44s linear infinite;}
-body.theme-undertow .ut-waterline::after{content:'';position:absolute;left:0;width:100%;height:60px;background:linear-gradient(180deg,rgba(255,255,255,.18),transparent);animation:ut-rise 44s linear infinite;}
 
 /* ── CRUSADER ─────────────────────────────────────────────────
    Palette: Dark warm charcoal, blood red, aged bronze, weathered ash
@@ -5126,7 +5125,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.44.0';
+const APP_VERSION = '3.44.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8961,7 +8960,7 @@ function mountUndertowBg(){
   const bg=document.createElement('div');
   bg.id='undertow-bg'; bg.setAttribute('aria-hidden','true');
   bg.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:0;isolation:isolate;overflow:hidden;';
-  bg.innerHTML=`<svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" viewBox="0 0 380 760" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><radialGradient id="ut-surface-glow" cx="50%" cy="-4%" r="82%"><stop offset="0%" stop-color="#ffffff" stop-opacity="1"/><stop offset="20%" stop-color="#ffffff" stop-opacity="0.75"/><stop offset="44%" stop-color="#e6f2f7" stop-opacity="0.4"/><stop offset="100%" stop-color="#e6f2f7" stop-opacity="0"/></radialGradient><linearGradient id="ut-caustic-fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/><stop offset="22%" stop-color="#ffffff" stop-opacity="1"/><stop offset="68%" stop-color="#ffffff" stop-opacity="0.7"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0.15"/></linearGradient><mask id="ut-caustic-mask"><rect width="100%" height="100%" fill="url(#ut-caustic-fade)"/></mask><filter id="ut-caustic" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.015 0.024" numOctaves="2" seed="7" stitchTiles="stitch" result="noise"/><feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -8.5 4.6" result="ridges"/><feGaussianBlur in="ridges" stdDeviation="0.5" result="soft"/><feComponentTransfer in="soft" result="caustic"><feFuncA type="gamma" amplitude="1" exponent="1.4" offset="0"/></feComponentTransfer><feFlood flood-color="#ffffff" result="white"/><feComposite in="white" in2="soft" operator="in"/></filter></defs><rect width="100%" height="100%" fill="url(#ut-surface-glow)"/><g style="mix-blend-mode:screen"><rect x="-10%" y="-10%" width="120%" height="120%" filter="url(#ut-caustic)" opacity="0.6" mask="url(#ut-caustic-mask)"/></g><g style="mix-blend-mode:screen"><polygon points="60,-20 120,-20 230,520 150,520" fill="#ffffff" opacity="0.18"/><polygon points="180,-20 214,-20 286,500 232,500" fill="#ffffff" opacity="0.14"/><polygon points="250,-20 300,-20 360,470 300,470" fill="#eaf4f8" opacity="0.12"/></g></svg><div class="ut-waterline" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>`;
+  bg.innerHTML=`<svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" viewBox="0 0 380 760" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><radialGradient id="ut-surface-glow" cx="50%" cy="-4%" r="82%"><stop offset="0%" stop-color="#ffffff" stop-opacity="1"/><stop offset="20%" stop-color="#ffffff" stop-opacity="0.75"/><stop offset="44%" stop-color="#e6f2f7" stop-opacity="0.4"/><stop offset="100%" stop-color="#e6f2f7" stop-opacity="0"/></radialGradient><linearGradient id="ut-caustic-fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/><stop offset="22%" stop-color="#ffffff" stop-opacity="1"/><stop offset="68%" stop-color="#ffffff" stop-opacity="0.7"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0.15"/></linearGradient><mask id="ut-caustic-mask"><rect width="100%" height="100%" fill="url(#ut-caustic-fade)"/></mask><filter id="ut-caustic" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.015 0.024" numOctaves="2" seed="7" stitchTiles="stitch" result="noise"/><feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -8.5 4.6" result="ridges"/><feGaussianBlur in="ridges" stdDeviation="0.5" result="soft"/><feComponentTransfer in="soft" result="caustic"><feFuncA type="gamma" amplitude="1" exponent="1.4" offset="0"/></feComponentTransfer><feFlood flood-color="#ffffff" result="white"/><feComposite in="white" in2="soft" operator="in"/></filter></defs><rect width="100%" height="100%" fill="url(#ut-surface-glow)"/><g style="mix-blend-mode:screen"><rect x="-10%" y="-10%" width="120%" height="120%" filter="url(#ut-caustic)" opacity="0.6" mask="url(#ut-caustic-mask)"/></g><g style="mix-blend-mode:screen"><polygon points="60,-20 120,-20 230,520 150,520" fill="#ffffff" opacity="0.18"/><polygon points="180,-20 214,-20 286,500 232,500" fill="#ffffff" opacity="0.14"/><polygon points="250,-20 300,-20 360,470 300,470" fill="#eaf4f8" opacity="0.12"/></g></svg>`;
   const canvas=document.createElement('canvas');
   canvas.id='undertowBubbleCanvas';
   canvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
@@ -9030,8 +9029,9 @@ function renderData(){
   // Void special-case: --red och --white är båda vita → vit-på-vitt på selected-state.
   // Mappa selected-bg/fg + active-border till säkra kontrastfärger.
   const isVoid = (state.theme||'iron') === 'void';
+  const isUndertow = (state.theme||'iron') === 'undertow';
   const selBg = isVoid ? '#fff' : 'var(--red)';
-  const selFg = isVoid ? '#000' : 'var(--white)';
+  const selFg = isVoid ? '#000' : isUndertow ? '#eaf2fb' : 'var(--white)';
   const selBorder = isVoid ? '#888' : 'var(--red)';
   const unitBtn=(u)=>`<button onclick="state.unit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.unit===u?selBg:'none'};border:1px solid ${state.unit===u?selBorder:'#2a2a2a'};color:${state.unit===u?selFg:'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u.toUpperCase()}</button>`;
   el.innerHTML=`<div class="section-title">Settings</div>

@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.44.1 — 2026-06-01
+**Undertow live-feedback.** Waterline borttagen (for subtilt, syns knappt). Blå KG-ruta fix: `selFg` för Undertow sätts till `#eaf2fb` (ljus text på navy) istället för `var(--white)=#102430` (svart-på-svart). Blur-artefakter: `backdrop-filter:blur(6px)` borttagen från pass-card + ex-block (Android renderar text sämre med blur); bakgrund höjd `0.52→0.78` opacity för frostat utseende utan blur. Semi-opak backing `rgba(255,255,255,0.38)` på view-containers så section-labels är läsbara mot kaustiket.
+
 ## 3.44.0 — 2026-06-01
 **NYTT TEMA: Undertow** — Cold water light theme. Du är upphängd mitt i vattnet, sjunker, tittar upp mot en ljus yta du inte kan nå. Cool vit-blå gradient mot djupnavy, frostglas-kort, kaustiksljus och bubbelexplosioner. Tre bakgrundslager: CausticLayer (statisk SVG med feTurbulence fractal-noise + ljusschakt, mix-blend-mode:screen), Waterline (CSS 44s krypanimation), BubbleField (canvas gaspar: 2–4 pulsar bursts → stilla vatten 2.6–5.2s). Fonte: Archivo (display) + DM Mono (teknisk). Abyss navy (#163763) = primärfärg. Bubblor styrs av Settings → Ambient Effects, kaustiket visas alltid. Timed-tagg migrerad från inline-stil till `.ex-tag.timed` CSS-klass med `--tag-timed-*` token i `:root`.
 
