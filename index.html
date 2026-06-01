@@ -72,7 +72,7 @@ header{border-bottom:1px solid #1e1e1e;padding:11px 14px;display:flex;align-item
 .am-pill.missing{color:#7a4a4a;border-color:#3a2020;}
 .am-pill.missing:hover{border-color:#a82828;color:#c83838;}
 .am-pill-icon{font-size:.85rem;line-height:1;}
-.am-pill-value{font-weight:600;}
+.am-pill-value{font-weight:600;white-space:nowrap;}
 .am-pill-input{background:transparent;border:none;color:inherit;font-family:var(--mono);font-size:.75rem;width:56px;text-align:center;padding:0;-moz-appearance:textfield;font-weight:600;}
 .am-pill-input:focus{outline:none;}
 .am-pill-input::-webkit-outer-spin-button,.am-pill-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
@@ -5001,7 +5001,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.43.0';
+const APP_VERSION = '3.43.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5763,13 +5763,15 @@ function refreshAmPill(){
   const today=getTodayWeight();
   if(today){
     const disp=toDisplay(today);
-    if(valEl) valEl.textContent=disp+' '+unitLabel();
+    if(valEl) valEl.textContent=disp;
     if(inp) inp.value=disp;
+    if(unitEl){unitEl.textContent=unitLabel();unitEl.style.display='';}
     pill.classList.add('logged');
     pill.classList.remove('missing');
   } else {
     if(valEl) valEl.textContent='+';
     if(inp) inp.value='';
+    if(unitEl) unitEl.style.display='none';
     pill.classList.add('missing');
     pill.classList.remove('logged');
   }
@@ -5806,7 +5808,6 @@ function collapseAmPill(){
   const logBtn=document.getElementById('amPillLog');
   if(valEl) valEl.style.display='';
   if(inp) inp.style.display='none';
-  if(unitEl) unitEl.style.display='none';
   if(logBtn) logBtn.style.display='none';
   document.removeEventListener('click', collapseAmPillOnOutside);
   refreshAmPill();

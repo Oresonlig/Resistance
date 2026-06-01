@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.43.1 — 2026-06-01
+**Fix: AM-pill blob-form efter loggning.** Rotorsak: `valEl.textContent = "99.1 kg"` i ett span utan `white-space:nowrap` — texten bröt på mellanslaget → kvadratisk pill. Fix: siffran och enheten är nu separata flex-barn även i kollapsad visning (som i input-läget). `white-space:nowrap` på `.am-pill-value` som extra skydd.
+
 ## 3.43.0 — 2026-06-01
 **Timed PR-tracking.** Övningar med Timed-taggen (Dead Hang, plankor m.fl.) spårar nu längsta tid som PR istället för att ignoreras. `getAllPRs` + `buildPRMap` fick ny `secs!=null`-gren: BW timed jämförs på sekunder (extra-vikt som tiebreaker), weighted timed jämförs på sekunder (vikt som tiebreaker). PR-kortet visar `30s` som rubrik + `BW 80kg` som undertext. History-vyn visar nu `30s` istället för `?r` för timed-sets. `saveExercise` sparar `timed:true` på log-entryn.
 
