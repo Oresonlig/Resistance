@@ -6,6 +6,13 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.50.0 — 2026-06-02
+**Rensa reminders + större/tydligare set-text + Overgrowth tillbaka till världs-koord.** Fyra saker:
+1. **NYTT: rensa notes/reminders.** ⏰-reminder från förra passet (`lastSessionNotes`) kunde inte tas bort — den låg kvar tills man skrev en ny note ("kvar tills du uppdaterar den"). Niklas: "poppar upp och jag kan inte ta clear". Nu har både 📝-note- och ⏰-reminder-bannern en **✕-knapp** (`clearReminder`) som rensar både aktuell note och inkommande reminder + skriver tombstone (`deletions.exerciseNotes`, samma namespace som `lastSessionNotes`-mergen läser → inget cloud-resurrect).
+2. **Set-nummer (S1/S2…) ännu större.** `.set-num` `.6rem`→`.72rem` (`.54`→`.64` mobil). Närmar sig KG/REPS.
+3. **Historiken tydligare.** Förra passets set (`.ex-prev-history-set`) var `.65rem`/`#aaa` (ljusgrå, ingen tema-override). Höjt till `.72rem` + mörkare per tema (Undertow #395260, Overgrowth #46663f, set-etikett ännu mörkare). Gäller alla teman som ärver basen.
+4. **Overgrowth: tillbaka till världs-koord.** Niklas ogillade "film på skärmen"-känslan av viewport-fasta rankor. Vin-motorn (+ pollen) lever nu i sid-space igen och scrollar MED innehållet (klättrar uppåt) — min standardregel. Perf-vinsterna (en stroke()/rank, sprite-pollen, 30fps, dpr 1.5) + täthet 25 behålls.
+
 ## 3.49.0 — 2026-06-02
 **Set-lås-bugg fixad + läsbarhet (set-nummer, Undertow mörkare).** Tre saker:
 1. **BUGG: kunde inte ta bort set (kändes "låst").** `ensureExtraSets` pad:ar work-set-antalet upp till förra passets antal (eller tag-default) när inget loggats än — men `removeExtraSet`/render kör den, så borttagna set snäppte direkt tillbaka. Niklas: Flat DB Press låst på 6 set. Fix: explicit add/remove sätter `state.draft.setEdited[exId]` → pad:en hoppas över för den övningen resten av passet. Auto-förifyllning vid passstart är kvar för orörda övningar.
