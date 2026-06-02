@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.47.1 — 2026-06-02
+**Gym-session-tid bort ur copy/paste.** Den delade övnings-kopian (`buildCopyLines`, ⎘ Copy på avslutat pass + history) tog automatiskt med `⏱ <varaktighet>`. Vid mycket app-testande blir pass liggande öppna i timmar → "6h gym session time" följde med kopian per automatik. Nu utelämnas tiden ur kopian; folk får hålla koll på sin egen tid. **Funktionen är kvar** — varaktigheten beräknas, sparas i loggen och visas fortfarande i Done-badgen (`Done · datum · tid`).
+
 ## 3.47.0 — 2026-06-02
 **Understory redesign — the canopy closes in.** Omarbetning av rank-bakgrunden efter Claude Design-underlag + Niklas-vision: man ligger på rygg och rankorna klättrar in över synfältet. (1) **Vin-motorn vänd** från "växer uppåt med innehållet" (världs-koord) till **viewport-fast**: rankor kryper in från ALLA kanter mot mitten och stannar i en ring runt centrum — kant-tung densitet så periferin känns övervuxen men mitten förblir läsbar för träningsinnehållet. (2) **Betydligt fler rankor** (MAX 5 → 14, 9 förodlade vid mount) + lägre per-rank-alpha så det blir frodigt utan att bli grötigt. (3) **Pollen** som driver uppåt genom ljuset (24 motes på vin-canvasen). (4) **Övningskort = bark/skog**: vertikal trä-ådring (lager av repeating-linear-gradient, ingen SVG-filter/blend → mobil-säkert) på `.ex-block`/`.pass-card`, varmare bas — medan appens bakgrund behåller sin ljusgröna "titta-upp-mot-skyn"-gradient. Ambient Effects-toggle styr rankor + pollen; canopy-flecks alltid på. **OBS scroll-beteende:** detta överrider den vanliga världs-koord-regeln (effekter ska normalt scrolla med innehållet) — medvetet val för "rankor över ögonen"-konceptet, på prov.
 

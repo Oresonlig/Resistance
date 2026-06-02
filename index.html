@@ -5319,7 +5319,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.47.0';
+const APP_VERSION = '3.47.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8592,8 +8592,9 @@ function buildCopyLines(passName, dateStr, timestamp, exercises, u, duration){
     const lbl = pickSessionLabel(timestamp);
     lines.push('🕒 '+hm+(lbl?' — '+lbl:''));
   }
-  const durStr = formatDuration(duration);
-  if(durStr) lines.push('⏱ '+durStr);
+  // Gym-session-tiden visas i UI (Done-badgen) men utelämnas medvetet ur copy/paste:
+  // testpass kan ligga öppna i timmar och ge missvisande "6h"-tider. Folk får hålla
+  // koll på sin egen tid. `duration`-parametern behålls (UI/logg använder den).
   lines.push('');
   (exercises||[]).forEach(ex=>{
     if(ex.skipped) return;
