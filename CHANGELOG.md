@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.50.1 — 2026-06-02
+**Set-label-storlek = en standard över alla teman.** Niklas: S1/S2 ska ha EN tydlig standardstorlek som korsar alla teman, inte drifta per tema iteration efter iteration. Audit visade att inget tema över-rider `font-size` på `.set-num` (bara color/font/weight) → bas-regeln ÄR den gemensamma standarden. Låst till **`.82rem`/`.72rem` (mobil)** = samma som KG/REPS-etiketterna (`.set-unit`), så set-nummer och enhets-etiketter är visuellt lika stora. Kommentar i CSS + minne markerar att teman aldrig får sätta egen `font-size` på `.set-num`. (Forna ministorleken `.44rem`/`.38rem` är death.)
+
 ## 3.50.0 — 2026-06-02
 **Rensa reminders + större/tydligare set-text + Overgrowth tillbaka till världs-koord.** Fyra saker:
 1. **NYTT: rensa notes/reminders.** ⏰-reminder från förra passet (`lastSessionNotes`) kunde inte tas bort — den låg kvar tills man skrev en ny note ("kvar tills du uppdaterar den"). Niklas: "poppar upp och jag kan inte ta clear". Nu har både 📝-note- och ⏰-reminder-bannern en **✕-knapp** (`clearReminder`) som rensar både aktuell note och inkommande reminder + skriver tombstone (`deletions.exerciseNotes`, samma namespace som `lastSessionNotes`-mergen läser → inget cloud-resurrect).

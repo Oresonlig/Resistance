@@ -255,7 +255,10 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .set-row.normal-set{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
 .set-row.uni-set{grid-template-columns:24px 1fr 1fr 48px 28px 36px 28px;}
 .set-row.bw-set{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
-.set-num{font-family:var(--mono);font-size:.72rem;font-weight:600;color:#777;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:5px;}
+/* STANDARD set-label size — crosses ALL themes (matches .set-unit KG/REPS at .82rem).
+   Themes may recolour/restyle .set-num but must NOT override font-size — keep it
+   uniform and legible. Mobile counterpart in the @media block below. */
+.set-num{font-family:var(--mono);font-size:.82rem;font-weight:600;color:#777;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:5px;}
 .set-num.warmup-label{color:#4a4a4a;}
 .set-input{background:var(--surface-input);border:1px solid #5a2828;color:var(--white);font-family:var(--mono);font-size:.76rem;padding:5px 4px;text-align:center;transition:border-color .15s;-moz-appearance:textfield;width:100%;}
 .set-input::-webkit-outer-spin-button,.set-input::-webkit-inner-spin-button{-webkit-appearance:none;}
@@ -448,7 +451,7 @@ canvas#weightChart{width:100%!important;display:block;}
   .set-row.normal-set,.set-row.bw-set,.set-row.uni-set{gap:3px;}
   .set-input{font-size:.68rem;padding:4px 3px;}
   .set-unit{font-size:.72rem;}
-  .set-num{font-size:.64rem;}
+  .set-num{font-size:.72rem;}
 }
 
 
@@ -5335,7 +5338,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.50.0';
+const APP_VERSION = '3.50.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
