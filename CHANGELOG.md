@@ -6,6 +6,12 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.49.0 — 2026-06-02
+**Set-lås-bugg fixad + läsbarhet (set-nummer, Undertow mörkare).** Tre saker:
+1. **BUGG: kunde inte ta bort set (kändes "låst").** `ensureExtraSets` pad:ar work-set-antalet upp till förra passets antal (eller tag-default) när inget loggats än — men `removeExtraSet`/render kör den, så borttagna set snäppte direkt tillbaka. Niklas: Flat DB Press låst på 6 set. Fix: explicit add/remove sätter `state.draft.setEdited[exId]` → pad:en hoppas över för den övningen resten av passet. Auto-förifyllning vid passstart är kvar för orörda övningar.
+2. **Set-nummer (S1/S2/…) var minimala.** Base `.set-num` var `.44rem` (`.38rem` mobil) ≈ hälften av KG/REPS (`.82rem`). Höjt till `.6rem`/`.54rem` + `font-weight:600` (globalt, alla teman). `.ex-prev` (förra passets set) `.65rem`→`.72rem`.
+3. **Undertow mörkare (omgång 2).** 3.48.0 räckte inte — Niklas såg fortfarande dåligt. Muted-paletten ytterligare mörkad (`--gray-light` #46606c→#33505c m.fl.), set-historik (`.ex-prev`) #4d6671→#2c4651, KG/REPS #46606c→#2f4b57, Finish-disabled läsbar. Overgrowth: `.ex-prev` ljusoliv #8aa47e→#52704a + grön `.set-num`.
+
 ## 3.48.0 — 2026-06-02
 **Undertow läsbarhet + Understory→Overgrowth + tätare rankor.** Tre saker:
 1. **Undertow kontrast-pass.** Niklas (mobil): "ser väldigt dåligt på den". Temat var tonat mot en ljusare preview → sekundärtext drunknade mot den nästan vita bakgrunden. Mörkare slate-palett: `--gray-light` #6f8c98→#46606c, `--gray-mid` #8aa4ae→#5d7682, plus explicit mörkare ex-detail/ex-prev (set-historik), pass-preview, section-sub, hist, header-user, nav-flikar. Default `.set-unit` (KG/REPS/+F) föll tillbaka till #888 och `.add-set-btn`/`.add-ex-btn` till #888/#666 — fick Undertow-overrides. Input-fält fick starkare kant (0.18→0.34) + mer opak bg så de syns. **Finish Session** (disabled, 0/4) hade nästan osynlig text → läsbar mörk. Samma "höj kontrast ~25%"-lärdom som tidigare ljusa teman.

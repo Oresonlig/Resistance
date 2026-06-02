@@ -202,7 +202,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 /* 3.36.0 — Teknik-tip per oevning (Full ROM, Deep stretch etc.).
    Separat fraan tag-driven .ex-detail (Ramping/1 set failure/etc.). */
 .ex-tip{font-family:var(--mono);font-size:.7rem;color:#9aa48a;font-style:italic;margin-top:3px;line-height:1.5;letter-spacing:.02em;}
-.ex-prev{font-family:var(--mono);font-size:.65rem;color:#888;margin-top:5px;line-height:1.55;}
+.ex-prev{font-family:var(--mono);font-size:.72rem;color:#888;margin-top:5px;line-height:1.55;}
 .ex-prev span{color:#777;}
 .ex-prev .last-val{color:#6a8a6a;font-style:italic;}
 /* 3.34.4 — History: alltid expanderad direkt under "Last (Xd ago)", samma font/size.
@@ -252,7 +252,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .set-row.normal-set{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
 .set-row.uni-set{grid-template-columns:24px 1fr 1fr 48px 28px 36px 28px;}
 .set-row.bw-set{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
-.set-num{font-family:var(--mono);font-size:.44rem;color:#666;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:5px;}
+.set-num{font-family:var(--mono);font-size:.6rem;font-weight:600;color:#777;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:5px;}
 .set-num.warmup-label{color:#4a4a4a;}
 .set-input{background:var(--surface-input);border:1px solid #5a2828;color:var(--white);font-family:var(--mono);font-size:.76rem;padding:5px 4px;text-align:center;transition:border-color .15s;-moz-appearance:textfield;width:100%;}
 .set-input::-webkit-outer-spin-button,.set-input::-webkit-inner-spin-button{-webkit-appearance:none;}
@@ -445,7 +445,7 @@ canvas#weightChart{width:100%!important;display:block;}
   .set-row.normal-set,.set-row.bw-set,.set-row.uni-set{gap:3px;}
   .set-input{font-size:.68rem;padding:4px 3px;}
   .set-unit{font-size:.72rem;}
-  .set-num{font-size:.38rem;}
+  .set-num{font-size:.54rem;}
 }
 
 
@@ -2933,7 +2933,7 @@ body.theme-daylight .pass-card.done .pass-preview{color:#bbb !important;}
 body.theme-undertow{
   --black:#e9f3f7; --white:#102430; --red:#163763;
   --green-bright:#0d6b7a; --gold:#97702a;
-  --gray-light:#46606c; --gray-mid:#5d7682;
+  --gray-light:#33505c; --gray-mid:#496673;
   --display:'Archivo',system-ui,sans-serif; --mono:'DM Mono',monospace;
   --surface-base:rgba(255,255,255,0.52); --surface-elevated:rgba(255,255,255,0.65);
   --surface-input:rgba(255,255,255,0.55); --surface-saved:rgba(230,242,248,0.72);
@@ -2954,7 +2954,7 @@ body.theme-undertow header{background:linear-gradient(180deg,rgba(255,255,255,0.
 body.theme-undertow .logo{font-family:'Archivo',sans-serif;font-weight:700;letter-spacing:.28em;color:#102430;}
 body.theme-undertow .logo span{color:#163763;}
 body.theme-undertow nav{background:linear-gradient(180deg,rgba(255,255,255,0.25),rgba(255,255,255,0.62));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(18,48,90,0.14);}
-body.theme-undertow nav button{font-family:'DM Mono',monospace;font-weight:400;letter-spacing:.12em;color:#5d7682;}
+body.theme-undertow nav button{font-family:'DM Mono',monospace;font-weight:400;letter-spacing:.12em;color:#43606d;}
 body.theme-undertow nav button.active{color:#163763;font-weight:500;background:none;border-top-color:#163763;}
 body.theme-undertow nav button.active::before{content:'';position:absolute;top:4px;left:50%;width:6px;height:6px;border-radius:50%;border:1px solid #163763;transform:translateX(-50%);animation:ut-tabRise 3.6s ease-in-out infinite;pointer-events:none;}
 body.theme-undertow .pass-card{background:rgba(255,255,255,0.78);border:1px solid rgba(18,48,90,0.14);box-shadow:0 10px 30px -16px rgba(22,55,99,0.45),inset 0 1px 0 rgba(255,255,255,0.7);}
@@ -2965,7 +2965,7 @@ body.theme-undertow .pass-card.in-progress::before{background:#0d6b7a;color:#fff
 body.theme-undertow .pass-card.done{opacity:.55;filter:saturate(0.6);}
 body.theme-undertow .pass-letter{font-family:'Archivo',sans-serif;font-weight:700;color:#163763;}
 body.theme-undertow .pass-name{font-family:'Archivo',sans-serif;font-weight:700;letter-spacing:.04em;color:#102430;}
-body.theme-undertow .pass-preview{color:#46606c;}
+body.theme-undertow .pass-preview{color:#33505c;}
 body.theme-undertow .chain-fill{background:linear-gradient(90deg,#214b86,#163763);}
 body.theme-undertow .chain-bar{background:rgba(18,48,90,0.12);}
 body.theme-undertow .btn-primary{background:linear-gradient(180deg,#214b86 0%,#163763 100%);color:#eaf2fb;font-family:'Archivo',sans-serif;font-weight:700;letter-spacing:.12em;box-shadow:0 8px 18px -8px rgba(22,55,99,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:1px solid #163763;border-radius:11px;}
@@ -2975,15 +2975,15 @@ body.theme-undertow .ex-done-primary{border-radius:11px;}
 body.theme-undertow .ex-done-primary.ready{background:linear-gradient(180deg,#214b86 0%,#163763 100%);border-color:#163763;color:#eaf2fb;}
 body.theme-undertow .ex-done-primary.ready:hover{background:linear-gradient(180deg,#2a5a9e 0%,#1e4577 100%);border-color:#1e4577;}
 body.theme-undertow .btn-primary:hover{background:linear-gradient(180deg,#2a5a9e 0%,#1e4577 100%);}
-body.theme-undertow .btn-primary:disabled{background:rgba(18,48,90,0.14);color:#4d6671;cursor:not-allowed;box-shadow:none;border-color:rgba(18,48,90,0.26);}
+body.theme-undertow .btn-primary:disabled{background:rgba(18,48,90,0.16);color:#3a545f;cursor:not-allowed;box-shadow:none;border-color:rgba(18,48,90,0.3);}
 body.theme-undertow .btn-secondary{border-color:rgba(18,48,90,0.22);color:#2b4450;}
 body.theme-undertow .btn-secondary:hover{border-color:#163763;color:#163763;}
 body.theme-undertow .btn-chain-edit{border-color:rgba(22,55,99,0.30);color:#102430;}
 body.theme-undertow .btn-chain-edit:hover{border-color:#163763;color:#163763;}
 body.theme-undertow .ex-block{background:rgba(255,255,255,0.78);border:1px solid rgba(18,48,90,0.14);box-shadow:0 10px 30px -16px rgba(22,55,99,0.35),inset 0 1px 0 rgba(255,255,255,0.7);}
 body.theme-undertow .ex-name{color:#102430;}
-body.theme-undertow .ex-detail{color:#46606c;}
-body.theme-undertow .ex-prev{color:#4d6671;}
+body.theme-undertow .ex-detail{color:#324d59;}
+body.theme-undertow .ex-prev{color:#2c4651;}
 body.theme-undertow .ex-prev .last-val{color:#163763;}
 body.theme-undertow .ex-btn-done{background:linear-gradient(180deg,#214b86 0%,#163763 100%);color:#eaf2fb;font-family:'DM Mono',monospace;letter-spacing:.15em;border:1px solid #163763;box-shadow:0 8px 18px -8px rgba(22,55,99,0.6),inset 0 1px 0 rgba(255,255,255,0.18);}
 body.theme-undertow .ex-btn-skip{background:rgba(255,255,255,0.5);border:1px solid rgba(18,48,90,0.20);color:#2b4450;font-family:'DM Mono',monospace;backdrop-filter:blur(2px);}
@@ -3006,22 +3006,22 @@ body.theme-undertow .am-pill.logged:hover{border-color:#0d6b7a;}
 body.theme-undertow .am-pill.missing{color:#9e4a45;border-color:rgba(158,74,69,0.35);background:rgba(255,255,255,0.55);}
 body.theme-undertow .am-pill.missing:hover{border-color:#9e4a45;color:#9e4a45;}
 body.theme-undertow .am-pill-log{border-color:rgba(13,107,122,0.45);color:#0d6b7a;}
-body.theme-undertow .header-user{color:#46606c;}
+body.theme-undertow .header-user{color:#33505c;}
 body.theme-undertow .header-user strong{color:#102430;}
 body.theme-undertow .header-logout{border-color:rgba(158,74,69,0.3);color:#9e4a45;}
 body.theme-undertow .header-logout:hover{border-color:#9e4a45;color:#9e4a45;}
 body.theme-undertow .toast{color:#eaf2fb;}
 body.theme-undertow .add-ex-confirm{color:#eaf2fb;}
 body.theme-undertow .section-title{font-family:'Archivo',sans-serif;font-weight:700;letter-spacing:.04em;color:#102430;}
-body.theme-undertow .section-sub{color:#46606c;}
+body.theme-undertow .section-sub{color:#33505c;}
 body.theme-undertow .pr-value{color:#97702a;}
 body.theme-undertow .pr-card::before{background:rgba(255,255,255,0.7);color:#97702a;}
 body.theme-undertow .hist-date{color:#102430;}
-body.theme-undertow .hist-pass{color:#46606c;}
-body.theme-undertow .hist-set{color:#4d6671;}
+body.theme-undertow .hist-pass{color:#33505c;}
+body.theme-undertow .hist-set{color:#2f4954;}
 body.theme-undertow .weight-input{background:rgba(255,255,255,0.7);border:1px solid rgba(18,48,90,0.22);color:#102430;}
 body.theme-undertow .weight-input:focus{border-color:#163763;}
-body.theme-undertow .weight-log-btn{background:rgba(255,255,255,0.55);border:1px solid rgba(18,48,90,0.28);color:#46606c;}
+body.theme-undertow .weight-log-btn{background:rgba(255,255,255,0.55);border:1px solid rgba(18,48,90,0.3);color:#33505c;}
 body.theme-undertow .app-modal-card{background:rgba(240,248,252,0.95);}
 body.theme-undertow .app-modal-title{color:#102430;}
 body.theme-undertow .app-modal-body{color:#2b4450;}
@@ -3042,9 +3042,10 @@ body.theme-undertow #auth-email-form input:focus,body.theme-undertow #auth-signu
 body.theme-undertow #auth-email-form input:-webkit-autofill,body.theme-undertow #auth-signup-fields input:-webkit-autofill,body.theme-undertow #reset-password-form input:-webkit-autofill{-webkit-box-shadow:0 0 0 1000px #fff inset !important;-webkit-text-fill-color:#102430 !important;caret-color:#102430;}
 /* Kontrast-pass (3.48.0): default set-unit/add-knappar föll tillbaka till grått
    (#888/#666) → oläsligt mot Undertows nästan vita bakgrund. Mörkare slate. */
-body.theme-undertow .set-unit{color:#46606c;}
-body.theme-undertow .add-set-btn{color:#46606c;border-color:rgba(18,48,90,0.34);}
-body.theme-undertow .add-ex-btn{color:#46606c;border-color:rgba(18,48,90,0.34);}
+body.theme-undertow .set-unit{color:#2f4b57;}
+body.theme-undertow .set-num{color:#33505c;}
+body.theme-undertow .add-set-btn{color:#33505c;border-color:rgba(18,48,90,0.4);}
+body.theme-undertow .add-ex-btn{color:#33505c;border-color:rgba(18,48,90,0.4);}
 /* tab-bubble keyframe */
 @keyframes ut-tabRise{0%{transform:translate(-50%,3px) scale(.7);opacity:0;}30%{opacity:1;}100%{transform:translate(-50%,-7px) scale(1);opacity:0;}}
 
@@ -3122,8 +3123,9 @@ body.theme-understory .btn-chain-edit:hover{border-color:#1f4226;color:#1f4226;}
 body.theme-understory .ex-block{background:rgba(252,255,247,0.78);border:1px solid rgba(31,66,38,0.14);box-shadow:0 10px 30px -16px rgba(28,60,34,0.35),inset 0 1px 0 rgba(255,255,255,0.6);}
 body.theme-understory .ex-name{color:#143018;}
 body.theme-understory .ex-detail{color:#6f8a69;}
-body.theme-understory .ex-prev{color:#8aa47e;}
+body.theme-understory .ex-prev{color:#52704a;}
 body.theme-understory .ex-prev .last-val{color:#1f4226;}
+body.theme-understory .set-num{color:#3f5e44;}
 body.theme-understory .ex-btn-done{background:linear-gradient(180deg,#2f5e37 0%,#1c3c22 100%);color:#eef5e4;font-family:'Spline Sans Mono',monospace;letter-spacing:.15em;border:1px solid #1c3c22;box-shadow:0 8px 18px -8px rgba(28,60,34,0.6),inset 0 1px 0 rgba(255,255,255,0.18);}
 body.theme-understory .ex-btn-skip{background:rgba(255,255,255,0.45);border:1px solid rgba(31,66,38,0.2);color:#2b4a30;font-family:'Spline Sans Mono',monospace;backdrop-filter:blur(2px);}
 body.theme-understory .ex-btn-edit{border-color:rgba(31,66,38,0.2);color:#2b4a30;}
@@ -5324,7 +5326,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.48.0';
+const APP_VERSION = '3.49.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8285,7 +8287,9 @@ function ensureExtraSets(exId, passId){
     // innan lastSessionSetCount var populerat) spökade in i ny cykel.
     if(!isExtra && ex && !state.draft.savedExercises?.[exId]){
       const _noLogged=!state.draft.loggedSets?.[exId]||Object.keys(state.draft.loggedSets[exId]).length===0;
-      if(_noLogged){
+      // ...men INTE om användaren explicit ändrat set-antalet (add/remove). Annars
+      // snäpper pad:en tillbaka borttagna set → kändes som att seten "låst sig".
+      if(_noLogged && !state.draft.setEdited?.[exId]){
         const _sid2=getRenderExId(ex.id)||ex.id;
         const _last=Math.min(state.lastSessionSetCount?.[_sid2]??state.lastSessionSetCount?.[ex.id]??0,8);
         const _target=_last||getTagDefaults(ex).work;
@@ -8381,17 +8385,23 @@ function captureInputsToSetsBuffer(exId,passId){
     }
   });
 }
+function _markSetEdited(exId){ (state.draft.setEdited||(state.draft.setEdited={}))[exId]=true; }
 function addWorkSet(exId,passId){
   captureInputsToSetsBuffer(exId,passId);
+  _markSetEdited(exId);
   state.draft.extraSets[exId].push(makeSet(false));
   save();rerenderSession(passId);
 }
 function addWarmupSet(exId,passId){
   captureInputsToSetsBuffer(exId,passId);
+  _markSetEdited(exId);
   state.draft.extraSets[exId].push(makeSet(true));
   save();rerenderSession(passId);
 }
 function removeExtraSet(exId,sid,passId){
+  ensureDraft(passId);
+  // Explicit removal: lås set-antalet så ensureExtraSets inte pad:ar tillbaka det.
+  _markSetEdited(exId);
   ensureExtraSets(exId,passId);
   // Capture current DOM values BEFORE mutation so unsaved inputs survive
   captureInputsToSetsBuffer(exId,passId);
