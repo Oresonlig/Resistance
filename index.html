@@ -3045,8 +3045,11 @@ body.theme-undertow #auth-email-form input:-webkit-autofill,body.theme-undertow 
 
 /* ── UNDERSTORY ────────────────────────────────────────────────
    Palette: Rainforest floor, warm canopy light, climbing vines
-   Atmosphere: Look UP through canopy — habit made visible as growth
-   Background: CanopyDapple (SVG+CSS flecks) + VineField (canvas, world-coord)
+   Atmosphere: You lie on your back; the canopy closes IN over your eyes.
+   Background: CanopyDapple (SVG+CSS flecks) + VineField (canvas, viewport-fixed:
+     vines creep in from every edge toward centre, edge-weighted so the middle
+     stays readable) + warm pollen motes drifting up.
+   Cards: woody bark grain (vertical fibres) on .ex-block/.pass-card.
    Fonts: Bricolage Grotesque (display) + Spline Sans Mono (technical)
    NOTE: isolation:isolate on #understory-bg (NOT body)
    NOTE: mix-blend-mode:multiply on leaf-shadow SVG, :screen on fleck spans
@@ -3066,6 +3069,12 @@ body.theme-understory{
   --tag-uni-bg:rgba(255,255,255,0.5);    --tag-uni-border:#4a7a3f;               --tag-uni-color:#4a7a3f;
   --tag-singles-bg:rgba(255,255,255,0.5);--tag-singles-border:#2f5e37;           --tag-singles-color:#2f5e37;
   --tag-timed-bg:rgba(255,255,255,0.5);  --tag-timed-border:#2f7a4a;             --tag-timed-color:#2f7a4a;
+  /* woody bark grain (vertical fibres) — reused on every card state so it
+     survives the 2-class shorthand overrides on .pass-card.open / .ex-block.saved */
+  --us-bark:
+    repeating-linear-gradient(90deg,rgba(74,90,40,0.055) 0 1px,transparent 1px 4px),
+    repeating-linear-gradient(90deg,rgba(45,62,26,0.04) 0 1px,transparent 1px 9px),
+    repeating-linear-gradient(90deg,rgba(120,96,44,0.03) 0 1px,transparent 1px 17px);
   background:
     radial-gradient(ellipse 120% 58% at 50% -8%,#f8fcef 0%,rgba(248,252,239,0) 48%),
     linear-gradient(180deg,#e9f2db 0%,#d3e4c3 40%,#bcd6a9 74%,#a6c690 100%);
@@ -3168,6 +3177,14 @@ body.theme-understory #auth-email-form input:-webkit-autofill,body.theme-underst
 /* selFg fix — toast + add-ex-confirm use var(--red) bg + need light text */
 body.theme-understory .toast{color:#f3f8ea;}
 body.theme-understory .add-ex-confirm{color:#f3f8ea;}
+/* Exercise + pass cards — woody bark grain (vertical fibres). Pure layered
+   gradients (no SVG filter / no blend) so it's mobile-safe and cheap. Kept light
+   and warm so the card still reads bright and text stays legible. The app body
+   keeps its pale "look-up-at-the-sky" green — only the cards turn to bark/wood. */
+body.theme-understory .ex-block,
+body.theme-understory .pass-card{background-color:rgba(235,239,217,0.84);background-image:var(--us-bark);}
+body.theme-understory .pass-card.open{background-color:rgba(240,243,222,0.92);background-image:var(--us-bark);}
+body.theme-understory .ex-block.saved{background-color:rgba(229,241,212,0.86);background-image:var(--us-bark);}
 /* canopy drifting sun-flecks (CSS animation, screen blend) */
 body.theme-understory .us-fleck{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,252,232,0.85),rgba(247,250,224,0.35) 45%,transparent 70%);mix-blend-mode:screen;filter:blur(2px);}
 body.theme-understory .us-fleck.f1{width:130px;height:130px;left:8%;top:6%;animation:us-drift1 19s ease-in-out infinite;}
@@ -5302,7 +5319,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.46.4';
+const APP_VERSION = '3.47.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -9238,10 +9255,11 @@ function _startUndertowBubbles(canvas){
 }
 
 // ── UNDERSTORY BACKGROUND ────────────────────────────────────────
-// CanopyDapple (SVG leaf-shadow + CSS fleck spans) + VineField (canvas, world-coord).
-// World-coord: vines spawn at worldH, setTransform shifts by -scrollY each frame.
+// CanopyDapple (SVG leaf-shadow + CSS fleck spans) + VineField (canvas).
+// Viewport-FIXED: vines creep in from every edge toward the centre of the field
+// of view (canopy closing over your eyes) — they do NOT scroll with content.
 // isolation:isolate on #understory-bg — NOT on body (Android blend bug).
-let _usVineRaf=0, _usVineAlive=false, _usWorldHTimer2=0;
+let _usVineRaf=0, _usVineAlive=false;
 function mountUnderstoryBg(){
   if(document.getElementById('understory-bg')) return;
   const bg=document.createElement('div');
@@ -9257,47 +9275,67 @@ function mountUnderstoryBg(){
 }
 function unmountUnderstoryBg(){
   _usVineAlive=false; cancelAnimationFrame(_usVineRaf);
-  if(_usWorldHTimer2){clearInterval(_usWorldHTimer2);_usWorldHTimer2=0;}
   const el=document.getElementById('understory-bg'); if(el) el.remove();
 }
 function _startUnderstoryVines(canvas){
   if(!canvas) return;
   const ctx=canvas.getContext('2d');
   const dpr=Math.min(window.devicePixelRatio||1,2);
-  let w=0,h=0,worldH=0,t=0; _usVineAlive=true;
+  let w=0,h=0,t=0; _usVineAlive=true;
   function resize(){
     w=window.innerWidth; h=window.innerHeight;
     canvas.width=w*dpr; canvas.height=h*dpr;
     canvas.style.width=w+'px'; canvas.style.height=h+'px';
-    worldH=Math.max(document.documentElement.scrollHeight,h);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
   }
   resize(); window.addEventListener('resize',resize);
-  _usWorldHTimer2=setInterval(()=>{worldH=Math.max(document.documentElement.scrollHeight,h);},1500);
   const rand=(a,b)=>a+Math.random()*(b-a);
-  const vines=[]; const MAX=5;
-  function makeVine(sy){
-    const zone=Math.random();
-    const bx=zone<.42?rand(6,30):zone<.84?rand(w-30,w-6):rand(w*.3,w*.7);
-    const lean=bx<w/2?rand(-.02,.14):rand(-.14,.02);
-    return{pts:[{x:bx,y:sy!==undefined?sy:worldH+6}],angle:-Math.PI/2+lean,len:0,maxLen:rand(h*.4,h*.92),grow:rand(.55,1.05),baseW:rand(2.2,3.8),wPhase:rand(0,Math.PI*2),wFreq:rand(.006,.013),wAmp:rand(.18,.4),swayPhase:rand(0,Math.PI*2),swaySpeed:rand(.0007,.0014),swayAmp:rand(5,13),leafGap:rand(26,46),nextLeaf:rand(28,64),leaves:[],tendrilAt:rand(.55,.8),tendril:null,tint:rand(-10,16),state:'growing',hold:rand(240,560),alpha:1,fadeIn:0};
+  // Viewport-FIXED: vines creep IN from every edge toward the centre of the
+  // field of view (you lie on your back; the canopy closes over your eyes).
+  // Edge-weighted: tips stop in a ring AROUND centre, never dead-centre, so the
+  // periphery is dense while the middle stays readable for training content.
+  const vines=[]; const MAX=14;
+  function spawnPoint(){
+    const edge=Math.floor(rand(0,4));
+    if(edge===0) return {x:rand(0,w),y:-12};       // top
+    if(edge===1) return {x:w+12,y:rand(0,h)};      // right
+    if(edge===2) return {x:rand(0,w),y:h+12};      // bottom
+    return {x:-12,y:rand(0,h)};                    // left
   }
-  for(let i=0;i<2;i++) vines.push(makeVine(rand(worldH*.2,worldH)));
+  function makeVine(){
+    const start=spawnPoint();
+    // target a point in a ring around centre (not the dead centre)
+    const a=rand(0,Math.PI*2), rr=rand(.12,.34);
+    const tx=w*.5+Math.cos(a)*w*rr, ty=h*.5+Math.sin(a)*h*rr;
+    const angle=Math.atan2(ty-start.y,tx-start.x);
+    const reach=Math.hypot(tx-start.x,ty-start.y);
+    return{pts:[{x:start.x,y:start.y}],angle,tx,ty,len:0,maxLen:reach*rand(.72,1.0),grow:rand(.5,1.0),baseW:rand(2.0,3.6),wPhase:rand(0,Math.PI*2),wFreq:rand(.006,.013),wAmp:rand(.18,.4),swayPhase:rand(0,Math.PI*2),swaySpeed:rand(.0007,.0014),swayAmp:rand(3,9),leafGap:rand(26,46),nextLeaf:rand(28,64),leaves:[],tendrilAt:rand(.6,.85),tendril:null,tint:rand(-10,16),state:'growing',hold:rand(260,620),alpha:1,fadeIn:0};
+  }
   function grow(v){
     if(v.fadeIn<1) v.fadeIn=Math.min(1,v.fadeIn+.02);
     if(v.state==='growing'){
-      v.wPhase+=v.wFreq; v.angle+=Math.sin(v.wPhase)*v.wAmp*.06; v.angle+=(-Math.PI/2-v.angle)*.01;
+      v.wPhase+=v.wFreq;
       const last=v.pts[v.pts.length-1];
-      v.pts.push({x:last.x+Math.cos(v.angle)*v.grow,y:last.y+Math.sin(v.angle)*v.grow});
-      v.len+=v.grow;
+      const desired=Math.atan2(v.ty-last.y,v.tx-last.x);
+      let da=desired-v.angle; while(da>Math.PI)da-=Math.PI*2; while(da<-Math.PI)da+=Math.PI*2;
+      v.angle+=da*.018+Math.sin(v.wPhase)*v.wAmp*.05;
+      const nx=last.x+Math.cos(v.angle)*v.grow, ny=last.y+Math.sin(v.angle)*v.grow;
+      v.pts.push({x:nx,y:ny}); v.len+=v.grow;
       if(v.len>=v.nextLeaf){const side=v.leaves.length%2===0?1:-1;v.leaves.push({i:v.pts.length-1,side,size:rand(7,15),unfurl:0,rot:rand(-.25,.25)});v.nextLeaf+=v.leafGap;}
       if(!v.tendril&&v.len>=v.maxLen*v.tendrilAt) v.tendril={i:v.pts.length-1,grow:0};
-      if(v.len>=v.maxLen||v.pts[v.pts.length-1].y<-16) v.state='mature';
+      if(v.len>=v.maxLen||Math.hypot(v.tx-nx,v.ty-ny)<16) v.state='mature';
     }else if(v.state==='mature'){if(--v.hold<=0) v.state='fading';}
     else v.alpha-=.0045;
     for(const lf of v.leaves) if(lf.unfurl<1) lf.unfurl=Math.min(1,lf.unfurl+.022);
     if(v.tendril&&v.tendril.grow<1) v.tendril.grow=Math.min(1,v.tendril.grow+.02);
   }
-  function swayed(v,p,i,n){const hf=i/Math.max(1,n-1);return{x:p.x+Math.sin(v.swayPhase+p.y*.014)*v.swayAmp*hf,y:p.y};}
+  function swayed(v,p,i,n){const hf=i/Math.max(1,n-1);const s=Math.sin(v.swayPhase+p.x*.012+p.y*.012)*v.swayAmp*hf;return{x:p.x+s,y:p.y+s*.4};}
+  // warm pollen motes drifting up through shafts of light
+  const motes=[]; const NUM=24;
+  function spawnMote(initial){return{x:rand(0,w),y:initial?rand(0,h):h+rand(0,40),r:rand(.7,2.2),vy:-rand(.12,.4),drift:rand(-.12,.12),bobP:rand(0,Math.PI*2),bobS:rand(.006,.02),bobA:rand(.2,.7),hue:rand(70,104),a:rand(.25,.6)};}
+  for(let i=0;i<NUM;i++) motes.push(spawnMote(true));
+  // pre-grow a lush set so the very first frame is already overgrown
+  for(let s=0;s<9;s++){const v=makeVine();const steps=60+s*28;for(let k=0;k<steps;k++) grow(v);vines.push(v);}
   function drawVine(v){
     const n=v.pts.length; if(n<2) return;
     v.swayPhase+=v.swaySpeed*16;
@@ -9305,7 +9343,7 @@ function _startUnderstoryVines(canvas){
     for(let i=1;i<n;i++){
       const p0=pts[i-1],p1=pts[i],ht=i/n;
       ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);ctx.lineCap='round';
-      ctx.lineWidth=Math.max(.5,v.baseW*(1-ht*.8));ctx.strokeStyle=`hsla(${hue},36%,34%,${.4*a})`;ctx.stroke();
+      ctx.lineWidth=Math.max(.5,v.baseW*(1-ht*.8));ctx.strokeStyle=`hsla(${hue},36%,34%,${.34*a})`;ctx.stroke();
     }
     for(const lf of v.leaves){
       if(lf.i>=n) continue;
@@ -9329,19 +9367,28 @@ function _startUnderstoryVines(canvas){
   function tick(){
     if(!_usVineAlive) return;
     t++;
-    const scrollY=window.scrollY||window.pageYOffset||0;
-    ctx.setTransform(dpr,0,0,dpr,0,-scrollY*dpr);
-    ctx.clearRect(0,scrollY,w,h);
-    if(vines.length<MAX&&t%150===0) vines.push(makeVine(worldH+6));
+    ctx.clearRect(0,0,w,h);
+    if(vines.length<MAX&&t%45===0) vines.push(makeVine());
     for(let i=vines.length-1;i>=0;i--){
       grow(vines[i]);
-      const tip=vines[i].pts[vines[i].pts.length-1],base=vines[i].pts[0];
-      // Rankan spänner [tip.y (topp), base.y (botten)]. Skippa BARA om hela rankan
-      // är utanför viewporten: basen (lägsta punkten) ovanför, ELLER toppen nedanför.
-      if(!(base.y<scrollY-100||tip.y>scrollY+h+100)) drawVine(vines[i]);
+      drawVine(vines[i]);
       if(vines[i].alpha<=0) vines.splice(i,1);
     }
-    if(vines.length===0) vines.push(makeVine(worldH+6));
+    if(vines.length<3){vines.push(makeVine());vines.push(makeVine());}
+    // pollen drifting up
+    for(let i=0;i<motes.length;i++){
+      const m=motes[i];
+      m.bobP+=m.bobS; m.y+=m.vy; m.x+=m.drift+Math.sin(m.bobP)*m.bobA*.1;
+      if(m.y<-30||m.x<-30||m.x>w+30){motes[i]=spawnMote(false);continue;}
+      const a=m.a*(.6+.4*Math.sin(t*.02+m.bobP));
+      const g=ctx.createRadialGradient(m.x,m.y,0,m.x,m.y,m.r*6);
+      g.addColorStop(0,`hsla(${m.hue},70%,78%,${a})`);
+      g.addColorStop(.5,`hsla(${m.hue},60%,66%,${a*.3})`);
+      g.addColorStop(1,`hsla(${m.hue},60%,60%,0)`);
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(m.x,m.y,m.r*6,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=`hsla(${m.hue+10},85%,92%,${a*.8})`;
+      ctx.beginPath(); ctx.arc(m.x,m.y,m.r*.5,0,Math.PI*2); ctx.fill();
+    }
     _usVineRaf=requestAnimationFrame(tick);
   }
   tick();

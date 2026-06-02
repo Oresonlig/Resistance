@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.47.0 — 2026-06-02
+**Understory redesign — the canopy closes in.** Omarbetning av rank-bakgrunden efter Claude Design-underlag + Niklas-vision: man ligger på rygg och rankorna klättrar in över synfältet. (1) **Vin-motorn vänd** från "växer uppåt med innehållet" (världs-koord) till **viewport-fast**: rankor kryper in från ALLA kanter mot mitten och stannar i en ring runt centrum — kant-tung densitet så periferin känns övervuxen men mitten förblir läsbar för träningsinnehållet. (2) **Betydligt fler rankor** (MAX 5 → 14, 9 förodlade vid mount) + lägre per-rank-alpha så det blir frodigt utan att bli grötigt. (3) **Pollen** som driver uppåt genom ljuset (24 motes på vin-canvasen). (4) **Övningskort = bark/skog**: vertikal trä-ådring (lager av repeating-linear-gradient, ingen SVG-filter/blend → mobil-säkert) på `.ex-block`/`.pass-card`, varmare bas — medan appens bakgrund behåller sin ljusgröna "titta-upp-mot-skyn"-gradient. Ambient Effects-toggle styr rankor + pollen; canopy-flecks alltid på. **OBS scroll-beteende:** detta överrider den vanliga världs-koord-regeln (effekter ska normalt scrolla med innehållet) — medvetet val för "rankor över ögonen"-konceptet, på prov.
+
 ## 3.46.4 — 2026-06-01
 **Chain-strip "på glänt" = EN komprimerad form (Cosmic + Obsidian).** Niklas-princip: Iron briljerar genom att adjacent-fliken är en HEL hexagon som komprimerats (bokstav + "CHE"), inte två lösa bitar. Cosmic/Obsidian visade istället cirkel-blob + separat namn = två blobar. Fix: containern (`.chain-tab.adjacent`) bär nu EN blob/scroll-form; bokstav + kortnamn är transparenta så de läser som en hel hoptryckt form. Plus: Obsidian aktiv medaljong smälter in i scrollen (ingen separat guldcirkel) — samma behandling som Cosmic fick i 3.46.3. Aktiv + adjacent läser nu som sammanhållna enheter på båda teman.
 
