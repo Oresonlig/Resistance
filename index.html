@@ -5319,7 +5319,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.47.1';
+const APP_VERSION = '3.47.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -9281,7 +9281,8 @@ function unmountUnderstoryBg(){
 function _startUnderstoryVines(canvas){
   if(!canvas) return;
   const ctx=canvas.getContext('2d');
-  const dpr=Math.min(window.devicePixelRatio||1,2);
+  // 1.5 dpr cap (soft/blurry effect — extra resolution is invisible, halves fill)
+  const dpr=Math.min(window.devicePixelRatio||1,1.5);
   let w=0,h=0,t=0; _usVineAlive=true;
   function resize(){
     w=window.innerWidth; h=window.innerHeight;
@@ -9310,7 +9311,7 @@ function _startUnderstoryVines(canvas){
     const tx=w*.5+Math.cos(a)*w*rr, ty=h*.5+Math.sin(a)*h*rr;
     const angle=Math.atan2(ty-start.y,tx-start.x);
     const reach=Math.hypot(tx-start.x,ty-start.y);
-    return{pts:[{x:start.x,y:start.y}],angle,tx,ty,len:0,maxLen:reach*rand(.72,1.0),grow:rand(.5,1.0),baseW:rand(2.0,3.6),wPhase:rand(0,Math.PI*2),wFreq:rand(.006,.013),wAmp:rand(.18,.4),swayPhase:rand(0,Math.PI*2),swaySpeed:rand(.0007,.0014),swayAmp:rand(3,9),leafGap:rand(26,46),nextLeaf:rand(28,64),leaves:[],tendrilAt:rand(.6,.85),tendril:null,tint:rand(-10,16),state:'growing',hold:rand(260,620),alpha:1,fadeIn:0};
+    return{pts:[{x:start.x,y:start.y}],angle,tx,ty,len:0,maxLen:reach*rand(.72,1.0),grow:rand(1.0,1.9),baseW:rand(2.0,3.6),wPhase:rand(0,Math.PI*2),wFreq:rand(.006,.013),wAmp:rand(.18,.4),swayPhase:rand(0,Math.PI*2),swaySpeed:rand(.0007,.0014),swayAmp:rand(3,9),leafGap:rand(26,46),nextLeaf:rand(28,64),leaves:[],tendrilAt:rand(.6,.85),tendril:null,tint:rand(-10,16),state:'growing',hold:rand(260,620),alpha:1,fadeIn:0};
   }
   function grow(v){
     if(v.fadeIn<1) v.fadeIn=Math.min(1,v.fadeIn+.02);
@@ -9336,63 +9337,75 @@ function _startUnderstoryVines(canvas){
   function spawnMote(initial){return{x:rand(0,w),y:initial?rand(0,h):h+rand(0,40),r:rand(.7,2.2),vy:-rand(.12,.4),drift:rand(-.12,.12),bobP:rand(0,Math.PI*2),bobS:rand(.006,.02),bobA:rand(.2,.7),hue:rand(70,104),a:rand(.25,.6)};}
   for(let i=0;i<NUM;i++) motes.push(spawnMote(true));
   // pre-grow a lush set so the very first frame is already overgrown
-  for(let s=0;s<9;s++){const v=makeVine();const steps=60+s*28;for(let k=0;k<steps;k++) grow(v);vines.push(v);}
+  for(let s=0;s<9;s++){const v=makeVine();const steps=30+s*16;for(let k=0;k<steps;k++) grow(v);vines.push(v);}
+  // pre-rendered pollen sprite (drawImage is ~free vs a radial gradient per mote)
+  const moteSprite=document.createElement('canvas'); const MS=20; moteSprite.width=moteSprite.height=MS;
+  {const mc=moteSprite.getContext('2d');const mg=mc.createRadialGradient(MS/2,MS/2,0,MS/2,MS/2,MS/2);
+   mg.addColorStop(0,'rgba(247,251,214,0.95)');mg.addColorStop(.5,'rgba(212,228,150,0.34)');mg.addColorStop(1,'rgba(205,222,140,0)');
+   mc.fillStyle=mg;mc.fillRect(0,0,MS,MS);}
+  // One stroke() per vine (not per segment). Sway computed inline — no per-frame
+  // array allocation. Flat leaf fill, no per-leaf gradient. ~10x cheaper.
   function drawVine(v){
     const n=v.pts.length; if(n<2) return;
     v.swayPhase+=v.swaySpeed*16;
-    const a=v.alpha*v.fadeIn,pts=v.pts.map((p,i)=>swayed(v,p,i,n)),hue=98+v.tint;
-    for(let i=1;i<n;i++){
-      const p0=pts[i-1],p1=pts[i],ht=i/n;
-      ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);ctx.lineCap='round';
-      ctx.lineWidth=Math.max(.5,v.baseW*(1-ht*.8));ctx.strokeStyle=`hsla(${hue},36%,34%,${.34*a})`;ctx.stroke();
+    const a=v.alpha*v.fadeIn, hue=98+v.tint, sp=v.swayPhase, amp=v.swayAmp, inv=1/Math.max(1,n-1);
+    ctx.lineCap='round'; ctx.lineJoin='round';
+    // vine body — single path
+    ctx.beginPath();
+    for(let i=0;i<n;i++){
+      const p=v.pts[i], hf=i*inv, s=Math.sin(sp+p.x*.012+p.y*.012)*amp*hf;
+      const X=p.x+s, Y=p.y+s*.4;
+      if(i) ctx.lineTo(X,Y); else ctx.moveTo(X,Y);
     }
-    for(const lf of v.leaves){
-      if(lf.i>=n) continue;
-      const p=pts[lf.i],pr=pts[Math.max(0,lf.i-3)];
-      const tang=Math.atan2(p.y-pr.y,p.x-pr.x),ang=tang+lf.side*(Math.PI/2.5)+lf.rot,L=lf.size*lf.unfurl;
-      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(ang);
-      ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(L*.55,-L*.4,L,0);ctx.quadraticCurveTo(L*.55,L*.4,0,0);
-      const g=ctx.createLinearGradient(0,0,L,0);g.addColorStop(0,`hsla(${hue+4},42%,42%,${.42*a})`);g.addColorStop(1,`hsla(${hue+16},50%,58%,${.3*a})`);
-      ctx.fillStyle=g;ctx.fill();
-      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(L*.92,0);ctx.lineWidth=.5;ctx.strokeStyle=`hsla(${hue},30%,30%,${.3*a})`;ctx.stroke();
-      ctx.restore();
+    ctx.lineWidth=v.baseW*.7; ctx.strokeStyle=`hsla(${hue},36%,34%,${.34*a})`; ctx.stroke();
+    // leaves — flat fill, fillStyle set once per vine
+    if(v.leaves.length){
+      ctx.fillStyle=`hsla(${hue+10},45%,48%,${.4*a})`;
+      for(const lf of v.leaves){
+        if(lf.i>=n) continue;
+        const p=swayed(v,v.pts[lf.i],lf.i,n), j=Math.max(0,lf.i-3), pr=swayed(v,v.pts[j],j,n);
+        const ang=Math.atan2(p.y-pr.y,p.x-pr.x)+lf.side*(Math.PI/2.5)+lf.rot, L=lf.size*lf.unfurl;
+        ctx.save();ctx.translate(p.x,p.y);ctx.rotate(ang);
+        ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(L*.55,-L*.4,L,0);ctx.quadraticCurveTo(L*.55,L*.4,0,0);
+        ctx.fill();ctx.restore();
+      }
     }
     if(v.tendril&&v.tendril.i<n){
-      const p=pts[v.tendril.i],pr=pts[Math.max(0,v.tendril.i-4)];
+      const p=swayed(v,v.pts[v.tendril.i],v.tendril.i,n), j=Math.max(0,v.tendril.i-4), pr=swayed(v,v.pts[j],j,n);
       const base=Math.atan2(p.y-pr.y,p.x-pr.x),turns=2.4*v.tendril.grow;
       ctx.beginPath();ctx.moveTo(p.x,p.y);
-      for(let k=0;k<=26;k++){const tt=(k/26)*turns*Math.PI*2,rr=5.5*(1-k/30),ca=base+tt;ctx.lineTo(p.x+Math.cos(ca)*rr+Math.cos(base)*k*.18,p.y+Math.sin(ca)*rr+Math.sin(base)*k*.18);}
-      ctx.lineCap='round';ctx.lineWidth=1.1;ctx.strokeStyle=`hsla(${hue},36%,36%,${.4*a})`;ctx.stroke();
+      for(let k=0;k<=20;k++){const tt=(k/20)*turns*Math.PI*2,rr=5.5*(1-k/24),ca=base+tt;ctx.lineTo(p.x+Math.cos(ca)*rr+Math.cos(base)*k*.22,p.y+Math.sin(ca)*rr+Math.sin(base)*k*.22);}
+      ctx.lineWidth=1.1; ctx.strokeStyle=`hsla(${hue},36%,36%,${.4*a})`; ctx.stroke();
     }
   }
-  function tick(){
+  // ~30fps cap — ambient growth doesn't need 60; halves main-thread load so
+  // scrolling stays smooth.
+  let _last=0; const FRAME=33;
+  function tick(now){
     if(!_usVineAlive) return;
+    _usVineRaf=requestAnimationFrame(tick);
+    if(now-_last<FRAME) return;
+    _last=now;
     t++;
     ctx.clearRect(0,0,w,h);
-    if(vines.length<MAX&&t%45===0) vines.push(makeVine());
+    if(vines.length<MAX&&t%24===0) vines.push(makeVine());
     for(let i=vines.length-1;i>=0;i--){
       grow(vines[i]);
       drawVine(vines[i]);
       if(vines[i].alpha<=0) vines.splice(i,1);
     }
     if(vines.length<3){vines.push(makeVine());vines.push(makeVine());}
-    // pollen drifting up
+    // pollen drifting up — cached sprite via drawImage
     for(let i=0;i<motes.length;i++){
       const m=motes[i];
       m.bobP+=m.bobS; m.y+=m.vy; m.x+=m.drift+Math.sin(m.bobP)*m.bobA*.1;
       if(m.y<-30||m.x<-30||m.x>w+30){motes[i]=spawnMote(false);continue;}
-      const a=m.a*(.6+.4*Math.sin(t*.02+m.bobP));
-      const g=ctx.createRadialGradient(m.x,m.y,0,m.x,m.y,m.r*6);
-      g.addColorStop(0,`hsla(${m.hue},70%,78%,${a})`);
-      g.addColorStop(.5,`hsla(${m.hue},60%,66%,${a*.3})`);
-      g.addColorStop(1,`hsla(${m.hue},60%,60%,0)`);
-      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(m.x,m.y,m.r*6,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle=`hsla(${m.hue+10},85%,92%,${a*.8})`;
-      ctx.beginPath(); ctx.arc(m.x,m.y,m.r*.5,0,Math.PI*2); ctx.fill();
+      const a=m.a*(.6+.4*Math.sin(t*.04+m.bobP)), sz=m.r*12;
+      ctx.globalAlpha=a; ctx.drawImage(moteSprite,m.x-sz/2,m.y-sz/2,sz,sz);
     }
-    _usVineRaf=requestAnimationFrame(tick);
+    ctx.globalAlpha=1;
   }
-  tick();
+  _usVineRaf=requestAnimationFrame(tick);
 }
 
 function renderData(){

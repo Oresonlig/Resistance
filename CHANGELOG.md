@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.47.2 — 2026-06-02
+**Understory-rankor: ~10x billigare → slut på scroll-lagg.** Rapport från Niklas (S23): scrollen laggade. Rotorsak: rit-loopen ritade varje rank-segment som ett eget `stroke()`-anrop (~11 000 anrop/frame @ 60fps) + ny radial-gradient per pollen-mote per frame + per-frame array-allokering — huvudtråden mättades, scroll hackade. Fixar (ingen visuell förändring att tala om): (1) **en `stroke()` per rank** istället för per segment (sway beräknas inline, ingen array-alloc), (2) **platt löv-fyllning** (fillStyle 1 gång/rank, ingen gradient/mittnerv per löv), (3) **pollen via förrenderad sprite + `drawImage`** istället för radial-gradient per mote, (4) **~30fps-tak** (ambient-växt behöver inte 60 → halverar last), (5) **dpr-tak 1.5** + grövre växtsteg (färre punkter). Antalet rankor oförändrat (14) men har nu gott om headroom — kan ökas vid behov. Rör inte funktionen, bara ritningen.
+
 ## 3.47.1 — 2026-06-02
 **Gym-session-tid bort ur copy/paste.** Den delade övnings-kopian (`buildCopyLines`, ⎘ Copy på avslutat pass + history) tog automatiskt med `⏱ <varaktighet>`. Vid mycket app-testande blir pass liggande öppna i timmar → "6h gym session time" följde med kopian per automatik. Nu utelämnas tiden ur kopian; folk får hålla koll på sin egen tid. **Funktionen är kvar** — varaktigheten beräknas, sparas i loggen och visas fortfarande i Done-badgen (`Done · datum · tid`).
 
