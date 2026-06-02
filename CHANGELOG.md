@@ -6,6 +6,12 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.48.0 — 2026-06-02
+**Undertow läsbarhet + Understory→Overgrowth + tätare rankor.** Tre saker:
+1. **Undertow kontrast-pass.** Niklas (mobil): "ser väldigt dåligt på den". Temat var tonat mot en ljusare preview → sekundärtext drunknade mot den nästan vita bakgrunden. Mörkare slate-palett: `--gray-light` #6f8c98→#46606c, `--gray-mid` #8aa4ae→#5d7682, plus explicit mörkare ex-detail/ex-prev (set-historik), pass-preview, section-sub, hist, header-user, nav-flikar. Default `.set-unit` (KG/REPS/+F) föll tillbaka till #888 och `.add-set-btn`/`.add-ex-btn` till #888/#666 — fick Undertow-overrides. Input-fält fick starkare kant (0.18→0.34) + mer opak bg så de syns. **Finish Session** (disabled, 0/4) hade nästan osynlig text → läsbar mörk. Samma "höj kontrast ~25%"-lärdom som tidigare ljusa teman.
+2. **Understory heter nu Overgrowth.** Visningsnamnet bytt i tema-väljaren (Niklas val efter "Creeping Death"). Internt id/CSS-klass förblir `understory`/`theme-understory` — inget id-byte = ingen migration, befintliga användares temaval påverkas inte.
+3. **Overgrowth-rankor: 14→25.** Niklas: fortfarande för luftigt. Tätare nu när motorn är ~10x billigare (3.47.2). 15 förodlade vid mount för lush första frame.
+
 ## 3.47.2 — 2026-06-02
 **Understory-rankor: ~10x billigare → slut på scroll-lagg.** Rapport från Niklas (S23): scrollen laggade. Rotorsak: rit-loopen ritade varje rank-segment som ett eget `stroke()`-anrop (~11 000 anrop/frame @ 60fps) + ny radial-gradient per pollen-mote per frame + per-frame array-allokering — huvudtråden mättades, scroll hackade. Fixar (ingen visuell förändring att tala om): (1) **en `stroke()` per rank** istället för per segment (sway beräknas inline, ingen array-alloc), (2) **platt löv-fyllning** (fillStyle 1 gång/rank, ingen gradient/mittnerv per löv), (3) **pollen via förrenderad sprite + `drawImage`** istället för radial-gradient per mote, (4) **~30fps-tak** (ambient-växt behöver inte 60 → halverar last), (5) **dpr-tak 1.5** + grövre växtsteg (färre punkter). Antalet rankor oförändrat (14) men har nu gott om headroom — kan ökas vid behov. Rör inte funktionen, bara ritningen.
 
