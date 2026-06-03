@@ -5338,7 +5338,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.51.1';
+const APP_VERSION = '3.51.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -9353,7 +9353,7 @@ function _startUnderstoryVines(canvas){
     const tx=fromLeft?rand(w*.08,w*.58):rand(w*.42,w*.92);
     const ty=sy+rand(-h*.22,h*.22);
     const angle=Math.atan2(ty-sy,tx-sx), reach=Math.hypot(tx-sx,ty-sy);
-    return{pts:[{x:sx,y:sy}],tx,ty,angle,len:0,maxLen:reach*rand(.85,1.12),grow:rand(1.0,1.9),baseW:rand(2.0,3.6),wPhase:rand(0,Math.PI*2),wFreq:rand(.006,.013),wAmp:rand(.18,.4),swayPhase:rand(0,Math.PI*2),swaySpeed:rand(.0007,.0014),swayAmp:rand(3,8),leafGap:rand(26,46),nextLeaf:rand(28,64),leaves:[],tendrilAt:rand(.6,.85),tendril:null,tint:rand(-10,16),state:'growing',hold:rand(280,640),alpha:1,fadeIn:0};
+    return{pts:[{x:sx,y:sy}],tx,ty,angle,len:0,maxLen:reach*rand(.85,1.12),grow:rand(1.0,1.9),baseW:rand(2.0,3.6),wPhase:rand(0,Math.PI*2),wFreq:rand(.006,.013),wAmp:rand(.18,.4),swayPhase:rand(0,Math.PI*2),swaySpeed:rand(.0007,.0014),swayAmp:rand(3,8),leafGap:rand(26,46),nextLeaf:rand(28,64),leaves:[],tendrilAt:rand(.6,.85),tendril:null,tint:rand(-10,16),state:'growing',hold:rand(160,340),alpha:1,fadeIn:0};
   }
   function grow(v){
     if(v.fadeIn<1) v.fadeIn=Math.min(1,v.fadeIn+.02);
@@ -9368,7 +9368,15 @@ function _startUnderstoryVines(canvas){
       if(v.len>=v.nextLeaf){const side=v.leaves.length%2===0?1:-1;v.leaves.push({i:v.pts.length-1,side,size:rand(7,15),unfurl:0,rot:rand(-.25,.25)});v.nextLeaf+=v.leafGap;}
       if(!v.tendril&&v.len>=v.maxLen*v.tendrilAt) v.tendril={i:v.pts.length-1,grow:0};
       if(v.len>=v.maxLen||Math.hypot(v.tx-nx,v.ty-ny)<14) v.state='mature';
-    }else if(v.state==='mature'){if(--v.hold<=0) v.state='fading';}
+    }else if(v.state==='mature'){
+      // keep inching slowly toward centre so it never looks frozen mid-reach —
+      // relentless creep. Eventually fades and a fresh vine starts from the edge.
+      v.wPhase+=v.wFreq;
+      const last=v.pts[v.pts.length-1];
+      v.angle+=Math.sin(v.wPhase)*v.wAmp*.04;
+      v.pts.push({x:last.x+Math.cos(v.angle)*v.grow*.3,y:last.y+Math.sin(v.angle)*v.grow*.3});
+      if(--v.hold<=0) v.state='fading';
+    }
     else v.alpha-=.0045;
     for(const lf of v.leaves) if(lf.unfurl<1) lf.unfurl=Math.min(1,lf.unfurl+.022);
     if(v.tendril&&v.tendril.grow<1) v.tendril.grow=Math.min(1,v.tendril.grow+.02);

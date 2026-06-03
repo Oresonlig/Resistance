@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.51.2 — 2026-06-03
+**Overgrowth-rankor fryser inte längre mitt i — relentless creep.** Niklas: rankorna slutade röra sig mot mitten (stannade halvvägs). Rotorsak: vid `maxLen`/target gick rankan till `mature` och bara HÖLL (frös, swayade på stället) tills den fadeade. Nu fortsätter mature-rankor att krypa långsamt inåt (~30% fart) med lätt vobbel → de stannar aldrig, bara saktar ner, kryper djupare och löses sedan upp medan en ny startar från kanten. Matchar "konsumeras av växten"-känslan utan att täcka centrum (de fadear innan de når mitten). Kortare hold (280–640→160–340 frames) så omsättningen känns levande.
+
 ## 3.51.1 — 2026-06-03
 **Overgrowth-buggar: mörk-på-mörk i Settings + ambient-toggle + rankvariation.** Tre fixar:
 1. **Mörk-på-mörk vald-state.** Settings (KG, 2 min, vald tema-kort) blev oläslig: `renderData()` selFg special-case:ade Void + Undertow men INTE Overgrowth (id `understory`) → föll till `var(--white)` #143018 (nära svart) på `var(--red)` #1f4226 (mörk skog) = mörk-på-mörk. Lade till `isUnderstory → selFg #f3f8ea`. Fixar unit-knappar, rest-duration OCH tema-korten (de använder selFg).
