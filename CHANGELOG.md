@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.51.0 — 2026-06-03
+**Overgrowth-rankor: viewport-fast + bara från sidorna → slut på scroll-hack.** Världs-koord-versionen (3.50.0) hackade vid scroll — rotorsak: canvasen måste ritas om varje scroll-frame för att hålla rankorna i linje med sidan (redraw↔scroll-koppling på main-thread). Lösning efter bollplank med Niklas: **viewport-fast canvas** (pixlar oberoende av scroll → kompositorn scrollar slätt, ingen redraw krävs vid scroll) **men rankorna kommer BARA från vänster/höger kant** och växer inåt, stannar före mitten (kant-tung). Då hålls centrum (träningsinnehållet) öppet → ramar in istället för att täcka → ingen "film på skärmen"-känsla (det var det "alla kanter → mitten"-trialen led av). Matchar narrativet: äventyraren ligger på rygg, växten kryper in över synfältet från periferin. Antal i övre spannet (MAX 20, 14 förodlade), vertikal sway, pollen viewport. Perf-vinsterna behålls (en stroke()/rank, sprite-pollen, 30fps, dpr 1.5).
+
 ## 3.50.1 — 2026-06-02
 **Set-label-storlek = en standard över alla teman.** Niklas: S1/S2 ska ha EN tydlig standardstorlek som korsar alla teman, inte drifta per tema iteration efter iteration. Audit visade att inget tema över-rider `font-size` på `.set-num` (bara color/font/weight) → bas-regeln ÄR den gemensamma standarden. Låst till **`.82rem`/`.72rem` (mobil)** = samma som KG/REPS-etiketterna (`.set-unit`), så set-nummer och enhets-etiketter är visuellt lika stora. Kommentar i CSS + minne markerar att teman aldrig får sätta egen `font-size` på `.set-num`. (Forna ministorleken `.44rem`/`.38rem` är death.)
 

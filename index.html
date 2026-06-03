@@ -5338,7 +5338,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.50.1';
+const APP_VERSION = '3.51.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -9302,11 +9302,15 @@ function _startUndertowBubbles(canvas){
 
 // ── UNDERSTORY BACKGROUND ────────────────────────────────────────
 // CanopyDapple (SVG leaf-shadow + CSS fleck spans) + VineField (canvas).
-// WORLD-COORD: vines + pollen live in page space and scroll WITH the content
-// (tick shifts the canvas by -scrollY). 3.49.x reverted the viewport-fixed
-// "canopy over the eyes" trial — Niklas disliked the film-on-screen feel.
+// VIEWPORT-FIXED, SIDES-ONLY (3.51.0): vines creep in from the LEFT and RIGHT
+// edges and grow inward, stopping short of centre so the middle (training
+// content) stays open — the world closing in from the periphery of vision.
+// Canvas pixels DON'T depend on scroll → the compositor scrolls smoothly (no
+// redraw↔scroll coupling that made the world-coord version stutter). The earlier
+// "all edges → centre" viewport trial felt like film-on-screen because it covered
+// the whole view; sides-only frames the content instead of overlaying it.
 // isolation:isolate on #understory-bg — NOT on body (Android blend bug).
-let _usVineRaf=0, _usVineAlive=false, _usWorldHTimer2=0;
+let _usVineRaf=0, _usVineAlive=false;
 function mountUnderstoryBg(){
   if(document.getElementById('understory-bg')) return;
   const bg=document.createElement('div');
@@ -9322,7 +9326,6 @@ function mountUnderstoryBg(){
 }
 function unmountUnderstoryBg(){
   _usVineAlive=false; cancelAnimationFrame(_usVineRaf);
-  if(_usWorldHTimer2){clearInterval(_usWorldHTimer2);_usWorldHTimer2=0;}
   const el=document.getElementById('understory-bg'); if(el) el.remove();
 }
 function _startUnderstoryVines(canvas){
@@ -9330,48 +9333,52 @@ function _startUnderstoryVines(canvas){
   const ctx=canvas.getContext('2d');
   // 1.5 dpr cap (soft/blurry effect — extra resolution is invisible, halves fill)
   const dpr=Math.min(window.devicePixelRatio||1,1.5);
-  let w=0,h=0,worldH=0,t=0; _usVineAlive=true;
+  let w=0,h=0,t=0; _usVineAlive=true;
   function resize(){
     w=window.innerWidth; h=window.innerHeight;
     canvas.width=w*dpr; canvas.height=h*dpr;
     canvas.style.width=w+'px'; canvas.style.height=h+'px';
-    worldH=Math.max(document.documentElement.scrollHeight,h);
+    ctx.setTransform(dpr,0,0,dpr,0,0); // fixed: canvas independent of scroll
   }
   resize(); window.addEventListener('resize',resize);
-  _usWorldHTimer2=setInterval(()=>{worldH=Math.max(document.documentElement.scrollHeight,h);},1500);
   const rand=(a,b)=>a+Math.random()*(b-a);
-  // WORLD-COORD: vines live in PAGE space and scroll WITH the content (Niklas'
-  // global rule — no "film stuck on the screen"). They climb upward, swaying.
-  // tick() shifts the canvas by -scrollY each frame so page-y maps to screen.
-  const vines=[]; const MAX=25;
-  function makeVine(sy){
-    const zone=Math.random();
-    const bx=zone<.42?rand(6,30):zone<.84?rand(w-30,w-6):rand(w*.3,w*.7);
-    const lean=bx<w/2?rand(-.02,.14):rand(-.14,.02);
-    return{pts:[{x:bx,y:sy}],angle:-Math.PI/2+lean,len:0,maxLen:rand(h*.4,h*.9),grow:rand(1.0,1.9),baseW:rand(2.0,3.6),wPhase:rand(0,Math.PI*2),wFreq:rand(.006,.013),wAmp:rand(.18,.4),swayPhase:rand(0,Math.PI*2),swaySpeed:rand(.0007,.0014),swayAmp:rand(5,13),leafGap:rand(26,46),nextLeaf:rand(28,64),leaves:[],tendrilAt:rand(.55,.8),tendril:null,tint:rand(-10,16),state:'growing',hold:rand(240,560),alpha:1,fadeIn:0};
+  // SIDES-ONLY: spawn at left/right edge, grow inward toward a target that stays
+  // on the same half (never crosses centre) → dense at the edges, centre stays open.
+  const vines=[]; const MAX=20;
+  function makeVine(){
+    const fromLeft=Math.random()<.5;
+    const sx=fromLeft?-12:w+12, sy=rand(0,h);
+    const tx=fromLeft?rand(w*.10,w*.46):rand(w*.54,w*.90);
+    const ty=sy+rand(-h*.18,h*.18);
+    const angle=Math.atan2(ty-sy,tx-sx), reach=Math.hypot(tx-sx,ty-sy);
+    return{pts:[{x:sx,y:sy}],tx,ty,angle,len:0,maxLen:reach*rand(.8,1.05),grow:rand(1.0,1.9),baseW:rand(2.0,3.6),wPhase:rand(0,Math.PI*2),wFreq:rand(.006,.013),wAmp:rand(.18,.4),swayPhase:rand(0,Math.PI*2),swaySpeed:rand(.0007,.0014),swayAmp:rand(3,8),leafGap:rand(26,46),nextLeaf:rand(28,64),leaves:[],tendrilAt:rand(.6,.85),tendril:null,tint:rand(-10,16),state:'growing',hold:rand(280,640),alpha:1,fadeIn:0};
   }
   function grow(v){
     if(v.fadeIn<1) v.fadeIn=Math.min(1,v.fadeIn+.02);
     if(v.state==='growing'){
-      v.wPhase+=v.wFreq; v.angle+=Math.sin(v.wPhase)*v.wAmp*.06; v.angle+=(-Math.PI/2-v.angle)*.01;
+      v.wPhase+=v.wFreq;
       const last=v.pts[v.pts.length-1];
-      v.pts.push({x:last.x+Math.cos(v.angle)*v.grow,y:last.y+Math.sin(v.angle)*v.grow});
-      v.len+=v.grow;
+      const desired=Math.atan2(v.ty-last.y,v.tx-last.x);
+      let da=desired-v.angle; while(da>Math.PI)da-=Math.PI*2; while(da<-Math.PI)da+=Math.PI*2;
+      v.angle+=da*.02+Math.sin(v.wPhase)*v.wAmp*.05;
+      const nx=last.x+Math.cos(v.angle)*v.grow, ny=last.y+Math.sin(v.angle)*v.grow;
+      v.pts.push({x:nx,y:ny}); v.len+=v.grow;
       if(v.len>=v.nextLeaf){const side=v.leaves.length%2===0?1:-1;v.leaves.push({i:v.pts.length-1,side,size:rand(7,15),unfurl:0,rot:rand(-.25,.25)});v.nextLeaf+=v.leafGap;}
       if(!v.tendril&&v.len>=v.maxLen*v.tendrilAt) v.tendril={i:v.pts.length-1,grow:0};
-      if(v.len>=v.maxLen) v.state='mature';
+      if(v.len>=v.maxLen||Math.hypot(v.tx-nx,v.ty-ny)<14) v.state='mature';
     }else if(v.state==='mature'){if(--v.hold<=0) v.state='fading';}
     else v.alpha-=.0045;
     for(const lf of v.leaves) if(lf.unfurl<1) lf.unfurl=Math.min(1,lf.unfurl+.022);
     if(v.tendril&&v.tendril.grow<1) v.tendril.grow=Math.min(1,v.tendril.grow+.02);
   }
-  function swayed(v,p,i,n){const hf=i/Math.max(1,n-1);const s=Math.sin(v.swayPhase+p.y*.014)*v.swayAmp*hf;return{x:p.x+s,y:p.y};}
-  // warm pollen — also world-anchored (drifts up, scrolls with the content)
-  const motes=[]; const NUM=24;
-  function spawnMote(sy){return{x:rand(0,w),y:sy,r:rand(.7,2.2),vy:-rand(.12,.4),drift:rand(-.12,.12),bobP:rand(0,Math.PI*2),bobS:rand(.006,.02),bobA:rand(.2,.7),a:rand(.25,.6)};}
-  for(let i=0;i<NUM;i++) motes.push(spawnMote(rand(0,worldH)));
-  // pre-grow a lush set spread across the page height
-  for(let s=0;s<16;s++){const v=makeVine(rand(0,worldH));const steps=30+(s%8)*16;for(let k=0;k<steps;k++) grow(v);vines.push(v);}
+  // horizontal vines → sway mostly VERTICALLY (perpendicular to growth), tips most
+  function swayed(v,p,i,n){const hf=i/Math.max(1,n-1);const s=Math.sin(v.swayPhase+p.x*.012)*v.swayAmp*hf;return{x:p.x,y:p.y+s};}
+  // warm pollen — viewport, drifts up
+  const motes=[]; const NUM=16;
+  function spawnMote(sy){return{x:rand(0,w),y:sy,r:rand(.7,2.2),vy:-rand(.12,.4),drift:rand(-.12,.12),bobP:rand(0,Math.PI*2),bobS:rand(.006,.02),bobA:rand(.2,.7),a:rand(.25,.55)};}
+  for(let i=0;i<NUM;i++) motes.push(spawnMote(rand(0,h)));
+  // pre-grow a lush set so the first frame is already overgrown at the edges
+  for(let s=0;s<14;s++){const v=makeVine();const steps=40+(s%7)*18;for(let k=0;k<steps;k++) grow(v);vines.push(v);}
   // pre-rendered pollen sprite (drawImage is ~free vs a radial gradient per mote)
   const moteSprite=document.createElement('canvas'); const MS=20; moteSprite.width=moteSprite.height=MS;
   {const mc=moteSprite.getContext('2d');const mg=mc.createRadialGradient(MS/2,MS/2,0,MS/2,MS/2,MS/2);
@@ -9387,8 +9394,8 @@ function _startUnderstoryVines(canvas){
     // vine body — single path
     ctx.beginPath();
     for(let i=0;i<n;i++){
-      const p=v.pts[i], hf=i*inv, s=Math.sin(sp+p.y*.014)*amp*hf;
-      const X=p.x+s, Y=p.y;
+      const p=v.pts[i], hf=i*inv, s=Math.sin(sp+p.x*.012)*amp*hf;
+      const X=p.x, Y=p.y+s;
       if(i) ctx.lineTo(X,Y); else ctx.moveTo(X,Y);
     }
     ctx.lineWidth=v.baseW*.7; ctx.strokeStyle=`hsla(${hue},36%,34%,${.34*a})`; ctx.stroke();
@@ -9421,26 +9428,19 @@ function _startUnderstoryVines(canvas){
     if(now-_last<FRAME) return;
     _last=now;
     t++;
-    const scrollY=window.scrollY||window.pageYOffset||0;
-    // shift world → screen so vines scroll WITH the content (not fixed to view)
-    ctx.setTransform(dpr,0,0,dpr,0,-scrollY*dpr);
-    ctx.clearRect(0,scrollY,w,h);
-    // spawn new vines just below / within the visible band so they climb into view
-    if(vines.length<MAX&&t%14===0) vines.push(makeVine(rand(scrollY+h*.5,scrollY+h+30)));
+    ctx.clearRect(0,0,w,h);
+    if(vines.length<MAX&&t%16===0) vines.push(makeVine());
     for(let i=vines.length-1;i>=0;i--){
-      const v=vines[i];
-      grow(v);
-      // vine spans [tip.y (top), base.y (bottom)] in world space — draw only if visible
-      const tip=v.pts[v.pts.length-1], base=v.pts[0];
-      if(!(base.y<scrollY-120||tip.y>scrollY+h+120)) drawVine(v);
-      if(v.alpha<=0) vines.splice(i,1);
+      grow(vines[i]);
+      drawVine(vines[i]);
+      if(vines[i].alpha<=0) vines.splice(i,1);
     }
-    if(vines.length<6){vines.push(makeVine(rand(scrollY,scrollY+h)));}
-    // pollen — world-anchored, drifts up; respawn below the view when it exits the top
+    if(vines.length<4){vines.push(makeVine());vines.push(makeVine());}
+    // pollen — viewport, drifts up; respawn at the bottom when it exits the top
     for(let i=0;i<motes.length;i++){
       const m=motes[i];
       m.bobP+=m.bobS; m.y+=m.vy; m.x+=m.drift+Math.sin(m.bobP)*m.bobA*.1;
-      if(m.y<scrollY-30||m.x<-30||m.x>w+30){motes[i]=spawnMote(scrollY+h+rand(0,40));continue;}
+      if(m.y<-30||m.x<-30||m.x>w+30){motes[i]=spawnMote(h+rand(0,40));continue;}
       const a=m.a*(.6+.4*Math.sin(t*.04+m.bobP)), sz=m.r*12;
       ctx.globalAlpha=a; ctx.drawImage(moteSprite,m.x-sz/2,m.y-sz/2,sz,sz);
     }
