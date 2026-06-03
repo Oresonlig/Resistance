@@ -5338,7 +5338,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.51.0';
+const APP_VERSION = '3.51.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -9073,12 +9073,12 @@ function toggleAmbientEffects(){
   if(state.theme==='undertow'){
     const c=document.getElementById('undertowBubbleCanvas');
     if(state.ambientEffects!==false){ if(c && !_utBubbleAlive) _startUndertowBubbles(c); }
-    else { _utBubbleAlive=false; cancelAnimationFrame(_utBubbleRaf); }
+    else { _utBubbleAlive=false; cancelAnimationFrame(_utBubbleRaf); if(c){const x=c.getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,c.width,c.height);} }
   }
   if(state.theme==='understory'){
     const c=document.getElementById('understoryVineCanvas');
     if(state.ambientEffects!==false){ if(c && !_usVineAlive) _startUnderstoryVines(c); }
-    else { _usVineAlive=false; cancelAnimationFrame(_usVineRaf); }
+    else { _usVineAlive=false; cancelAnimationFrame(_usVineRaf); if(c){const x=c.getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,c.width,c.height);} }
   }
   renderData();
 }
@@ -9348,10 +9348,12 @@ function _startUnderstoryVines(canvas){
   function makeVine(){
     const fromLeft=Math.random()<.5;
     const sx=fromLeft?-12:w+12, sy=rand(0,h);
-    const tx=fromLeft?rand(w*.10,w*.46):rand(w*.54,w*.90);
-    const ty=sy+rand(-h*.18,h*.18);
+    // varied reach: most stop in the side band, some creep deeper (occasionally past
+    // centre) so it reads as organic overgrowth, not a uniform hedge at the midline
+    const tx=fromLeft?rand(w*.08,w*.58):rand(w*.42,w*.92);
+    const ty=sy+rand(-h*.22,h*.22);
     const angle=Math.atan2(ty-sy,tx-sx), reach=Math.hypot(tx-sx,ty-sy);
-    return{pts:[{x:sx,y:sy}],tx,ty,angle,len:0,maxLen:reach*rand(.8,1.05),grow:rand(1.0,1.9),baseW:rand(2.0,3.6),wPhase:rand(0,Math.PI*2),wFreq:rand(.006,.013),wAmp:rand(.18,.4),swayPhase:rand(0,Math.PI*2),swaySpeed:rand(.0007,.0014),swayAmp:rand(3,8),leafGap:rand(26,46),nextLeaf:rand(28,64),leaves:[],tendrilAt:rand(.6,.85),tendril:null,tint:rand(-10,16),state:'growing',hold:rand(280,640),alpha:1,fadeIn:0};
+    return{pts:[{x:sx,y:sy}],tx,ty,angle,len:0,maxLen:reach*rand(.85,1.12),grow:rand(1.0,1.9),baseW:rand(2.0,3.6),wPhase:rand(0,Math.PI*2),wFreq:rand(.006,.013),wAmp:rand(.18,.4),swayPhase:rand(0,Math.PI*2),swaySpeed:rand(.0007,.0014),swayAmp:rand(3,8),leafGap:rand(26,46),nextLeaf:rand(28,64),leaves:[],tendrilAt:rand(.6,.85),tendril:null,tint:rand(-10,16),state:'growing',hold:rand(280,640),alpha:1,fadeIn:0};
   }
   function grow(v){
     if(v.fadeIn<1) v.fadeIn=Math.min(1,v.fadeIn+.02);
@@ -9457,8 +9459,11 @@ function renderData(){
   // Mappa selected-bg/fg + active-border till säkra kontrastfärger.
   const isVoid = (state.theme||'iron') === 'void';
   const isUndertow = (state.theme||'iron') === 'undertow';
+  // Overgrowth (id 'understory'): --red (#1f4226) OCH --white (#143018) är BÅDA mörka
+  // → vald-state blev mörk-på-mörk (KG/2min/temakort oläsliga). Ljus selFg.
+  const isUnderstory = (state.theme||'iron') === 'understory';
   const selBg = isVoid ? '#fff' : 'var(--red)';
-  const selFg = isVoid ? '#000' : isUndertow ? '#eaf2fb' : 'var(--white)';
+  const selFg = isVoid ? '#000' : isUndertow ? '#eaf2fb' : isUnderstory ? '#f3f8ea' : 'var(--white)';
   const selBorder = isVoid ? '#888' : 'var(--red)';
   const unitBtn=(u)=>`<button onclick="state.unit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.unit===u?selBg:'none'};border:1px solid ${state.unit===u?selBorder:'#2a2a2a'};color:${state.unit===u?selFg:'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u.toUpperCase()}</button>`;
   el.innerHTML=`<div class="section-title">Settings</div>

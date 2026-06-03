@@ -6,6 +6,12 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.51.1 — 2026-06-03
+**Overgrowth-buggar: mörk-på-mörk i Settings + ambient-toggle + rankvariation.** Tre fixar:
+1. **Mörk-på-mörk vald-state.** Settings (KG, 2 min, vald tema-kort) blev oläslig: `renderData()` selFg special-case:ade Void + Undertow men INTE Overgrowth (id `understory`) → föll till `var(--white)` #143018 (nära svart) på `var(--red)` #1f4226 (mörk skog) = mörk-på-mörk. Lade till `isUnderstory → selFg #f3f8ea`. Fixar unit-knappar, rest-duration OCH tema-korten (de använder selFg).
+2. **Ambient-toggle stängde inte av rankorna.** `toggleAmbientEffects` stoppade rAF-loopen men rensade aldrig canvasen → sista framen frös kvar på skärmen (såg ut som att de var kvar). Nu rensas canvasen vid avstängning (samma fix för Undertows bubblor).
+3. **Rankor "slutar halvvägs".** Var avsiktligt (öppet centrum) men läste som en uniform häck vid mittlinjen. Varierad reach nu — de flesta stannar i sidobandet, några kryper djupare (ibland förbi mitten) → organisk övervältning istället för en vägg.
+
 ## 3.51.0 — 2026-06-03
 **Overgrowth-rankor: viewport-fast + bara från sidorna → slut på scroll-hack.** Världs-koord-versionen (3.50.0) hackade vid scroll — rotorsak: canvasen måste ritas om varje scroll-frame för att hålla rankorna i linje med sidan (redraw↔scroll-koppling på main-thread). Lösning efter bollplank med Niklas: **viewport-fast canvas** (pixlar oberoende av scroll → kompositorn scrollar slätt, ingen redraw krävs vid scroll) **men rankorna kommer BARA från vänster/höger kant** och växer inåt, stannar före mitten (kant-tung). Då hålls centrum (träningsinnehållet) öppet → ramar in istället för att täcka → ingen "film på skärmen"-känsla (det var det "alla kanter → mitten"-trialen led av). Matchar narrativet: äventyraren ligger på rygg, växten kryper in över synfältet från periferin. Antal i övre spannet (MAX 20, 14 förodlade), vertikal sway, pollen viewport. Perf-vinsterna behålls (en stroke()/rank, sprite-pollen, 30fps, dpr 1.5).
 
