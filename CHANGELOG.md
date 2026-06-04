@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.51.5 — 2026-06-04
+Nanosuit + Night City fick PM22 surface-tokens (`--surface-elevated/deep/border-subtle`) — tag-editorn visade Iron's generiska grå istället för temats marina/lila färger. Nanosuit: `#0c1828/#060c18/#1a2a40`. Night City: `rgba(18,4,36,0.95)/#060110/rgba(122,85,160,0.25)`. Samma tokens dokumenterade i respektive `theme/*/README.md`.
+
 ## 3.51.4 — 2026-06-04
 **Code review fixes (7 fynd):** (1) Arctic-tema CSS-ref till borttagen designice.png rensad → gradient-only. (2) EXERCISE_LIBRARY-grupperingslogik extraherad till `groupExercisesByCategory()` med cache — eliminerar 3 duplicat + onödig iteration vid varje render. (3) `ensureDraft()` garanterar nu `extras:[]` och `setEdited:{}` på gamla drafts → fixar potentiell TypeError vid add/remove extra exercise. (4) `askModalText` escapar `placeholder`/`defaultValue`/`confirmLabel` via `escapeHTML()`. (5) `checkCloudVersion()` throttlad till 1 anrop/30s i `renderData()` → eliminerar Supabase-spam vid varje Settings-render. (6) `buildTagEditorHTML` hardkodade `#080e18`/`#050a12`/`#1a2a3a`/`#14202c` → `var(--surface-elevated)`/`var(--surface-deep)`/`var(--border-subtle)` (PM22-fix, fungerar i alla teman).
 

@@ -97,6 +97,18 @@ Note: this theme remaps semantic vars so `var(--red)` = cyan,
 `var(--gold)` = bright cyan, `var(--green-bright)` = lime green. Keep that
 in mind if porting back — all `var(--red)` references stay valid.
 
+### PM22 surface overrides (added 3.51.5)
+
+```css
+--surface-elevated: #0c1828;   /* dark navy — modals, dropdowns, tag editor */
+--surface-deep:     #060c18;   /* deeper navy — legend panels, banners */
+--border-subtle:    #1a2a40;   /* teal-tinted border */
+```
+
+These must be set in `body.theme-nanosuit { ... }` — otherwise the theme
+falls back to Iron's generic dark grey (`#1a1a1a`) which breaks the
+navy HUD feel in the tag editor and other surface-elevated components.
+
 ## Notes for porting back to single-file `index.html`
 
 - Nanosuit's CSS lives in `body.theme-nanosuit { ... }` (~rad 1880–2194 in

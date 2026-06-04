@@ -114,6 +114,18 @@ Note: this theme deliberately remaps the semantic vars so `var(--red)` =
 yellow, `var(--gold)` = magenta, `var(--green-bright)` = cyan. Keep that
 in mind if porting back — the role/color mapping is preserved.
 
+### PM22 surface overrides (added 3.51.5)
+
+```css
+--surface-elevated: rgba(18,4,36,0.95);   /* dark purple — modals, dropdowns, tag editor */
+--surface-deep:     #060110;              /* near-black purple — legend panels, banners */
+--border-subtle:    rgba(122,85,160,0.25); /* subtle purple border */
+```
+
+These must be set in `body.theme-nightcity { ... }` — otherwise falls back
+to Iron's generic dark grey, losing the void-purple atmosphere in surface
+components.
+
 ## Notes for porting back to single-file `index.html`
 
 - Night City's CSS lives in `body.theme-nightcity { ... }` (~rad 487–996 in
