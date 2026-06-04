@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.51.3 — 2026-06-04
+Standing Cable Front Raise tillagd i EXERCISE_LIBRARY (Shoulders, alfabetisk ordning mellan Rear Delt Flyes och Upright Row).
+
 ## 3.51.2 — 2026-06-03
 **Overgrowth-rankor fryser inte längre mitt i — relentless creep.** Niklas: rankorna slutade röra sig mot mitten (stannade halvvägs). Rotorsak: vid `maxLen`/target gick rankan till `mature` och bara HÖLL (frös, swayade på stället) tills den fadeade. Nu fortsätter mature-rankor att krypa långsamt inåt (~30% fart) med lätt vobbel → de stannar aldrig, bara saktar ner, kryper djupare och löses sedan upp medan en ny startar från kanten. Matchar "konsumeras av växten"-känslan utan att täcka centrum (de fadear innan de når mitten). Kortare hold (280–640→160–340 frames) så omsättningen känns levande.
 
