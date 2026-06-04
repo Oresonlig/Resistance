@@ -1078,9 +1078,7 @@ body.theme-arctic::before{
 
 /* Cracked ice banner behind "The Chain" title */
 body.theme-arctic .chain-intro{
-  background:
-    linear-gradient(to bottom, rgba(10,50,80,0.28) 0%, rgba(0,30,60,0.18) 100%),
-    url('design1/designice.png') center/cover no-repeat;
+  background: linear-gradient(to bottom, rgba(10,50,80,0.28) 0%, rgba(0,30,60,0.18) 100%);
   border:1px solid rgba(0,168,216,0.30);
   box-shadow:0 2px 16px rgba(0,168,216,0.15);
 }
@@ -5339,7 +5337,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.51.3';
+const APP_VERSION = '3.51.4';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5657,7 +5655,9 @@ function ensureDraft(passId){
     state.drafts[state.draft.passId] = state.draft;
   }
   // Hämta existerande draft för passId, eller skapa fräsch
-  state.draft = state.drafts[passId] || {passId, savedExercises:{}, extras:[], swaps:{}, extraSets:{}, inputBuffer:{}, loggedSets:{}, activeExerciseId:null};
+  state.draft = state.drafts[passId] || {passId, savedExercises:{}, extras:[], swaps:{}, extraSets:{}, inputBuffer:{}, loggedSets:{}, activeExerciseId:null, setEdited:{}};
+  if(!state.draft.extras) state.draft.extras = [];
+  if(!state.draft.setEdited) state.draft.setEdited = {};
   state.drafts[passId] = state.draft;
 }
 
@@ -6171,11 +6171,20 @@ function buildRemovedSection(passId){
   return h;
 }
 
-function buildAddExRow(passId){
-  const grouped={};
-  EXERCISE_LIBRARY.forEach(e=>{if(!grouped[e.cat])grouped[e.cat]=[];grouped[e.cat].push(e.name);});
+let _groupedExCache = null;
+function groupExercisesByCategory(){
+  if(!_groupedExCache){
+    _groupedExCache={};
+    EXERCISE_LIBRARY.forEach(e=>{if(!_groupedExCache[e.cat])_groupedExCache[e.cat]=[];_groupedExCache[e.cat].push(e.name);});
+  }
+  const g=Object.assign({},_groupedExCache);
   const customExes=(state.customExercises||[]).map(e=>e.name);
-  if(customExes.length)grouped['Custom']=customExes.slice().sort();
+  if(customExes.length) g['Custom']=customExes.slice().sort();
+  return g;
+}
+
+function buildAddExRow(passId){
+  const grouped=groupExercisesByCategory();
   const catOrder=['Chest','Back','Shoulders','Arms','Legs','Traps','Core','Cardio','Custom'];
   let opts=`<option value="">— Select exercise —</option>`;
   catOrder.forEach(cat=>{if(!grouped[cat])return;opts+=`<optgroup label="${cat}">`;grouped[cat].forEach(n=>{const en=escapeHTML(n);opts+=`<option value="${en}">${en}</option>`;});opts+=`</optgroup>`;});
@@ -6481,15 +6490,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
           </div>`;
           {
             // Build categorized swap dropdown with optgroups
-            const grouped = {};
-            EXERCISE_LIBRARY.forEach(e=>{
-              if(!grouped[e.cat]) grouped[e.cat] = [];
-              grouped[e.cat].push(e.name);
-            });
-            // Custom exercises in their own group
-            const customExes = (state.customExercises||[]).map(e=>e.name);
-            if(customExes.length) grouped['Custom'] = customExes.slice().sort();
-            // Render in fixed category order
+            const grouped = groupExercisesByCategory();
             const catOrder = ['Chest','Back','Shoulders','Arms','Legs','Traps','Core','Cardio','Custom'];
             let optsHtml = '';
             catOrder.forEach(cat=>{
@@ -7443,10 +7444,7 @@ function showEditExercises(passId){
   const removed = state.removedExercises?.[passId] || [];
   const addedExs = state.addedExercises?.[passId] || [];
 
-  const grouped = {};
-  EXERCISE_LIBRARY.forEach(e=>{ if(!grouped[e.cat]) grouped[e.cat]=[]; grouped[e.cat].push(e.name); });
-  const customExes = (state.customExercises||[]).map(e=>e.name);
-  if(customExes.length) grouped['Custom'] = customExes.slice().sort();
+  const grouped = groupExercisesByCategory();
   const catOrder = ['Chest','Back','Shoulders','Arms','Legs','Traps','Core','Cardio','Custom'];
   let addOptsHtml = `<option value="">— Select exercise —</option>`;
   catOrder.forEach(cat=>{ if(!grouped[cat])return; addOptsHtml+=`<optgroup label="${cat}">`; grouped[cat].forEach(n=>{ addOptsHtml+=`<option value="${n}">${n}</option>`; }); addOptsHtml+=`</optgroup>`; });
@@ -7754,10 +7752,10 @@ function buildTagEditorHTML(ex, passId){
       '</div>'].join('');
   }).join('');
   const user=currentUser?.name||'you';
-  return ['<div id="tagwrap-',eid,'" style="display:none;margin:6px 0;padding:8px;border:1px solid #1a2a3a;background:#080e18;">',
+  return ['<div id="tagwrap-',eid,'" style="display:none;margin:6px 0;padding:8px;border:1px solid var(--border-subtle);background:var(--surface-elevated);">',
     '<div style="font-family:var(--mono);font-size:.48rem;color:#7ab;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Exercise Tags</div>',
     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">',btnHtml,'</div>',
-    '<div style="display:flex;flex-direction:column;gap:4px;padding:8px;background:#050a12;border:1px solid #14202c;margin-bottom:8px;">',legendHtml,'</div>',
+    '<div style="display:flex;flex-direction:column;gap:4px;padding:8px;background:var(--surface-deep);border:1px solid var(--border-subtle);margin-bottom:8px;">',legendHtml,'</div>',
     '<div style="font-family:var(--mono);font-size:.44rem;color:#444;">Changes apply for ',user,' only.</div>',
     '</div>'].join('');
 }
@@ -9462,8 +9460,12 @@ function _startUnderstoryVines(canvas){
 
 function renderData(){
   const el=document.getElementById('view-data');
-  // Async cloud version check (updates UI when done)
-  checkCloudVersion();const size=(JSON.stringify(state).length/1024).toFixed(1);
+  // Async cloud version check — throttled to once per 30s (avoid spamming Supabase on every re-render)
+  if(!renderData._cvLastCheck || Date.now()-renderData._cvLastCheck > 30000){
+    renderData._cvLastCheck = Date.now();
+    checkCloudVersion();
+  }
+  const size=(JSON.stringify(state).length/1024).toFixed(1);
   // Void special-case: --red och --white är båda vita → vit-på-vitt på selected-state.
   // Mappa selected-bg/fg + active-border till säkra kontrastfärger.
   const isVoid = (state.theme||'iron') === 'void';
@@ -9976,9 +9978,9 @@ function askModalText(title, opts = {}){
     
     let bodyHtml = '';
     if(opts.body) bodyHtml += `<div>${opts.body}</div>`;
-    bodyHtml += `<input type="text" class="app-modal-input" id="appModalInput" 
-                  placeholder="${opts.placeholder || ''}" 
-                  value="${opts.defaultValue || ''}" 
+    bodyHtml += `<input type="text" class="app-modal-input" id="appModalInput"
+                  placeholder="${escapeHTML(opts.placeholder || '')}"
+                  value="${escapeHTML(opts.defaultValue || '')}"
                   maxlength="${opts.maxLength || 60}">`;
     
     if(opts.selectOptions){
@@ -9996,7 +9998,7 @@ function askModalText(title, opts = {}){
 
     a.innerHTML = `
       <button class="app-modal-btn" onclick="closeModal()">Cancel</button>
-      <button class="app-modal-btn app-modal-btn-primary" id="appModalConfirm">${opts.confirmLabel || 'OK'}</button>
+      <button class="app-modal-btn app-modal-btn-primary" id="appModalConfirm">${escapeHTML(opts.confirmLabel || 'OK')}</button>
     `;
 
     m.style.display = 'flex';
