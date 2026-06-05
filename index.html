@@ -15,7 +15,7 @@
 <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22The%20Chain%20%E2%80%94%20Resistance%20Training%22,%22short_name%22:%22The%20Chain%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%230a0a0a%22,%22theme_color%22:%22%230a0a0a%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Crect%20width='100'%20height='100'%20fill='%230a0a0a'/%3E%3Ctext%20y='68'%20x='50'%20text-anchor='middle'%20font-size='38'%20font-family='serif'%20fill='%23c0392b'%3ETC%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22any%22,%22type%22:%22image/svg+xml%22}]}">
 <title>The Chain — Resistance Training</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cardo:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Cormorant+SC:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&family=IBM+Plex+Mono:wght@300;400;500&family=Orbitron:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Space+Grotesk:wght@300;400;700&family=Crimson+Pro:ital,wght@0,300;1,300&family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Archivo:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cardo:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Cormorant+SC:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&family=IBM+Plex+Mono:wght@300;400;500&family=Orbitron:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,400&family=Space+Grotesk:wght@300;400;700&family=Crimson+Pro:ital,wght@0,300;1,300&family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Archivo:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 
 :root{
@@ -258,7 +258,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 /* STANDARD set-label size — crosses ALL themes (matches .set-unit KG/REPS at .82rem).
    Themes may recolour/restyle .set-num but must NOT override font-size — keep it
    uniform and legible. Mobile counterpart in the @media block below. */
-.set-num{font-family:var(--mono);font-size:.82rem;font-weight:600;color:#777;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:5px;}
+.set-num{font-family:var(--mono);font-size:.82rem;font-weight:600;color:#777;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:5px;font-variant-numeric:tabular-nums;}
 .set-num.warmup-label{color:#4a4a4a;}
 .set-input{background:var(--surface-input);border:1px solid #5a2828;color:var(--white);font-family:var(--mono);font-size:.76rem;padding:5px 4px;text-align:center;transition:border-color .15s;-moz-appearance:textfield;width:100%;}
 .set-input::-webkit-outer-spin-button,.set-input::-webkit-inner-spin-button{-webkit-appearance:none;}
@@ -317,7 +317,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .btn-chain-edit:hover{border-color:var(--red);color:var(--white);}
 .btn-ghost{flex:1;background:none;border:1px solid #3a3a3a;color:#888;font-family:var(--display);font-size:.95rem;letter-spacing:.1em;padding:10px;cursor:pointer;transition:all .15s;}
 .btn-ghost:hover{border-color:#444;color:#777;}
-.draft-notice{font-family:var(--mono);font-size:.5rem;color:#4a7a4a;text-align:center;padding:5px;border:1px solid #2a4a2a;margin-top:7px;}
+.draft-notice{font-family:var(--mono);font-size:.5rem;color:#60aa60;text-align:center;padding:5px;border:1px solid #3a7a3a;margin-top:7px;}
 .cycle-done{padding:44px 20px;text-align:center;}
 .ob-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:65vh;padding:24px 20px 100px;max-width:440px;margin:0 auto;gap:0;}
 .ob-step{font-family:var(--mono);font-size:.48rem;color:#555;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
@@ -1152,6 +1152,10 @@ body.theme-arctic .section-title{font-family:'Rajdhani',sans-serif;font-weight:7
 body.theme-arctic .auth-btn-primary{background:linear-gradient(135deg,#00a8d8 0%,#0088b8 100%);color:#fff;}
 body.theme-arctic .auth-btn-primary:hover{background:linear-gradient(135deg,#00c8e8 0%,#0099c8 100%);color:#fff;}
 body.theme-arctic .draft-notice{color:#1a8a8a;border-color:rgba(0,168,216,0.3);background:rgba(255,255,255,0.4);}
+body.theme-arctic .ex-note-banner{color:#6a4800;background:rgba(150,100,0,0.1);border-color:#7a5500;}
+body.theme-arctic .ex-note-banner.reminder-prev{color:#7a5000;background:rgba(160,110,0,0.12);border-color:#7a5000;}
+body.theme-arctic .ex-note-save{background:rgba(255,255,255,0.7);border-color:#2a7a7a;color:#2a7a7a;}
+body.theme-arctic .ex-mini-btn{border-color:rgba(26,46,58,0.2);color:#4a5a66;}
 /* Arctic — auth-form inputs (matcha email/password till ljus tema, default är mörk #0a0a0a) */
 body.theme-arctic #auth-email-form input,
 body.theme-arctic #auth-signup-fields input,
@@ -1445,7 +1449,7 @@ body.theme-ember nav button{
   font-family:'Rajdhani',sans-serif;
   font-weight:600;
   letter-spacing:.18em;
-  color:#664422;
+  color:#aa7744;
   text-transform:uppercase;
   font-size:.55rem;
 }
@@ -1917,7 +1921,10 @@ body.theme-nanosuit{
   --gold:#00fff0;--green-bright:#50ff88;
   --gray-mid:#102030;--gray-light:#5a8899;
   /* PM22 surface-overrides — deep navy tactical */
+  --surface-base:#0a1628;
   --surface-elevated:#0c1828;
+  --surface-input:#0d1e30;
+  --surface-saved:#0a1a28;
   --surface-deep:#060c18;
   --border-subtle:#1a2a40;
   /* 3.34.11 — Tag tokens (tactical HUD neon) */
@@ -2854,6 +2861,11 @@ body.theme-daylight .app-modal-btn-danger:hover{
   background:var(--red);
   color:#ffffff;
 }
+body.theme-daylight .ex-note-banner{color:#7a5200;background:rgba(160,110,0,0.1);border-color:#8a6200;}
+body.theme-daylight .ex-note-banner.reminder-prev{color:#7a5200;background:rgba(160,110,0,0.12);border-color:#7a5200;}
+body.theme-daylight .ex-note-save{background:rgba(255,255,255,0.7);border-color:#8a6200;color:#7a5200;}
+body.theme-daylight .ex-mini-btn{border-color:rgba(14,20,24,0.2);color:#4a4a4a;}
+body.theme-daylight .draft-notice{color:#2a7a2a;border-color:rgba(42,122,42,0.4);background:rgba(255,255,255,0.5);}
 
 /* ── DONE PRIMARY BUTTON ─────────────────────────────────────*/
 .ex-done-primary{
@@ -3061,6 +3073,11 @@ body.theme-undertow .set-unit{color:#2f4b57;}
 body.theme-undertow .set-num{color:#33505c;}
 body.theme-undertow .add-set-btn{color:#33505c;border-color:rgba(18,48,90,0.4);}
 body.theme-undertow .add-ex-btn{color:#33505c;border-color:rgba(18,48,90,0.4);}
+body.theme-undertow .ex-note-banner{color:#7a5000;background:rgba(160,110,0,0.1);border-color:#8a5800;}
+body.theme-undertow .ex-note-banner.reminder-prev{color:#7a5000;background:rgba(160,110,0,0.12);border-color:#7a5000;}
+body.theme-undertow .ex-note-save{background:rgba(255,255,255,0.7);border-color:#7a5000;color:#7a5000;}
+body.theme-undertow .ex-mini-btn{border-color:rgba(18,48,90,0.2);color:#2b4450;}
+body.theme-undertow .draft-notice{color:#0d6b7a;border-color:rgba(13,107,122,0.3);background:rgba(255,255,255,0.4);}
 /* tab-bubble keyframe */
 @keyframes ut-tabRise{0%{transform:translate(-50%,3px) scale(.7);opacity:0;}30%{opacity:1;}100%{transform:translate(-50%,-7px) scale(1);opacity:0;}}
 
@@ -3219,6 +3236,12 @@ body.theme-understory .us-fleck.f4{width:70px;height:70px;left:74%;top:22%;anima
 body.theme-understory .us-fleck.f5{width:110px;height:110px;left:18%;top:30%;animation:us-drift1 31s ease-in-out infinite;}
 @keyframes us-drift1{0%,100%{transform:translate(0,0) scale(1);opacity:.5;}50%{transform:translate(22px,18px) scale(1.12);opacity:.9;}}
 @keyframes us-drift2{0%,100%{transform:translate(0,0) scale(1.05);opacity:.4;}50%{transform:translate(-26px,14px) scale(.92);opacity:.8;}}
+body.theme-understory .add-set-btn{color:#3d5e3a;border-color:rgba(50,90,45,0.4);}
+body.theme-understory .ex-note-banner{color:#7a5000;background:rgba(150,100,0,0.1);border-color:#8a6000;}
+body.theme-understory .ex-note-banner.reminder-prev{color:#7a5000;background:rgba(150,100,0,0.12);border-color:#7a5000;}
+body.theme-understory .ex-note-save{background:rgba(252,255,247,0.8);border-color:#7a5000;color:#7a5000;}
+body.theme-understory .ex-mini-btn{border-color:rgba(31,66,38,0.2);color:#3d5e3a;}
+body.theme-understory .draft-notice{color:#2f7a4a;border-color:rgba(47,122,74,0.3);background:rgba(252,255,247,0.5);}
 
 /* ── CRUSADER ─────────────────────────────────────────────────
    Palette: Dark warm charcoal, blood red, aged bronze, weathered ash
@@ -3550,7 +3573,8 @@ body.theme-crusader .set-input:focus{
 body.theme-crusader .set-input.work-set{border-color:#5a4a36;}
 body.theme-crusader .set-input.warmup{border-color:#3a322a;color:#7a6e58;}
 body.theme-crusader .set-unit{color:#c83838;font-weight:600;}
-body.theme-crusader .set-num{color:#c83838;font-family:'Cinzel',serif;font-weight:700;}
+body.theme-crusader .set-num{color:#c83838;font-family:'Cinzel',serif;font-weight:700;font-variant-numeric:tabular-nums;}
+body.theme-crusader .set-input{font-family:'IBM Plex Mono',monospace;}
 body.theme-crusader .sets-group-label{
   color:#9a8e72;border-top:1px dashed #4a3e30;
   font-family:'Cinzel',serif;font-weight:600;
@@ -3919,7 +3943,8 @@ body.theme-obsidian .set-input{background:rgba(15,10,4,0.6);border:1px solid #4a
 body.theme-obsidian .set-input:focus{border-color:#c9a35a;box-shadow:0 0 8px rgba(201,163,90,0.4);}
 body.theme-obsidian .set-input.warmup{color:#5a4a28;}
 body.theme-obsidian .set-unit{color:#c9a35a;font-family:'Cinzel',serif;font-weight:600;letter-spacing:.18em;}
-body.theme-obsidian .set-num{color:#a8442e;font-family:'Cinzel',serif;font-weight:600;letter-spacing:.32em;}
+body.theme-obsidian .set-num{color:#a8442e;font-family:'Cinzel',serif;font-weight:600;letter-spacing:.32em;font-variant-numeric:tabular-nums;}
+body.theme-obsidian .set-input{font-family:'IBM Plex Mono',monospace;}
 body.theme-obsidian .sets-group-label{color:#5a4a28;font-family:'Cinzel',serif;letter-spacing:.32em;font-weight:600;border-top:1px dashed #2a2010;}
 body.theme-obsidian .sets-group-label.work-group{color:#a8442e;}
 
@@ -5345,7 +5370,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.51.5';
+const APP_VERSION = '3.52.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -6270,8 +6295,8 @@ function buildExtraBlock(ex,i,passId,isDone,savedExs,draftExtraSets,completedDat
       </div>`;
     }
     if(!isDone&&!isSavedEx){
-      h+=`<button class="add-set-btn" onclick="addWorkSet('${extraId}','${passId}')">+ Work Set</button>`;
       h+=`<button class="add-set-btn" style="border-color:#1a1400;color:#3a2a00" onclick="addWarmupSet('${extraId}','${passId}')">+ Warm-up</button>`;
+      h+=`<button class="add-set-btn" onclick="addWorkSet('${extraId}','${passId}')">+ Work Set</button>`;
       h+=`<button class="ex-done-primary${allWorkLoggedEx?' ready':''}" id="done-${extraId}" onclick="saveExercise('${passId}','${extraId}')">✓ Done</button>`;
     }
     h+=`</div>`;
@@ -6619,10 +6644,10 @@ function buildPassBodyHTML(pass,cycle,nextId){
             }
           }
           if(!isDone&&!isSaved){
-            html+=`<button class="add-set-btn" onclick="addWorkSet('${ex.id}','${passId}')">+ Work Set</button>`;
             if(!isRampEx){
               html+=`<button class="add-set-btn" style="border-color:#1a1400;color:#3a2a00" onclick="addWarmupSet('${ex.id}','${passId}')">+ Warm-up</button>`;
             }
+            html+=`<button class="add-set-btn" onclick="addWorkSet('${ex.id}','${passId}')">+ Work Set</button>`;
             // Wide primary Done CTA — below sets, full width, unmissable
             html+=`<button class="ex-done-primary${allWorkLogged?' ready':''}" id="done-${ex.id}" onclick="saveExercise('${passId}','${ex.id}')">✓ Done</button>`;
           }

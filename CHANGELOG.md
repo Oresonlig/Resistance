@@ -6,6 +6,18 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.52.0 — 2026-06-05
+**UX/design-audit (9 fynd åtgärdade + knappordning):**
+1. **Knappordning** — "+ Warm-up" visas nu FÖRE "+ Work Set" i övningskortet (i utförandeordning). Globalt (2 ställen i renderingen). RAMP-villkor (ingen warm-up) bevarat.
+2. **Reminder-banner kontrast** — `.ex-note-banner` + `.reminder-prev` fick per-tema overrides för Daylight, Arctic, Undertow, Overgrowth: mörk amber `#7a5200` + semi-opak bakgrund mot ljusa ytor (var ~2.4:1, nu ~7:1). Notes och reminders är läsbara i gymljus.
+3. **Draft-notice synlighet** — bas `color:#4a7a4a` (mörkgrön, försvann på mörka teman) → `#60aa60` (ljusare) + `border-color:#3a7a3a`. Daylight/Undertow/Overgrowth fick egna ljust-tema-overrides.
+4. **Ember nav-knappar** — inaktiv `color:#664422` (under AA på svart) → `#aa7744`. Aktiv state oförändrad.
+5. **ex-note-save + ex-mini-btn ljusa teman** — Dark-tema-defaults (`background:#2a1a00`, `border:#333`) läckte in på Daylight/Arctic/Undertow/Overgrowth. Fick per-tema overrides: ljus bakgrund, tematonsatt border + text.
+6. **add-set-btn Overgrowth** — saknade override (Undertow fick fix i 3.48.0, Overgrowth missades). Nu: `color:#3d5e3a; border-color:rgba(50,90,45,0.4)`.
+7. **Daylight — Inter font** — `--sans:'Inter'` men Inter saknades i Google Fonts-anropet → systemfont. Lagt till `family=Inter:wght@300;400;500;600;700`.
+8. **Nanosuit surface-tokens** — `--surface-base/input/saved` ärvdes från Iron (svart). Lagt till: `#0a1628`/`#0d1e30`/`#0a1a28` (djup navy).
+9. **Obsidian + Crusader set-input** — Cinzel (display serif) som `--mono` ger ojämna sifferbredder i set-rader. `.set-num` fick global `font-variant-numeric:tabular-nums`. `.set-input` på Obsidian/Crusader explicit IBM Plex Mono.
+
 ## 3.51.5 — 2026-06-04
 Nanosuit + Night City fick PM22 surface-tokens (`--surface-elevated/deep/border-subtle`) — tag-editorn visade Iron's generiska grå istället för temats marina/lila färger. Nanosuit: `#0c1828/#060c18/#1a2a40`. Night City: `rgba(18,4,36,0.95)/#060110/rgba(122,85,160,0.25)`. Samma tokens dokumenterade i respektive `theme/*/README.md`.
 
