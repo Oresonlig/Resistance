@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.52.1 — 2026-06-06
+**Bugg: swap + RAMP-tag → ✓ på work sets utan loggad data, kunde ej logga vikter.**
+Rotorsak: RAMP-filtret i `ensureExtraSets` körde EFTER stale-pad. Loggade warmup-sids (t.ex. W1/W2 med reps men inget kg) levde kvar i `loggedSets[exId]` efter att filtret tagit bort dem ur `extraSets`. Det gav `_noLogged=false` och blockerade stale-pad, trots att inga work sets var loggade. I kantfall matchade orphan-sidsen deterministiska `wk`-sids och visades som ✓ utan data.
+Fix: tre-fasig omstrukturering av `ensureExtraSets`: (1) init/sid-ensure, (2) RAMP-filter + explicit rensning av orphan-sids ur `loggedSets`/`inputBuffer`, (3) stale-pad — nu körandes EFTER filtret med korrekt `_noLogged`. Resultat: swap + RAMP ger alltid korrekta work sets med LOG-knappar.
+
 ## 3.52.0 — 2026-06-05
 **UX/design-audit (9 fynd åtgärdade + knappordning):**
 1. **Knappordning** — "+ Warm-up" visas nu FÖRE "+ Work Set" i övningskortet (i utförandeordning). Globalt (2 ställen i renderingen). RAMP-villkor (ingen warm-up) bevarat.

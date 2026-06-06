@@ -5370,7 +5370,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.52.0';
+const APP_VERSION = '3.52.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8338,36 +8338,43 @@ function ensureExtraSets(exId, passId){
   const chain=getEffectiveChain();
   const pass=chain.find(p=>p.id===passId);
   const ex=isExtra?null:pass?.exercises.find(e=>e.id===exId);
+  // Phase 1: Create fresh sets or ensure sids on existing draft.
   if(state.draft.extraSets[exId]===undefined||state.draft.extraSets[exId].length===0){
     state.draft.extraSets[exId]=ex?getDefaultSets(ex):defSets(2,1);
   } else {
-    // Säkerställ sid på legacy-sets (idempotent)
     state.draft.extraSets[exId]=ensureSetIds(state.draft.extraSets[exId]);
-    // Stale-draft-fix: om sparad draft har färre work sets än lastSessionSetCount, och
-    // ingen loggning har börjat + övningen ej sparad — lägg till saknade work sets.
-    // Rotorsak: doNewCycle rensade inte draftar → gamla draftar med 1 work set (skapade
-    // innan lastSessionSetCount var populerat) spökade in i ny cykel.
-    if(!isExtra && ex && !state.draft.savedExercises?.[exId]){
-      const _noLogged=!state.draft.loggedSets?.[exId]||Object.keys(state.draft.loggedSets[exId]).length===0;
-      // ...men INTE om användaren explicit ändrat set-antalet (add/remove). Annars
-      // snäpper pad:en tillbaka borttagna set → kändes som att seten "låst sig".
-      if(_noLogged && !state.draft.setEdited?.[exId]){
-        const _sid2=getRenderExId(ex.id)||ex.id;
-        const _last=Math.min(state.lastSessionSetCount?.[_sid2]??state.lastSessionSetCount?.[ex.id]??0,8);
-        const _target=_last||getTagDefaults(ex).work;
-        const _curWork=state.draft.extraSets[exId].filter(s=>!s.warmup).length;
-        for(let _i=_curWork;_i<_target;_i++) state.draft.extraSets[exId].push({sid:nextSid(),warmup:false});
-      }
-    }
   }
+  // Phase 2: RAMP filter — must run BEFORE stale-pad.
+  // Rotorsak: loggade warmup-sids (t.ex. W1/W2 med reps-only, inget kg) levde kvar i
+  // loggedSets efter filtret tog bort dem ur extraSets → _noLogged=false → stale-pad
+  // körde aldrig → för få work sets och/eller orphan-sids matchade wk-sids → ✓ utan data.
+  // Fix: filtret rensar också orphan-sids från loggedSets/inputBuffer.
   if(!isExtra){
     const exTagOvr2=state.exerciseTagOverrides?.[exId]||{};
     const isRampCheck=exTagOvr2.ramp!==undefined?exTagOvr2.ramp:!!ex?.ramp;
     if(isRampCheck&&state.draft.extraSets[exId].some(s=>s.warmup)){
-      // Filtrering är nu säker: sid-nyckling gör att buffer/loggedSets följer med.
+      const removedSids=state.draft.extraSets[exId].filter(s=>s.warmup).map(s=>s.sid);
       state.draft.extraSets[exId]=state.draft.extraSets[exId].filter(s=>!s.warmup);
       if(state.draft.extraSets[exId].length===0)
         state.draft.extraSets[exId]=defSets(0,2);
+      for(const sid of removedSids){
+        if(state.draft.loggedSets?.[exId]) delete state.draft.loggedSets[exId][sid];
+        if(state.draft.inputBuffer?.[exId]) delete state.draft.inputBuffer[exId][sid];
+      }
+    }
+  }
+  // Phase 3: Stale-draft-fix — pad work sets to lastSessionSetCount when no work sets
+  // are logged yet and count wasn't manually adjusted. _noLogged is now clean (Phase 2
+  // removed orphaned warmup entries) so this correctly fires after swap+RAMP too.
+  if(!isExtra && ex && !state.draft.savedExercises?.[exId]){
+    const _noLogged=!state.draft.loggedSets?.[exId]||Object.keys(state.draft.loggedSets[exId]).length===0;
+    // Skip if user explicitly adjusted set count (add/remove) — pad would snap sets back.
+    if(_noLogged && !state.draft.setEdited?.[exId]){
+      const _sid2=getRenderExId(ex.id)||ex.id;
+      const _last=Math.min(state.lastSessionSetCount?.[_sid2]??state.lastSessionSetCount?.[ex.id]??0,8);
+      const _target=_last||getTagDefaults(ex).work;
+      const _curWork=state.draft.extraSets[exId].filter(s=>!s.warmup).length;
+      for(let _i=_curWork;_i<_target;_i++) state.draft.extraSets[exId].push({sid:nextSid(),warmup:false});
     }
   }
 }
