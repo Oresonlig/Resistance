@@ -6,6 +6,10 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.52.2 — 2026-06-06
+**Feature: Fail-flagga per set.**
+Nytt "F"-knappar visas inline under ✓-indikatorn när ett set är loggart. Tryck för att markera settet som failat — knappen lyser röd, ✗-marker syns i ✓-bubblan. Failade set räknas INTE som PR (uteslutna i `getAllPRs` och `buildPRMap` via `if(s.fail) continue`). ✗-marker visas i "Last (Xd ago)"-historiken under övningen samt i Progress-vyn historik. `fail`-flaggan persisteras i `loggedSets[exId][sid].fail` och kopieras in i saved sets via `saveExercise`. Toggle via `toggleSetFail(exId, sid, passId)`.
+
 ## 3.52.1 — 2026-06-06
 **Bugg: swap + RAMP-tag → ✓ på work sets utan loggad data, kunde ej logga vikter.**
 Rotorsak: RAMP-filtret i `ensureExtraSets` körde EFTER stale-pad. Loggade warmup-sids (t.ex. W1/W2 med reps men inget kg) levde kvar i `loggedSets[exId]` efter att filtret tagit bort dem ur `extraSets`. Det gav `_noLogged=false` och blockerade stale-pad, trots att inga work sets var loggade. I kantfall matchade orphan-sidsen deterministiska `wk`-sids och visades som ✓ utan data.

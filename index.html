@@ -4499,6 +4499,14 @@ body.theme-crusader .set-log-btn.has-value{background:linear-gradient(180deg,#c8
   font-family:var(--mono);font-size:.7rem;text-align:center;
   box-sizing:border-box;cursor:pointer;
 }
+.set-fail-btn{
+  display:block;width:26px;padding:4px 0;margin-top:2px;
+  background:none;border:1px solid #2a2a2a;color:#444;
+  font-family:var(--mono);font-size:.44rem;letter-spacing:.05em;
+  text-align:center;text-transform:uppercase;cursor:pointer;border-radius:2px;
+}
+.set-fail-btn.active{color:#cc4444;border-color:#552222;background:#140000;}
+.set-fail-mark{color:#aa4444;font-size:.8em;margin-left:3px;}
 /* Iron — hexagon outline */
 body.theme-iron .set-logged-indicator{
   clip-path:polygon(7px 0,calc(100% - 7px) 0,100% 50%,calc(100% - 7px) 100%,7px 100%,0 50%);
@@ -5370,7 +5378,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.52.1';
+const APP_VERSION = '3.52.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -6412,7 +6420,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
               if(isTimed) valStr = `${s.secs||'?'}s`;
               else if(isBW) valStr = `BW + ${toDisplay(s.extra)||0}${unitLabel()} ×${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}`;
               else valStr = `${toDisplay(s.weight)||'—'}${unitLabel()} ×${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}`;
-              return `<div class="ex-prev-history-set ${wu?'warmup':'work'}"><span class="set-lbl">${lbl}</span>${valStr}</div>`;
+              return `<div class="ex-prev-history-set ${wu?'warmup':'work'}"><span class="set-lbl">${lbl}</span>${valStr}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;
             }).join('');
             historyHTML = `<div class="ex-prev-history">${rows}</div>`;
           }
@@ -6599,6 +6607,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
             const bufVal = (!savedSet && state.draft?.inputBuffer?.[ex.id]?.[sid]) || null;
             // Per-set logging state
             const isLogged = !savedSet && !!(state.draft?.loggedSets?.[ex.id]?.[sid]);
+            const isFail = isLogged && !!state.draft.loggedSets[ex.id][sid].fail;
             // Apply logged-set CSS class to set-row
             const loggedCls = isLogged ? ' set-logged' : '';
             const dis   = (isDone||isSaved) ? 'disabled' : '';
@@ -6619,7 +6628,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
                   placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}>
                   <div class="set-unit forced-unit">+f</div></div>
                 ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${sid}" onclick="toggleSide('${ex.id}','${sid}')" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
-                ${(!isSaved&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn has-value" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`):'<div></div>'}
+                ${(!isSaved&&!isDone)?(isLogged?`<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓${isFail?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFail?' active':''}" onclick="toggleSetFail('${ex.id}','${sid}','${passId}')">F</button></div>`:`<button class="set-log-btn has-value" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`):'<div></div>'}
                 ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}','${sid}','${passId}')">✕</button>`:'<div></div>'}
               </div>`;
             } else {
@@ -6638,7 +6647,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
                   placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}>
                   <div class="set-unit forced-unit">+f</div></div>
                 ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${sid}" onclick="toggleSide('${ex.id}','${sid}')" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
-                ${(!isSaved&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`):'<div></div>'}
+                ${(!isSaved&&!isDone)?(isLogged?`<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓${isFail?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFail?' active':''}" onclick="toggleSetFail('${ex.id}','${sid}','${passId}')">F</button></div>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`):'<div></div>'}
                 ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}','${sid}','${passId}')">✕</button>`:'<div></div>'}
               </div>`;
             }
@@ -7937,14 +7946,17 @@ function saveExercise(passId,exId){
     const b = buf[sid] || {};
     const domF = document.getElementById('f-'+exId+'-'+sid)?.value;
     const forced = (domF && domF !== '') ? (parseInt(domF)||null) : (b.forced ?? null);
+    const fail = state.draft?.loggedSets?.[exId]?.[sid]?.fail || undefined;
     if(isBW){
       const domBw = document.getElementById('bw-'+exId+'-'+sid)?.value;
       const domR = document.getElementById('r-'+exId+'-'+sid)?.value;
       const extraDisp = (domBw && domBw !== '') ? parseFloat(domBw) : null;
       const extraKg = extraDisp !== null && !isNaN(extraDisp) ? toKg(extraDisp) : (b.extra ?? 0);
       const repsOrSecs = (domR && domR !== '') ? (n=>isNaN(n)?null:n)(parseInt(domR)) : (isTimed ? (b.secs ?? null) : (b.reps ?? null));
-      return isTimed ? {sid, extra:extraKg, bwSnap:todayWkg||0, secs:repsOrSecs, forced, warmup}
-                     : {sid, extra:extraKg, bwSnap:todayWkg||0, reps:repsOrSecs, forced, warmup};
+      const base = isTimed ? {sid, extra:extraKg, bwSnap:todayWkg||0, secs:repsOrSecs, forced, warmup}
+                           : {sid, extra:extraKg, bwSnap:todayWkg||0, reps:repsOrSecs, forced, warmup};
+      if(fail) base.fail = true;
+      return base;
     }else{
       const domW = document.getElementById('w-'+exId+'-'+sid)?.value;
       const domR = document.getElementById('r-'+exId+'-'+sid)?.value;
@@ -7954,8 +7966,10 @@ function saveExercise(passId,exId){
       const sideBtn = document.getElementById('side-'+exId+'-'+sid);
       const side = sideBtn ? sideBtn.textContent.trim() : null;
       const sideVal = (side && side !== '—') ? side : (b.side ?? null);
-      return isTimed ? {sid, weight:weightKg, secs:repsOrSecs, forced, warmup, side:sideVal}
-                     : {sid, weight:weightKg, reps:repsOrSecs, forced, warmup, side:sideVal};
+      const base = isTimed ? {sid, weight:weightKg, secs:repsOrSecs, forced, warmup, side:sideVal}
+                           : {sid, weight:weightKg, reps:repsOrSecs, forced, warmup, side:sideVal};
+      if(fail) base.fail = true;
+      return base;
     }
   });
   let displayName;
@@ -8084,6 +8098,14 @@ function unlogSet(exId, sid, passId){
   if(Object.keys(state.draft.loggedSets[exId]).length === 0){
     delete state.draft.loggedSets[exId];
   }
+  save();
+  rerenderSession(passId);
+}
+
+function toggleSetFail(exId, sid, passId){
+  if(!state.draft?.loggedSets?.[exId]?.[sid]) return;
+  const cur = state.draft.loggedSets[exId][sid].fail;
+  state.draft.loggedSets[exId][sid].fail = !cur;
   save();
   rerenderSession(passId);
 }
@@ -8862,6 +8884,7 @@ function getAllPRs(){
       if(ex.skipped||ex.extra)continue;
       const def=defs.find(d=>d.id===ex.id);const isBW=def?.bw;
       for(const s of(ex.sets||[])){
+        if(s.fail) continue;
         if(s.secs!=null){
           if(isBW){const cur=prs[ex.id];if(!cur||s.secs>(cur.secs||0)||(s.secs===(cur.secs||0)&&(s.extra||0)>(cur.extra||0)))prs[ex.id]={name:ex.name,secs:s.secs,extra:s.extra||0,bwSnap:s.bwSnap||0,bw:true,timed:true};}
           else{const cur=prs[ex.id];if(!cur||s.secs>(cur.secs||0)||(s.secs===(cur.secs||0)&&(s.weight||0)>(cur.weight||0)))prs[ex.id]={name:ex.name,secs:s.secs,weight:s.weight||0,timed:true};}
@@ -8913,7 +8936,7 @@ function renderProgress(){
     html+=`</div>`;
   }
   html+=`<div class="section-sub">History</div>`;
-  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW ${toDisplay(s.bwSnap)||0} + ${toDisplay(s.extra)||0}${unitLabel()} × ${s.secs!=null?s.secs+'s':(s.reps||'?')+'r'}${s.forced?` +${s.forced}f`:''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.secs!=null?s.secs+'s':(s.reps||'?')+'r'}${s.forced?` +${s.forced}f`:''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
+  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW ${toDisplay(s.bwSnap)||0} + ${toDisplay(s.extra)||0}${unitLabel()} × ${s.secs!=null?s.secs+'s':(s.reps||'?')+'r'}${s.forced?` +${s.forced}f`:''}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.secs!=null?s.secs+'s':(s.reps||'?')+'r'}${s.forced?` +${s.forced}f`:''}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
   el.innerHTML=html;
 }
 
@@ -9687,6 +9710,7 @@ function buildPRMap(){
       if(ex.skipped||ex.extra)continue;
       const def=defs.find(d=>d.id===ex.id);const isBW=def?.bw;
       for(const s of(ex.sets||[])){
+        if(s.fail) continue;
         if(s.secs!=null){
           if(isBW){const cur=prMap[ex.name];if(!cur||s.secs>(cur.secs||0)||(s.secs===(cur.secs||0)&&(s.extra||0)>(cur.extra||0)))prMap[ex.name]={name:ex.name,secs:s.secs,extra:s.extra||0,bwSnap:s.bwSnap||0,bw:true,timed:true};}
           else{const cur=prMap[ex.name];if(!cur||s.secs>(cur.secs||0)||(s.secs===(cur.secs||0)&&(s.weight||0)>(cur.weight||0)))prMap[ex.name]={name:ex.name,secs:s.secs,weight:s.weight||0,timed:true};}
