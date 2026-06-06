@@ -5378,7 +5378,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.52.2';
+const APP_VERSION = '3.52.3';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -7931,7 +7931,8 @@ function saveExercise(passId,exId){
   const isExtra=exId.startsWith('extra_');
   const ex=isExtra?null:pass.exercises.find(e=>e.id===exId);
   if(!isExtra&&!ex)return;
-  const isBW=isExtra?false:!!ex.bw;
+  const _tagOvrS=isExtra?{}:(state.exerciseTagOverrides?.[exId]||{});
+  const isBW=isExtra?false:(_tagOvrS.bw!==undefined?!!_tagOvrS.bw:!!ex.bw);
   const isTimed=isExtra?false:!!(state.exerciseTagOverrides?.[exId]?.timed??ex.timed);
   const todayWkg=getTodayWeight();
   ensureExtraSets(exId, passId);
@@ -8431,7 +8432,8 @@ function captureInputsToSetsBuffer(exId,passId){
   const chain=getEffectiveChain();
   const pass=chain.find(p=>p.id===passId);
   const ex=isExtra?null:pass?.exercises.find(e=>e.id===exId);
-  const isBW=isExtra?false:!!ex?.bw;
+  const _tagOvrC=isExtra?{}:(state.exerciseTagOverrides?.[exId]||{});
+  const isBW=isExtra?false:(_tagOvrC.bw!==undefined?!!_tagOvrC.bw:!!ex?.bw);
   const rawSets=ensureSetIds(state.draft.extraSets[exId]);
   state.draft.extraSets[exId]=rawSets;
   if(!state.draft.inputBuffer)state.draft.inputBuffer={};

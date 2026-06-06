@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.52.3 — 2026-06-06
+**Bugg: tagOvr.bw=false + swap → LOG fångar alltid null vikt.**
+Rotorsak: `captureInputsToSetsBuffer` och `saveExercise` använde `!!ex.bw` för `isBW`-flaggan, ignorerade `exerciseTagOverrides[exId].bw`. Renderingen läser `tagOvr.bw !== undefined ? tagOvr.bw : !!effEx.bw`. Diskrepansen: rendering visar normal-vikt-input `id="w-F1-sid"`, men capture läste BW-input `id="bw-F1-sid"` (null) → vikt aldrig fångad, loggad som null.
+Scenariot: F1 (Pull-ups, bw:true) swappad till Power Clean + Shoulder Press + RAMP + BW-tag stängd av. Fix: båda funktionerna konsulterar nu `exerciseTagOverrides[exId].bw` med samma prioriteringlogik som renderingen.
+
 ## 3.52.2 — 2026-06-06
 **Feature: Fail-flagga per set.**
 Nytt "F"-knappar visas inline under ✓-indikatorn när ett set är loggart. Tryck för att markera settet som failat — knappen lyser röd, ✗-marker syns i ✓-bubblan. Failade set räknas INTE som PR (uteslutna i `getAllPRs` och `buildPRMap` via `if(s.fail) continue`). ✗-marker visas i "Last (Xd ago)"-historiken under övningen samt i Progress-vyn historik. `fail`-flaggan persisteras i `loggedSets[exId][sid].fail` och kopieras in i saved sets via `saveExercise`. Toggle via `toggleSetFail(exId, sid, passId)`.
