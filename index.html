@@ -4500,12 +4500,12 @@ body.theme-crusader .set-log-btn.has-value{background:linear-gradient(180deg,#c8
   box-sizing:border-box;cursor:pointer;
 }
 .set-fail-btn{
-  display:block;width:26px;padding:4px 0;margin-top:2px;
-  background:none;border:1px solid #2a2a2a;color:#444;
-  font-family:var(--mono);font-size:.44rem;letter-spacing:.05em;
+  display:block;padding:4px 6px;margin-top:2px;
+  background:none;border:1px solid rgba(180,60,60,.3);color:rgba(185,80,80,.6);
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.05em;
   text-align:center;text-transform:uppercase;cursor:pointer;border-radius:2px;
 }
-.set-fail-btn.active{color:#cc4444;border-color:#552222;background:#140000;}
+.set-fail-btn.active{color:#dd5555;border-color:#883333;background:rgba(80,0,0,.2);}
 .set-fail-mark{color:#aa4444;font-size:.8em;margin-left:3px;}
 /* Iron — hexagon outline */
 body.theme-iron .set-logged-indicator{
@@ -5378,7 +5378,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.52.3';
+const APP_VERSION = '3.52.4';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -6628,7 +6628,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
                   placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}>
                   <div class="set-unit forced-unit">+f</div></div>
                 ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${sid}" onclick="toggleSide('${ex.id}','${sid}')" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
-                ${(!isSaved&&!isDone)?(isLogged?`<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓${isFail?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFail?' active':''}" onclick="toggleSetFail('${ex.id}','${sid}','${passId}')">F</button></div>`:`<button class="set-log-btn has-value" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`):'<div></div>'}
+                ${(!isSaved&&!isDone)?(isLogged?`<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓${isFail?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFail?' active':''}" onclick="toggleSetFail('${ex.id}','${sid}','${passId}')">Fail</button></div>`:`<button class="set-log-btn has-value" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`):'<div></div>'}
                 ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}','${sid}','${passId}')">✕</button>`:'<div></div>'}
               </div>`;
             } else {
@@ -6647,7 +6647,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
                   placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}>
                   <div class="set-unit forced-unit">+f</div></div>
                 ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${sid}" onclick="toggleSide('${ex.id}','${sid}')" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
-                ${(!isSaved&&!isDone)?(isLogged?`<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓${isFail?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFail?' active':''}" onclick="toggleSetFail('${ex.id}','${sid}','${passId}')">F</button></div>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`):'<div></div>'}
+                ${(!isSaved&&!isDone)?(isLogged?`<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓${isFail?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFail?' active':''}" onclick="toggleSetFail('${ex.id}','${sid}','${passId}')">Fail</button></div>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`):'<div></div>'}
                 ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}','${sid}','${passId}')">✕</button>`:'<div></div>'}
               </div>`;
             }

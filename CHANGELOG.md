@@ -6,6 +6,10 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.52.4 — 2026-06-08
+**UX: Fail-knapp → "Fail" (text), subtil röd karaktär.**
+Fail-knappen byter label från `F` till `Fail` för att skilja sig tydligt från `+f` (forced reps). Inaktiv: subtil röd border + text via `rgba`. Aktiv: tydligare röd. Semi-transparent bakgrunder fungerar på alla teman utan per-tema-override.
+
 ## 3.52.3 — 2026-06-06
 **Bugg: tagOvr.bw=false + swap → LOG fångar alltid null vikt.**
 Rotorsak: `captureInputsToSetsBuffer` och `saveExercise` använde `!!ex.bw` för `isBW`-flaggan, ignorerade `exerciseTagOverrides[exId].bw`. Renderingen läser `tagOvr.bw !== undefined ? tagOvr.bw : !!effEx.bw`. Diskrepansen: rendering visar normal-vikt-input `id="w-F1-sid"`, men capture läste BW-input `id="bw-F1-sid"` (null) → vikt aldrig fångad, loggad som null.
