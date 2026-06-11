@@ -214,10 +214,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .ex-prev-history-set.warmup .set-lbl{color:#555;font-weight:500;}
 .ex-note-banner{font-family:var(--mono);font-size:.66rem;color:#c8a84a;background:rgba(180,140,40,0.1);border-left:2px solid #b8922a;padding:5px 10px;margin-top:5px;cursor:pointer;line-height:1.5;display:block;}
 .ex-note-banner:hover{border-left-color:var(--gold);}
-/* 3.34.6 — Reminder från förra sessionen (ephemeral): distinkt amber-orange,
-   dashed border, italic så det syns att det är "inkommande" inte permanent. */
-.ex-note-banner.reminder-prev{color:#e89a40;background:rgba(232,154,64,0.08);border-left:2px dashed #e89a40;font-style:italic;}
-.ex-note-banner.reminder-prev:hover{border-left-color:#ffb060;border-left-style:solid;color:#ffb060;}
+/* reminder-prev (⏰ från förra sessionen) pensionerad 3.53.1 — se 3.40.0 persistenta notes */
 /* clear (✕) on note/reminder banners — stopPropagation so it doesn't open the editor.
    Scopad till .ex-note-banner — krockade tidigare med editor-knappen .ex-note-clear
    nedan (samma klassnamn, två olika element) som gav ✕:et border/grå färg/.44rem. */
@@ -1155,7 +1152,6 @@ body.theme-arctic .auth-btn-primary{background:linear-gradient(135deg,#00a8d8 0%
 body.theme-arctic .auth-btn-primary:hover{background:linear-gradient(135deg,#00c8e8 0%,#0099c8 100%);color:#fff;}
 body.theme-arctic .draft-notice{color:#1a8a8a;border-color:rgba(0,168,216,0.3);background:rgba(255,255,255,0.4);}
 body.theme-arctic .ex-note-banner{color:#6a4800;background:rgba(150,100,0,0.1);border-color:#7a5500;}
-body.theme-arctic .ex-note-banner.reminder-prev{color:#7a5000;background:rgba(160,110,0,0.12);border-color:#7a5000;}
 body.theme-arctic .ex-note-save{background:rgba(255,255,255,0.7);border-color:#2a7a7a;color:#2a7a7a;}
 body.theme-arctic .ex-mini-btn{border-color:rgba(26,46,58,0.2);color:#4a5a66;}
 /* Arctic — auth-form inputs (matcha email/password till ljus tema, default är mörk #0a0a0a) */
@@ -2864,7 +2860,6 @@ body.theme-daylight .app-modal-btn-danger:hover{
   color:#ffffff;
 }
 body.theme-daylight .ex-note-banner{color:#7a5200;background:rgba(160,110,0,0.1);border-color:#8a6200;}
-body.theme-daylight .ex-note-banner.reminder-prev{color:#7a5200;background:rgba(160,110,0,0.12);border-color:#7a5200;}
 body.theme-daylight .ex-note-save{background:rgba(255,255,255,0.7);border-color:#8a6200;color:#7a5200;}
 body.theme-daylight .ex-mini-btn{border-color:rgba(14,20,24,0.2);color:#4a4a4a;}
 body.theme-daylight .draft-notice{color:#2a7a2a;border-color:rgba(42,122,42,0.4);background:rgba(255,255,255,0.5);}
@@ -3076,7 +3071,6 @@ body.theme-undertow .set-num{color:#33505c;}
 body.theme-undertow .add-set-btn{color:#33505c;border-color:rgba(18,48,90,0.4);}
 body.theme-undertow .add-ex-btn{color:#33505c;border-color:rgba(18,48,90,0.4);}
 body.theme-undertow .ex-note-banner{color:#7a5000;background:rgba(160,110,0,0.1);border-color:#8a5800;}
-body.theme-undertow .ex-note-banner.reminder-prev{color:#7a5000;background:rgba(160,110,0,0.12);border-color:#7a5000;}
 body.theme-undertow .ex-note-save{background:rgba(255,255,255,0.7);border-color:#7a5000;color:#7a5000;}
 body.theme-undertow .ex-mini-btn{border-color:rgba(18,48,90,0.2);color:#2b4450;}
 body.theme-undertow .draft-notice{color:#0d6b7a;border-color:rgba(13,107,122,0.3);background:rgba(255,255,255,0.4);}
@@ -3240,7 +3234,6 @@ body.theme-understory .us-fleck.f5{width:110px;height:110px;left:18%;top:30%;ani
 @keyframes us-drift2{0%,100%{transform:translate(0,0) scale(1.05);opacity:.4;}50%{transform:translate(-26px,14px) scale(.92);opacity:.8;}}
 body.theme-understory .add-set-btn{color:#3d5e3a;border-color:rgba(50,90,45,0.4);}
 body.theme-understory .ex-note-banner{color:#7a5000;background:rgba(150,100,0,0.1);border-color:#8a6000;}
-body.theme-understory .ex-note-banner.reminder-prev{color:#7a5000;background:rgba(150,100,0,0.12);border-color:#7a5000;}
 body.theme-understory .ex-note-save{background:rgba(252,255,247,0.8);border-color:#7a5000;color:#7a5000;}
 body.theme-understory .ex-mini-btn{border-color:rgba(31,66,38,0.2);color:#3d5e3a;}
 body.theme-understory .draft-notice{color:#2f7a4a;border-color:rgba(47,122,74,0.3);background:rgba(252,255,247,0.5);}
@@ -4952,7 +4945,10 @@ function ensureStateDefaults(){
   if(!state.appVersion) state.appVersion = APP_VERSION;
   if(!state.migrations) state.migrations = {};
   if(!state.lastSessionSetCount || typeof state.lastSessionSetCount !== 'object') state.lastSessionSetCount = {};
-  if(!state.lastSessionNotes || typeof state.lastSessionNotes !== 'object') state.lastSessionNotes = {};
+  // lastSessionNotes pensionerat (3.53.1): 3.40.0 gjorde notes persistenta i
+  // exerciseNotes — inget skrev nya entries, men stale pre-3.40-reminders kunde
+  // aldrig auto-rensas (⏰-bannern låg kvar tills manuell ✕). Städa bort fältet.
+  if('lastSessionNotes' in state) delete state.lastSessionNotes;
   if(!Array.isArray(state.ignoredPRs)) state.ignoredPRs = [];
   if(!state.hiddenRemoved || typeof state.hiddenRemoved !== 'object') state.hiddenRemoved = {};
   if(typeof state.schemaVersion !== 'number') state.schemaVersion = 0;
@@ -5017,7 +5013,7 @@ function freshState(){
     removedExercises:{}, weightStep:2.5,
     addedExercises:{}, hiddenRemoved:{},
     importedPRs:[], exerciseOrder:{}, ignoredPRs:[],
-    lastSessionSetCount:{}, lastSessionNotes:{},
+    lastSessionSetCount:{},
     migrations:{},
     schemaVersion: SCHEMA_VERSION,
     deletions: { customExercises:{}, exerciseNotes:{} }
@@ -5392,7 +5388,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.53.0';
+const APP_VERSION = '3.53.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5511,7 +5507,6 @@ function migrateExerciseIdentity(){
     }
   };
   remapNotes('exerciseNotes');
-  remapNotes('lastSessionNotes');
   if(state.deletions && state.deletions.exerciseNotes){
     const d = state.deletions.exerciseNotes;
     for(const key of Object.keys(d)){
@@ -5650,10 +5645,11 @@ function migrateExerciseNames(){
       state.exerciseOverrides[id]=renames[name];changed=true;
     }
   });
-  if(changed){
-    state.migrations = state.migrations || {};
-    state.migrations.exerciseSplit_v2 = Date.now();
-  }
+  // Sätt flaggan ÄVEN när inget ändrades — annars re-skannade migrationen
+  // hela loggen vid varje load för användare utan legacy-namn (onödigt arbete,
+  // migrationen är per design en engångskörning).
+  state.migrations = state.migrations || {};
+  if(!state.migrations.exerciseSplit_v2) state.migrations.exerciseSplit_v2 = Date.now();
 }
 
 function migratePassKeysToSession(){
@@ -5886,7 +5882,6 @@ async function syncFromCloud(userId){
           ignoredPRs: state.ignoredPRs,
           importedPRs: state.importedPRs,
           lastSessionSetCount: state.lastSessionSetCount,
-          lastSessionNotes: state.lastSessionNotes,
           deletions: state.deletions,
         };
 
@@ -5921,7 +5916,6 @@ async function syncFromCloud(userId){
         state.ignoredPRs = mergeArrayUnion(_local.ignoredPRs, state.ignoredPRs);
         state.importedPRs = mergeArrayUnion(_local.importedPRs, state.importedPRs);
         state.lastSessionSetCount = mergeKeyedMap(_local.lastSessionSetCount, state.lastSessionSetCount);
-        state.lastSessionNotes = mergeKeyedMap(_local.lastSessionNotes, state.lastSessionNotes, state.deletions.exerciseNotes);
         // SL6: drafts är device-lokala
         state.draft = _local.draft;
         state.drafts = _local.drafts || {};
@@ -6455,23 +6449,15 @@ function buildPassBodyHTML(pass,cycle,nextId){
         }
 
         const existingNote = state.exerciseNotes?.[_exId]||'';
-        const lastNote = !existingNote ? (state.lastSessionNotes?.[_exId]||'') : '';
         const escapedNote = escapeHTML(existingNote);
-        const escapedLastNote = escapeHTML(lastNote);
-        // 3.34.6 — Reminder semantik: notes är ephemeral, försvinner efter nästa session.
-        // Distinkt visuell signal för "from last session" + dagar-räkning så ephemeralness syns.
-        let reminderWhen = '';
-        if(lastNote && lastSession?.timestamp){
-          const d = Math.floor((Date.now() - lastSession.timestamp) / 86400000);
-          reminderWhen = d === 0 ? 'idag' : d === 1 ? '1d sen' : `${d}d sen`;
-        }
+        // 3.40.0: notes persisterar i exerciseNotes tills användaren ändrar/rensar.
+        // ⏰-grenen (lastSessionNotes/reminder-prev) pensionerad 3.53.1 — inget
+        // skrev nya entries sedan 3.40.0, bara stale pre-3.40-data renderades.
         const clearBtn = `<span class="ex-note-clear" onclick="event.stopPropagation();clearReminder('${_exId}','${passId}')" title="Rensa">✕</span>`;
         const noteBanner = !isDone
           ? existingNote
             ? `<div class="ex-note-banner" onclick="toggleNote('${ex.id}')" title="Tap to edit reminder">📝 ${escapedNote}${clearBtn}</div>`
-            : lastNote
-              ? `<div class="ex-note-banner reminder-prev" onclick="toggleNote('${ex.id}')" title="Tap to edit (kvar tills du uppdaterar den)">⏰ Reminder${reminderWhen?' från '+reminderWhen:''}: ${escapedLastNote}${clearBtn}</div>`
-              : `<div class="ex-note-add" onclick="toggleNote('${ex.id}')">+ Reminder for next time</div>`
+            : `<div class="ex-note-add" onclick="toggleNote('${ex.id}')">+ Reminder for next time</div>`
           : existingNote
             ? `<div class="ex-note-banner done-note">📝 ${escapedNote}</div>` : '';
         // V1 Collapse: kollapsa om denna inte är aktiv övning (funkar både med/utan draft)
@@ -7927,13 +7913,11 @@ function clearNote(slotId, exId){
   if(inp)inp.value='';
   saveNote(slotId, exId);
 }
-// Rensar BÅDE den aktuella noten och den inkommande reminder-prev (lastSessionNotes)
-// så ⏰-bannern faktiskt försvinner. Tombstone i deletions.exerciseNotes — samma
-// namespace som lastSessionNotes-mergen läser (rad ~5845) → inget cloud-resurrect.
+// Rensar noten (✕ på 📝-bannern). Tombstone i deletions.exerciseNotes så
+// cloud-merge inte resurrectar den. (lastSessionNotes-grenen pensionerad 3.53.1.)
 function clearReminder(exId, passId){
   let cleared=false;
   if(state.exerciseNotes && state.exerciseNotes[exId]!=null){ delete state.exerciseNotes[exId]; cleared=true; }
-  if(state.lastSessionNotes && state.lastSessionNotes[exId]!=null){ delete state.lastSessionNotes[exId]; cleared=true; }
   if(cleared){
     if(!state.deletions) state.deletions={};
     if(!state.deletions.exerciseNotes) state.deletions.exerciseNotes={};
@@ -8227,7 +8211,6 @@ function finishSession(passId){
   Object.keys(draft.savedExercises).filter(k=>k.startsWith('extra_'+passId+'_')).forEach(extraId=>{const d=draft.savedExercises[extraId];if(d)exercises.push(d);});
   // Propagate work-set count + carry notes one session forward, attach notes to log entry
   if(!state.lastSessionSetCount) state.lastSessionSetCount={};
-  if(!state.lastSessionNotes) state.lastSessionNotes={};
   // 3.38.0 — Tombstones vid auto-cleanup. Utan dem kan cloud-merge resurrecta noten
   // (P4: Niklas såg Chins-note överleva 3 cykler på en device som syncade med cloud).
   if(!state.deletions) state.deletions = {};
@@ -10166,31 +10149,30 @@ function askModalConfirm(title, body, opts = {}){
 
     m.style.display = 'flex';
     
-    const cancel = () => {
+    // onKey städas i ALLA stängningsvägar (knapp, tangent, backdrop via
+    // __modalResolver) — tidigare togs lyssnaren bara bort på tangent-vägarna
+    // → varje knapp-/backdrop-stängd confirm läckte en document-lyssnare.
+    const onKey = (e) => {
+      if(e.key === 'Escape'){ cancel(); }
+      if(e.key === 'Enter' && document.activeElement?.id === 'appModalConfirm'){ confirm(); }
+    };
+    const cleanup = () => {
+      document.removeEventListener('keydown', onKey);
       m.style.display = 'none';
       __modalResolver = null;
-      resolve(false);
     };
-    const confirm = () => {
-      m.style.display = 'none';
-      __modalResolver = null;
-      resolve(true);
-    };
-    
-    __modalResolver = (val) => resolve(false);
-    
+    const cancel = () => { cleanup(); resolve(false); };
+    const confirm = () => { cleanup(); resolve(true); };
+
+    // Backdrop-klick går via closeModal() → __modalResolver (closeModal döljer modalen själv)
+    __modalResolver = () => { document.removeEventListener('keydown', onKey); resolve(false); };
+
     document.getElementById('appModalCancel').onclick = cancel;
     document.getElementById('appModalConfirm').onclick = confirm;
-    
-    // Keyboard handlers
+
     setTimeout(() => {
+      if(m.style.display === 'none') return; // stängd innan timeouten — lägg inte till lyssnare
       document.getElementById('appModalConfirm').focus();
-      const onKey = (e) => {
-        if(e.key === 'Escape'){ document.removeEventListener('keydown', onKey); cancel(); }
-        if(e.key === 'Enter' && document.activeElement?.id === 'appModalConfirm'){ 
-          document.removeEventListener('keydown', onKey); confirm(); 
-        }
-      };
       document.addEventListener('keydown', onKey);
     }, 50);
   });

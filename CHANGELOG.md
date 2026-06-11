@@ -6,6 +6,12 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.53.1 — 2026-06-11
+**Lågprio-städ: de tre flaggade fynden från 3.53.0-granskningen.**
+- **`migrateExerciseNames` re-skannade hela loggen vid varje load** för användare utan legacy-namn (flaggan sattes bara om något ändrades). Nu sätts `migrations.exerciseSplit_v2` alltid efter körning — engångsmigration per design.
+- **`askModalConfirm` läckte en document-`keydown`-lyssnare** vid varje stängning via knapp eller backdrop (togs bara bort på tangent-vägarna). Nu städas lyssnaren i alla stängningsvägar + guard mot att lyssnaren läggs till efter att modalen redan stängts (50ms-fönstret).
+- **`lastSessionNotes` pensionerat.** 3.40.0 gjorde notes persistenta i `exerciseNotes` — inget skrev nya entries, men stale pre-3.40-reminders renderades som ⏰-banner för evigt (gamla auto-droppen fanns inte längre). Borttaget: fält-init (freshState), sync-merge, ⏰-render-grenen, clearReminder-grenen, exId-remappen (index.html + src-spegeln), `reminder-prev`-CSS (bas + 4 tema-overrides). `ensureStateDefaults` städar bort fältet ur befintliga states (merge-raden borta → ingen cloud-resurrect).
+
 ## 3.53.0 — 2026-06-11
 **Full kodgranskning: 9 buggar fixade + dödkod rensad.**
 - **Template-sessioner försvann efter reload (KRITISK, latent):** `BASE_SESSIONS.push(tmpl)` skedde bara i sessionen där passet lades till (Add session / Rebuild Chain / onboarding-import). Efter reload saknades G–N i `BASE_SESSIONS` → `buildEffectiveChain` droppade passet tyst ur kedjan. Fix: `ensureStateDefaults` re-pushar saknade template-pass från `sessionOrder` vid varje load/cloud-merge (+`invalidateChainCache`). Täcker även `importTemplate` som aldrig pushade.

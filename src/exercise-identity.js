@@ -96,7 +96,8 @@ export function resolveExId(name, slotId, existingCustomId){
 // ── MIGRATION (idempotent) ────────────────────────────────────
 // Resolvar exId på all namn-/slot-baserad data. Säker att köra flera gånger:
 //  - log/cycle-entries: sätt ex.exId om saknas (via namn + slot-id-prefix)
-//  - exerciseNotes / lastSessionNotes: slot-keyade (A1…) → exId-keyade
+//  - exerciseNotes: slot-keyade (A1…) → exId-keyade
+//    (lastSessionNotes-remappen borttagen 3.53.1 — fältet pensionerat i appen)
 //  - deletions.exerciseNotes: remappas likadant så tombstones följer med
 // Returnerar {changed:boolean} för att kalla-koden ska veta om save behövs.
 //
@@ -146,7 +147,6 @@ export function migrateExerciseIdentity(state, opts={}){
     }
   };
   remapNotes('exerciseNotes');
-  remapNotes('lastSessionNotes');
   // 4) deletions.exerciseNotes (tombstones) — samma remap
   if(state.deletions && state.deletions.exerciseNotes){
     const d = state.deletions.exerciseNotes;
