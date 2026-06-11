@@ -6,6 +6,20 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.53.0 — 2026-06-11
+**Full kodgranskning: 9 buggar fixade + dödkod rensad.**
+- **Template-sessioner försvann efter reload (KRITISK, latent):** `BASE_SESSIONS.push(tmpl)` skedde bara i sessionen där passet lades till (Add session / Rebuild Chain / onboarding-import). Efter reload saknades G–N i `BASE_SESSIONS` → `buildEffectiveChain` droppade passet tyst ur kedjan. Fix: `ensureStateDefaults` re-pushar saknade template-pass från `sessionOrder` vid varje load/cloud-merge (+`invalidateChainCache`). Täcker även `importTemplate` som aldrig pushade.
+- **`deleteCustomExercise` kraschade vid perm-swap:** koden antog gammalt objektformat (`list.filter(s=>s.toId!==id)`) men `permanentSwaps[slotId]` är en namn-sträng → TypeError, `save()` nåddes aldrig (ingen tombstone, ingen rerender). Fix: ta bort swap-poster vars värde matchar den raderade övningens namn.
+- **PR-vyn — 3.40.0-exId-migrationen var inkomplett:** `getAllPRs` nycklade på slot-id → samma övning i två pass (A3+E3 Cable Flyes) gav två PR-kort; `isBW` lästes från BAS-slottens def istället för log-radens egen `bw`-flagga → fel PR-beräkning efter swap/tag-override. Fix: nyckla på kanoniskt exId + `ex.bw` med def-fallback. Samma bw-fix i `buildPRMap` (export).
+- **Historik-etiketter i Progress:** `W0, W1, S3` (rått array-index) → korrekt `W1, W2, S1` (samma räkning som copy/skärm sedan 3.39.0).
+- **`copySessionToClipboard` ignorerade rename:** använde `pass.name` (basnamn) istället för `getSessionName()` (PM7-miss).
+- **`keepaliveCloudPush` läckte `drafts` till cloud:** bara `draft` exkluderades → stale device-lokala drafts kunde följa med "Restored from cloud" på ny enhet. Fix: exkludera båda (paritet med `pushState`).
+- **`importData` (JSON-backup) hoppade över migrations:** körde bara ad-hoc unit/overrides-defaults. Nu samma pipeline som `loadStateForUser` (passKeys→session, ensureStateDefaults, schema-migrations).
+- **Fail-knapp saknades på extras-set** (3.52.2-inkonsekvens) — nu samma ✓/Fail-markup som ordinarie övningar.
+- **`getRenderExId` för tillagda custom-övningar:** fick `ex_slug` medan samma övning inswappad fick `custom_<id>` → splittrad historik/notes. Nu samma custom-id-lookup som swap-grenen.
+- **CSS:** `.ex-note-clear` dubbeldefinierad (banner-✕ vs editor-knapp delade klass → ✕:et fick border/grå/.44rem) — scopade till `.ex-note-banner` resp `.ex-note-actions`. `body.theme-iron .set-logged-indicator` matchade aldrig (Iron har ingen body-klass) → Irons hexagon-kontur för loggade set var död sedan 3.36.0; nu `body:not([class*="theme-"])`.
+- **Dödkod rensad:** `toggleCard()`, global `timerDefault`, toggleSides döda buffer-block (`card-${id}`-DOM borta sedan 3.23.0). `confirmAddEx`-scroll lagad (pekade på samma döda DOM). `isLoading` deklarerad (var implicit global).
+
 ## 3.52.4 — 2026-06-08
 **UX: Fail-knapp → "Fail" (text), subtil röd karaktär.**
 Fail-knappen byter label från `F` till `Fail` för att skilja sig tydligt från `+f` (forced reps). Inaktiv: subtil röd border + text via `rgba`. Aktiv: tydligare röd. Semi-transparent bakgrunder fungerar på alla teman utan per-tema-override.

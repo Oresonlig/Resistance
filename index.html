@@ -218,17 +218,19 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
    dashed border, italic så det syns att det är "inkommande" inte permanent. */
 .ex-note-banner.reminder-prev{color:#e89a40;background:rgba(232,154,64,0.08);border-left:2px dashed #e89a40;font-style:italic;}
 .ex-note-banner.reminder-prev:hover{border-left-color:#ffb060;border-left-style:solid;color:#ffb060;}
-/* clear (✕) on note/reminder banners — stopPropagation so it doesn't open the editor */
-.ex-note-clear{float:right;margin-left:10px;cursor:pointer;opacity:.55;font-weight:700;padding:0 3px;font-style:normal;}
-.ex-note-clear:hover{opacity:1;}
+/* clear (✕) on note/reminder banners — stopPropagation so it doesn't open the editor.
+   Scopad till .ex-note-banner — krockade tidigare med editor-knappen .ex-note-clear
+   nedan (samma klassnamn, två olika element) som gav ✕:et border/grå färg/.44rem. */
+.ex-note-banner .ex-note-clear{float:right;margin-left:10px;cursor:pointer;opacity:.55;font-weight:700;padding:0 3px;font-style:normal;}
+.ex-note-banner .ex-note-clear:hover{opacity:1;}
 .ex-note-wrap{margin:4px 0;}
 .ex-note-input{width:100%;background:var(--surface-input);border:1px solid #3a3000;color:var(--white);font-family:var(--mono);font-size:.56rem;padding:6px 8px;resize:vertical;min-height:48px;line-height:1.6;}
 .ex-note-input:focus{outline:none;border-color:var(--gold);}
 .ex-note-actions{display:flex;gap:4px;margin-top:4px;}
 .ex-note-save{background:#2a1a00;border:1px solid var(--gold);color:var(--gold);font-family:var(--mono);font-size:.44rem;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;cursor:pointer;}
 .ex-note-save:hover{background:#3a2a00;}
-.ex-note-clear{background:none;border:1px solid #2a2a2a;color:#444;font-family:var(--mono);font-size:.44rem;letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;cursor:pointer;}
-.ex-note-clear:hover{color:#888;}
+.ex-note-actions .ex-note-clear{background:none;border:1px solid #2a2a2a;color:#444;font-family:var(--mono);font-size:.44rem;letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;cursor:pointer;}
+.ex-note-actions .ex-note-clear:hover{color:#888;}
 .ex-action-col{display:flex;flex-direction:column;align-items:flex-end;gap:3px;padding-top:1px;flex-shrink:0;}
 .ex-mini-btns{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;}
 .ex-mini-btn{background:none;border:1px solid #333;color:#666;font-family:var(--mono);font-size:.44rem;letter-spacing:.05em;padding:3px 6px;cursor:pointer;text-transform:uppercase;transition:all .15s;white-space:nowrap;}
@@ -4507,8 +4509,9 @@ body.theme-crusader .set-log-btn.has-value{background:linear-gradient(180deg,#c8
 }
 .set-fail-btn.active{color:#dd5555;border-color:#883333;background:rgba(80,0,0,.2);}
 .set-fail-mark{color:#aa4444;font-size:.8em;margin-left:3px;}
-/* Iron — hexagon outline */
-body.theme-iron .set-logged-indicator{
+/* Iron — hexagon outline. OBS: Iron har ingen body-klass (THEMES class:'') —
+   body.theme-iron matchade aldrig, så konturen var dödkod sedan 3.36.0. */
+body:not([class*="theme-"]) .set-logged-indicator{
   clip-path:polygon(7px 0,calc(100% - 7px) 0,100% 50%,calc(100% - 7px) 100%,7px 100%,0 50%);
   border:none;background:transparent;
   box-shadow:inset 0 0 0 1px rgba(192,57,43,0.55);
@@ -4953,6 +4956,17 @@ function ensureStateDefaults(){
   if(!Array.isArray(state.ignoredPRs)) state.ignoredPRs = [];
   if(!state.hiddenRemoved || typeof state.hiddenRemoved !== 'object') state.hiddenRemoved = {};
   if(typeof state.schemaVersion !== 'number') state.schemaVersion = 0;
+  // Template-sessioner (G–N): BASE_SESSIONS.push skedde bara i den session där
+  // passet lades till (addSessionToChain/finishOnboarding/onboarding-import).
+  // Efter reload saknades passet i BASE_SESSIONS → buildEffectiveChain droppade
+  // det tyst ur kedjan. Re-pusha vid varje load/cloud-merge (ensureStateDefaults
+  // körs i alla load-paths). Täcker även importTemplate som aldrig pushade alls.
+  for(const pid of (state.sessionOrder || [])){
+    if(!BASE_SESSIONS.find(p => p.id === pid)){
+      const tmpl = SESSION_TEMPLATES.find(t => t.id === pid);
+      if(tmpl){ BASE_SESSIONS.push(tmpl); invalidateChainCache(); }
+    }
+  }
   // PM20+tombstones: deletions för icke-blob-fält (per-id timestamps, TTL 30d)
   if(!state.deletions || typeof state.deletions !== 'object') state.deletions = {};
   if(!state.deletions.customExercises) state.deletions.customExercises = {};
@@ -5378,7 +5392,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.52.4';
+const APP_VERSION = '3.53.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5387,6 +5401,7 @@ let lastSyncWrite = 0;
 let currentUser=null;
 let inPasswordRecovery=false;
 let _chainSelectedId=null;
+let isLoading=false; // sätts av handleSession; var tidigare odeklarerad implicit global
 
 // PM20: Schema-versioning. Bumpa SCHEMA_VERSION när breaking state-format-ändring
 // görs, och registrera en migration i SCHEMA_MIGRATIONS som tar state från
@@ -5453,10 +5468,15 @@ function getRenderExId(slotId){
   }
   const baseName = BASE_SLOT_DEFAULT_NAME[slotId];
   if(baseName) return slugifyExId(baseName);
-  // added_*: slå upp namn i addedExercises
+  // added_*: slå upp namn i addedExercises. Custom-id-lookup matchar swap-grenen —
+  // utan den fick en TILLAGD custom-övning ex_slug medan samma övning INSWAPPAD
+  // fick custom_<id> → splittrad historik/notes för samma övning.
   for(const pid of Object.keys(state.addedExercises||{})){
     const found = (state.addedExercises[pid]||[]).find(e=>e.id===slotId);
-    if(found) return resolveExId(found.name, slotId, null);
+    if(found){
+      const custom = (state.customExercises||[]).find(c=>c.name===found.name);
+      return resolveExId(found.name, slotId, custom?.id);
+    }
   }
   return null;
 }
@@ -5548,12 +5568,17 @@ function updateCustomExercise(id, updates){
 }
 function deleteCustomExercise(id){
   if(!state.customExercises) return;
+  const deleted = state.customExercises.find(e=>e.id===id);
   state.customExercises = state.customExercises.filter(e=>e.id!==id);
-  // Remove from any permanentSwaps or active swaps that reference it
-  Object.entries(state.permanentSwaps||{}).forEach(([passKey,list])=>{
-    if(!list) return;
-    state.permanentSwaps[passKey] = list.filter(s=>s.toId!==id);
-  });
+  // Rensa permanentSwaps som pekar på den raderade övningen.
+  // OBS: permanentSwaps[slotId] = namn-STRÄNG (doSwap) — gammal kod antog
+  // objekt-listor (.filter på toId) och kastade TypeError vid varje delete
+  // så fort en perm-swap fanns → save() nåddes aldrig (ingen tombstone).
+  if(deleted){
+    Object.entries(state.permanentSwaps||{}).forEach(([slotId,swapName])=>{
+      if(swapName === deleted.name) delete state.permanentSwaps[slotId];
+    });
+  }
   // Tombstone: registrera delete så andra enheter inte resurrectar via merge
   if(!state.deletions) state.deletions = {};
   if(!state.deletions.customExercises) state.deletions.customExercises = {};
@@ -6290,6 +6315,7 @@ function buildExtraBlock(ex,i,passId,isDone,savedExs,draftExtraSets,completedDat
       const savedSet=savedExData?.sets?(savedExData.sets.find(ss=>ss.sid===sid)||savedExData.sets[si]||null):null;
       const bufVal=(!savedSet&&state.draft?.inputBuffer?.[extraId]?.[sid])||null;
       const isLogged=!savedSet&&!!(state.draft?.loggedSets?.[extraId]?.[sid]);
+      const isFailEx=isLogged&&!!state.draft.loggedSets[extraId][sid].fail;
       const loggedCls=isLogged?' set-logged':'';
       const dis=(isDone||isSavedEx)?'disabled':'';
       const canDel=!isDone&&!isSavedEx&&rawExSets.length>1;
@@ -6298,7 +6324,7 @@ function buildExtraBlock(ex,i,passId,isDone,savedExs,draftExtraSets,completedDat
         <div><input class="set-input${wCls}" type="number" id="w-${extraId}-${sid}" placeholder="—" value="${savedSet?.weight!=null?toDisplay(savedSet.weight):bufVal?.weight!=null?toDisplay(bufVal.weight):''}" min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis} oninput="updateLogBtnState('${extraId}','${sid}')"><div class="set-unit">${unitL}</div></div>
         <div><input class="set-input${wCls}" type="number" id="r-${extraId}-${sid}" placeholder="—" value="${savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:''}" min="1" max="50" ${dis}><div class="set-unit">reps</div></div>
         <div><input class="set-input${wCls} forced" type="number" id="f-${extraId}-${sid}" placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}><div class="set-unit forced-unit">+f</div></div>
-        ${(!isSavedEx&&!isDone)?(isLogged?`<span class="set-logged-indicator" onclick="unlogSet('${extraId}','${sid}','${passId}')" title="Tap to unlog">✓</span>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${extraId}','${sid}','${passId}',${wu})">Log</button>`):'<div></div>'}
+        ${(!isSavedEx&&!isDone)?(isLogged?`<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${extraId}','${sid}','${passId}')" title="Tap to unlog">✓${isFailEx?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFailEx?' active':''}" onclick="toggleSetFail('${extraId}','${sid}','${passId}')">Fail</button></div>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${extraId}','${sid}','${passId}',${wu})">Log</button>`):'<div></div>'}
         ${canDel?`<button class="set-delete" onclick="removeExtraSet('${extraId}','${sid}','${passId}')">✕</button>`:'<div></div>'}
       </div>`;
     }
@@ -7755,14 +7781,9 @@ function toggleSide(exId, sid){
   const next=cur==='L'?'R':cur==='R'?'—':'L';
   btn.textContent=next;
   btn.className='side-btn'+(next==='L'?' left':next==='R'?' right':'');
-  // Store in inputBuffer so it's captured on save (keyat på sid, objekt)
-  const passId=btn.closest('.pass-body')?.closest('.pass-card')?.id?.replace('card-','');
-  if(!passId)return;
-  if(!state.draft)return;
-  if(!state.draft.inputBuffer)state.draft.inputBuffer={};
-  if(!state.draft.inputBuffer[exId]||Array.isArray(state.draft.inputBuffer[exId]))state.draft.inputBuffer[exId]={};
-  if(!state.draft.inputBuffer[exId][sid])state.draft.inputBuffer[exId][sid]={};
-  state.draft.inputBuffer[exId][sid].side=next==='—'?null:next;
+  // Buffer-skrivning borttagen: byggde på .pass-card/card-${id}-DOM som inte
+  // funnits sedan chain-strip-redesignen (3.23.0) → early-return alltid. Side
+  // fångas via DOM-läsning i captureInputsToSetsBuffer vid Log/Save/pagehide.
 }
 function buildTagEditorHTML(ex, passId){
   const tagOvr = state.exerciseTagOverrides?.[ex.id]||{};
@@ -8597,7 +8618,8 @@ async function confirmAddEx(passId){
   ensureDraft(passId);
   state.draft.extras.push({name});
   save();rerenderSession(passId);
-  setTimeout(()=>{const card=document.getElementById('card-'+passId);const blocks=card?.querySelectorAll('.ex-block');if(blocks?.length)blocks[blocks.length-1].scrollIntoView({behavior:'smooth',block:'start'});},50);
+  // card-${passId} finns inte sedan chain-strip-redesignen — scrolla i chain-ex-area
+  setTimeout(()=>{const area=document.getElementById('chain-ex-area');const blocks=area?.querySelectorAll('.ex-block');if(blocks?.length)blocks[blocks.length-1].scrollIntoView({behavior:'smooth',block:'start'});},50);
 }
 function removeExtra(passId,idx){
   ensureDraft(passId);
@@ -8739,8 +8761,8 @@ function writeClipboard(text){
 
 function copySessionToClipboard(passId){
   const cycle=curCycle();const data=cycle.done[passId];if(!data)return;
-  const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);
-  const lines = buildCopyLines(pass?.name||passId, data.date, data.timestamp, data.exercises, unitLabel(), data.duration);
+  // PM7: getSessionName resolvar rename-overrides — pass.name gav basnamnet i copy
+  const lines = buildCopyLines(getSessionName(passId), data.date, data.timestamp, data.exercises, unitLabel(), data.duration);
   writeClipboard(lines.join('\n'));
 }
 function copyLogEntryToClipboard(idx){
@@ -8802,7 +8824,6 @@ function rerenderSession(passId){
   const tab=document.getElementById('chain-tab-'+passId);
   if(tab){const isDone=cycle.done[passId]!=null;const isRest=!!pass.rest;tab.className='chain-tab active'+(isDone?' done':'')+(isRest?' rest-day':'');}
 }
-function toggleCard(id){selectSession(id);}
 function selectSession(passId){
   if(_chainSelectedId===passId)return;
   _chainSelectedId=passId;
@@ -8884,14 +8905,19 @@ function getAllPRs(){
   for(const entry of state.log){
     for(const ex of(entry.exercises||[])){
       if(ex.skipped||ex.extra)continue;
-      const def=defs.find(d=>d.id===ex.id);const isBW=def?.bw;
+      // 3.40.0-completion: nyckla på kanoniskt exId (samma övning i två pass = ETT
+      // PR-kort, följer swap/rename). Tidigare slot-id gav dubbletter (A3+E3 Cable Flyes).
+      const key=ex.exId||resolveExId(ex.name,ex.id,ex.id);
+      // BW-klassning: log-raden bär sin egen bw-flagga (saveExercise) — slot-def som
+      // fallback för gamla rader. Slot-def ENSAM blev fel vid swap/tag-override.
+      const isBW=ex.bw!==undefined?!!ex.bw:!!defs.find(d=>d.id===ex.id)?.bw;
       for(const s of(ex.sets||[])){
         if(s.fail) continue;
         if(s.secs!=null){
-          if(isBW){const cur=prs[ex.id];if(!cur||s.secs>(cur.secs||0)||(s.secs===(cur.secs||0)&&(s.extra||0)>(cur.extra||0)))prs[ex.id]={name:ex.name,secs:s.secs,extra:s.extra||0,bwSnap:s.bwSnap||0,bw:true,timed:true};}
-          else{const cur=prs[ex.id];if(!cur||s.secs>(cur.secs||0)||(s.secs===(cur.secs||0)&&(s.weight||0)>(cur.weight||0)))prs[ex.id]={name:ex.name,secs:s.secs,weight:s.weight||0,timed:true};}
-        }else if(isBW){const t=(s.extra||0)+(s.bwSnap||0);const cur=prs[ex.id];if(!cur||t>((cur.extra||0)+(cur.bwSnap||0)))prs[ex.id]={name:ex.name,extra:s.extra||0,bwSnap:s.bwSnap||0,reps:s.reps,bw:true};}
-        else{if(!s.weight)continue;const cur=prs[ex.id];if(!cur||s.weight>cur.weight||(s.weight===cur.weight&&(s.reps||0)>(cur.reps||0)))prs[ex.id]={name:ex.name,weight:s.weight,reps:s.reps,bw:false};}
+          if(isBW){const cur=prs[key];if(!cur||s.secs>(cur.secs||0)||(s.secs===(cur.secs||0)&&(s.extra||0)>(cur.extra||0)))prs[key]={name:ex.name,secs:s.secs,extra:s.extra||0,bwSnap:s.bwSnap||0,bw:true,timed:true};}
+          else{const cur=prs[key];if(!cur||s.secs>(cur.secs||0)||(s.secs===(cur.secs||0)&&(s.weight||0)>(cur.weight||0)))prs[key]={name:ex.name,secs:s.secs,weight:s.weight||0,timed:true};}
+        }else if(isBW){const t=(s.extra||0)+(s.bwSnap||0);const cur=prs[key];if(!cur||t>((cur.extra||0)+(cur.bwSnap||0)))prs[key]={name:ex.name,extra:s.extra||0,bwSnap:s.bwSnap||0,reps:s.reps,bw:true};}
+        else{if(!s.weight)continue;const cur=prs[key];if(!cur||s.weight>cur.weight||(s.weight===cur.weight&&(s.reps||0)>(cur.reps||0)))prs[key]={name:ex.name,weight:s.weight,reps:s.reps,bw:false};}
       }
     }
   }
@@ -8938,7 +8964,7 @@ function renderProgress(){
     html+=`</div>`;
   }
   html+=`<div class="section-sub">History</div>`;
-  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;const sh=(ex.sets||[]).map((s,si)=>ex.bw?`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: BW ${toDisplay(s.bwSnap)||0} + ${toDisplay(s.extra)||0}${unitLabel()} × ${s.secs!=null?s.secs+'s':(s.reps||'?')+'r'}${s.forced?` +${s.forced}f`:''}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`:`<div class="hist-set">${s.warmup?'W'+si:'S'+(si+1)}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.secs!=null?s.secs+'s':(s.reps||'?')+'r'}${s.forced?` +${s.forced}f`:''}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
+  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;let _hw=0,_hs=0;const sh=(ex.sets||[]).map(s=>{const _lbl=s.warmup?'W'+(++_hw):'S'+(++_hs);return ex.bw?`<div class="hist-set">${_lbl}: BW ${toDisplay(s.bwSnap)||0} + ${toDisplay(s.extra)||0}${unitLabel()} × ${s.secs!=null?s.secs+'s':(s.reps||'?')+'r'}${s.forced?` +${s.forced}f`:''}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`:`<div class="hist-set">${_lbl}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.secs!=null?s.secs+'s':(s.reps||'?')+'r'}${s.forced?` +${s.forced}f`:''}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;}).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
   el.innerHTML=html;
 }
 
@@ -9710,7 +9736,8 @@ function buildPRMap(){
   for(const entry of state.log){
     for(const ex of(entry.exercises||[])){
       if(ex.skipped||ex.extra)continue;
-      const def=defs.find(d=>d.id===ex.id);const isBW=def?.bw;
+      // Samma bw-källa som getAllPRs: log-radens egen flagga, slot-def som fallback
+      const isBW=ex.bw!==undefined?!!ex.bw:!!defs.find(d=>d.id===ex.id)?.bw;
       for(const s of(ex.sets||[])){
         if(s.fail) continue;
         if(s.secs!=null){
@@ -9913,7 +9940,15 @@ User: ${currentUser?.name || 'unknown'}
 `);
   window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
 }
-function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.cycles||!d.log)throw new Error('Invalid file');state=d;if(!state.unit)state.unit='kg';if(!state.exerciseOverrides)state.exerciseOverrides={};save();showToast('Data imported!');renderChain();}catch{showToast('Error: invalid file');}};reader.readAsText(file);}
+function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.cycles||!d.log)throw new Error('Invalid file');state=d;
+  // Kör samma migrations-pipeline som loadStateForUser — gamla exporter kan
+  // sakna nyare fält/schema (tidigare patchades bara unit+exerciseOverrides ad hoc).
+  migratePassKeysToSession();
+  ensureStateDefaults();
+  if(state.migrations && !state.migrations.exerciseSplit_v2) migrateExerciseNames();
+  runSchemaMigrations();
+  invalidateChainCache();
+  save();showToast('Data imported!');renderChain();}catch{showToast('Error: invalid file');}};reader.readAsText(file);}
 async function resetAll(){
   const ok = await askModalConfirm('Reset all data?',
     `This will permanently erase all training data for <strong>${currentUser?.name || 'this account'}</strong> — sessions, weight logs, custom exercises, everything. This cannot be undone.`,
@@ -9938,7 +9973,6 @@ async function resetAll(){
 let timerInterval=null;
 let timerSeconds=0;
 let timerEndTime=0;
-let timerDefault=120; // 2 minutes default
 
 function ensureTimerEl(){
   let el=document.getElementById('restTimer');
@@ -10257,9 +10291,11 @@ function keepaliveCloudPush(){
     }
   }catch(e){ /* fall back to anon */ }
 
-  // SL6: exclude draft från payload
+  // SL6: exclude draft+drafts från payload — drafts är device-lokala.
+  // (drafts saknades tidigare → stale drafts kunde följa med "Restored from cloud")
   const _payloadState = {...state};
   delete _payloadState.draft;
+  delete _payloadState.drafts;
   const payload = JSON.stringify({
     id: currentUser.id,
     data: _payloadState,
