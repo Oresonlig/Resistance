@@ -6,6 +6,12 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.53.2 — 2026-06-12
+**Tre gymfeedback-buggar: Fail-indikator, copy, extra-historik.**
+- **Fail-markering försvann efter Done:** Set-cellen renderade `<div></div>` när `isSaved=true`, utan att kolla `savedSet?.fail`. Nu visas `✗` på sparade set som är markerade Fail (alla tre set-typer: extras, BW-set, normala set).
+- **Copy saknade ✗ på failade set:** `buildCopyLines` appendade aldrig `set.fail`. Nu: `S5: 225 kg × 1r ✗` för ett failat set.
+- **Extra-övningar visade ingen historik:** `buildExtraBlock` anropade aldrig `getLastSession`. Dessutom lagrade `finishSession` `exId='extra_B_2'` (runtime-slot, index-baserat) på extras istf kanoniskt namn-slug → historiken matchade aldrig. Fix: `finishSession` resolvar extras via `resolveExId(ex.name, null, null)` (namn-slug); `buildExtraBlock` visar "Last (Xd ago)"-raden med set-historik, samma format som ordinarie övningar. Gäller nya sessions framåt — gamla log-rader med runtime-slot-id hittas ej (acceptabelt).
+
 ## 3.53.1 — 2026-06-11
 **Lågprio-städ: de tre flaggade fynden från 3.53.0-granskningen.**
 - **`migrateExerciseNames` re-skannade hela loggen vid varje load** för användare utan legacy-namn (flaggan sattes bara om något ändrades). Nu sätts `migrations.exerciseSplit_v2` alltid efter körning — engångsmigration per design.

@@ -5388,7 +5388,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.53.1';
+const APP_VERSION = '3.53.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -6282,8 +6282,27 @@ function buildExtraBlock(ex,i,passId,isDone,savedExs,draftExtraSets,completedDat
   const workListEx=sortedSetsEx.filter(s=>!s.warmup);
   const allWorkLoggedEx=workListEx.length>0&&workListEx.filter(s=>!!(state.draft?.loggedSets?.[extraId]?.[s.sid])).length>=workListEx.length;
   const unitL=unitLabel();
+  // Historia för extras — nycklas på kanoniskt exId (namn-slug), samma som finishSession lagrar sedan 3.53.2
+  const _exHistId = resolveExId(ex.name, null, null);
+  const _lastEx = getLastSession(_exHistId);
+  let prevTextEx = '';
+  if(_lastEx){
+    const _wkEx=(_lastEx.sets||[]).filter(s=>!s.warmup);
+    const _lastSetEx=_wkEx[_wkEx.length-1]||(_lastEx.sets||[])[(_lastEx.sets||[]).length-1];
+    let _lastStrEx='';
+    if(_lastSetEx) _lastStrEx=`${toDisplay(_lastSetEx.weight)||'—'}${unitL} ×${_lastSetEx.reps||'?'}r${_lastSetEx.forced?` +${_lastSetEx.forced}f`:''}`;
+    const _dAgo=Math.floor((Date.now()-_lastEx.timestamp)/86400000);
+    const _whenEx=_dAgo===0?'today':_dAgo===1?'1d ago':`${_dAgo}d ago`;
+    const _allEx=_lastEx.allSets||_lastEx.sets||[];
+    let _histEx='';
+    if(_allEx.length>1){
+      let _wc=0,_sc=0;
+      _histEx=`<div class="ex-prev-history">${_allEx.map(s=>{const wu=!!s.warmup;const lbl=wu?('W'+(++_wc)):('S'+(++_sc));const v=`${toDisplay(s.weight)||'—'}${unitL} ×${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}`;return `<div class="ex-prev-history-set ${wu?'warmup':'work'}"><span class="set-lbl">${lbl}</span>${v}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;}).join('')}</div>`;
+    }
+    prevTextEx=`<div class="ex-prev"><span class="last-val">Last (${_whenEx}):</span>${_histEx||' '+_lastStrEx}</div>`;
+  }
   let h=`<div class="${'ex-block'+(isSkippedEx?' skipped':'')+(isSavedEx?' saved':'')}" id="exblock-${extraId}">`;
-  h+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(ex.name)} <span class="ex-tag" style="color:#446;border-color:#223">Extra</span></div></div><div class="ex-action-col"><div class="ex-mini-btns">`;
+  h+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(ex.name)} <span class="ex-tag" style="color:#446;border-color:#223">Extra</span></div>${prevTextEx}</div><div class="ex-action-col"><div class="ex-mini-btns">`;
   if(!isDone&&!isSkippedEx){
     if(isSavedEx){
       h+=`<span class="ex-saved-badge">✓ Done</span><button class="ex-btn-edit" onclick="unsaveExercise('${passId}','${extraId}')"><svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit ▾</button>`;
@@ -6318,7 +6337,7 @@ function buildExtraBlock(ex,i,passId,isDone,savedExs,draftExtraSets,completedDat
         <div><input class="set-input${wCls}" type="number" id="w-${extraId}-${sid}" placeholder="—" value="${savedSet?.weight!=null?toDisplay(savedSet.weight):bufVal?.weight!=null?toDisplay(bufVal.weight):''}" min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis} oninput="updateLogBtnState('${extraId}','${sid}')"><div class="set-unit">${unitL}</div></div>
         <div><input class="set-input${wCls}" type="number" id="r-${extraId}-${sid}" placeholder="—" value="${savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:''}" min="1" max="50" ${dis}><div class="set-unit">reps</div></div>
         <div><input class="set-input${wCls} forced" type="number" id="f-${extraId}-${sid}" placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}><div class="set-unit forced-unit">+f</div></div>
-        ${(!isSavedEx&&!isDone)?(isLogged?`<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${extraId}','${sid}','${passId}')" title="Tap to unlog">✓${isFailEx?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFailEx?' active':''}" onclick="toggleSetFail('${extraId}','${sid}','${passId}')">Fail</button></div>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${extraId}','${sid}','${passId}',${wu})">Log</button>`):'<div></div>'}
+        ${(!isSavedEx&&!isDone)?(isLogged?`<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${extraId}','${sid}','${passId}')" title="Tap to unlog">✓${isFailEx?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFailEx?' active':''}" onclick="toggleSetFail('${extraId}','${sid}','${passId}')">Fail</button></div>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${extraId}','${sid}','${passId}',${wu})">Log</button>`):(savedSet?.fail?'<span class="set-fail-mark">✗</span>':'<div></div>')}
         ${canDel?`<button class="set-delete" onclick="removeExtraSet('${extraId}','${sid}','${passId}')">✕</button>`:'<div></div>'}
       </div>`;
     }
@@ -6640,7 +6659,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
                   placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}>
                   <div class="set-unit forced-unit">+f</div></div>
                 ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${sid}" onclick="toggleSide('${ex.id}','${sid}')" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
-                ${(!isSaved&&!isDone)?(isLogged?`<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓${isFail?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFail?' active':''}" onclick="toggleSetFail('${ex.id}','${sid}','${passId}')">Fail</button></div>`:`<button class="set-log-btn has-value" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`):'<div></div>'}
+                ${(!isSaved&&!isDone)?(isLogged?`<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓${isFail?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFail?' active':''}" onclick="toggleSetFail('${ex.id}','${sid}','${passId}')">Fail</button></div>`:`<button class="set-log-btn has-value" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`):(savedSet?.fail?'<span class="set-fail-mark">✗</span>':'<div></div>')}
                 ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}','${sid}','${passId}')">✕</button>`:'<div></div>'}
               </div>`;
             } else {
@@ -6659,7 +6678,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
                   placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}>
                   <div class="set-unit forced-unit">+f</div></div>
                 ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${sid}" onclick="toggleSide('${ex.id}','${sid}')" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
-                ${(!isSaved&&!isDone)?(isLogged?`<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓${isFail?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFail?' active':''}" onclick="toggleSetFail('${ex.id}','${sid}','${passId}')">Fail</button></div>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`):'<div></div>'}
+                ${(!isSaved&&!isDone)?(isLogged?`<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓${isFail?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFail?' active':''}" onclick="toggleSetFail('${ex.id}','${sid}','${passId}')">Fail</button></div>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`):(savedSet?.fail?'<span class="set-fail-mark">✗</span>':'<div></div>')}
                 ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}','${sid}','${passId}')">✕</button>`:'<div></div>'}
               </div>`;
             }
@@ -8217,7 +8236,8 @@ function finishSession(passId){
   if(!state.deletions.exerciseNotes) state.deletions.exerciseNotes = {};
   exercises.forEach(ex=>{
     // 3.40.0: knyt log-raden till kanoniskt exId (historik/PR följer övningen, inte slotten)
-    const exId = getRenderExId(ex.id) || ex.id;
+    // 3.53.2: extras fick runtime-slot-id ('extra_B_2') — resolva via namn-slug istället
+    const exId = String(ex.id).startsWith('extra_') ? resolveExId(ex.name, null, null) : (getRenderExId(ex.id) || ex.id);
     ex.exId = exId;
     if(!ex.skipped && Array.isArray(ex.sets)){
       const workCount=ex.sets.filter(s=>!s.warmup).length;
@@ -8721,7 +8741,7 @@ function buildCopyLines(passName, dateStr, timestamp, exercises, u, duration){
         lines.push('  W'+w+': '+(set.secs?set.secs+'s':wt+(set.reps||'?')+'r'));
       } else {
         s++;
-        lines.push('  S'+s+': '+formatSetLine(set,u));
+        lines.push('  S'+s+': '+formatSetLine(set,u)+(set.fail?' ✗':''));
       }
     });
     lines.push('');

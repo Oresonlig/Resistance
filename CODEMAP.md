@@ -1,53 +1,57 @@
 # Code Map — index.html
 
-`index.html` är single-file: inline CSS + JS, ~280KB, ~7500+ rader. Radnummer är ungefärliga — använd Grep om de inte stämmer.
+`index.html` är single-file: inline CSS + JS, ~290KB, ~10 350 rader. Radnummer är ungefärliga — använd Grep om de inte stämmer.
 
 ## Var saker bor
 
 ### State & defaults
-- `~4536` — `ensureStateDefaults()` (init `drafts{}`, `prCollapsed`)
-- `~4595` — `isFreshState(s)`
-- `~4612` — `freshState()` — single source of truth. `appVersion:APP_VERSION`
-- `~4995` — `const APP_VERSION` — **ENDA stället att bumpa version**
-- `~4967` — `getEffectiveChain()` — cachad chain med order + adds/removes
-- `~4981` — `invalidateChainCache()`
+- `~4911` — `ensureStateDefaults()` (init `drafts{}`, `prCollapsed`)
+- `~4986` — `isFreshState(s)`
+- `~5003` — `freshState()` — single source of truth. `appVersion:APP_VERSION`
+- `~5391` — `const APP_VERSION` — **ENDA stället att bumpa version**
+- `~5521` — `const SCHEMA_VERSION` + `SCHEMA_MIGRATIONS`-pipeline
+- `~5363` — `getEffectiveChain()` — cachad chain med order + adds/removes
+- `~5377` — `invalidateChainCache()`
 
 ### Chain & rendering
-- `~5169` — `newCycle()` — **TDZ-fälla:** anropas inuti `freshState()`, läser `state` via `getEffectiveChain()`. Vid `let state = freshState()` är `state` i TDZ → ReferenceError. Defensiv try/catch sedan 3.35.12. RÖR INTE utan att förstå detta.
-- `~5192` — `ensureDraft(passId)` — multi-draft: `state.drafts[passId]`-slots, inte enda `state.draft`
-- `~8271` — `ensureExtraSets(exId, passId)` — paddar work-sets upp till `lastSessionSetCount`. **Guard:** hoppar pad om `state.draft.setEdited[exId]` (sätts av add/removeWorkSet). Utan guarden snäppa borttagna set tillbaka.
-- `~7653` — `TAG_HINTS`-map + `getExerciseDescriptionLine` + `getExerciseTip`: tag-driven rad 1 + övnings-tip rad 2
-- `~8194` — `togglePRCollapse()` + PR-render: kollapsbar PR-sektion, `state.prCollapsed` default true
-- `~4380` — `buildAddExRow(passId)` — "Add exercise"-knapp + dropdown (använder `groupExercisesByCategory()`)
-- `~5030` — chain-strip rendering
-- `~5600` — Edit Chain-vyn (reorder)
-- `~5630` — `showEditExercises(passId)`
-- `~5757` — `confirmAddPermEx(passId)`
-- `~5921` — `buildTagEditorHTML(ex, passId)` — tags-editor
-- `~6420` — `confirmAddEx(passId)`
+- `~5690` — `newCycle()` — **TDZ-fälla:** anropas inuti `freshState()`, läser `state` via `getEffectiveChain()`. Vid `let state = freshState()` är `state` i TDZ → ReferenceError. Defensiv try/catch sedan 3.35.12. RÖR INTE utan att förstå detta.
+- `~5713` — `ensureDraft(passId)` — multi-draft: `state.drafts[passId]`-slots, inte enda `state.draft`
+- `~8362` — `ensureExtraSets(exId, passId)` — paddar work-sets upp till `lastSessionSetCount`. **Guard:** hoppar pad om `state.draft.setEdited[exId]` (sätts av add/removeWorkSet). Utan guarden snäppa borttagna set tillbaka.
+- `~8306` — `TAG_HINTS`-map + `~8314` `getExerciseDescriptionLine` + `getExerciseTip`: tag-driven rad 1 + övnings-tip rad 2
+- `~8931` — `togglePRCollapse()` + PR-render: kollapsbar PR-sektion, `state.prCollapsed` default true
+- `~6246` — `buildAddExRow(passId)` — "Add exercise"-knapp + dropdown (använder `groupExercisesByCategory()`)
+- `~6337` — `buildPassBodyHTML(pass,cycle,nextId)` — session-body HTML
+- `~6717` — chain-strip rendering (i renderData)
+- `~7286` — Edit Chain-vyn (reorder)
+- `~7494` — `showEditExercises(passId)`
+- `~7615` — `confirmAddPermEx(passId)`
+- `~7774` — `buildTagEditorHTML(ex, passId)` — tags-editor
+- `~8573` — `confirmAddEx(passId)`
+- `~8810` — `selectSession(passId)` — byter aktiv session + fade-animation
 
 ### EXERCISE_LIBRARY & helpers
-- `~5171` — `EXERCISE_LIBRARY` array (~rad 5171–5230)
-- `~6172` — `groupExercisesByCategory()` — cachad gruppering, används av buildAddExRow + swap-dropdown + edit-vyn. `_groupedExCache` nollställs vid custom exercise-ändring.
+- `~5183` — `EXERCISE_LIBRARY` array
+- `~6235` — `groupExercisesByCategory()` — cachad gruppering, används av buildAddExRow + swap-dropdown + edit-vyn. `_groupedExCache` nollställs vid custom exercise-ändring.
 
 ### Synk-lagret
-- `~4068` — `mergeLogEntries`, `mergeWeightEntries`
-- `~4087` — `mergeArrayById`, `mergeKeyedMap`, `mergeArrayUnion`, `mergeMapOfArrays`, `mergeMapOfArrayById`
-- `~5320` — `syncFromCloud(userId)` (mutex per SL7). Preserverar lokala `state.drafts`
-- `~5512` — `pushState(opts)` — pull-before-push. Skickar `drafts` men exkluderar från cloud-merge
-- `~5556` — `save()` — har isFreshState-guard + QuotaExceededError-toast
-- `~7611` — `finishSession(passId)` — rensar `state.drafts[passId]`
-- `~7430+` — event-handlers: focus, periodic 30s, beforeunload, visibilitychange
+- `~5777` — `mergeLogEntries`, `~5788` `mergeWeightEntries`
+- `~5801` — `mergeArrayById`, `mergeKeyedMap`, `mergeArrayUnion`, `mergeMapOfArrays`, `mergeMapOfArrayById`
+- `~5843` — `syncFromCloud(userId)` (mutex per SL7). Preserverar lokala `state.drafts`
+- `~6046` — `pushState(opts)` — pull-before-push. Skickar `drafts` men exkluderar från cloud-merge
+- `~6090` — `save()` — har isFreshState-guard + QuotaExceededError-toast
+- `~8201` — `finishSession(passId)` — rensar `state.drafts[passId]`
+- `~10253` — `__periodicSyncTimer` (30s) + `~10262` `keepaliveCloudPush()`
+- `~10319` — event-handlers: `visibilitychange`, `beforeunload`, `pagehide`
 
 ### Modaler & UI-utilities
-- `~7221` — `askModalText(title, opts)` returnerar `{text, select}` (INTE en string)
-- `~7300+` — `askModalConfirm(title, body, opts)`
-- `~7500+` — Service Worker registration (`sw.js`)
+- `~10052` — `askModalText(title, opts)` returnerar `{text, select}` (INTE en string)
+- `~10133` — `askModalConfirm(title, body, opts)`
+- `~10336` — Service Worker registration (`sw.js`)
 
 ### Teman
-- `~7221` — `THEMES`-arrayen (tema-registry)
-- `~applyTheme()` — sätter `document.body.className` + startar/stoppar ambient effects
-- Temablocken i CSS: Iron `:root` (~rad 21), Night City (~530), Nanosuit (~1911), Void (~1852), Arctic (~1049 + ~2942), Crusader (~2565 + ~3229), Overgrowth/understory (~3075), Obsidian (~3670), Ember (~3680), Cosmic Horror (~4048)
+- `~8987` — `THEMES`-arrayen (tema-registry)
+- `~9004` — `applyTheme()` — sätter `document.body.className` + startar/stoppar ambient effects
+- Temablocken i CSS: Iron `body:not([class*="theme-"])` (~460), Night City (~529), Arctic (~1039), Ember (~1334), Void (~1846), Nanosuit (~1917), Undertow (~2954), Overgrowth/understory (~3091), Crusader (~3246), Obsidian (~3697), Cosmic Horror (~4066)
 
 ## Arkitektur — viktiga val
 
@@ -60,7 +64,7 @@
 - **Rendering är string-interpolation → innerHTML.** XSS-känsligt — `escapeHTML()` används men inte överallt (PM9/PM19 öppen).
 
 ## Versionsrutin
-1. `const APP_VERSION = 'x.x.x'` (~rad 4995) — **ENDA stället**
+1. `const APP_VERSION = 'x.x.x'` (~rad 5391) — **ENDA stället**
 2. State-init (`appVersion:APP_VERSION`) + header läser konstanten dynamiskt
 3. `CHANGELOG.md` entry överst
 
