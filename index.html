@@ -4921,6 +4921,15 @@ function ensureStateDefaults(){
   }
   // 3.39.0 — migrera drafts till sid-modell (positionell → stabila set-id)
   try{ Object.values(state.drafts).forEach(migrateDraftSetIds); }catch(e){ console.warn('draft sid-migration', e); }
+  // 3.54.0 — stabila extra-id. Legacy extras ({name} utan id) får sitt DÅVARANDE
+  // index-baserade id → all keyad data (extraSets/loggedSets/savedExercises/
+  // inputBuffer) matchar utan remapping. Idempotent. Efter detta ändras id ALDRIG
+  // (removeExtra re-indexerar inte längre).
+  try{
+    const migExtras=(d)=>{ if(d&&d.passId&&Array.isArray(d.extras)) d.extras.forEach((e,i)=>{ if(e&&!e.id) e.id='extra_'+d.passId+'_'+i; }); };
+    Object.values(state.drafts).forEach(migExtras);
+    migExtras(state.draft);
+  }catch(e){ console.warn('extras id-migration', e); }
   if(typeof state.prCollapsed !== 'boolean') state.prCollapsed = true;
   if(typeof state.restCount !== 'number') state.restCount = 1;
   if(!state.permanentSwaps) state.permanentSwaps = {};
@@ -5388,7 +5397,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.53.3';
+const APP_VERSION = '3.54.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5455,8 +5464,27 @@ function slotKeyToExId(s, slotId, customIds){
   if(baseName) return slugifyExId(baseName);
   return null;
 }
+// Bygg ett syntetiskt ex-objekt för en extra-övning så den kan flöda genom SAMMA
+// render/save/capture-kodväg som ordinarie övningar (3.54.0 — extras-parity).
+// Flaggor (bw/ramp/timed/uni/singles) ärvs från customExercises-defen om namnet
+// matchar en custom-övning; bibliotekets övningar saknar flaggor → user taggar själv.
+function makeExtraEx(entry){
+  if(!entry || !entry.name) return null;
+  const c = (state.customExercises||[]).find(x=>x.name===entry.name);
+  return {id:entry.id, name:entry.name, extra:true,
+    bw:!!c?.bw, ramp:!!c?.ramp, timed:!!c?.timed, uni:!!c?.uni, singles:!!c?.singles};
+}
+// Kanoniskt exId för en extra-övning — alltid namn-slug (custom-id om custom).
+function extraExId(name){
+  const c = (state.customExercises||[]).find(x=>x.name===name);
+  return resolveExId(name, null, c?.id);
+}
 // Resolva nuvarande exId för en renderad övning (bas/added/extra + ev swap/custom).
 function getRenderExId(slotId){
+  if(String(slotId).startsWith('extra_')){
+    const entry = (state.draft?.extras||[]).find(e=>e.id===slotId);
+    return entry ? extraExId(entry.name) : null;
+  }
   const swapName = state.draft?.swaps?.[slotId] || state.permanentSwaps?.[slotId];
   if(swapName){
     const custom = (state.customExercises||[]).find(c=>c.name===swapName);
@@ -6253,7 +6281,7 @@ function buildAddExRow(passId){
 }
 
 function buildSessionFooter(passId,savedExs,isDone,extras,passExercises){
-  const extraIds=(extras||[]).map((_,i)=>'extra_'+passId+'_'+i);
+  const extraIds=(extras||[]).filter(e=>e&&e.id).map(e=>e.id);
   const allIds=[...(passExercises||[]).map(e=>e.id),...extraIds];
   const total=allIds.length;
   const resolvedCount=allIds.filter(id=>{
@@ -6270,91 +6298,8 @@ function buildSessionFooter(passId,savedExs,isDone,extras,passExercises){
   return h;
 }
 
-function buildExtraBlock(ex,i,passId,isDone,savedExs,draftExtraSets,completedData){
-  const extraId='extra_'+passId+'_'+i;
-  const isSavedEx=!!savedExs[extraId]&&!savedExs[extraId].skipped&&!savedExs[extraId].editing;
-  const isSkippedEx=savedExs[extraId]?.skipped===true;
-  const defaultExtraSets=defSets(2,1);
-  const rawExSets=ensureSetIds(draftExtraSets[extraId]!==undefined?draftExtraSets[extraId]:defaultExtraSets);
-  const savedExData=isDone?completedData?.exercises?.find(e=>e.id===extraId):savedExs[extraId];
-  const sortedSetsEx=sortSetsForDisplay(rawExSets);
-  const warmupListEx=sortedSetsEx.filter(s=>s.warmup);
-  const workListEx=sortedSetsEx.filter(s=>!s.warmup);
-  const allWorkLoggedEx=workListEx.length>0&&workListEx.filter(s=>!!(state.draft?.loggedSets?.[extraId]?.[s.sid])).length>=workListEx.length;
-  const unitL=unitLabel();
-  // Historia för extras — nycklas på kanoniskt exId (namn-slug), samma som finishSession lagrar sedan 3.53.2
-  const _exHistId = resolveExId(ex.name, null, null);
-  const _lastEx = getLastSession(_exHistId);
-  let prevTextEx = '';
-  if(_lastEx){
-    const _wkEx=(_lastEx.sets||[]).filter(s=>!s.warmup);
-    const _lastSetEx=_wkEx[_wkEx.length-1]||(_lastEx.sets||[])[(_lastEx.sets||[]).length-1];
-    let _lastStrEx='';
-    if(_lastSetEx) _lastStrEx=`${toDisplay(_lastSetEx.weight)||'—'}${unitL} ×${_lastSetEx.reps||'?'}r${_lastSetEx.forced?` +${_lastSetEx.forced}f`:''}`;
-    const _dAgo=Math.floor((Date.now()-_lastEx.timestamp)/86400000);
-    const _whenEx=_dAgo===0?'today':_dAgo===1?'1d ago':`${_dAgo}d ago`;
-    const _allEx=_lastEx.allSets||_lastEx.sets||[];
-    let _histEx='';
-    if(_allEx.length>1){
-      let _wc=0,_sc=0;
-      _histEx=`<div class="ex-prev-history">${_allEx.map(s=>{const wu=!!s.warmup;const lbl=wu?('W'+(++_wc)):('S'+(++_sc));const v=`${toDisplay(s.weight)||'—'}${unitL} ×${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}`;return `<div class="ex-prev-history-set ${wu?'warmup':'work'}"><span class="set-lbl">${lbl}</span>${v}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;}).join('')}</div>`;
-    }
-    prevTextEx=`<div class="ex-prev"><span class="last-val">Last (${_whenEx}):</span>${_histEx||' '+_lastStrEx}</div>`;
-  }
-  // Done-state: collapsed precis som reguljärer (CSS döljer allt utom summary)
-  const _wkCountEx = (savedExData?.sets||[]).filter(s=>!s.warmup).length;
-  const _colStatusEx = savedExData?.skipped ? 'Skipped' : _wkCountEx > 0 ? `✓ ${_wkCountEx} set${_wkCountEx===1?'':'s'}` : (savedExData ? '✓ Done' : '');
-  let h=`<div class="${'ex-block'+(isSkippedEx?' skipped':'')+(isSavedEx?' saved':'')+(isDone?' collapsed done':'')}" id="exblock-${extraId}">`;
-  h+=`<div class="ex-collapsed-summary"><div class="ex-collapsed-name-col"><div class="ex-collapsed-name">${escapeHTML(ex.name)} <span class="ex-tag" style="color:#446;border-color:#223">Extra</span></div></div><div class="ex-collapsed-status">${_colStatusEx}</div></div>`;
-  h+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(ex.name)} <span class="ex-tag" style="color:#446;border-color:#223">Extra</span></div>${prevTextEx}</div><div class="ex-action-col"><div class="ex-mini-btns">`;
-  if(!isDone&&!isSkippedEx){
-    if(isSavedEx){
-      h+=`<span class="ex-saved-badge">✓ Done</span><button class="ex-btn-edit" onclick="unsaveExercise('${passId}','${extraId}')"><svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit ▾</button>`;
-      h+=`<button class="ex-btn-edit" onclick="saveExtraToProgram('${passId}',${i})" style="color:#4a7a4a;border-color:#2a3a2a;">+ Program</button>`;
-    }else{
-      h+=`<button class="ex-btn-skip" onclick="skipExercise('${passId}','${extraId}')">Skip</button>`;
-      h+=`<button class="ex-btn-edit" onclick="removeExtra('${passId}',${i})">✕ Remove</button>`;
-      h+=`<button class="ex-btn-edit" onclick="saveExtraToProgram('${passId}',${i})" style="color:#4a7a4a;border-color:#2a3a2a;">+ Program</button>`;
-    }
-  }else if(!isDone&&isSkippedEx){
-    h+=`<span style="font-family:var(--mono);font-size:.44rem;color:#5a3a00;">Skipped</span><button class="ex-btn-edit" onclick="unskipExercise('${passId}','${extraId}')">↩ Undo</button>`;
-  }
-  h+=`</div></div></div>`;
-  if(!isSkippedEx){
-    h+=`<div class="sets-table">`;
-    if(warmupListEx.length>0)h+=`<div class="sets-group-label warmup-group">Warm-up</div>`;
-    let wuCntEx=0,wkCntEx=0,shownWkEx=false;
-    for(let si=0;si<sortedSetsEx.length;si++){
-      const sm=sortedSetsEx[si];const wu=sm.warmup;const sid=sm.sid;
-      if(!wu&&!shownWkEx){h+=`<div class="sets-group-label work-group">Work</div>`;shownWkEx=true;}
-      const lbl=wu?('W'+(++wuCntEx)):('S'+(++wkCntEx));
-      const wCls=wu?' warmup':' work-set';
-      const savedSet=savedExData?.sets?(savedExData.sets.find(ss=>ss.sid===sid)||savedExData.sets[si]||null):null;
-      const bufVal=(!savedSet&&state.draft?.inputBuffer?.[extraId]?.[sid])||null;
-      const isLogged=!savedSet&&!!(state.draft?.loggedSets?.[extraId]?.[sid]);
-      const isFailEx=isLogged&&!!state.draft.loggedSets[extraId][sid].fail;
-      const loggedCls=isLogged?' set-logged':'';
-      const dis=(isDone||isSavedEx)?'disabled':'';
-      const canDel=!isDone&&!isSavedEx&&rawExSets.length>1;
-      h+=`<div class="set-row normal-set${loggedCls}">
-        <span class="set-num${wu?' warmup-label':''}">${lbl}</span>
-        <div><input class="set-input${wCls}" type="number" id="w-${extraId}-${sid}" placeholder="—" value="${savedSet?.weight!=null?toDisplay(savedSet.weight):bufVal?.weight!=null?toDisplay(bufVal.weight):''}" min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis} oninput="updateLogBtnState('${extraId}','${sid}')"><div class="set-unit">${unitL}</div></div>
-        <div><input class="set-input${wCls}" type="number" id="r-${extraId}-${sid}" placeholder="—" value="${savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:''}" min="1" max="50" ${dis}><div class="set-unit">reps</div></div>
-        <div><input class="set-input${wCls} forced" type="number" id="f-${extraId}-${sid}" placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}><div class="set-unit forced-unit">+f</div></div>
-        ${(!isSavedEx&&!isDone)?(isLogged?`<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${extraId}','${sid}','${passId}')" title="Tap to unlog">✓${isFailEx?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFailEx?' active':''}" onclick="toggleSetFail('${extraId}','${sid}','${passId}')">Fail</button></div>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${extraId}','${sid}','${passId}',${wu})">Log</button>`):(savedSet?.fail?'<span class="set-fail-mark">✗</span>':'<div></div>')}
-        ${canDel?`<button class="set-delete" onclick="removeExtraSet('${extraId}','${sid}','${passId}')">✕</button>`:'<div></div>'}
-      </div>`;
-    }
-    if(!isDone&&!isSavedEx){
-      h+=`<button class="add-set-btn" style="border-color:#1a1400;color:#3a2a00" onclick="addWarmupSet('${extraId}','${passId}')">+ Warm-up</button>`;
-      h+=`<button class="add-set-btn" onclick="addWorkSet('${extraId}','${passId}')">+ Work Set</button>`;
-      h+=`<button class="ex-done-primary${allWorkLoggedEx?' ready':''}" id="done-${extraId}" onclick="saveExercise('${passId}','${extraId}')">✓ Done</button>`;
-    }
-    h+=`</div>`;
-  }
-  h+=`</div>`;
-  return h;
-}
+// buildExtraBlock pensionerad 3.54.0 — extras renderas genom samma loop som
+// ordinarie övningar i buildPassBodyHTML (syntetiska ex-objekt via makeExtraEx).
 
 // ── CHAIN RENDER ──────────────────────────────────────────────
 function buildPassBodyHTML(pass,cycle,nextId){
@@ -6381,6 +6326,17 @@ function buildPassBodyHTML(pass,cycle,nextId){
       const draft=hasDraft?state.draft:null;
       const savedExs=draft?draft.savedExercises:{};
       const draftSwaps=draft?draft.swaps:{};
+      const completedExs=completedData?.exercises||[];
+      const draftExtraSets=draft?draft.extraSets:Object.fromEntries(
+        completedExs.filter(e=>e.id&&e.id.startsWith('extra_'+passId+'_'))
+          .map(e=>[e.id,(e.sets||[]).map(s=>({sid:s.sid,warmup:!!s.warmup}))])
+      );
+      const extras=draft?draft.extras:completedExs
+        .filter(e=>e.id&&e.id.startsWith('extra_'+passId+'_'))
+        .map(e=>({id:e.id, name:e.name}));
+      // 3.54.0 — extras flödar genom SAMMA render-loop som ordinarie övningar,
+      // som syntetiska ex-objekt (id/name/flaggor). buildExtraBlock är pensionerad.
+      const allExs=[...pass.exercises, ...extras.map(e=>makeExtraEx(e)).filter(Boolean)];
       // V1 Collapse: lazy-resolve activeExerciseId. Om null eller pekar på en
       // stängd övning → hitta första öppna. Allt stängt → null (Finish-knappen tar över).
       let activeExId = null;
@@ -6390,28 +6346,20 @@ function buildPassBodyHTML(pass,cycle,nextId){
           // Endast resolve om cur saknas eller pekar på en övning som inte finns
           // (t.ex. swappad bort). Tillåt explicit Done/Skipped som aktiv — användaren
           // tappade medvetet på raden för att se eller redigera den.
-          const curExists = cur && pass.exercises.some(e=>e.id===cur);
+          const curExists = cur && allExs.some(e=>e.id===cur);
           if(!curExists){
-            const firstOpen = pass.exercises.find(e=>!savedExs[e.id]);
+            const firstOpen = allExs.find(e=>!savedExs[e.id]);
             draft.activeExerciseId = firstOpen ? firstOpen.id : null;
           }
           activeExId = draft.activeExerciseId;
         } else {
           // Next-up preview: ingen draft, men collapse ska ändå fungera.
           // Default: första övningen är aktiv. Klick på annan rad skapar draft via setActiveExercise.
-          activeExId = pass.exercises[0]?.id || null;
+          activeExId = allExs[0]?.id || null;
         }
       }
-      const completedExs=completedData?.exercises||[];
-      const draftExtraSets=draft?draft.extraSets:Object.fromEntries(
-        completedExs.filter(e=>e.id&&e.id.startsWith('extra_'+passId+'_'))
-          .map(e=>[e.id,(e.sets||[]).map(s=>({sid:s.sid,warmup:!!s.warmup}))])
-      );
-      const extras=draft?draft.extras:completedExs
-        .filter(e=>e.id&&e.id.startsWith('extra_'+passId+'_'))
-        .map(e=>({id:e.id, name:e.name}));
 
-      pass.exercises.forEach(ex=>{
+      allExs.forEach(ex=>{
         const isSaved=!isDone&&!!savedExs[ex.id]&&!savedExs[ex.id].skipped&&!savedExs[ex.id].editing;
         const isSkipped=!isDone&&savedExs[ex.id]?.skipped===true;
         // Swap resolution — done FIRST so flag detection can use custom exercise data
@@ -6435,7 +6383,8 @@ function buildPassBodyHTML(pass,cycle,nextId){
         const isSingles = tagOvr.singles!==undefined ? tagOvr.singles : !!effEx.singles;
 
         let tags='';if(isRampEx)tags+=`<span class="ex-tag ramp">Ramp</span>`;if(isSingles)tags+=`<span class="ex-tag singles">Singles</span>`;if(isBW){const bwDisp=todayWkg?`${toDisplay(todayWkg)} ${unitLabel()}`:'';tags+=`<span class="ex-tag bw">BW${bwDisp?' '+bwDisp:''}</span>`;}if(isUni)tags+=`<span class="ex-tag uni">Unilateral</span>`;if(isTimed)tags+=`<span class="ex-tag timed">Timed</span>`;
-        const _exId = getRenderExId(ex.id) || ex.id;
+        // Extras: kanoniskt exId via namn (funkar även i done-state utan draft)
+        const _exId = ex.extra ? extraExId(ex.name) : (getRenderExId(ex.id) || ex.id);
         const lastSession=getLastSession(_exId);
         let prevText='';
         if(lastSession){
@@ -6485,7 +6434,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
             ? `<div class="ex-note-banner done-note">📝 ${escapedNote}</div>` : '';
         // V1 Collapse: kollapsa om denna inte är aktiv övning (funkar både med/utan draft)
         // Done-sessioner: alla kollapsade. Pågående session där alla saved/skipped: alla kollapsade.
-        const allClosed = pass.exercises.length > 0 && pass.exercises.every(e => !!savedExs[e.id]);
+        const allClosed = allExs.length > 0 && allExs.every(e => !!savedExs[e.id]);
         const isCollapsed = isDone || (activeExId ? activeExId !== ex.id : allClosed);
         // Kompakt status-text för kollapsade rader
         let collapsedStatus = '';
@@ -6516,12 +6465,13 @@ function buildPassBodyHTML(pass,cycle,nextId){
         // 3.34.0 — Tags ALLTID under namnet (Niklas request). Egna rader för collapsed + expanded.
         const tagsRow = tags ? `<div class="ex-tags-row">${tags}</div>` : '';
         const tagsCollapsed = tags ? `<div class="ex-collapsed-tags">${tags}</div>` : '';
-        html+=`<div class="ex-collapsed-summary"${_collapseAttr}>${_chevron}<div class="ex-collapsed-name-col"><div class="ex-collapsed-name">${escapeHTML(customName)}</div>${tagsCollapsed}</div><div class="ex-collapsed-status">${collapsedStatus}</div></div>`;
+        const _extraBadge = ex.extra ? ` <span class="ex-tag" style="color:#446;border-color:#223">Extra</span>` : '';
+        html+=`<div class="ex-collapsed-summary"${_collapseAttr}>${_chevron}<div class="ex-collapsed-name-col"><div class="ex-collapsed-name">${escapeHTML(customName)}${_extraBadge}</div>${tagsCollapsed}</div><div class="ex-collapsed-status">${collapsedStatus}</div></div>`;
         const _tagLine = getExerciseDescriptionLine(ex);
         const _tip = getExerciseTip(ex);
         const _tagHtml = _tagLine ? `<div class="ex-detail">${escapeHTML(_tagLine)}</div>` : '';
         const _tipHtml = _tip ? `<div class="ex-tip">${escapeHTML(_tip)}</div>` : '';
-        html+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(customName)}</div>${tagsRow}${_tagHtml}${_tipHtml}${prevText}${noteBanner}</div><div class="ex-action-col">`;
+        html+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(customName)}${_extraBadge}</div>${tagsRow}${_tagHtml}${_tipHtml}${prevText}${noteBanner}</div><div class="ex-action-col">`;
 
         if(!isDone&&!isSkipped){
           html+=`<div class="ex-mini-btns">`;
@@ -6529,6 +6479,19 @@ function buildPassBodyHTML(pass,cycle,nextId){
             html+=`<span class="ex-saved-badge">✓ Done</span>
               <button class="ex-btn-edit" onclick="unsaveExercise('${passId}','${ex.id}')">
                 <svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit ▾</button>`;
+            if(ex.extra) html+=`<button class="ex-btn-edit" onclick="saveExtraToProgram('${passId}','${ex.id}')" style="color:#4a7a4a;border-color:#2a3a2a;">+ Program</button>`;
+          }else if(ex.extra){
+            // Extras: Skip + Edit▾(Tags / + Program / Remove). Ingen swap — man valde övningen fritt.
+            html+=`<button class="ex-btn-skip" onclick="skipExercise('${passId}','${ex.id}')">Skip</button>`;
+            html+=`<div class="ex-edit-dropdown" id="editdd-${ex.id}">
+              <button class="ex-btn-edit" onclick="toggleEditMenu('${ex.id}')">
+                <svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit</button>
+              <div class="ex-edit-menu" id="editmenu-${ex.id}">
+                <button onclick="toggleTagEditor('${ex.id}');closeEditMenu('${ex.id}')">🏷 Tags</button>
+                <button onclick="saveExtraToProgram('${passId}','${ex.id}');closeEditMenu('${ex.id}')" style="color:#4a7a4a">+ Program</button>
+                <button onclick="removeExtra('${passId}','${ex.id}');closeEditMenu('${ex.id}')" style="color:#c06060">Remove</button>
+              </div>
+            </div>`;
           }else{
             html+=`<button class="ex-btn-skip" onclick="skipExercise('${passId}','${ex.id}')">Skip</button>`;
             html+=`<div class="ex-edit-dropdown" id="editdd-${ex.id}">
@@ -6564,8 +6527,8 @@ function buildPassBodyHTML(pass,cycle,nextId){
               <button class="ex-note-clear" onclick="toggleNote('${ex.id}')">Cancel</button>
             </div>
           </div>`;
-          {
-            // Build categorized swap dropdown with optgroups
+          if(!ex.extra){
+            // Build categorized swap dropdown with optgroups (extras har ingen swap)
             const grouped = groupExercisesByCategory();
             const catOrder = ['Chest','Back','Shoulders','Arms','Legs','Traps','Core','Cardio','Custom'];
             let optsHtml = '';
@@ -6701,9 +6664,6 @@ function buildPassBodyHTML(pass,cycle,nextId){
       });
 
       html+=buildRemovedSection(passId);
-
-      // Extras
-      extras.forEach((ex,i)=>{ html+=buildExtraBlock(ex,i,passId,isDone,savedExs,draftExtraSets,completedData); });
 
       if(!isDone) html+=buildAddExRow(passId);
 
@@ -7480,8 +7440,8 @@ function removeAddedExercise(exId, passId){
   save();
 }
 
-async function saveExtraToProgram(passId, extraIdx){
-  const extra = state.draft?.extras?.[extraIdx];
+async function saveExtraToProgram(passId, extraId){
+  const extra = state.draft?.extras?.find(e=>e.id===extraId);
   if(!extra) return;
   const ok = await askModalConfirm('Save to program?',
     `<strong>${escapeHTML(extra.name)}</strong> will be added permanently to this session.`,
@@ -7489,28 +7449,34 @@ async function saveExtraToProgram(passId, extraIdx){
   );
   if(!ok) return;
   const customEx = state.customExercises?.find(c => c.name === extra.name);
-  const oldExtraId = 'extra_' + passId + '_' + extraIdx;
   addExerciseToSession(extra.name, passId, customEx || {});
   // Find the just-added permanent exercise id (last one pushed)
   const addedList = state.addedExercises?.[passId] || [];
   const newId = addedList.length ? addedList[addedList.length-1].id : null;
   // Migrate any in-progress draft state from the extra to the new permanent id
   if(newId && state.draft){
-    if(state.draft.savedExercises?.[oldExtraId]){
-      state.draft.savedExercises[newId] = {...state.draft.savedExercises[oldExtraId], id:newId};
+    if(state.draft.savedExercises?.[extraId]){
+      state.draft.savedExercises[newId] = {...state.draft.savedExercises[extraId], id:newId};
     }
-    if(state.draft.extraSets?.[oldExtraId]){
-      state.draft.extraSets[newId] = state.draft.extraSets[oldExtraId];
+    if(state.draft.extraSets?.[extraId]){
+      state.draft.extraSets[newId] = state.draft.extraSets[extraId];
     }
-    if(state.draft.loggedSets?.[oldExtraId]){
-      state.draft.loggedSets[newId] = state.draft.loggedSets[oldExtraId];
+    if(state.draft.loggedSets?.[extraId]){
+      state.draft.loggedSets[newId] = state.draft.loggedSets[extraId];
     }
-    if(state.draft.inputBuffer?.[oldExtraId]){
-      state.draft.inputBuffer[newId] = state.draft.inputBuffer[oldExtraId];
+    if(state.draft.inputBuffer?.[extraId]){
+      state.draft.inputBuffer[newId] = state.draft.inputBuffer[extraId];
     }
+    // Tags satta under passet följer med till det permanenta id:t
+    if(state.exerciseTagOverrides?.[extraId]){
+      state.exerciseTagOverrides[newId] = state.exerciseTagOverrides[extraId];
+    }
+    // Manuellt justerat set-antal följer med (annars pad:ar ensureExtraSets tillbaka)
+    if(state.draft.setEdited?.[extraId]) state.draft.setEdited[newId] = true;
+    if(state.draft.activeExerciseId===extraId) state.draft.activeExerciseId=newId;
   }
-  // Remove from extras list (this also deletes oldExtraId draft entries and re-indexes the rest)
-  removeExtra(passId, extraIdx);
+  // Remove from extras list (deletes extraId-keyed draft entries + tagOvr)
+  removeExtra(passId, extraId);
   showToast('Added to program');
 }
 
@@ -7843,7 +7809,8 @@ function toggleExTag(exId, passId, tagKey){
   // Get current effective value
   const chain=getEffectiveChain();
   const pass=chain.find(p=>p.id===passId);
-  const ex=pass?.exercises.find(e=>e.id===exId);
+  const ex=pass?.exercises.find(e=>e.id===exId)
+    || (exId.startsWith('extra_') ? makeExtraEx(state.draft?.extras?.find(e=>e.id===exId)) : null);
   const baseVal=!!ex?.[tagKey];
   const curOvr=state.exerciseTagOverrides[exId][tagKey];
   const curVal=curOvr!==undefined?curOvr:baseVal;
@@ -7957,11 +7924,16 @@ function saveExercise(passId,exId){
   const chain = getEffectiveChain();
   const pass = chain.find(p=>p.id===passId);
   const isExtra=exId.startsWith('extra_');
-  const ex=isExtra?null:pass.exercises.find(e=>e.id===exId);
-  if(!isExtra&&!ex)return;
-  const _tagOvrS=isExtra?{}:(state.exerciseTagOverrides?.[exId]||{});
-  const isBW=isExtra?false:(_tagOvrS.bw!==undefined?!!_tagOvrS.bw:!!ex.bw);
-  const isTimed=isExtra?false:!!(state.exerciseTagOverrides?.[exId]?.timed??ex.timed);
+  const ex=isExtra?makeExtraEx(state.draft?.extras?.find(e=>e.id===exId)):pass.exercises.find(e=>e.id===exId);
+  if(!ex)return;
+  // 3.54.0: effEx speglar render-prioriteten (inswappad custom-övnings flaggor vinner
+  // över slottens) — samma diskrepans-klass som 3.52.3 fixade för tagOvr-lagret.
+  const _swapNameS=isExtra?null:(state.draft?.swaps?.[exId]||state.permanentSwaps?.[exId]);
+  const _swapCustomS=_swapNameS?state.customExercises?.find(c=>c.name===_swapNameS):null;
+  const effExS=_swapCustomS||ex;
+  const _tagOvrS=state.exerciseTagOverrides?.[exId]||{};
+  const isBW=_tagOvrS.bw!==undefined?!!_tagOvrS.bw:!!effExS.bw;
+  const isTimed=_tagOvrS.timed!==undefined?!!_tagOvrS.timed:!!effExS.timed;
   const todayWkg=getTodayWeight();
   ensureExtraSets(exId, passId);
   // Spara i DISPLAY-ordning (warmups först) så history/copy alltid stämmer.
@@ -8002,7 +7974,7 @@ function saveExercise(passId,exId){
     }
   });
   let displayName;
-  if(isExtra){const extraIdx=parseInt(exId.split('_').pop());displayName=state.draft?.extras?.[extraIdx]?.name||exId;}
+  if(isExtra){displayName=ex.name;}
   else{displayName=state.draft?.swaps?.[exId]||state.permanentSwaps?.[exId]||state.exerciseOverrides?.[exId]||ex.name;}
   state.draft.savedExercises[exId]={id:exId,name:displayName,sets,bw:isBW,...(isTimed?{timed:true}:{}),...(isExtra?{extra:true}:{})};
   // Clear logged sets after saving — they're now in savedExercises
@@ -8144,9 +8116,9 @@ function skipExercise(passId,exId){
   ensureDraft(passId);
   const isExtra=exId.startsWith('extra_');
   let displayName;
-  if(isExtra){const extraIdx=parseInt(exId.split('_').pop());displayName=state.draft?.extras?.[extraIdx]?.name||exId;}
+  if(isExtra){displayName=state.draft?.extras?.find(e=>e.id===exId)?.name||exId;}
   else{const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);const ex=pass.exercises.find(e=>e.id===exId);displayName=state.draft.swaps[exId]||state.permanentSwaps?.[exId]||state.exerciseOverrides?.[exId]||ex.name;}
-  state.draft.savedExercises[exId]={id:exId,name:displayName,skipped:true};
+  state.draft.savedExercises[exId]={id:exId,name:displayName,skipped:true,...(isExtra?{extra:true}:{})};
   // V1 Collapse: auto-promote nästa öppna övning som aktiv
   state.draft.activeExerciseId = findNextOpenExercise(passId, exId);
   save();rerenderSession(passId);
@@ -8225,7 +8197,7 @@ function finishSession(passId){
   const draft=state.draft;if(!draft||draft.passId!==passId)return;
   const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);
   if(!pass){showToast('Session not found in chain');return;}
-  const _extraIds=(draft.extras||[]).map((_,i)=>'extra_'+passId+'_'+i);
+  const _extraIds=(draft.extras||[]).map(e=>e.id).filter(Boolean);
   const _allIds=[...pass.exercises.map(e=>e.id),..._extraIds];
   const _allResolved=_allIds.length>0&&_allIds.every(id=>{const s=draft.savedExercises[id];return s&&(s.skipped===true||(Array.isArray(s.sets)&&s.sets.length>0));});
   if(!_allResolved){showToast('Markera alla övningar som klara eller skippa dem först');return;}
@@ -8240,8 +8212,8 @@ function finishSession(passId){
   if(!state.deletions.exerciseNotes) state.deletions.exerciseNotes = {};
   exercises.forEach(ex=>{
     // 3.40.0: knyt log-raden till kanoniskt exId (historik/PR följer övningen, inte slotten)
-    // 3.53.2: extras fick runtime-slot-id ('extra_B_2') — resolva via namn-slug istället
-    const exId = String(ex.id).startsWith('extra_') ? resolveExId(ex.name, null, null) : (getRenderExId(ex.id) || ex.id);
+    // 3.53.2/3.54.0: extras resolvar via namn-slug (custom-id om custom)
+    const exId = String(ex.id).startsWith('extra_') ? extraExId(ex.name) : (getRenderExId(ex.id) || ex.id);
     ex.exId = exId;
     if(!ex.skipped && Array.isArray(ex.sets)){
       const workCount=ex.sets.filter(s=>!s.warmup).length;
@@ -8258,6 +8230,8 @@ function finishSession(passId){
   const duration=state.draft.sessionStartTime ? finishTs-state.draft.sessionStartTime : null;
   curCycle().done[passId]={date:today,timestamp:finishTs,duration,exercises};
   state.log.push({passId,passName:getSessionName(pass.id),timestamp:finishTs,duration,exercises});
+  // 3.54.0: tag-overrides på extra-id är efemära — städa så de inte ackumuleras
+  for(const eid of _extraIds){ if(state.exerciseTagOverrides) delete state.exerciseTagOverrides[eid]; }
   state.draft=null;
   if(state.drafts) delete state.drafts[passId];
   save();pushState();showToast('Session done! 💪');renderChain();
@@ -8388,7 +8362,8 @@ function ensureExtraSets(exId, passId){
   const isExtra=exId.startsWith('extra_');
   const chain=getEffectiveChain();
   const pass=chain.find(p=>p.id===passId);
-  const ex=isExtra?null:pass?.exercises.find(e=>e.id===exId);
+  // 3.54.0: extras får ett syntetiskt ex-objekt → SAMMA defaults/RAMP/pad-väg som ordinarie
+  const ex=isExtra?makeExtraEx(state.draft.extras?.find(e=>e.id===exId)):pass?.exercises.find(e=>e.id===exId);
   // Phase 1: Create fresh sets or ensure sids on existing draft.
   if(state.draft.extraSets[exId]===undefined||state.draft.extraSets[exId].length===0){
     state.draft.extraSets[exId]=ex?getDefaultSets(ex):defSets(2,1);
@@ -8400,7 +8375,7 @@ function ensureExtraSets(exId, passId){
   // loggedSets efter filtret tog bort dem ur extraSets → _noLogged=false → stale-pad
   // körde aldrig → för få work sets och/eller orphan-sids matchade wk-sids → ✓ utan data.
   // Fix: filtret rensar också orphan-sids från loggedSets/inputBuffer.
-  if(!isExtra){
+  {
     const exTagOvr2=state.exerciseTagOverrides?.[exId]||{};
     const isRampCheck=exTagOvr2.ramp!==undefined?exTagOvr2.ramp:!!ex?.ramp;
     if(isRampCheck&&state.draft.extraSets[exId].some(s=>s.warmup)){
@@ -8417,7 +8392,7 @@ function ensureExtraSets(exId, passId){
   // Phase 3: Stale-draft-fix — pad work sets to lastSessionSetCount when no work sets
   // are logged yet and count wasn't manually adjusted. _noLogged is now clean (Phase 2
   // removed orphaned warmup entries) so this correctly fires after swap+RAMP too.
-  if(!isExtra && ex && !state.draft.savedExercises?.[exId]){
+  if(ex && !state.draft.savedExercises?.[exId]){
     const _noLogged=!state.draft.loggedSets?.[exId]||Object.keys(state.draft.loggedSets[exId]).length===0;
     // Skip if user explicitly adjusted set count (add/remove) — pad would snap sets back.
     if(_noLogged && !state.draft.setEdited?.[exId]){
@@ -8445,11 +8420,10 @@ function captureAllDraftInputs(){
       try{ captureInputsToSetsBuffer(ex.id, passId); }catch(e){ /* skip broken row, continue */ }
     }
   }
-  // Extras (session-only, id-format: extra_<passId>_<idx>)
-  for(let i = 0; i < (state.draft.extras||[]).length; i++){
-    const exId = 'extra_' + passId + '_' + i;
-    if(state.draft.extraSets?.[exId]){
-      try{ captureInputsToSetsBuffer(exId, passId); }catch(e){ /* skip */ }
+  // Extras (session-only, stabila id sedan 3.54.0)
+  for(const e of (state.draft.extras||[])){
+    if(e?.id && state.draft.extraSets?.[e.id]){
+      try{ captureInputsToSetsBuffer(e.id, passId); }catch(err){ /* skip */ }
     }
   }
 }
@@ -8459,9 +8433,13 @@ function captureInputsToSetsBuffer(exId,passId){
   const isExtra=exId.startsWith('extra_');
   const chain=getEffectiveChain();
   const pass=chain.find(p=>p.id===passId);
-  const ex=isExtra?null:pass?.exercises.find(e=>e.id===exId);
-  const _tagOvrC=isExtra?{}:(state.exerciseTagOverrides?.[exId]||{});
-  const isBW=isExtra?false:(_tagOvrC.bw!==undefined?!!_tagOvrC.bw:!!ex?.bw);
+  // 3.54.0: extras får syntetiskt ex + samma effEx-resolution som render/save
+  const ex=isExtra?makeExtraEx(state.draft?.extras?.find(e=>e.id===exId)):pass?.exercises.find(e=>e.id===exId);
+  const _swapNameC=isExtra?null:(state.draft?.swaps?.[exId]||state.permanentSwaps?.[exId]);
+  const _swapCustomC=_swapNameC?state.customExercises?.find(c=>c.name===_swapNameC):null;
+  const effExC=_swapCustomC||ex;
+  const _tagOvrC=state.exerciseTagOverrides?.[exId]||{};
+  const isBW=_tagOvrC.bw!==undefined?!!_tagOvrC.bw:!!effExC?.bw;
   const rawSets=ensureSetIds(state.draft.extraSets[exId]);
   state.draft.extraSets[exId]=rawSets;
   if(!state.draft.inputBuffer)state.draft.inputBuffer={};
@@ -8480,7 +8458,7 @@ function captureInputsToSetsBuffer(exId,passId){
       const extraDisp = (domBw && domBw !== '') ? parseFloat(domBw) : null;
       const extraKg = extraDisp!==null && !isNaN(extraDisp) ? toKg(extraDisp) : (p.extra ?? null);
       const repsOrSecs2 = (domR && domR !== '') ? (n=>isNaN(n)?null:n)(parseInt(domR)) : null;
-      const isTimed3=!!(state.exerciseTagOverrides?.[exId]?.timed ?? ex?.timed);
+      const isTimed3=!!(state.exerciseTagOverrides?.[exId]?.timed ?? effExC?.timed);
       nb[sid] = isTimed3
         ? {extra:extraKg, bwSnap:p.bwSnap||0, secs: repsOrSecs2 ?? (p.secs ?? null), forced}
         : {extra:extraKg, bwSnap:p.bwSnap||0, reps: repsOrSecs2 ?? (p.reps ?? null), forced};
@@ -8490,7 +8468,7 @@ function captureInputsToSetsBuffer(exId,passId){
       const weightDisp = (domW && domW !== '') ? (parseFloat(domW)||null) : null;
       const weightKg = weightDisp !== null ? toKg(weightDisp) : (p.weight ?? null);
       const repsOrSecs = (domR && domR !== '') ? (n=>isNaN(n)?null:n)(parseInt(domR)) : null;
-      const isTimed2=!!(state.exerciseTagOverrides?.[exId]?.timed ?? ex?.timed);
+      const isTimed2=!!(state.exerciseTagOverrides?.[exId]?.timed ?? effExC?.timed);
       nb[sid] = isTimed2
         ? {weight:weightKg, secs: repsOrSecs ?? (p.secs ?? null), forced}
         : {weight:weightKg, reps: repsOrSecs ?? (p.reps ?? null), forced};
@@ -8623,26 +8601,26 @@ async function confirmAddEx(passId){
     name = state.customExercises.find(e=>e.id===newId)?.name || result.text;
   }
   ensureDraft(passId);
-  state.draft.extras.push({name});
+  // 3.54.0: stabilt id (aldrig re-indexerat). Auto-aktivera — man lägger till
+  // övningen för att man ska göra den nu (V1 Collapse expanderar den direkt).
+  const newExtraId='extra_'+passId+'_'+nextSid();
+  state.draft.extras.push({id:newExtraId, name});
+  state.draft.activeExerciseId=newExtraId;
   save();rerenderSession(passId);
-  // card-${passId} finns inte sedan chain-strip-redesignen — scrolla i chain-ex-area
-  setTimeout(()=>{const area=document.getElementById('chain-ex-area');const blocks=area?.querySelectorAll('.ex-block');if(blocks?.length)blocks[blocks.length-1].scrollIntoView({behavior:'smooth',block:'start'});},50);
+  setTimeout(()=>{document.getElementById('exblock-'+newExtraId)?.scrollIntoView({behavior:'smooth',block:'start'});},50);
 }
-function removeExtra(passId,idx){
+function removeExtra(passId,extraId){
   ensureDraft(passId);
-  const removeId='extra_'+passId+'_'+idx;
-  delete state.draft.savedExercises[removeId];
-  delete state.draft.extraSets[removeId];
-  if(state.draft.loggedSets)delete state.draft.loggedSets[removeId];
-  if(state.draft.inputBuffer)delete state.draft.inputBuffer[removeId];
+  const idx=state.draft.extras.findIndex(e=>e.id===extraId);
+  if(idx<0)return;
+  delete state.draft.savedExercises[extraId];
+  delete state.draft.extraSets[extraId];
+  if(state.draft.loggedSets)delete state.draft.loggedSets[extraId];
+  if(state.draft.inputBuffer)delete state.draft.inputBuffer[extraId];
+  if(state.exerciseTagOverrides)delete state.exerciseTagOverrides[extraId];
   state.draft.extras.splice(idx,1);
-  for(let j=idx;j<state.draft.extras.length;j++){
-    const oldId='extra_'+passId+'_'+(j+1),newId='extra_'+passId+'_'+j;
-    if(state.draft.savedExercises[oldId]){state.draft.savedExercises[newId]=state.draft.savedExercises[oldId];delete state.draft.savedExercises[oldId];}
-    if(state.draft.extraSets[oldId]){state.draft.extraSets[newId]=state.draft.extraSets[oldId];delete state.draft.extraSets[oldId];}
-    if(state.draft.loggedSets?.[oldId]){state.draft.loggedSets[newId]=state.draft.loggedSets[oldId];delete state.draft.loggedSets[oldId];}
-    if(state.draft.inputBuffer?.[oldId]){state.draft.inputBuffer[newId]=state.draft.inputBuffer[oldId];delete state.draft.inputBuffer[oldId];}
-  }
+  // 3.54.0: stabila id — ingen re-indexering av efterföljande extras längre.
+  if(state.draft.activeExerciseId===extraId)state.draft.activeExerciseId=null;
   save();rerenderSession(passId);
 }
 
@@ -8662,9 +8640,10 @@ function undoSession(passId){
         savedExercises[ex.id].sets=withIds; // dela sid mellan saved + extraSets
         extraSets[ex.id]=withIds.map(s=>({sid:s.sid,warmup:!!s.warmup}));
       }
-      if(ex.id.startsWith('extra_'+passId+'_')) extras[parseInt(ex.id.split('_').pop())]={name:ex.name};
+      // 3.54.0: stabila id — push i mötesordning (= ursprunglig ordning), ingen index-parsning
+      if(ex.id.startsWith('extra_'+passId+'_')) extras.push({id:ex.id, name:ex.name});
     });
-    state.draft={passId,savedExercises,swaps:{},extras:extras.filter(Boolean),extraSets,loggedSets:{},inputBuffer:{}};
+    state.draft={passId,savedExercises,swaps:{},extras,extraSets,loggedSets:{},inputBuffer:{}};
     if(!state.drafts) state.drafts={};
     state.drafts[passId]=state.draft;
   }else{
@@ -8810,7 +8789,9 @@ function findNextOpenExercise(passId, afterExId){
   const ec = getEffectiveChain();
   const pass = ec.find(p => p.id === passId);
   if(!pass || !pass.exercises) return null;
-  const exs = pass.exercises;
+  // 3.54.0: extras ingår i rotationen — auto-promote landar även på en öppen extra
+  const _extras = (state.draft?.passId===passId ? state.draft.extras : [])||[];
+  const exs = [...pass.exercises, ..._extras.filter(e=>e&&e.id)];
   const startIdx = afterExId ? exs.findIndex(e => e.id === afterExId) : -1;
   for(let i = startIdx + 1; i < exs.length; i++){
     if(!isExerciseClosed(exs[i].id)) return exs[i].id;
@@ -8911,7 +8892,8 @@ function getAllPRs(){
   const defs=BASE_SESSIONS.flatMap(p=>p.exercises).map(e=>({id:e.id,name:e.name,bw:!!e.bw}));
   for(const entry of state.log){
     for(const ex of(entry.exercises||[])){
-      if(ex.skipped||ex.extra)continue;
+      // 3.54.0: extras räknas — samma övning är samma övning oavsett hur den loggades
+      if(ex.skipped)continue;
       // 3.40.0-completion: nyckla på kanoniskt exId (samma övning i två pass = ETT
       // PR-kort, följer swap/rename). Tidigare slot-id gav dubbletter (A3+E3 Cable Flyes).
       const key=ex.exId||resolveExId(ex.name,ex.id,ex.id);
@@ -8971,7 +8953,7 @@ function renderProgress(){
     html+=`</div>`;
   }
   html+=`<div class="section-sub">History</div>`;
-  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped&&!e.extra).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;let _hw=0,_hs=0;const sh=(ex.sets||[]).map(s=>{const _lbl=s.warmup?'W'+(++_hw):'S'+(++_hs);return ex.bw?`<div class="hist-set">${_lbl}: BW ${toDisplay(s.bwSnap)||0} + ${toDisplay(s.extra)||0}${unitLabel()} × ${s.secs!=null?s.secs+'s':(s.reps||'?')+'r'}${s.forced?` +${s.forced}f`:''}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`:`<div class="hist-set">${_lbl}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.secs!=null?s.secs+'s':(s.reps||'?')+'r'}${s.forced?` +${s.forced}f`:''}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;}).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
+  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;let _hw=0,_hs=0;const sh=(ex.sets||[]).map(s=>{const _lbl=s.warmup?'W'+(++_hw):'S'+(++_hs);return ex.bw?`<div class="hist-set">${_lbl}: BW ${toDisplay(s.bwSnap)||0} + ${toDisplay(s.extra)||0}${unitLabel()} × ${s.secs!=null?s.secs+'s':(s.reps||'?')+'r'}${s.forced?` +${s.forced}f`:''}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`:`<div class="hist-set">${_lbl}: ${toDisplay(s.weight)||'—'}${unitLabel()} × ${s.secs!=null?s.secs+'s':(s.reps||'?')+'r'}${s.forced?` +${s.forced}f`:''}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;}).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
   el.innerHTML=html;
 }
 
@@ -9742,7 +9724,8 @@ function buildPRMap(){
   const defs=BASE_SESSIONS.flatMap(p=>p.exercises).map(e=>({id:e.id,name:e.name,bw:!!e.bw}));
   for(const entry of state.log){
     for(const ex of(entry.exercises||[])){
-      if(ex.skipped||ex.extra)continue;
+      // 3.54.0: extras räknas (paritet med getAllPRs)
+      if(ex.skipped)continue;
       // Samma bw-källa som getAllPRs: log-radens egen flagga, slot-def som fallback
       const isBW=ex.bw!==undefined?!!ex.bw:!!defs.find(d=>d.id===ex.id)?.bw;
       for(const s of(ex.sets||[])){

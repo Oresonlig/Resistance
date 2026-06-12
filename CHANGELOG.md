@@ -6,6 +6,18 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.54.0 — 2026-06-12
+**Extras-parity: extra övningar är nu förstklassiga övningar.** Niklas princip: "det ska inte vara någon specialfunktion kring det" — en extra övning är bara en övning som inte ingår i standardprogrammet. Strukturell refaktor:
+- **Stabila id:n.** Extras identifierades av ARRAY-POSITION (`extra_B_2` = index 2) — samma anti-pattern som sid-modellen (3.39.0) och exId (3.40.0) utrotade för set och ordinarie övningar. Nu får varje extra ett stabilt id vid skapande (`extra_<passId>_<sid>`); `removeExtra` re-indexerar inte längre. Legacy-drafts migreras i `ensureStateDefaults` (extras utan id får sitt dåvarande index-id → all keyad data matchar utan remapping; speglas + testas i `src/extras-model.js`).
+- **`buildExtraBlock` raderad (~85 rader).** Extras renderas genom SAMMA loop som ordinarie övningar via syntetiska ex-objekt (`makeExtraEx`: id/name/flaggor från customExercises). Därmed får extras automatiskt: V1 Collapse (aktiv/kollapsad/done), tags-rad, BW/timed/uni-set-rendering, historik, notes/reminders, fail-knapp, korrekt done-state.
+- **PR-tracking inkluderar extras** (`ex.extra`-exkluderingen borttagen i `getAllPRs` + `buildPRMap`). Gamla extra-set räknas retroaktivt — datan fanns redan i loggen. History-räknaren ("X ex") räknar också extras nu.
+- **Tags fungerar på extras.** Tag-editorn nås via Edit▾; overrides keyas på extra-id:t och städas vid finish/remove; flyttas till permanenta id:t vid "+ Program". Custom-övningars flaggor (BW/timed/...) ärvs automatiskt.
+- **`saveExercise`/`captureInputsToSetsBuffer` flagg-fix:** extras sparades ALLTID som `isBW=false, isTimed=false` (fel data för BW-extras). Nu samma resolution som renderingen. Bonus-fix för ordinarie: inswappad custom-övnings flaggor respekteras nu även vid capture/save (`effEx`-prioritet — samma diskrepansklass som 3.52.3).
+- **`ensureExtraSets` unifierad:** extras får tag-drivna defaults (`getDefaultSets`), RAMP-filter och stale-pad — inklusive arv av förra passets set-antal via kanoniskt exId.
+- **V1 Collapse-rotation:** `findNextOpenExercise` + activeExerciseId-resolution inkluderar extras. Ny extra blir automatiskt aktiv övning (man lägger till den för att göra den nu).
+- **UX:** extras-knappar harmoniserade — Skip + Edit▾(🏷 Tags / + Program / Remove), samma formspråk som ordinarie. Ingen swap på extras (man valde övningen fritt). `undoSession` återbygger extras via id (ingen index-parsning).
+- **Tester:** ny `src/extras-model.js` + 23 tester (migration/syntetiska ex/exId-resolution). Totalt 80 gröna.
+
 ## 3.53.3 — 2026-06-12
 **Extra-övningar kollapsar nu i done-state + id-bevakning.**
 - **Extra kollapsade inte efter Finish Session:** `buildExtraBlock` lade aldrig till `.collapsed`/`.done` på ex-block-diven, och renderade aldrig `<div class="ex-collapsed-summary">`. Alla reguljärer kollapsade (CSS-driven), extras stod expanderade. Fix: beräkna `_wkCountEx` och `_colStatusEx` (✓ X sets / Skipped), lägg `.collapsed.done` på blocket, rendera summary-div precis som reguljärer. `.ex-block.collapsed.done` = `cursor:default`, ingen hover — read-only.
