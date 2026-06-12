@@ -5388,7 +5388,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.53.2';
+const APP_VERSION = '3.53.3';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -6301,7 +6301,11 @@ function buildExtraBlock(ex,i,passId,isDone,savedExs,draftExtraSets,completedDat
     }
     prevTextEx=`<div class="ex-prev"><span class="last-val">Last (${_whenEx}):</span>${_histEx||' '+_lastStrEx}</div>`;
   }
-  let h=`<div class="${'ex-block'+(isSkippedEx?' skipped':'')+(isSavedEx?' saved':'')}" id="exblock-${extraId}">`;
+  // Done-state: collapsed precis som reguljärer (CSS döljer allt utom summary)
+  const _wkCountEx = (savedExData?.sets||[]).filter(s=>!s.warmup).length;
+  const _colStatusEx = savedExData?.skipped ? 'Skipped' : _wkCountEx > 0 ? `✓ ${_wkCountEx} set${_wkCountEx===1?'':'s'}` : (savedExData ? '✓ Done' : '');
+  let h=`<div class="${'ex-block'+(isSkippedEx?' skipped':'')+(isSavedEx?' saved':'')+(isDone?' collapsed done':'')}" id="exblock-${extraId}">`;
+  h+=`<div class="ex-collapsed-summary"><div class="ex-collapsed-name-col"><div class="ex-collapsed-name">${escapeHTML(ex.name)} <span class="ex-tag" style="color:#446;border-color:#223">Extra</span></div></div><div class="ex-collapsed-status">${_colStatusEx}</div></div>`;
   h+=`<div class="ex-header-row"><div class="ex-label-col"><div class="ex-name">${escapeHTML(ex.name)} <span class="ex-tag" style="color:#446;border-color:#223">Extra</span></div>${prevTextEx}</div><div class="ex-action-col"><div class="ex-mini-btns">`;
   if(!isDone&&!isSkippedEx){
     if(isSavedEx){
@@ -6405,7 +6409,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
       );
       const extras=draft?draft.extras:completedExs
         .filter(e=>e.id&&e.id.startsWith('extra_'+passId+'_'))
-        .map(e=>({name:e.name}));
+        .map(e=>({id:e.id, name:e.name}));
 
       pass.exercises.forEach(ex=>{
         const isSaved=!isDone&&!!savedExs[ex.id]&&!savedExs[ex.id].skipped&&!savedExs[ex.id].editing;

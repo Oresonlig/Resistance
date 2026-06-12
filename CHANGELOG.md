@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.53.3 — 2026-06-12
+**Extra-övningar kollapsar nu i done-state + id-bevakning.**
+- **Extra kollapsade inte efter Finish Session:** `buildExtraBlock` lade aldrig till `.collapsed`/`.done` på ex-block-diven, och renderade aldrig `<div class="ex-collapsed-summary">`. Alla reguljärer kollapsade (CSS-driven), extras stod expanderade. Fix: beräkna `_wkCountEx` och `_colStatusEx` (✓ X sets / Skipped), lägg `.collapsed.done` på blocket, rendera summary-div precis som reguljärer. `.ex-block.collapsed.done` = `cursor:default`, ingen hover — read-only.
+- **Done-state extras tappade `id`-fältet:** `completedExs.map(e=>({name:e.name}))` bevarade inte `e.id`. Ändrat till `({id:e.id, name:e.name})` för konsistens med övrig extras-logik och som grund för framtida paritet.
+
 ## 3.53.2 — 2026-06-12
 **Tre gymfeedback-buggar: Fail-indikator, copy, extra-historik.**
 - **Fail-markering försvann efter Done:** Set-cellen renderade `<div></div>` när `isSaved=true`, utan att kolla `savedSet?.fail`. Nu visas `✗` på sparade set som är markerade Fail (alla tre set-typer: extras, BW-set, normala set).
