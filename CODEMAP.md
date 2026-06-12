@@ -33,6 +33,13 @@
 - `~5183` — `EXERCISE_LIBRARY` array
 - `~6235` — `groupExercisesByCategory()` — cachad gruppering, används av buildAddExRow + swap-dropdown + edit-vyn. `_groupedExCache` nollställs vid custom exercise-ändring.
 
+### Extras (3.54.0 — full parity med ordinarie övningar)
+- Stabila id: `extra_<passId>_<sid>` sätts i `confirmAddEx`. Legacy index-id migreras i `ensureStateDefaults`. INGEN re-indexering vid remove.
+- `makeExtraEx(entry)` + `extraExId(name)` — nära `getRenderExId` (~5475). Speglas i `src/extras-model.js` (testtäckt). Vid ändring: uppdatera båda.
+- `buildExtraBlock` FINNS INTE längre — extras renderas som syntetiska ex-objekt genom samma loop som ordinarie i `buildPassBodyHTML` (`allExs`). Branch på `ex.extra` styr bara action-knapparna (Skip/Edit▾[Tags/+Program/Remove], ingen swap).
+- PR/historik/notes nycklas på kanoniskt exId (namn-slug) — extras delar identitet med samma övning i program.
+- Tag-overrides på extra-id är efemära: städas i `finishSession` + `removeExtra`, flyttas till nya id:t i `saveExtraToProgram`.
+
 ### Synk-lagret
 - `~5777` — `mergeLogEntries`, `~5788` `mergeWeightEntries`
 - `~5801` — `mergeArrayById`, `mergeKeyedMap`, `mergeArrayUnion`, `mergeMapOfArrays`, `mergeMapOfArrayById`
