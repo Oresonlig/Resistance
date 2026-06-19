@@ -4944,6 +4944,8 @@ function ensureStateDefaults(){
   if(typeof state.onboardingDone !== 'boolean') state.onboardingDone = false;
   if(!state.theme) state.theme = 'iron';
   if(!state.exerciseTagOverrides) state.exerciseTagOverrides = {};
+  if(!state.exerciseMeasureOverride) state.exerciseMeasureOverride = {};
+  if(!state.exerciseSprintBase) state.exerciseSprintBase = {};
   if(!state.removedExercises) state.removedExercises = {};
   if(!state.weightStep) state.weightStep = 2.5;
   if(!state.addedExercises) state.addedExercises = {};
@@ -5017,7 +5019,7 @@ function freshState(){
     unit:'kg', exerciseOverrides:{}, sessionNameOverrides:{},
     timerDefault:120, timerEnabled:false, exerciseNotes:{},
     onboardingDone:false, theme:'iron',
-    exerciseTagOverrides:{}, updatedAt:0,
+    exerciseTagOverrides:{}, exerciseMeasureOverride:{}, exerciseSprintBase:{}, updatedAt:0,
     customExercises:[], appVersion:APP_VERSION,
     removedExercises:{}, weightStep:2.5,
     addedExercises:{}, hiddenRemoved:{},
@@ -5193,7 +5195,7 @@ const EXERCISE_LIBRARY = [
   // CHEST
   {name:'Cable Crossover', cat:'Chest'},
   {name:'Cable Flyes', cat:'Chest'},
-  {name:'Chest Dips', cat:'Chest'},
+  {name:'Chest Dips', cat:'Chest', measure:'bw'},
   {name:'Decline Cable Flyes', cat:'Chest'},
   {name:'Decline Cable Press', cat:'Chest'},
   {name:'Decline DB Press', cat:'Chest'},
@@ -5208,16 +5210,16 @@ const EXERCISE_LIBRARY = [
   {name:'Pec Deck', cat:'Chest'},
   {name:'Single-Arm Cable Flyes', cat:'Chest'},
   // BACK
-  {name:'Back Extension', cat:'Back'},
+  {name:'Back Extension', cat:'Back', measure:'bw'},
   {name:'Bentover Row', cat:'Back'},
-  {name:'Chins (supinated)', cat:'Back'},
+  {name:'Chins (supinated)', cat:'Back', measure:'bw'},
   {name:'Close-grip Pulldown', cat:'Back'},
   {name:'Deadlift', cat:'Back'},
   {name:'Lat Prayers', cat:'Back'},
-  {name:'Neutral Grip Pull-ups', cat:'Back'},
+  {name:'Neutral Grip Pull-ups', cat:'Back', measure:'bw'},
   {name:'Power Clean', cat:'Back'},
   {name:'Power Clean + Shoulder Press', cat:'Back'},
-  {name:'Pull-ups (pronated)', cat:'Back'},
+  {name:'Pull-ups (pronated)', cat:'Back', measure:'bw'},
   {name:'Rack Pull', cat:'Back'},
   {name:'Seated Cable Row', cat:'Back'},
   {name:'Seated Row', cat:'Back'},
@@ -5252,7 +5254,7 @@ const EXERCISE_LIBRARY = [
   {name:'Preacher Curl', cat:'Arms'},
   {name:'Skull Crushers', cat:'Arms'},
   {name:'Spider Curl', cat:'Arms'},
-  {name:'Tricep Dips', cat:'Arms'},
+  {name:'Tricep Dips', cat:'Arms', measure:'bw'},
   {name:'Tricep Pushdowns', cat:'Arms'},
   // LEGS
   {name:'Back Squat', cat:'Legs'},
@@ -5262,7 +5264,7 @@ const EXERCISE_LIBRARY = [
   {name:'Leg Extension', cat:'Legs'},
   {name:'Leg Press', cat:'Legs'},
   {name:'Lying Leg Curl', cat:'Legs'},
-  {name:'Nordic Curl', cat:'Legs'},
+  {name:'Nordic Curl', cat:'Legs', measure:'bwreps'},
   {name:'Romanian Deadlift', cat:'Legs'},
   {name:'Seated Calf Raise', cat:'Legs'},
   {name:'Seated Leg Curl', cat:'Legs'},
@@ -5275,20 +5277,21 @@ const EXERCISE_LIBRARY = [
   {name:'DB Shrugs', cat:'Traps'},
   {name:'Trap Bar Shrugs', cat:'Traps'},
   // CORE
-  {name:'Ab Wheel', cat:'Core'},
+  {name:'Ab Wheel', cat:'Core', measure:'bwreps'},
   {name:'Cable Crunch', cat:'Core'},
-  {name:'Crunches', cat:'Core'},
-  {name:'Dead Bug', cat:'Core'},
-  {name:'Dragon Flag', cat:'Core'},
-  {name:'Hanging Leg Raise', cat:'Core'},
-  {name:'Plank', cat:'Core'},
-  {name:'Sit-ups', cat:'Core'},
+  {name:'Crunches', cat:'Core', measure:'bwreps'},
+  {name:'Dead Bug', cat:'Core', measure:'bwreps'},
+  {name:'Dragon Flag', cat:'Core', measure:'bwreps'},
+  {name:'Hanging Leg Raise', cat:'Core', measure:'bwreps'},
+  {name:'Plank', cat:'Core', measure:'timed'},
+  {name:'Sit-ups', cat:'Core', measure:'bwreps'},
   // CARDIO / CONDITIONING
-  {name:'Bike Cardio', cat:'Cardio'},
-  {name:'Dead Hang', cat:'Cardio'},
-  {name:'Farmers Walk', cat:'Cardio'},
-  {name:'Sled Push', cat:'Cardio'},
-  {name:'Walk', cat:'Cardio'},
+  {name:'Assault Bike', cat:'Cardio', measure:'cardiosprint', sprintBase:'time'},
+  {name:'Bike Cardio', cat:'Cardio', measure:'cardio'},
+  {name:'Dead Hang', cat:'Cardio', measure:'timed'},
+  {name:'Farmers Walk', cat:'Cardio', measure:'carry'},
+  {name:'Sled Push', cat:'Cardio', measure:'carry'},
+  {name:'Walk', cat:'Cardio', measure:'cardio'},
 ];
 
 // ── IMPROVEMENT 3: Pass order is per-user, drag & drop reorderable ─
@@ -5503,6 +5506,76 @@ function getRenderExId(slotId){
     }
   }
   return null;
+}
+// ── MÄTSÄTT (measurement type, 3.56.0) ── speglar src/measures.js. Vid ändring: BÅDA.
+const MEASURES = {
+  weight:       { fields:['weight','reps'],   pr:'weight',  forced:true,  bw:false },
+  bw:           { fields:['extra','reps'],    pr:'extra',   forced:true,  bw:true  },
+  bwreps:       { fields:['reps'],            pr:'reps',    forced:true,  bw:false },
+  timed:        { fields:['secs'],            pr:'secs',    forced:true,  bw:false },
+  cardio:       { fields:['secs','dist'],     pr:'dist',    forced:false, bw:false },
+  cardiosprint: { fields:['base','sprints'],  pr:'sprints', forced:false, bw:false },
+  carry:        { fields:['weight','distm'],  pr:'weight',  forced:false, bw:false },
+};
+function measureFromFlags(ex){
+  if(!ex) return 'weight';
+  if(ex.timed) return 'timed';
+  if(ex.bw) return 'bw';
+  return 'weight';
+}
+// Map kanoniskt exId → {measure, sprintBase} byggd från EXERCISE_LIBRARY (lazy).
+let _libraryMeasureCache = null;
+function libraryMeasureMap(){
+  if(_libraryMeasureCache) return _libraryMeasureCache;
+  const m = {};
+  for(const e of EXERCISE_LIBRARY){
+    if(e.measure) m[slugifyExId(e.name)] = {measure:e.measure, sprintBase:e.sprintBase||null};
+  }
+  _libraryMeasureCache = m;
+  return m;
+}
+// Resolva measure: override(exId) > library-default > custom.measure > flaggor > weight.
+function getMeasure(exId, ex){
+  if(exId){
+    const ov = state.exerciseMeasureOverride?.[exId];
+    if(ov && MEASURES[ov]) return ov;
+    const lib = libraryMeasureMap()[exId];
+    if(lib) return lib.measure;
+    const cust = (state.customExercises||[]).find(c=>resolveExId(c.name,null,c.id)===exId);
+    if(cust?.measure && MEASURES[cust.measure]) return cust.measure;
+  }
+  if(ex?.measure && MEASURES[ex.measure]) return ex.measure;
+  return measureFromFlags(ex);
+}
+// Bas-enhet för cardiosprint: 'time' (sek) eller 'dist' (km). Override > library > 'time'.
+function getSprintBase(exId, ex){
+  if(exId){
+    const ovb = state.exerciseSprintBase?.[exId];
+    if(ovb==='time'||ovb==='dist') return ovb;
+    const lib = libraryMeasureMap()[exId];
+    if(lib?.sprintBase) return lib.sprintBase;
+  }
+  return (ex?.sprintBase==='dist'?'dist':'time');
+}
+function prValue(measure, set){
+  if(!set || set.fail) return null;
+  const m = MEASURES[measure] || MEASURES.weight;
+  switch(m.pr){
+    case 'weight':  return set.weight!=null?set.weight:null;
+    case 'extra':   return set.extra!=null?(set.extra+(set.bwSnap||0)):null;
+    case 'reps':    return set.reps!=null?set.reps:null;
+    case 'secs':    return set.secs!=null?set.secs:null;
+    case 'dist':    return set.dist!=null?set.dist:null;
+    case 'sprints': return set.sprints!=null?set.sprints:null;
+    default:        return null;
+  }
+}
+function prTiebreak(measure, set){
+  if(!set) return 0;
+  const m = MEASURES[measure] || MEASURES.weight;
+  if(m.pr==='weight'||m.pr==='extra') return set.reps||0;
+  if(m.pr==='secs') return (set.weight||0)+(set.extra||0);
+  return 0;
 }
 // Idempotent migration: resolva exId på log/cycle/notes/tombstones. Speglar
 // migrateExerciseIdentity i src/exercise-identity.js.
@@ -5928,6 +6001,8 @@ async function syncFromCloud(userId){
           sessionNameOverrides: state.sessionNameOverrides,
           exerciseNotes: state.exerciseNotes,
           exerciseTagOverrides: state.exerciseTagOverrides,
+          exerciseMeasureOverride: state.exerciseMeasureOverride,
+          exerciseSprintBase: state.exerciseSprintBase,
           permanentSwaps: state.permanentSwaps,
           exerciseOrder: state.exerciseOrder,
           ignoredPRs: state.ignoredPRs,
@@ -5962,6 +6037,8 @@ async function syncFromCloud(userId){
         state.sessionNameOverrides = mergeKeyedMap(_local.sessionNameOverrides, state.sessionNameOverrides);
         state.exerciseNotes = mergeKeyedMap(_local.exerciseNotes, state.exerciseNotes, state.deletions.exerciseNotes);
         state.exerciseTagOverrides = mergeKeyedMap(_local.exerciseTagOverrides, state.exerciseTagOverrides);
+        state.exerciseMeasureOverride = mergeKeyedMap(_local.exerciseMeasureOverride, state.exerciseMeasureOverride);
+        state.exerciseSprintBase = mergeKeyedMap(_local.exerciseSprintBase, state.exerciseSprintBase);
         state.permanentSwaps = mergeKeyedMap(_local.permanentSwaps, state.permanentSwaps);
         state.exerciseOrder = mergeKeyedMap(_local.exerciseOrder, state.exerciseOrder);
         state.ignoredPRs = mergeArrayUnion(_local.ignoredPRs, state.ignoredPRs);
