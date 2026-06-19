@@ -5397,7 +5397,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.54.0';
+const APP_VERSION = '3.54.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -6520,7 +6520,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
         if(!isDone){
           html+=buildTagEditorHTML(ex, passId);
           html+=`<div id="notewrap-${ex.id}" style="display:none" class="ex-note-wrap">
-            <textarea class="ex-note-input" id="noteinput-${ex.id}" placeholder="Reminder for next time (e.g. 'för lätt vikt, gå upp')..." onblur="autoSaveNote('${ex.id}','${_exId}')">${escapedNote}</textarea>
+            <textarea class="ex-note-input" id="noteinput-${ex.id}" placeholder="Reminder for next time (e.g. 'too light, go heavier')..." onblur="autoSaveNote('${ex.id}','${_exId}')">${escapedNote}</textarea>
             <div class="ex-note-actions">
               <button class="ex-note-save" onclick="saveNote('${ex.id}','${_exId}')">Save Reminder</button>
               ${existingNote?`<button class="ex-note-clear" onclick="clearNote('${ex.id}','${_exId}')">Clear</button>`:''}
@@ -8172,7 +8172,7 @@ async function permanentlyDeleteRemoved(exId, passId){
   const ex = baseEx.find(e=>e.id===exId);
   const exName = state.exerciseOverrides?.[exId]||ex?.name||'this exercise';
   const ok = await askModalConfirm('Delete permanently?',
-    `<strong>${escapeHTML(exName)}</strong> försvinner från Removed-listan. Den finns kvar i Add Exercise-bilbioteket om du vill lägga tillbaka den senare.`,
+    `<strong>${escapeHTML(exName)}</strong> will be removed from the Removed list. You can add it back later from the Add Exercise menu.`,
     {confirmLabel:'Delete', danger:true}
   );
   if(!ok) return;
@@ -8200,7 +8200,7 @@ function finishSession(passId){
   const _extraIds=(draft.extras||[]).map(e=>e.id).filter(Boolean);
   const _allIds=[...pass.exercises.map(e=>e.id),..._extraIds];
   const _allResolved=_allIds.length>0&&_allIds.every(id=>{const s=draft.savedExercises[id];return s&&(s.skipped===true||(Array.isArray(s.sets)&&s.sets.length>0));});
-  if(!_allResolved){showToast('Markera alla övningar som klara eller skippa dem först');return;}
+  if(!_allResolved){showToast('Mark all exercises as done or skip them first');return;}
   const exercises=[];
   pass.exercises.forEach(ex=>{const d=draft.savedExercises[ex.id];if(d)exercises.push(d);});
   Object.keys(draft.savedExercises).filter(k=>k.startsWith('extra_'+passId+'_')).forEach(extraId=>{const d=draft.savedExercises[extraId];if(d)exercises.push(d);});
@@ -9632,7 +9632,7 @@ function renderData(){
   <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--gray-mid);margin-bottom:18px;">
     <div>
       <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);margin-bottom:2px;">Animations &amp; particles</div>
-      <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);">Ember-partiklar i Obsidian + framtida animation-tunga teman. Stäng av för battery / mindre distraktion.</div>
+      <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);">Ember particles in Obsidian + other animation-heavy themes. Turn off to save battery or reduce distraction.</div>
     </div>
     <button onclick="toggleAmbientEffects()" style="background:${state.ambientEffects!==false?'var(--green-bright)':'var(--gray-mid)'};border:1px solid ${state.ambientEffects!==false?'var(--green-bright)':'var(--gray-mid)'};color:${state.ambientEffects!==false?'var(--black)':'var(--gray-light)'};font-family:var(--mono);font-size:.54rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:all .2s;">${state.ambientEffects!==false?'ON':'OFF'}</button>
   </div>

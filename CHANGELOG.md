@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.54.1 — 2026-06-19
+4 Swedish strings replaced with English: delete-permanently modal body, finish-session toast, reminder placeholder example, ambient effects description.
+
 ## 3.54.0 — 2026-06-12
 **Extras-parity: extra övningar är nu förstklassiga övningar.** Niklas princip: "det ska inte vara någon specialfunktion kring det" — en extra övning är bara en övning som inte ingår i standardprogrammet. Strukturell refaktor:
 - **Stabila id:n.** Extras identifierades av ARRAY-POSITION (`extra_B_2` = index 2) — samma anti-pattern som sid-modellen (3.39.0) och exId (3.40.0) utrotade för set och ordinarie övningar. Nu får varje extra ett stabilt id vid skapande (`extra_<passId>_<sid>`); `removeExtra` re-indexerar inte längre. Legacy-drafts migreras i `ensureStateDefaults` (extras utan id får sitt dåvarande index-id → all keyad data matchar utan remapping; speglas + testas i `src/extras-model.js`).
