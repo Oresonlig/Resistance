@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.56.0 — 2026-06-20
+**Mätsätt (measurement type) — Nivå 2.** Bröt isär HUR ett set loggas (input-form + PR) från set-schemat (antal set). 7 mätsätt i sluten enum: `weight` (kg×reps), `bw` (BW+last), `bwreps` (bara reps), `timed` (sek), `cardio` (tid+km), `cardiosprint` (bas+sprintar), `carry` (kg+m). Intrinsisk default per övning (data, ej kod) + override per användare på kanoniskt exId (single-select i tag-editorn). Fixar: Bike Cardio loggar inte kg, Ab Wheel har inget meningslöst viktfält, Chins behåller BW vid swap (library-default). Ny: Assault Bike (`cardiosprint`, tid-bas), Farmers Walk/Sled Push (`carry`). PR-metrik per mätsätt (max kg/reps/sek/km/sprintar). `src/measures.js` + 24 tester (totalt 104). Render/capture/save/PR/copy/historik alla measure-drivna; `formatSetLine` shape-medveten. Set-schema får measure-baserade default-antal (cykling = 1 set, ej 2 warmup+1 work).
+
 ## 3.55.0 — 2026-06-19
 Gym-feedback-batch.
 - **#5 (kritisk dataförlust):** arbetsset försvann vid loggning. Rotorsak: Phase 3-vakten i `ensureExtraSets` gatade på avsaknad av ALLA loggade set (`_noLogged`) → en loggad uppvärmning stängde av work-set-paddningen permanent. Drabbade därför bara work sets, aldrig warmups. Fix: gate nu på avsaknad av loggade *work*-set (`_noWorkLogged`). Plus: `renderChain`/`rerenderSession` fångar otippade DOM-inputs innan omritning (synk/timer kunde annars wipea data).
