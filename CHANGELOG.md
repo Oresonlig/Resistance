@@ -6,6 +6,13 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.55.0 — 2026-06-19
+Gym-feedback-batch.
+- **#5 (kritisk dataförlust):** arbetsset försvann vid loggning. Rotorsak: Phase 3-vakten i `ensureExtraSets` gatade på avsaknad av ALLA loggade set (`_noLogged`) → en loggad uppvärmning stängde av work-set-paddningen permanent. Drabbade därför bara work sets, aldrig warmups. Fix: gate nu på avsaknad av loggade *work*-set (`_noWorkLogged`). Plus: `renderChain`/`rerenderSession` fångar otippade DOM-inputs innan omritning (synk/timer kunde annars wipea data).
+- **#4:** historik-raden ("Last (Xd ago)") renderar varje sparat set efter sin egen form (BW/timed/vikt) oberoende av nuvarande tagg/swap-state — en BW-övning som swappats visade "—kg" istället för "BW + X". Plus W-före-S-sortering (lagrad ordning hade work först).
+- **#1:** ny övning `Face Pulls (external rotation)` (AthleanX-variant); överflödiga `Light Face Pulls` borttagen.
+- **#2:** `Cable Rotator Cuff` borttagen (dublett) — D4 pekar nu på befintliga `External Rotator Cuff`. Engångsmigrering slår ihop gammal Cable-historik (namn + exId + lastSessionSetCount).
+
 ## 3.54.1 — 2026-06-19
 4 Swedish strings replaced with English: delete-permanently modal body, finish-session toast, reminder placeholder example, ambient effects description.
 

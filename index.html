@@ -5232,11 +5232,10 @@ const EXERCISE_LIBRARY = [
   {name:'DB Shoulder Press', cat:'Shoulders'},
   {name:'External Rotator Cuff', cat:'Shoulders'},
   {name:'Face Pulls', cat:'Shoulders'},
+  {name:'Face Pulls (external rotation)', cat:'Shoulders'},
   {name:'Helms Rear Delt Row', cat:'Shoulders'},
   {name:'Internal Rotator Cuff', cat:'Shoulders'},
   {name:'Lateral Raises', cat:'Shoulders'},
-  {name:'Cable Rotator Cuff', cat:'Shoulders'},
-  {name:'Light Face Pulls', cat:'Shoulders'},
   {name:'Military Press (barbell)', cat:'Shoulders'},
   {name:'Military Press - Smith', cat:'Shoulders'},
   {name:'Rear Delt Flyes', cat:'Shoulders'},
@@ -5305,7 +5304,7 @@ const BASE_SESSIONS=[
   {id:'A',name:'Chest + Tri',exercises:[{id:'A1',name:'Flat BB',detail:'Ramping → 1 set failure',ramp:true},{id:'A2',name:'Incline Smith Press',detail:'1 set failure'},{id:'A3',name:'Cable Flyes',detail:'Full ROM - Deep stretch · 1 set failure'},{id:'A4',name:'Tricep Pushdowns',detail:'1 set failure'}]},
   {id:'B',name:'Back Heavy + Biceps',exercises:[{id:'B1',name:'Dead Hang',detail:'Supinated or neutral · 1 set failure',bw:true,timed:true},{id:'B2',name:'Deadlift',detail:'Ramping → work sets to failure',ramp:true},{id:'B3',name:'Unilateral Cable Row',detail:'1 set failure',uni:true},{id:'B4',name:'Lat Prayers',detail:'1 set failure'}]},
   {id:'C',name:'Legs + Calfs',exercises:[{id:'C1',name:'Zercher Squat',detail:'Ramping → 1 set failure',ramp:true},{id:'C2',name:'Lying Leg Curl',detail:'1 set failure'},{id:'C3',name:'Leg Extension',detail:'1 set failure'},{id:'C4',name:'Seated Calf Raises',detail:'2 sets'}]},
-  {id:'D',name:'Shoulders + Traps',exercises:[{id:'D1',name:'Military Press',detail:'Ramping → 1 set failure',ramp:true},{id:'D2',name:'Lateral Raises',detail:'1 set failure'},{id:'D3',name:'Face Pulls',detail:'1 set failure'},{id:'D4',name:'Cable Rotator Cuff',detail:'1 set'}]},
+  {id:'D',name:'Shoulders + Traps',exercises:[{id:'D1',name:'Military Press',detail:'Ramping → 1 set failure',ramp:true},{id:'D2',name:'Lateral Raises',detail:'1 set failure'},{id:'D3',name:'Face Pulls',detail:'1 set failure'},{id:'D4',name:'External Rotator Cuff',detail:'1 set'}]},
   {id:'E',name:'Chest pt. 2',exercises:[{id:'E1',name:'Flat DB',detail:'Ramping → 1 set failure',ramp:true},{id:'E2',name:'Decline Smith Press',detail:'1 set failure'},{id:'E3',name:'Cable Flyes',detail:'1 set failure'},{id:'E4',name:'Overhead Tricep Extension',detail:'1 set failure'}]},
   {id:'F',name:'Back pt. 2',exercises:[{id:'F1',name:'Pull-ups',detail:'1 set failure',bw:true},{id:'F2',name:'Unilateral Cable Row',detail:'1 set failure',uni:true},{id:'F3',name:'Shrugs',detail:'1 set failure'},{id:'F4',name:'Lat Prayers',detail:'1 set failure'}]},
 ];
@@ -5397,7 +5396,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.54.1';
+const APP_VERSION = '3.55.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5431,6 +5430,7 @@ const NAME_ALIASES = {
   'Tri-finisher (Pushdowns/Overhead)':'Tricep Pushdowns','Tri-finisher (Pushdowns)':'Overhead Tricep Extension',
   'Calfs (standing + seated)':'Seated Calf Raise','Calfs':'Seated Calf Raise',
   'Lateral Raises DB/Cable':'Lateral Raises','Helms Rear Delt Row / Face Pulls':'Face Pulls',
+  'Cable Rotator Cuff':'External Rotator Cuff','Rotator Cuff':'External Rotator Cuff',
 };
 const SLOT_NAME_ALIASES = {
   'A4|Tri-finisher':'Tricep Pushdowns','E4|Tri-finisher':'Overhead Tricep Extension','C4|Calfs':'Seated Calf Raise',
@@ -5439,7 +5439,7 @@ const BASE_SLOT_DEFAULT_NAME = {
   A1:'Flat BB Bench Press',A2:'Incline Smith Press',A3:'Cable Flyes',A4:'Tricep Pushdowns',
   B1:'Dead Hang',B2:'Deadlift',B3:'Unilateral Cable Row',B4:'Lat Prayers',
   C1:'Zercher Squat',C2:'Lying Leg Curl',C3:'Leg Extension',C4:'Seated Calf Raise',
-  D1:'Military Press (barbell)',D2:'Lateral Raises',D3:'Face Pulls',D4:'Cable Rotator Cuff',
+  D1:'Military Press (barbell)',D2:'Lateral Raises',D3:'Face Pulls',D4:'External Rotator Cuff',
   E1:'Flat DB Press',E2:'Decline Smith Press',E3:'Cable Flyes',E4:'Overhead Tricep Extension',
   F1:'Pull-ups (pronated)',F2:'Unilateral Cable Row',F3:'DB Shrugs',F4:'Lat Prayers',
 };
@@ -5680,6 +5680,27 @@ function migrateExerciseNames(){
   if(!state.migrations.exerciseSplit_v2) state.migrations.exerciseSplit_v2 = Date.now();
 }
 
+// 3.55.0 — Slå ihop "Cable Rotator Cuff"/"Rotator Cuff" → "External Rotator Cuff"
+// (samma övning enligt Niklas). Skriver om name + exId i logg/cykler/overrides så
+// historiken följer med, samt mergar lastSessionSetCount-nyckeln. Engångskörning.
+function migrateRotatorCuffMerge(){
+  if(!state) return;
+  state.migrations = state.migrations || {};
+  if(state.migrations.rotatorCuffMerge_v1) return;
+  const MAP={'Cable Rotator Cuff':'External Rotator Cuff','Rotator Cuff':'External Rotator Cuff'};
+  const newExId=slugifyExId('External Rotator Cuff');
+  const fix=(e)=>{ if(e && MAP[e.name]){ e.name=MAP[e.name]; if(e.exId) e.exId=newExId; } };
+  (state.log||[]).forEach(entry=>(entry.exercises||[]).forEach(fix));
+  (state.cycles||[]).forEach(c=>Object.values(c.done||{}).forEach(p=>{ if(p&&p.exercises) p.exercises.forEach(fix); }));
+  Object.entries(state.exerciseOverrides||{}).forEach(([id,name])=>{ if(MAP[name]) state.exerciseOverrides[id]=MAP[name]; });
+  const oldKey='ex_cable_rotator_cuff';
+  if(state.lastSessionSetCount && state.lastSessionSetCount[oldKey]!=null){
+    if(state.lastSessionSetCount[newExId]==null) state.lastSessionSetCount[newExId]=state.lastSessionSetCount[oldKey];
+    delete state.lastSessionSetCount[oldKey];
+  }
+  state.migrations.rotatorCuffMerge_v1=Date.now();
+}
+
 function migratePassKeysToSession(){
   // 3.34.9 — Guard: skip om redan migrerat (flag i state.migrations).
   // One-time rename of state keys from Swedish-origin names to English.
@@ -5713,6 +5734,8 @@ function runSchemaMigrations(){
     cur++;
     state.schemaVersion = cur;
   }
+  // 3.55.0 — körs på alla load-paths (denna funktion är ovillkorlig single-source).
+  try{ migrateRotatorCuffMerge(); }catch(e){ console.error('rotatorCuffMerge failed', e); }
 }
 
 function newCycle(){
@@ -6388,31 +6411,31 @@ function buildPassBodyHTML(pass,cycle,nextId){
         const lastSession=getLastSession(_exId);
         let prevText='';
         if(lastSession){
+          // 3.55.0: rendera varje LAGRAT set efter sin egen form (BW/timed/vikt),
+          // oberoende av övningens NUVARANDE tagg/swap-state. Annars visade en
+          // BW-övning som swappats/taggats om "—kg" istället för "BW + X" (#4).
+          const fmtSet = (s)=>{
+            if(s.secs!=null) return `${s.secs||'?'}s`;
+            if(s.bwSnap!==undefined || s.extra!=null) return `BW + ${toDisplay(s.extra)||0}${unitLabel()} ×${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}`;
+            return `${toDisplay(s.weight)||'—'}${unitLabel()} ×${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}`;
+          };
           // Show only the last work set (most recent, highest index)
           const workSets=lastSession.sets.filter(s=>!s.warmup);
           const lastSet=workSets[workSets.length-1]||lastSession.sets[lastSession.sets.length-1];
-          let lastStr='';
-          if(lastSet){
-            if(isTimed) lastStr=`${lastSet.secs||'?'}s`;
-            else if(isBW) lastStr=`BW + ${toDisplay(lastSet.extra)||0}${unitLabel()} ×${lastSet.reps||'?'}r${lastSet.forced?` +${lastSet.forced}f`:''}`;
-            else lastStr=`${toDisplay(lastSet.weight)||'—'}${unitLabel()} ×${lastSet.reps||'?'}r${lastSet.forced?` +${lastSet.forced}f`:''}`;
-          }
+          const lastStr=lastSet?fmtSet(lastSet):'';
           const daysAgo=Math.floor((Date.now()-lastSession.timestamp)/86400000);
           const whenStr=daysAgo===0?'today':daysAgo===1?'1d ago':`${daysAgo}d ago`;
           // 3.34.4 — History alltid expanderad direkt under "Last"-raden. Ingen toggle.
           // Niklas: "Lägg det bara under varandra. Då blir det tydligt hur många dagar senast och alla set."
-          const allSets = lastSession.allSets || lastSession.sets || [];
+          // 3.55.0: warmups-först-sortering (lagrad ordning hade work först → S1 före W1, #4).
+          const allSets = sortSetsForDisplay(lastSession.allSets || lastSession.sets || []);
           let historyHTML = '';
           if(allSets.length > 1){
             let wCnt=0, sCnt=0;
             const rows = allSets.map(s => {
               const wu = !!s.warmup;
               const lbl = wu ? ('W'+(++wCnt)) : ('S'+(++sCnt));
-              let valStr='';
-              if(isTimed) valStr = `${s.secs||'?'}s`;
-              else if(isBW) valStr = `BW + ${toDisplay(s.extra)||0}${unitLabel()} ×${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}`;
-              else valStr = `${toDisplay(s.weight)||'—'}${unitLabel()} ×${s.reps||'?'}r${s.forced?` +${s.forced}f`:''}`;
-              return `<div class="ex-prev-history-set ${wu?'warmup':'work'}"><span class="set-lbl">${lbl}</span>${valStr}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;
+              return `<div class="ex-prev-history-set ${wu?'warmup':'work'}"><span class="set-lbl">${lbl}</span>${fmtSet(s)}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;
             }).join('');
             historyHTML = `<div class="ex-prev-history">${rows}</div>`;
           }
@@ -6673,6 +6696,8 @@ function buildPassBodyHTML(pass,cycle,nextId){
 }
 
 function renderChain(){
+  // 3.55.0 (#5B): bevara otippade set-inputs över omritningar (synk/timer/nav).
+  try{ captureAllDraftInputs(); }catch(e){}
   refreshAmPill();
   const el=document.getElementById('view-chain');
   const cycle=curCycle();
@@ -6824,7 +6849,7 @@ const SESSION_TEMPLATES=[
   {id:'A',name:'Chest + Tri',exercises:[{id:'A1',name:'Flat BB',detail:'Ramping → 1 set failure',ramp:true},{id:'A2',name:'Incline Smith Press',detail:'1 set failure'},{id:'A3',name:'Cable Flyes',detail:'Full ROM · 1 set failure'},{id:'A4',name:'Tricep Pushdowns',detail:'1 set failure'}]},
   {id:'B',name:'Back Heavy + Biceps',exercises:[{id:'B1',name:'Dead Hang',detail:'1 set failure',bw:true,timed:true},{id:'B2',name:'Deadlift',detail:'Ramping → work sets to failure',ramp:true},{id:'B3',name:'Unilateral Cable Row',detail:'1 set failure',uni:true},{id:'B4',name:'Lat Prayers',detail:'1 set failure'}]},
   {id:'C',name:'Legs + Calfs',exercises:[{id:'C1',name:'Zercher Squat',detail:'Ramping → 1 set failure',ramp:true},{id:'C2',name:'Lying Leg Curl',detail:'1 set failure'},{id:'C3',name:'Leg Extension',detail:'1 set failure'},{id:'C4',name:'Seated Calf Raises',detail:'2 sets'}]},
-  {id:'D',name:'Shoulders + Traps',exercises:[{id:'D1',name:'Military Press',detail:'Ramping → 1 set failure',ramp:true},{id:'D2',name:'Lateral Raises',detail:'1 set failure'},{id:'D3',name:'Face Pulls',detail:'1 set failure'},{id:'D4',name:'Rotator Cuff',detail:'1 set'}]},
+  {id:'D',name:'Shoulders + Traps',exercises:[{id:'D1',name:'Military Press',detail:'Ramping → 1 set failure',ramp:true},{id:'D2',name:'Lateral Raises',detail:'1 set failure'},{id:'D3',name:'Face Pulls',detail:'1 set failure'},{id:'D4',name:'External Rotator Cuff',detail:'1 set'}]},
   {id:'E',name:'Chest pt. 2',exercises:[{id:'E1',name:'Flat DB',detail:'Ramping → 1 set failure',ramp:true},{id:'E2',name:'Decline Smith Press',detail:'1 set failure'},{id:'E3',name:'Cable Flyes',detail:'1 set failure'},{id:'E4',name:'Overhead Tricep Extension',detail:'1 set failure'}]},
   {id:'F',name:'Back pt. 2',exercises:[{id:'F1',name:'Pull-ups',detail:'1 set failure',bw:true},{id:'F2',name:'Unilateral Cable Row',detail:'1 set failure',uni:true},{id:'F3',name:'Shrugs',detail:'1 set failure'},{id:'F4',name:'Lat Prayers',detail:'1 set failure'}]},
   {id:'G',name:'Arms',exercises:[{id:'G1',name:'Barbell Curl',detail:'1 set failure'},{id:'G2',name:'Hammer Curl',detail:'1 set failure'},{id:'G3',name:'Tricep Pushdowns',detail:'1 set failure'},{id:'G4',name:'Overhead Tricep Extension',detail:'1 set failure'}]},
@@ -8393,9 +8418,14 @@ function ensureExtraSets(exId, passId){
   // are logged yet and count wasn't manually adjusted. _noLogged is now clean (Phase 2
   // removed orphaned warmup entries) so this correctly fires after swap+RAMP too.
   if(ex && !state.draft.savedExercises?.[exId]){
-    const _noLogged=!state.draft.loggedSets?.[exId]||Object.keys(state.draft.loggedSets[exId]).length===0;
+    // 3.55.0 (#5): gate på avsaknad av loggade WORK-set, inte avsaknad av ALLA loggade.
+    // Tidigare räckte EN loggad uppvärmning för att stänga av work-set-paddningen →
+    // ett borttappat arbetsset kunde aldrig återställas (permanent borta). Warmups
+    // loggas oftast först, därför drabbade buggen BARA work sets, aldrig warmups.
+    const _logged=state.draft.loggedSets?.[exId];
+    const _noWorkLogged=!_logged||Object.values(_logged).every(s=>s&&s.warmup);
     // Skip if user explicitly adjusted set count (add/remove) — pad would snap sets back.
-    if(_noLogged && !state.draft.setEdited?.[exId]){
+    if(_noWorkLogged && !state.draft.setEdited?.[exId]){
       const _sid2=getRenderExId(ex.id)||ex.id;
       const _last=Math.min(state.lastSessionSetCount?.[_sid2]??state.lastSessionSetCount?.[ex.id]??0,8);
       const _target=_last||getTagDefaults(ex).work;
@@ -8805,6 +8835,9 @@ function findNextOpenExercise(passId, afterExId){
 function rerenderSession(passId){
   const area=document.getElementById('chain-ex-area');
   if(!area||passId!==_chainSelectedId){renderChain();return;}
+  // 3.55.0 (#5B): fånga otippade DOM-inputs innan vi bygger om — annars wipear en
+  // rerender som INTE triggats av en log/save-action (periodisk synk, timer) ut datan.
+  try{ captureAllDraftInputs(); }catch(e){}
   const cycle=curCycle();const nextId=nextSessionId();const ec=getEffectiveChain();
   const pass=ec.find(p=>p.id===passId);
   if(!pass){renderChain();return;}
