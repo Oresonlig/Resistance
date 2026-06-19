@@ -254,6 +254,12 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .set-row.normal-set{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
 .set-row.uni-set{grid-template-columns:24px 1fr 1fr 48px 28px 36px 28px;}
 .set-row.bw-set{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
+/* 3.56.0 — measure-drivna grid-layouter (olika fält-antal per mätsätt) */
+.set-row.m-weight,.set-row.m-bw{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
+.set-row.m-bwreps,.set-row.m-timed{grid-template-columns:24px 1fr 48px 36px 28px;}
+.set-row.m-cardio,.set-row.m-cardiosprint,.set-row.m-carry{grid-template-columns:24px 1fr 1fr 36px 28px;}
+.set-row.m-weight.uni,.set-row.m-bw.uni{grid-template-columns:24px 1fr 1fr 48px 28px 36px 28px;}
+.set-row.m-bwreps.uni{grid-template-columns:24px 1fr 48px 28px 36px 28px;}
 /* STANDARD set-label size — crosses ALL themes (matches .set-unit KG/REPS at .82rem).
    Themes may recolour/restyle .set-num but must NOT override font-size — keep it
    uniform and legible. Mobile counterpart in the @media block below. */
@@ -6477,14 +6483,18 @@ function buildPassBodyHTML(pass,cycle,nextId){
         const tagOvr = state.exerciseTagOverrides?.[ex.id] || {};
         const isRamp = tagOvr.ramp!==undefined ? tagOvr.ramp : !!effEx.ramp;
         const isRampEx = isRamp; // alias for compatibility
-        const isBW   = tagOvr.bw!==undefined    ? tagOvr.bw   : !!effEx.bw;
-        const isTimed= tagOvr.timed!==undefined  ? tagOvr.timed: !!effEx.timed;
         const isUni  = tagOvr.uni!==undefined    ? tagOvr.uni  : !!effEx.uni;
         const isSingles = tagOvr.singles!==undefined ? tagOvr.singles : !!effEx.singles;
-
-        let tags='';if(isRampEx)tags+=`<span class="ex-tag ramp">Ramp</span>`;if(isSingles)tags+=`<span class="ex-tag singles">Singles</span>`;if(isBW){const bwDisp=todayWkg?`${toDisplay(todayWkg)} ${unitLabel()}`:'';tags+=`<span class="ex-tag bw">BW${bwDisp?' '+bwDisp:''}</span>`;}if(isUni)tags+=`<span class="ex-tag uni">Unilateral</span>`;if(isTimed)tags+=`<span class="ex-tag timed">Timed</span>`;
-        // Extras: kanoniskt exId via namn (funkar även i done-state utan draft)
+        // 3.56.0 — mätsätt (measure) styr input-form + PR, separerat från set-schema-taggarna.
+        // Extras: kanoniskt exId via namn (funkar även i done-state utan draft).
         const _exId = ex.extra ? extraExId(ex.name) : (getRenderExId(ex.id) || ex.id);
+        const measure = getMeasure(_exId, effEx);
+        const sprintBase = getSprintBase(_exId, effEx);
+        const mdef = MEASURES[measure] || MEASURES.weight;
+        const isBW = mdef.bw;
+        const isTimed = measure==='timed';
+
+        let tags='';if(isRampEx)tags+=`<span class="ex-tag ramp">Ramp</span>`;if(isSingles)tags+=`<span class="ex-tag singles">Singles</span>`;if(isBW){const bwDisp=todayWkg?`${toDisplay(todayWkg)} ${unitLabel()}`:'';tags+=`<span class="ex-tag bw">BW${bwDisp?' '+bwDisp:''}</span>`;}if(isUni)tags+=`<span class="ex-tag uni">Unilateral</span>`;if(isTimed)tags+=`<span class="ex-tag timed">Timed</span>`;if(measure==='bwreps')tags+=`<span class="ex-tag">Reps</span>`;if(measure==='cardio')tags+=`<span class="ex-tag">Cardio</span>`;if(measure==='cardiosprint')tags+=`<span class="ex-tag">Sprint</span>`;if(measure==='carry')tags+=`<span class="ex-tag">Carry</span>`;
         const lastSession=getLastSession(_exId);
         let prevText='';
         if(lastSession){
@@ -6710,45 +6720,18 @@ function buildPassBodyHTML(pass,cycle,nextId){
             const loggedCls = isLogged ? ' set-logged' : '';
             const dis   = (isDone||isSaved) ? 'disabled' : '';
             const canDel = !isDone && !isSaved && rawSets.length > 1;
-            if(isBW){
-              const snapKg   = savedSet?.bwSnap || (todayWkg||0);
-              const snapDisp = toDisplay(snapKg)||'?';
-              html+=`<div class="set-row bw-set${loggedCls}">
-                <span class="set-num${warmup?' warmup-label':''}">${lbl}</span>
-                <div><input class="set-input${wCls}" type="number" id="bw-${ex.id}-${sid}" placeholder="0"
-                  value="${savedSet?.extra!=null?toDisplay(savedSet.extra):bufVal?.extra!=null?toDisplay(bufVal.extra):''}"
-                  min="-50" step="${unitL==='lbs'?'1':'1.25'}" ${dis}>
-                  <div class="set-unit">+ ${unitL}</div></div>
-                <div><input class="${'set-input'+wCls+(isTimed?' timed':'')}" type="number" id="r-${ex.id}-${sid}"
-                  placeholder="${isTimed?('—'):('—')}" value="${isTimed?(savedSet?.secs||bufVal?.secs||''):(savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:'')}" min="1" ${isTimed?'max="3600"':'max="50"'} ${dis}>
-                  <div class="set-unit${isTimed?' time-unit':''}">${isTimed?'sec':'reps'}</div></div>
-                <div><input class="set-input${wCls} forced" type="number" id="f-${ex.id}-${sid}"
-                  placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}>
-                  <div class="set-unit forced-unit">+f</div></div>
-                ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${sid}" onclick="toggleSide('${ex.id}','${sid}')" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
-                ${(!isSaved&&!isDone)?(isLogged?`<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓${isFail?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFail?' active':''}" onclick="toggleSetFail('${ex.id}','${sid}','${passId}')">Fail</button></div>`:`<button class="set-log-btn has-value" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`):(savedSet?.fail?'<span class="set-fail-mark">✗</span>':'<div></div>')}
-                ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}','${sid}','${passId}')">✕</button>`:'<div></div>'}
-              </div>`;
-            } else {
-              const rowClass = isUni ? 'uni-set' : 'normal-set';
-              html+=`<div class="set-row ${rowClass}${loggedCls}">
-                <span class="set-num${warmup?' warmup-label':''}">${lbl}</span>
-                <div><input class="set-input${wCls}" type="number" id="w-${ex.id}-${sid}"
-                  placeholder="${placeholderW}" value="${savedSet?.weight!=null?toDisplay(savedSet.weight):bufVal?.weight!=null?toDisplay(bufVal.weight):''}"
-                  min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis}
-                  oninput="updateLogBtnState('${ex.id}','${sid}')">
-                  <div class="set-unit">${unitL}</div></div>
-                <div><input class="${'set-input'+wCls+(isTimed?' timed':'')}" type="number" id="r-${ex.id}-${sid}"
-                  placeholder="${isTimed?('—'):('—')}" value="${isTimed?(savedSet?.secs||bufVal?.secs||''):(savedSet?.reps!=null?savedSet.reps:bufVal?.reps!=null?bufVal.reps:'')}" min="1" ${isTimed?'max="3600"':'max="50"'} ${dis}>
-                  <div class="set-unit${isTimed?' time-unit':''}">${isTimed?'sec':'reps'}</div></div>
-                <div><input class="set-input${wCls} forced" type="number" id="f-${ex.id}-${sid}"
-                  placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}>
-                  <div class="set-unit forced-unit">+f</div></div>
-                ${isUni?`<button class="side-btn ${(savedSet?.side||bufVal?.side||'')===''?'':savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${sid}" onclick="toggleSide('${ex.id}','${sid}')" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>`:''}
-                ${(!isSaved&&!isDone)?(isLogged?`<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓${isFail?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFail?' active':''}" onclick="toggleSetFail('${ex.id}','${sid}','${passId}')">Fail</button></div>`:`<button class="set-log-btn${(bufVal?.weight||bufVal?.reps||savedSet)?' has-value':''}" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`):(savedSet?.fail?'<span class="set-fail-mark">✗</span>':'<div></div>')}
-                ${canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}','${sid}','${passId}')">✕</button>`:'<div></div>'}
-              </div>`;
-            }
+            // 3.56.0 — enhetlig measure-driven set-rad. measureCells bygger fält-cellerna;
+            // grid-kolumnerna styrs av .m-${measure}-klassen (olika fält-antal per mätsätt).
+            const cells = measureCells(measure, sprintBase, ex.id, sid, savedSet, bufVal, dis, wCls, unitL);
+            const sideBtn = (isUni && (measure==='weight'||measure==='bw'||measure==='bwreps'))
+              ? `<button class="side-btn ${savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${sid}" onclick="toggleSide('${ex.id}','${sid}')" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>` : '';
+            const logCell = (!isSaved&&!isDone)
+              ? (isLogged
+                ? `<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓${isFail?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFail?' active':''}" onclick="toggleSetFail('${ex.id}','${sid}','${passId}')">Fail</button></div>`
+                : `<button class="set-log-btn${measureHasValue(measure,savedSet,bufVal)?' has-value':''}" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`)
+              : (savedSet?.fail?'<span class="set-fail-mark">✗</span>':'<div></div>');
+            const delCell = canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}','${sid}','${passId}')">✕</button>`:'<div></div>';
+            html+=`<div class="set-row m-${measure}${isUni?' uni':''}${loggedCls}"><span class="set-num${warmup?' warmup-label':''}">${lbl}</span>${cells}${sideBtn}${logCell}${delCell}</div>`;
           }
           if(!isDone&&!isSaved){
             if(!isRampEx){
@@ -8033,52 +8016,58 @@ function saveExercise(passId,exId){
   const _swapNameS=isExtra?null:(state.draft?.swaps?.[exId]||state.permanentSwaps?.[exId]);
   const _swapCustomS=_swapNameS?state.customExercises?.find(c=>c.name===_swapNameS):null;
   const effExS=_swapCustomS||ex;
-  const _tagOvrS=state.exerciseTagOverrides?.[exId]||{};
-  const isBW=_tagOvrS.bw!==undefined?!!_tagOvrS.bw:!!effExS.bw;
-  const isTimed=_tagOvrS.timed!==undefined?!!_tagOvrS.timed:!!effExS.timed;
+  // 3.56.0 — measure-driven sparning (ersätter isBW/isTimed-grenarna).
+  const _canonS=isExtra?extraExId(ex.name):(getRenderExId(exId)||exId);
+  const measure=getMeasure(_canonS, effExS);
+  const sprintBase=getSprintBase(_canonS, effExS);
+  const isBW=MEASURES[measure]?.bw||false;
+  const isTimed=measure==='timed';
   const todayWkg=getTodayWeight();
   ensureExtraSets(exId, passId);
   // Spara i DISPLAY-ordning (warmups först) så history/copy alltid stämmer.
   const rawSets = sortSetsForDisplay(state.draft.extraSets[exId]);
   const buf = state.draft.inputBuffer?.[exId] || {};
-  // Read values: DOM first, fall back to buffer (handles iOS background case).
-  // Allt keyat på stabilt sid.
+  const _int=(v)=>{const n=parseInt(v);return isNaN(n)?null:n;};
+  // Read values: DOM first, fall back to buffer (iOS background-case). Keyat på sid.
   const sets = rawSets.map((s) => {
     const sid = s.sid;
     const warmup = s.warmup;
     const b = buf[sid] || {};
-    const domF = document.getElementById('f-'+exId+'-'+sid)?.value;
-    const forced = (domF && domF !== '') ? (parseInt(domF)||null) : (b.forced ?? null);
+    const dom=(pfx)=>{const v=document.getElementById(pfx+'-'+exId+'-'+sid)?.value;return (v&&v!=='')?v:null;};
+    const fRaw=dom('f');
+    const forced = (fRaw!=null) ? (parseInt(fRaw)||null) : (b.forced ?? null);
     const fail = state.draft?.loggedSets?.[exId]?.[sid]?.fail || undefined;
-    if(isBW){
-      const domBw = document.getElementById('bw-'+exId+'-'+sid)?.value;
-      const domR = document.getElementById('r-'+exId+'-'+sid)?.value;
-      const extraDisp = (domBw && domBw !== '') ? parseFloat(domBw) : null;
-      const extraKg = extraDisp !== null && !isNaN(extraDisp) ? toKg(extraDisp) : (b.extra ?? 0);
-      const repsOrSecs = (domR && domR !== '') ? (n=>isNaN(n)?null:n)(parseInt(domR)) : (isTimed ? (b.secs ?? null) : (b.reps ?? null));
-      const base = isTimed ? {sid, extra:extraKg, bwSnap:todayWkg||0, secs:repsOrSecs, forced, warmup}
-                           : {sid, extra:extraKg, bwSnap:todayWkg||0, reps:repsOrSecs, forced, warmup};
-      if(fail) base.fail = true;
-      return base;
-    }else{
-      const domW = document.getElementById('w-'+exId+'-'+sid)?.value;
-      const domR = document.getElementById('r-'+exId+'-'+sid)?.value;
-      const weightDisp = (domW && domW !== '') ? parseFloat(domW) : null;
-      const weightKg = weightDisp !== null && !isNaN(weightDisp) ? toKg(weightDisp) : (b.weight ?? null);
-      const repsOrSecs = (domR && domR !== '') ? (n=>isNaN(n)?null:n)(parseInt(domR)) : (isTimed ? (b.secs ?? null) : (b.reps ?? null));
-      const sideBtn = document.getElementById('side-'+exId+'-'+sid);
-      const side = sideBtn ? sideBtn.textContent.trim() : null;
-      const sideVal = (side && side !== '—') ? side : (b.side ?? null);
-      const base = isTimed ? {sid, weight:weightKg, secs:repsOrSecs, forced, warmup, side:sideVal}
-                           : {sid, weight:weightKg, reps:repsOrSecs, forced, warmup, side:sideVal};
-      if(fail) base.fail = true;
-      return base;
+    let base;
+    if(measure==='bw'){
+      const bwRaw=dom('bw');const rRaw=dom('r');
+      base={sid, extra: bwRaw!=null?toKg(parseFloat(bwRaw)):(b.extra??0), bwSnap:todayWkg||0, reps: rRaw!=null?_int(rRaw):(b.reps??null), forced, warmup};
+    } else if(measure==='bwreps'){
+      const rRaw=dom('r'); base={sid, reps: rRaw!=null?_int(rRaw):(b.reps??null), forced, warmup};
+    } else if(measure==='timed'){
+      const rRaw=dom('r'); base={sid, secs: rRaw!=null?_int(rRaw):(b.secs??null), forced, warmup};
+    } else if(measure==='cardio'){
+      const rRaw=dom('r');const dRaw=dom('dist');
+      base={sid, secs: rRaw!=null?_int(rRaw):(b.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(b.dist??null), warmup};
+    } else if(measure==='cardiosprint'){
+      const sRaw=dom('spr');const sprints=sRaw!=null?_int(sRaw):(b.sprints??null);
+      if(sprintBase==='dist'){const dRaw=dom('dist');base={sid, dist: dRaw!=null?(parseFloat(dRaw)||null):(b.dist??null), sprints, warmup};}
+      else {const rRaw=dom('r');base={sid, secs: rRaw!=null?_int(rRaw):(b.secs??null), sprints, warmup};}
+    } else if(measure==='carry'){
+      const wRaw=dom('w');const dmRaw=dom('distm');
+      base={sid, weight: wRaw!=null?toKg(parseFloat(wRaw)):(b.weight??null), distm: dmRaw!=null?_int(dmRaw):(b.distm??null), warmup};
+    } else {
+      const wRaw=dom('w');const rRaw=dom('r');
+      const sideBtn=document.getElementById('side-'+exId+'-'+sid);
+      const side=sideBtn?sideBtn.textContent.trim():null;const sideVal=(side&&side!=='—')?side:(b.side??null);
+      base={sid, weight: wRaw!=null?toKg(parseFloat(wRaw)):(b.weight??null), reps: rRaw!=null?_int(rRaw):(b.reps??null), forced, warmup, side:sideVal};
     }
+    if(fail) base.fail = true;
+    return base;
   });
   let displayName;
   if(isExtra){displayName=ex.name;}
   else{displayName=state.draft?.swaps?.[exId]||state.permanentSwaps?.[exId]||state.exerciseOverrides?.[exId]||ex.name;}
-  state.draft.savedExercises[exId]={id:exId,name:displayName,sets,bw:isBW,...(isTimed?{timed:true}:{}),...(isExtra?{extra:true}:{})};
+  state.draft.savedExercises[exId]={id:exId,name:displayName,sets,bw:isBW,measure,...(isTimed?{timed:true}:{}),...(isExtra?{extra:true}:{})};
   // Clear logged sets after saving — they're now in savedExercises
   if(state.draft.loggedSets) delete state.draft.loggedSets[exId];
   // V1 Collapse: auto-promote nästa öppna övning som aktiv
@@ -8368,6 +8357,37 @@ function sortSetsForDisplay(sets){
   const arr = sets||[];
   return [...arr.filter(s=>s&&s.warmup), ...arr.filter(s=>s&&!s.warmup)];
 }
+// 3.56.0 — bygg input-cellerna (mellan set-num och log/delete) för ett set givet measure.
+// DOM-id:n: w-(vikt) bw-(BW extra) r-(reps ELLER secs) f-(forced) dist-(km) distm-(m) spr-(sprintar).
+function measureCells(measure, sprintBase, exId, sid, savedSet, bufVal, dis, wCls, unitL){
+  const valNum  = (k)=> savedSet?.[k]!=null ? savedSet[k] : (bufVal?.[k]!=null ? bufVal[k] : '');
+  const valDisp = (k)=> savedSet?.[k]!=null ? toDisplay(savedSet[k]) : (bufVal?.[k]!=null ? toDisplay(bufVal[k]) : '');
+  const weightCell = `<div><input class="set-input${wCls}" type="number" id="w-${exId}-${sid}" placeholder="—" value="${valDisp('weight')}" min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis} oninput="updateLogBtnState('${exId}','${sid}')"><div class="set-unit">${unitL}</div></div>`;
+  const bwCell = `<div><input class="set-input${wCls}" type="number" id="bw-${exId}-${sid}" placeholder="0" value="${valDisp('extra')}" min="-50" step="${unitL==='lbs'?'1':'1.25'}" ${dis}><div class="set-unit">+ ${unitL}</div></div>`;
+  const repsCell = `<div><input class="set-input${wCls}" type="number" id="r-${exId}-${sid}" placeholder="—" value="${valNum('reps')}" min="1" max="50" ${dis}><div class="set-unit">reps</div></div>`;
+  const secsCell = `<div><input class="set-input${wCls} timed" type="number" id="r-${exId}-${sid}" placeholder="—" value="${valNum('secs')}" min="1" max="3600" ${dis}><div class="set-unit time-unit">sec</div></div>`;
+  const forcedCell = `<div><input class="set-input${wCls} forced" type="number" id="f-${exId}-${sid}" placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}><div class="set-unit forced-unit">+f</div></div>`;
+  const distCell = `<div><input class="set-input${wCls}" type="number" id="dist-${exId}-${sid}" placeholder="—" value="${valNum('dist')}" min="0" step="0.1" ${dis}><div class="set-unit">km</div></div>`;
+  const distmCell = `<div><input class="set-input${wCls}" type="number" id="distm-${exId}-${sid}" placeholder="—" value="${valNum('distm')}" min="0" step="1" ${dis}><div class="set-unit">m</div></div>`;
+  const sprintsCell = `<div><input class="set-input${wCls}" type="number" id="spr-${exId}-${sid}" placeholder="—" value="${valNum('sprints')}" min="0" max="99" ${dis}><div class="set-unit">sprints</div></div>`;
+  switch(measure){
+    case 'bw':           return bwCell+repsCell+forcedCell;
+    case 'bwreps':       return repsCell+forcedCell;
+    case 'timed':        return secsCell+forcedCell;
+    case 'cardio':       return secsCell+distCell;
+    case 'cardiosprint': return (sprintBase==='dist'?distCell:secsCell)+sprintsCell;
+    case 'carry':        return weightCell+distmCell;
+    case 'weight':
+    default:             return weightCell+repsCell+forcedCell;
+  }
+}
+// Har settet något inmatat värde (för Log-knappens has-value-stil)?
+function measureHasValue(measure, savedSet, bufVal){
+  if(savedSet) return true;
+  const m = MEASURES[measure] || MEASURES.weight;
+  const src = bufVal || {};
+  return m.fields.some(f=> f==='base' ? (src.secs!=null||src.dist!=null) : src[f]!=null);
+}
 // Migrera en draft från positionell modell → sid-modell. Idempotent: rör bara
 // sets utan sid. Remappar inputBuffer (array→obj) + loggedSets (numkey→sidkey)
 // via samma index, så inga loggade/osparade värden tappas vid uppdateringen.
@@ -8545,41 +8565,46 @@ function captureInputsToSetsBuffer(exId,passId){
   const _swapNameC=isExtra?null:(state.draft?.swaps?.[exId]||state.permanentSwaps?.[exId]);
   const _swapCustomC=_swapNameC?state.customExercises?.find(c=>c.name===_swapNameC):null;
   const effExC=_swapCustomC||ex;
-  const _tagOvrC=state.exerciseTagOverrides?.[exId]||{};
-  const isBW=_tagOvrC.bw!==undefined?!!_tagOvrC.bw:!!effExC?.bw;
+  // 3.56.0 — measure-driven inläsning (ersätter isBW/isTimed-grenarna).
+  const _canonC=isExtra?extraExId(ex?.name):(getRenderExId(exId)||exId);
+  const measure=getMeasure(_canonC, effExC);
+  const sprintBase=getSprintBase(_canonC, effExC);
   const rawSets=ensureSetIds(state.draft.extraSets[exId]);
   state.draft.extraSets[exId]=rawSets;
   if(!state.draft.inputBuffer)state.draft.inputBuffer={};
-  // Merge with existing buffer — keep prior values if DOM is empty.
-  // Keyat på stabilt sid (objekt), inte position.
+  // Merge with existing buffer — keep prior values if DOM is empty. Keyat på sid.
   const prior = state.draft.inputBuffer[exId] || {};
   const nb = {};
+  const _int=(v)=>{const n=parseInt(v);return isNaN(n)?null:n;};
   rawSets.forEach(s=>{
     const sid=s.sid;
     const p = prior[sid] || {};
-    const domF = document.getElementById('f-'+exId+'-'+sid)?.value;
-    const forced = (domF && domF !== '') ? (parseInt(domF)||null) : (p.forced ?? null);
-    if(isBW){
-      const domBw = document.getElementById('bw-'+exId+'-'+sid)?.value;
-      const domR = document.getElementById('r-'+exId+'-'+sid)?.value;
-      const extraDisp = (domBw && domBw !== '') ? parseFloat(domBw) : null;
-      const extraKg = extraDisp!==null && !isNaN(extraDisp) ? toKg(extraDisp) : (p.extra ?? null);
-      const repsOrSecs2 = (domR && domR !== '') ? (n=>isNaN(n)?null:n)(parseInt(domR)) : null;
-      const isTimed3=!!(state.exerciseTagOverrides?.[exId]?.timed ?? effExC?.timed);
-      nb[sid] = isTimed3
-        ? {extra:extraKg, bwSnap:p.bwSnap||0, secs: repsOrSecs2 ?? (p.secs ?? null), forced}
-        : {extra:extraKg, bwSnap:p.bwSnap||0, reps: repsOrSecs2 ?? (p.reps ?? null), forced};
-    }else{
-      const domW = document.getElementById('w-'+exId+'-'+sid)?.value;
-      const domR = document.getElementById('r-'+exId+'-'+sid)?.value;
-      const weightDisp = (domW && domW !== '') ? (parseFloat(domW)||null) : null;
-      const weightKg = weightDisp !== null ? toKg(weightDisp) : (p.weight ?? null);
-      const repsOrSecs = (domR && domR !== '') ? (n=>isNaN(n)?null:n)(parseInt(domR)) : null;
-      const isTimed2=!!(state.exerciseTagOverrides?.[exId]?.timed ?? effExC?.timed);
-      nb[sid] = isTimed2
-        ? {weight:weightKg, secs: repsOrSecs ?? (p.secs ?? null), forced}
-        : {weight:weightKg, reps: repsOrSecs ?? (p.reps ?? null), forced};
+    const dom=(pfx)=>{const v=document.getElementById(pfx+'-'+exId+'-'+sid)?.value;return (v&&v!=='')?v:null;};
+    const fRaw=dom('f');
+    const forced=(fRaw!=null)?(parseInt(fRaw)||null):(p.forced??null);
+    let rec;
+    if(measure==='bw'){
+      const bwRaw=dom('bw');const rRaw=dom('r');
+      rec={extra: bwRaw!=null?toKg(parseFloat(bwRaw)):(p.extra??null), bwSnap:p.bwSnap||0, reps: rRaw!=null?_int(rRaw):(p.reps??null), forced};
+    } else if(measure==='bwreps'){
+      const rRaw=dom('r'); rec={reps: rRaw!=null?_int(rRaw):(p.reps??null), forced};
+    } else if(measure==='timed'){
+      const rRaw=dom('r'); rec={secs: rRaw!=null?_int(rRaw):(p.secs??null), forced};
+    } else if(measure==='cardio'){
+      const rRaw=dom('r');const dRaw=dom('dist');
+      rec={secs: rRaw!=null?_int(rRaw):(p.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(p.dist??null)};
+    } else if(measure==='cardiosprint'){
+      const sRaw=dom('spr');const sprints=sRaw!=null?_int(sRaw):(p.sprints??null);
+      if(sprintBase==='dist'){const dRaw=dom('dist');rec={dist: dRaw!=null?(parseFloat(dRaw)||null):(p.dist??null), sprints};}
+      else {const rRaw=dom('r');rec={secs: rRaw!=null?_int(rRaw):(p.secs??null), sprints};}
+    } else if(measure==='carry'){
+      const wRaw=dom('w');const dmRaw=dom('distm');
+      rec={weight: wRaw!=null?toKg(parseFloat(wRaw)):(p.weight??null), distm: dmRaw!=null?_int(dmRaw):(p.distm??null)};
+    } else {
+      const wRaw=dom('w');const rRaw=dom('r');
+      rec={weight: wRaw!=null?toKg(parseFloat(wRaw)):(p.weight??null), reps: rRaw!=null?_int(rRaw):(p.reps??null), forced};
     }
+    nb[sid]=rec;
   });
   state.draft.inputBuffer[exId]=nb;
   // Also capture side buttons
