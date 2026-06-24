@@ -382,6 +382,11 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .pr-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;}
 .pr-grid.collapsed{display:none;}
 .pr-toggle{cursor:pointer;user-select:none;}
+/* 3.57.0 #1 — PR muskelgrupp-accordion */
+.pr-groups{margin-bottom:6px;}
+.pr-group-head{font-family:var(--mono);font-size:.58rem;color:#bbb;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;user-select:none;padding:9px 2px;border-top:1px solid var(--border-subtle);transition:color .15s;}
+.pr-group-head:first-child{border-top:none;}
+.pr-group-head.open{color:var(--gold);}
 .pr-card{border:1px solid var(--border-subtle);background:var(--surface-base);padding:9px 11px;position:relative;overflow:hidden;}
 .pr-delete{position:absolute;top:4px;right:4px;background:none;border:1px solid transparent;color:#444;cursor:pointer;font-size:.7rem;width:22px;height:22px;line-height:1;padding:0;transition:all .15s;}
 .pr-delete:hover{color:#884444;border-color:#3a1a1a;}
@@ -4380,11 +4385,13 @@ body.theme-cosmic-horror .swap-select option{background:#0a1818;color:#e8f7f0;}
   font-family:'Bebas Neue',sans-serif;
   font-size:.7rem; letter-spacing:.1em;
   text-transform:uppercase;
-  padding:6px 0;
+  padding:0;
   width:36px;
   box-sizing:border-box;
-  display:block;
-  text-align:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  align-self:stretch; /* 3.56.1 #5: match input-fältens höjd (set-row är align-items:start) */
   transition:all .2s;
 }
 .set-log-btn:hover{background:linear-gradient(180deg,#280808 0%,#140404 100%);color:#a03828;}
@@ -4937,6 +4944,7 @@ function ensureStateDefaults(){
     migExtras(state.draft);
   }catch(e){ console.warn('extras id-migration', e); }
   if(typeof state.prCollapsed !== 'boolean') state.prCollapsed = true;
+  if(typeof state.prOpenGroup !== 'string') state.prOpenGroup = null;
   if(typeof state.restCount !== 'number') state.restCount = 1;
   if(!state.permanentSwaps) state.permanentSwaps = {};
   if(state.sessionOrder === undefined) state.sessionOrder = null;
@@ -4962,6 +4970,7 @@ function ensureStateDefaults(){
   if(!state.appVersion) state.appVersion = APP_VERSION;
   if(!state.migrations) state.migrations = {};
   if(!state.lastSessionSetCount || typeof state.lastSessionSetCount !== 'object') state.lastSessionSetCount = {};
+  if(!state.lastSessionWarmupCount || typeof state.lastSessionWarmupCount !== 'object') state.lastSessionWarmupCount = {};
   // lastSessionNotes pensionerat (3.53.1): 3.40.0 gjorde notes persistenta i
   // exerciseNotes — inget skrev nya entries, men stale pre-3.40-reminders kunde
   // aldrig auto-rensas (⏰-bannern låg kvar tills manuell ✕). Städa bort fältet.
@@ -5020,7 +5029,7 @@ function isFreshState(s){
 function freshState(){
   return {
     cycles:[newCycle()],
-    log:[], weightLog:[], draft:null, drafts:{}, restCount:1, prCollapsed:true,
+    log:[], weightLog:[], draft:null, drafts:{}, restCount:1, prCollapsed:true, prOpenGroup:null,
     permanentSwaps:{}, sessionOrder:null, restSlots:null,
     unit:'kg', exerciseOverrides:{}, sessionNameOverrides:{},
     timerDefault:120, timerEnabled:false, exerciseNotes:{},
@@ -5030,7 +5039,7 @@ function freshState(){
     removedExercises:{}, weightStep:2.5,
     addedExercises:{}, hiddenRemoved:{},
     importedPRs:[], exerciseOrder:{}, ignoredPRs:[],
-    lastSessionSetCount:{},
+    lastSessionSetCount:{}, lastSessionWarmupCount:{},
     migrations:{},
     schemaVersion: SCHEMA_VERSION,
     deletions: { customExercises:{}, exerciseNotes:{} }
@@ -5200,7 +5209,7 @@ whenSbReady(async () => {
 const EXERCISE_LIBRARY = [
   // CHEST
   {name:'Cable Crossover', cat:'Chest'},
-  {name:'Cable Flyes', cat:'Chest'},
+  {name:'Cable Flyes', cat:'Chest', tip:'Full ROM - Deep stretch'},
   {name:'Chest Dips', cat:'Chest', measure:'bw'},
   {name:'Decline Cable Flyes', cat:'Chest'},
   {name:'Decline Cable Press', cat:'Chest'},
@@ -5221,6 +5230,7 @@ const EXERCISE_LIBRARY = [
   {name:'Chins (supinated)', cat:'Back', measure:'bw'},
   {name:'Close-grip Pulldown', cat:'Back'},
   {name:'Deadlift', cat:'Back'},
+  {name:'Jefferson Deadlift', cat:'Back'},
   {name:'Lat Prayers', cat:'Back'},
   {name:'Neutral Grip Pull-ups', cat:'Back', measure:'bw'},
   {name:'Power Clean', cat:'Back'},
@@ -5293,8 +5303,8 @@ const EXERCISE_LIBRARY = [
   {name:'Sit-ups', cat:'Core', measure:'bwreps'},
   // CARDIO / CONDITIONING
   {name:'Assault Bike', cat:'Cardio', measure:'cardiosprint', sprintBase:'time'},
-  {name:'Bike Cardio', cat:'Cardio', measure:'cardio'},
-  {name:'Dead Hang', cat:'Cardio', measure:'timed'},
+  {name:'Bike Cardio', cat:'Cardio', measure:'cardio', tip:'20 min steady state'},
+  {name:'Dead Hang', cat:'Cardio', measure:'timed', tip:'Supinated or neutral'},
   {name:'Farmers Walk', cat:'Cardio', measure:'carry'},
   {name:'Sled Push', cat:'Cardio', measure:'carry'},
   {name:'Walk', cat:'Cardio', measure:'cardio'},
@@ -5405,7 +5415,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.56.0';
+const APP_VERSION = '3.57.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5539,6 +5549,36 @@ function libraryMeasureMap(){
   }
   _libraryMeasureCache = m;
   return m;
+}
+// 3.57.0 #4 — Map kanoniskt exId → tip (teknik-cue), byggd från EXERCISE_LIBRARY[].tip.
+// Tipset är DATA på övningen → följer med vid swap (ersätter slot-`detail`-fallbacken).
+let _libraryTipCache = null;
+function libraryTipMap(){
+  if(_libraryTipCache) return _libraryTipCache;
+  const m = {};
+  for(const e of EXERCISE_LIBRARY){ if(e.tip) m[slugifyExId(e.name)] = e.tip; }
+  _libraryTipCache = m;
+  return m;
+}
+// 3.57.0 #1 — Map kanoniskt exId → muskelgrupp (cat), byggd från EXERCISE_LIBRARY[].cat.
+// Används av PR-listan för att re-derivera muskelgrupp ur en PR-post (bär bara namn).
+let _libraryCatCache = null;
+function libraryCatMap(){
+  if(_libraryCatCache) return _libraryCatCache;
+  const m = {};
+  for(const e of EXERCISE_LIBRARY){ if(e.cat) m[slugifyExId(e.name)] = e.cat; }
+  _libraryCatCache = m;
+  return m;
+}
+const PR_CAT_ORDER = ['Chest','Back','Shoulders','Arms','Legs','Traps','Core','Cardio','Other'];
+// Muskelgrupp för en PR-post (matchar på kanoniskt namn). Custom → custom.cat. Inget → 'Other'.
+function prCategoryOf(name){
+  const slug = slugifyExId(canonicalName(name));
+  const lib = libraryCatMap()[slug];
+  if(lib) return lib;
+  const c = (state.customExercises||[]).find(x=>x.name===name);
+  if(c?.cat && c.cat!=='Custom') return c.cat;
+  return 'Other';
 }
 // Resolva measure: override(exId) > library-default > custom.measure > flaggor > weight.
 function getMeasure(exId, ex){
@@ -6018,6 +6058,7 @@ async function syncFromCloud(userId){
           ignoredPRs: state.ignoredPRs,
           importedPRs: state.importedPRs,
           lastSessionSetCount: state.lastSessionSetCount,
+          lastSessionWarmupCount: state.lastSessionWarmupCount,
           deletions: state.deletions,
         };
 
@@ -6054,6 +6095,7 @@ async function syncFromCloud(userId){
         state.ignoredPRs = mergeArrayUnion(_local.ignoredPRs, state.ignoredPRs);
         state.importedPRs = mergeArrayUnion(_local.importedPRs, state.importedPRs);
         state.lastSessionSetCount = mergeKeyedMap(_local.lastSessionSetCount, state.lastSessionSetCount);
+        state.lastSessionWarmupCount = mergeKeyedMap(_local.lastSessionWarmupCount, state.lastSessionWarmupCount);
         // SL6: drafts är device-lokala
         state.draft = _local.draft;
         state.drafts = _local.drafts || {};
@@ -8333,6 +8375,7 @@ function finishSession(passId){
   Object.keys(draft.savedExercises).filter(k=>k.startsWith('extra_'+passId+'_')).forEach(extraId=>{const d=draft.savedExercises[extraId];if(d)exercises.push(d);});
   // Propagate work-set count + carry notes one session forward, attach notes to log entry
   if(!state.lastSessionSetCount) state.lastSessionSetCount={};
+  if(!state.lastSessionWarmupCount) state.lastSessionWarmupCount={};
   // 3.38.0 — Tombstones vid auto-cleanup. Utan dem kan cloud-merge resurrecta noten
   // (P4: Niklas såg Chins-note överleva 3 cykler på en device som syncade med cloud).
   if(!state.deletions) state.deletions = {};
@@ -8345,6 +8388,9 @@ function finishSession(passId){
     if(!ex.skipped && Array.isArray(ex.sets)){
       const workCount=ex.sets.filter(s=>!s.warmup).length;
       if(workCount>0) state.lastSessionSetCount[exId]=workCount;
+      // 3.57.0 #3: persistera även uppvärmningsantalet så set-strukturen följer med nästa pass
+      // (work persisterades redan; warmup nollställdes till tag/measure-default varje gång).
+      state.lastSessionWarmupCount[exId]=ex.sets.filter(s=>s.warmup).length;
     }
     // 3.40.0: noten PERSISTERAR på övningen (exId) tills användaren ändrar/rensar den.
     // Niklas: "oavsett när nästa pass kommer vill jag ha infon kvar." Frys en kopia i
@@ -8471,19 +8517,19 @@ function getExerciseDescriptionLine(ex){
   const tag = getPrimaryTag(ex) || '_none';
   return TAG_HINTS[tag] || '';
 }
-// Returnera explicit ex.tip eller utvinn icke-tag-info ur ex.detail.
-// Strippar kaenda tag-onlystrings ("1 set failure", "Ramping -> 1 set failure",
-// "Ramping -> work sets to failure"). Bevarar resten som tip ("Full ROM - Deep
-// stretch", "Supinated or neutral", "2 sets" etc.).
+// 3.57.0 #4 — Tipset är DATA på övningen, resolvat via kanoniskt namn → följer med vid swap.
+// Tidigare lästes slottens `detail`-fält, som är template-bundet → blev stale efter swap
+// (en inswappad övning ärvde den GAMLA övningens tip, t.ex. "Full ROM - Deep stretch").
+// Ordning: explicit ex.tip > library-tip (på namn) > custom.tip. Ingen detail-fallback.
 function getExerciseTip(ex){
   if(ex?.tip) return ex.tip;
-  const d = (ex?.detail || '').trim();
-  if(!d) return null;
-  if(/^Ramping\s*→\s*1 set failure$/i.test(d)) return null;
-  if(/^1 set failure$/i.test(d)) return null;
-  if(/^Ramping\s*→\s*work sets to failure$/i.test(d)) return null;
-  if(/^Ramping\s*→\s*work sets$/i.test(d)) return null;
-  return d.replace(/\s*·\s*1 set failure\s*$/i, '').trim() || null;
+  if(ex?.name){
+    const libTip = libraryTipMap()[slugifyExId(canonicalName(ex.name))];
+    if(libTip) return libTip;
+    const c = (state.customExercises||[]).find(x=>x.name===ex.name);
+    if(c?.tip) return c.tip;
+  }
+  return null;
 }
 const TAG_DEFAULTS = {
   ramp:    { warmup: 0, work: 4 },  // Ramping up = ingen separat warmup, 4 set
@@ -8523,7 +8569,11 @@ function getDefaultSets(ex){
   const def = getTagDefaults(ex, measure);
   const lastWork = Math.min(state.lastSessionSetCount?.[_exId] ?? state.lastSessionSetCount?.[ex.id] ?? 0, 8);
   const workCount = lastWork || def.work;
-  return defSets(def.warmup, workCount);
+  // 3.57.0 #3: uppvärmningsantalet följer med från förra passet om det finns, annars tag/measure-default.
+  // Ramp påverkas inte — dess warmups filtreras bort av RAMP-filtret i ensureExtraSets oavsett.
+  const lastWarm = state.lastSessionWarmupCount?.[_exId] ?? state.lastSessionWarmupCount?.[ex.id];
+  const warmupCount = (lastWarm!=null) ? Math.min(lastWarm, 8) : def.warmup;
+  return defSets(warmupCount, workCount);
 }
 function ensureExtraSets(exId, passId){
   ensureDraft(passId);
@@ -9126,6 +9176,24 @@ function togglePRCollapse(){
   save();
   renderProgress();
 }
+// 3.57.0 #1 — single-open accordion: öppnar en muskelgrupp, stänger den förra (samma som övningarna).
+function togglePRGroup(cat){
+  state.prOpenGroup = (state.prOpenGroup===cat) ? null : cat;
+  save();
+  renderProgress();
+}
+function prCardHTML(pr){
+  let val,sub;const u=unitLabel();const m=pr.measure||(pr.timed?'timed':pr.bw?'bw':'weight');
+  if(m==='bw'){val=`BW + ${toDisplay(pr.extra)||0}${u}`;sub=`BW ${toDisplay(pr.bwSnap)||0}${u} · ${pr.reps||'?'}r`;}
+  else if(m==='bwreps'){val=`${pr.reps||'?'} reps`;sub='bodyweight';}
+  else if(m==='timed'){val=`${pr.secs||'?'}s`;sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${u}`:(pr.weight?`at ${toDisplay(pr.weight)}${u}`:'');}
+  else if(m==='cardio'){val=`${pr.dist!=null?pr.dist:'?'} km`;sub=pr.secs?`${Math.round(pr.secs/60)} min`:'';}
+  else if(m==='cardiosprint'){val=`${pr.sprints!=null?pr.sprints:'?'} sprints`;sub=pr.dist!=null?`${pr.dist} km`:(pr.secs?`${Math.round(pr.secs/60)} min`:'');}
+  else if(m==='carry'){val=`${toDisplay(pr.weight)||'?'}${u}`;sub=pr.distm!=null?`${pr.distm} m`:'';}
+  else{val=`${toDisplay(pr.weight)}${u}`;sub=`${pr.reps||'?'} reps`;}
+  const safeName=escapeHTML(pr.name);const jsName=JSON.stringify(pr.name);
+  return `<div class="pr-card"><button class="pr-delete" onclick="ignorePR(${escapeHTML(jsName)})" title="Remove this PR" aria-label="Remove ${safeName}">✕</button><div class="pr-ex-name">${safeName}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;
+}
 function renderProgress(){
   const el=document.getElementById('view-progress');
   if(!state.log.length){el.innerHTML=`<div class="section-title">Progress</div><div class="empty-state">No sessions logged yet.<br>Start the chain!</div>`;return;}
@@ -9135,17 +9203,27 @@ function renderProgress(){
   if(prs.length){
     const _prCollapsed = state.prCollapsed !== false; // default true
     const _chev = _prCollapsed ? '▶' : '▼';
-    html+=`<div class="section-sub pr-toggle" onclick="togglePRCollapse()">${_chev} ★ Personal Records · ${prs.length}</div><div class="pr-grid${_prCollapsed?' collapsed':''}">`;
-    prs.forEach(pr=>{let val,sub;const u=unitLabel();const m=pr.measure||(pr.timed?'timed':pr.bw?'bw':'weight');
-      if(m==='bw'){val=`BW + ${toDisplay(pr.extra)||0}${u}`;sub=`BW ${toDisplay(pr.bwSnap)||0}${u} · ${pr.reps||'?'}r`;}
-      else if(m==='bwreps'){val=`${pr.reps||'?'} reps`;sub='bodyweight';}
-      else if(m==='timed'){val=`${pr.secs||'?'}s`;sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${u}`:(pr.weight?`at ${toDisplay(pr.weight)}${u}`:'');}
-      else if(m==='cardio'){val=`${pr.dist!=null?pr.dist:'?'} km`;sub=pr.secs?`${Math.round(pr.secs/60)} min`:'';}
-      else if(m==='cardiosprint'){val=`${pr.sprints!=null?pr.sprints:'?'} sprints`;sub=pr.dist!=null?`${pr.dist} km`:(pr.secs?`${Math.round(pr.secs/60)} min`:'');}
-      else if(m==='carry'){val=`${toDisplay(pr.weight)||'?'}${u}`;sub=pr.distm!=null?`${pr.distm} m`:'';}
-      else{val=`${toDisplay(pr.weight)}${u}`;sub=`${pr.reps||'?'} reps`;}
-      const safeName=escapeHTML(pr.name);const jsName=JSON.stringify(pr.name);html+=`<div class="pr-card"><button class="pr-delete" onclick="ignorePR(${escapeHTML(jsName)})" title="Remove this PR" aria-label="Remove ${safeName}">✕</button><div class="pr-ex-name">${safeName}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;});
-    html+=`</div>`;
+    html+=`<div class="section-sub pr-toggle" onclick="togglePRCollapse()">${_chev} ★ Personal Records · ${prs.length}</div>`;
+    if(!_prCollapsed){
+      // 3.57.0 #1 — gruppera per muskelgrupp (re-deriverad ur library-cat), single-open accordion.
+      const groups={};
+      prs.forEach(pr=>{const cat=prCategoryOf(pr.name);(groups[cat]||(groups[cat]=[])).push(pr);});
+      const cats=Object.keys(groups).sort((a,b)=>{
+        const ia=PR_CAT_ORDER.indexOf(a), ib=PR_CAT_ORDER.indexOf(b);
+        return (ia<0?99:ia)-(ib<0?99:ib) || a.localeCompare(b);
+      });
+      html+=`<div class="pr-groups">`;
+      cats.forEach(cat=>{
+        const open=state.prOpenGroup===cat;
+        const items=groups[cat].slice().sort((a,b)=>a.name.localeCompare(b.name));
+        const jsCat=JSON.stringify(cat);
+        html+=`<div class="pr-group-head${open?' open':''}" onclick="togglePRGroup(${escapeHTML(jsCat)})">${open?'▼':'▶'} ${escapeHTML(cat)} · ${items.length}</div>`;
+        html+=`<div class="pr-grid${open?'':' collapsed'}">`;
+        items.forEach(pr=>{ html+=prCardHTML(pr); });
+        html+=`</div>`;
+      });
+      html+=`</div>`;
+    }
   }
   html+=`<div class="section-sub">History</div>`;
   [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;let _hw=0,_hs=0;const sh=(ex.sets||[]).map(s=>{const _lbl=s.warmup?'W'+(++_hw):'S'+(++_hs);return `<div class="hist-set">${_lbl}: ${formatSetLine(s,unitLabel())}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;}).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
@@ -9901,6 +9979,7 @@ function copyDebugState(){
     inputBuffer: d?.inputBuffer || null,
     savedExerciseKeys: d ? Object.keys(d.savedExercises||{}) : null,
     lastSessionSetCount: state.lastSessionSetCount || null,
+    lastSessionWarmupCount: state.lastSessionWarmupCount || null,
     lastSyncRead: (typeof lastSyncRead!=='undefined')?lastSyncRead:null,
     lastSyncWrite: (typeof lastSyncWrite!=='undefined')?lastSyncWrite:null,
     lastSyncedCloudTime: state.lastSyncedCloudTime || null,
