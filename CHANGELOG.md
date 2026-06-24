@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.57.1 — 2026-06-24
+**#5 följdfix — Log-knappens höjd på mobil.** 3.57.0:s `align-self:stretch` sträckte knappen över hela grid-radens höjd = `.set-input` + dess `.set-unit`-label under → uppblåst på mobil (dolde sig på desktop pga större input-padding). Fix: Log-knappen wrappas nu i `.set-logcell` (flex-kolumn) med knappen (`flex:1`) + en osynlig `.set-unit`-spacer — speglar input-cellens struktur så knappen blir exakt lika hög som input-BOXen på alla breakpoints, oberoende av tema.
+
 ## 3.57.0 — 2026-06-24
 Gym-feedback-batch (5 punkter).
 - **#1 — PR-listan grupperad per muskelgrupp.** Personal Records är nu ett single-open accordion: expandera PR-sektionen → se muskelgrupperna (alla kollapsade), klicka en grupp → den expanderar och den förra kollapsar (samma mönster som övningarna). Inom en grupp sorteras PR alfabetiskt. Muskelgruppen re-deriveras ur `EXERCISE_LIBRARY[].cat` via kanoniskt namn (`libraryCatMap`/`prCategoryOf`); omappade/importerade PR hamnar i `Other`. Ny state `prOpenGroup` (device-lokal). Kort-renderingen utbruten till `prCardHTML`.

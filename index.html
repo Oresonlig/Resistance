@@ -4386,14 +4386,18 @@ body.theme-cosmic-horror .swap-select option{background:#0a1818;color:#e8f7f0;}
   font-size:.7rem; letter-spacing:.1em;
   text-transform:uppercase;
   padding:0;
-  width:36px;
+  width:100%;
   box-sizing:border-box;
   display:flex;
   align-items:center;
   justify-content:center;
-  align-self:stretch; /* 3.56.1 #5: match input-fältens höjd (set-row är align-items:start) */
+  flex:1; min-height:0; /* 3.57.1 #5: matchar .set-input-BOXens höjd (ej input+label) via .set-logcell-wrappern */
   transition:all .2s;
 }
+/* 3.57.1 #5: wrappar Log-knappen som en input-cell — knapp (flex:1) + osynlig label-spacer
+   → knappen blir exakt lika hög som .set-input-boxen på alla breakpoints. Tidigare gjorde
+   align-self:stretch knappen lika hög som input+label (såg uppblåst ut på mobil). */
+.set-logcell{display:flex;flex-direction:column;align-self:stretch;}
 .set-log-btn:hover{background:linear-gradient(180deg,#280808 0%,#140404 100%);color:#a03828;}
 .set-log-btn.has-value{background:linear-gradient(180deg,#2a0a0a 0%,#180404 100%);color:#c0392b;}
 .set-log-btn.has-value:hover{background:linear-gradient(180deg,#3a1010 0%,#220808 100%);color:#d04535;}
@@ -5415,7 +5419,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.57.0';
+const APP_VERSION = '3.57.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -6770,7 +6774,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
             const logCell = (!isSaved&&!isDone)
               ? (isLogged
                 ? `<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓${isFail?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFail?' active':''}" onclick="toggleSetFail('${ex.id}','${sid}','${passId}')">Fail</button></div>`
-                : `<button class="set-log-btn${measureHasValue(measure,savedSet,bufVal)?' has-value':''}" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button>`)
+                : `<div class="set-logcell"><button class="set-log-btn${measureHasValue(measure,savedSet,bufVal)?' has-value':''}" onclick="logSet('${ex.id}','${sid}','${passId}',${warmup})">Log</button><div class="set-unit" aria-hidden="true">&nbsp;</div></div>`)
               : (savedSet?.fail?'<span class="set-fail-mark">✗</span>':'<div></div>');
             const delCell = canDel?`<button class="set-delete" onclick="removeExtraSet('${ex.id}','${sid}','${passId}')">✕</button>`:'<div></div>';
             html+=`<div class="set-row m-${measure}${isUni?' uni':''}${loggedCls}"><span class="set-num${warmup?' warmup-label':''}">${lbl}</span>${cells}${sideBtn}${logCell}${delCell}</div>`;
