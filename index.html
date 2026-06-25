@@ -419,6 +419,7 @@ canvas#weightChart{width:100%!important;display:block;}
 .data-btn:hover{border-color:#555;color:var(--white);}
 .data-btn.danger:hover{border-color:var(--red);color:var(--red);}
 .empty-state{text-align:center;padding:44px 16px;font-family:var(--mono);font-size:.6rem;color:#555;text-transform:uppercase;letter-spacing:.1em;line-height:2.2;}
+.settings-panel{background:none;}
 .rest-timer{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom, 0px));left:50%;transform:translateX(-50%) translateY(120px);background:#0d1a0d;border:1px solid var(--green-bright);color:var(--green-bright);font-family:var(--display);font-size:2rem;letter-spacing:.1em;padding:10px 24px;transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:99;pointer-events:all;display:flex;align-items:center;gap:12px;white-space:nowrap;}
 .rest-timer.show{transform:translateX(-50%) translateY(0);}
 .rest-timer.warning{border-color:var(--gold);color:var(--gold);}
@@ -2297,6 +2298,38 @@ body.theme-nanosuit .hist-entry{
 }
 body.theme-nanosuit .hist-date{font-family:'Orbitron',sans-serif;font-weight:700;}
 body.theme-nanosuit .hist-pass{color:var(--red);font-family:'Orbitron',sans-serif;font-weight:600;}
+body.theme-nanosuit .pr-group-head{color:#5a8899;}
+body.theme-nanosuit .pr-group-head:hover{color:var(--red);}
+
+/* Settings/Weight panels — "wild west" fix (3.58.9). Most of the Data view is
+   built from raw inline-styled divs (Rest Timer, Ambient Effects, Sync Status,
+   Custom Exercises, theme-picker grids, duration/unit button rows) with no
+   background at all — harmless on every other theme's calm backdrop, but the
+   energised hex weave shows straight through them. .settings-panel only fills
+   in background/border/padding where the element doesn't already declare its
+   own inline value (inline always wins), so existing per-element borders and
+   padding are untouched. Same applies to .data-btn / .weight-chart-wrap /
+   .wlog-list, which already had classes but no nanosuit background. */
+body.theme-nanosuit .settings-panel{
+  background:linear-gradient(135deg,#0a1420 0%,#050810 100%);
+  border:1px solid #1a3040;
+  padding:8px;
+}
+body.theme-nanosuit .data-btn{
+  background:linear-gradient(135deg,#0a1420 0%,#050810 100%);
+  border-color:#1a3040;
+  color:#5a8899;
+}
+body.theme-nanosuit .data-btn:hover{border-color:var(--red);color:var(--red);}
+body.theme-nanosuit .weight-chart-wrap{
+  background:linear-gradient(135deg,#0a1420 0%,#050810 100%);
+  border-color:#1a3040;
+}
+body.theme-nanosuit .wlog-list{
+  background:linear-gradient(135deg,#0a1420 0%,#050810 100%);
+  border:1px solid #1a3040;
+  padding:2px 12px;
+}
 
 /* Scrollbar */
 body.theme-nanosuit::-webkit-scrollbar{width:6px;}
@@ -5529,7 +5562,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.58.8';
+const APP_VERSION = '3.58.9';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -10100,7 +10133,7 @@ function renderData(){
   <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);line-height:1.7;margin-bottom:8px">If a set disappears: tap here IMMEDIATELY after — copies draft state to clipboard. Paste it in a chat to Claude.</div>
   <div class="data-row" style="margin-bottom:18px;"><button class="data-btn" onclick="copyDebugState()">🐛 Copy draft state</button><button class="data-btn" onclick="clearDebugLog()">Rensa logg</button></div>
   <div class="section-sub">Rest Timer</div>
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border:1px solid var(--gray-mid);padding:10px 12px;margin-bottom:10px;">
+  <div class="settings-panel" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border:1px solid var(--gray-mid);padding:10px 12px;margin-bottom:10px;">
     <div>
       <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);margin-bottom:2px;">Rest Timer</div>
       <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);">Counts down after each Done. Slide-up popup.</div>
@@ -10108,15 +10141,15 @@ function renderData(){
     <button onclick="state.timerEnabled=!state.timerEnabled;save();renderData();" style="background:${state.timerEnabled?'var(--green-bright)':'var(--gray-mid)'};border:1px solid ${state.timerEnabled?'var(--green-bright)':'var(--gray-mid)'};color:${state.timerEnabled?'var(--black)':'var(--gray-light)'};font-family:var(--mono);font-size:.54rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:all .2s;">${state.timerEnabled?'ON':'OFF'}</button>
   </div>
   <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);margin-bottom:8px;">Rest duration</div>
-  <div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;">${[60,90,120,180,240,300].map(s=>`<button onclick="state.timerDefault=${s};save();renderData();" style="background:${state.timerDefault===s?selBg:'none'};border:1px solid ${state.timerDefault===s?selBorder:'#444'};color:${state.timerDefault===s?selFg:'#888'};font-family:var(--mono);font-size:.5rem;padding:6px 10px;cursor:pointer;transition:all .15s;">${s<60?s+'s':Math.floor(s/60)+(s%60?':'+String(s%60).padStart(2,'0'):'')+' min'}</button>`).join('')}</div>
+  <div class="settings-panel" style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;">${[60,90,120,180,240,300].map(s=>`<button onclick="state.timerDefault=${s};save();renderData();" style="background:${state.timerDefault===s?selBg:'none'};border:1px solid ${state.timerDefault===s?selBorder:'#444'};color:${state.timerDefault===s?selFg:'#888'};font-family:var(--mono);font-size:.5rem;padding:6px 10px;cursor:pointer;transition:all .15s;">${s<60?s+'s':Math.floor(s/60)+(s%60?':'+String(s%60).padStart(2,'0'):'')+' min'}</button>`).join('')}</div>
   <div class="section-sub">Weight Unit</div>
   <div style="font-family:var(--mono);font-size:.54rem;color:var(--gray-light);margin-bottom:8px;">Currently: <strong style="color:var(--white)">${(state.unit||'kg').toUpperCase()}</strong></div>
-  <div style="display:flex;gap:6px;margin-bottom:18px">${unitBtn('kg')}${unitBtn('lbs')}</div>
+  <div class="settings-panel" style="display:flex;gap:6px;margin-bottom:18px">${unitBtn('kg')}${unitBtn('lbs')}</div>
   <div class="section-sub">Custom Exercises</div>
   ${(state.customExercises||[]).length===0
     ? `<div style="font-family:var(--mono);font-size:.52rem;color:#666;margin-bottom:16px;">No custom exercises yet. Create one via any exercise's Edit ▾ → Swap → + Custom.</div>`
     : `<div style="margin-bottom:16px;">${state.customExercises.map(c=>`
-        <div style="border:1px solid #2a2a2a;padding:10px 12px;margin-bottom:6px;">
+        <div class="settings-panel" style="border:1px solid #2a2a2a;padding:10px 12px;margin-bottom:6px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
             <input type="text" value="${escapeHTML(c.name)}" id="custName-${c.id}"
               style="flex:1;background:var(--surface-input);border:1px solid var(--border-strong);color:var(--white);font-family:var(--sans);font-size:.82rem;padding:5px 8px;"
@@ -10138,7 +10171,7 @@ function renderData(){
 
   <div class="section-sub">Theme</div>
   <div style="font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Dark</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+  <div class="settings-panel" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
     ${THEMES.filter(t=>t.cat==='dark').map(t=>{
       const active = (state.theme||'iron')===t.id;
       return `<button onclick="applyTheme('${t.id}');renderData();"
@@ -10152,7 +10185,7 @@ function renderData(){
     }).join('')}
   </div>
   <div style="font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Light</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;">
+  <div class="settings-panel" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;">
     ${THEMES.filter(t=>t.cat==='light').map(t=>{
       const active = (state.theme||'iron')===t.id;
       return `<button onclick="applyTheme('${t.id}');renderData();"
@@ -10166,7 +10199,7 @@ function renderData(){
     }).join('')}
   </div>
   <div class="section-sub">Ambient Effects</div>
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--gray-mid);margin-bottom:18px;">
+  <div class="settings-panel" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--gray-mid);margin-bottom:18px;">
     <div>
       <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);margin-bottom:2px;">Animations &amp; particles</div>
       <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);">Ember particles in Obsidian + other animation-heavy themes. Turn off to save battery or reduce distraction.</div>
@@ -10174,7 +10207,7 @@ function renderData(){
     <button onclick="toggleAmbientEffects()" style="background:${state.ambientEffects!==false?'var(--green-bright)':'var(--gray-mid)'};border:1px solid ${state.ambientEffects!==false?'var(--green-bright)':'var(--gray-mid)'};color:${state.ambientEffects!==false?'var(--black)':'var(--gray-light)'};font-family:var(--mono);font-size:.54rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:all .2s;">${state.ambientEffects!==false?'ON':'OFF'}</button>
   </div>
   <div class="section-sub">Sync Status</div>
-  <div id="sync-status-card" style="border:1px solid var(--gray-mid);padding:12px 14px;margin-bottom:18px;font-family:var(--mono);font-size:.55rem;color:var(--gray-light);line-height:1.9;">
+  <div id="sync-status-card" class="settings-panel" style="border:1px solid var(--gray-mid);padding:12px 14px;margin-bottom:18px;font-family:var(--mono);font-size:.55rem;color:var(--gray-light);line-height:1.9;">
     <div id="sync-health" style="color:${_lastSyncError?'var(--red)':'var(--green-bright)'};font-size:.62rem;margin-bottom:5px;">${_lastSyncError?('⚠ '+escapeHTML(_lastSyncError)):'✓ All changes synced'}</div>
     <div style="color:var(--gray-light);font-size:.5rem;margin-bottom:9px;line-height:1.6;">Your data is saved on this device first. Sync errors never lose data — pushes retry automatically and send once you're back online.</div>
     <div>App version: <span style="color:var(--white);">${APP_VERSION}</span></div>
