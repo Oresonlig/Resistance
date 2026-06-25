@@ -2301,33 +2301,37 @@ body.theme-nanosuit .hist-pass{color:var(--red);font-family:'Orbitron',sans-seri
 body.theme-nanosuit .pr-group-head{color:#5a8899;}
 body.theme-nanosuit .pr-group-head:hover{color:var(--red);}
 
-/* Settings/Weight panels — "wild west" fix (3.58.9). Most of the Data view is
-   built from raw inline-styled divs (Rest Timer, Ambient Effects, Sync Status,
-   Custom Exercises, theme-picker grids, duration/unit button rows) with no
-   background at all — harmless on every other theme's calm backdrop, but the
-   energised hex weave shows straight through them. .settings-panel only fills
-   in background/border/padding where the element doesn't already declare its
-   own inline value (inline always wins), so existing per-element borders and
-   padding are untouched. Same applies to .data-btn / .weight-chart-wrap /
-   .wlog-list, which already had classes but no nanosuit background. */
+/* Settings/Weight panels — "wild west" fix (3.58.9), upgraded to the same
+   frosted-glass recipe as .ex-block (3.58.10) so the dark-glass feel is
+   consistent across the whole theme instead of mixing flat solid slabs with
+   blurred glass chrome. Inline border/padding on the element still wins where
+   declared (untouched), this only supplies background+blur+border. */
 body.theme-nanosuit .settings-panel{
-  background:linear-gradient(135deg,#0a1420 0%,#050810 100%);
-  border:1px solid #1a3040;
+  background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(0,212,255,0.16);
   padding:8px;
 }
 body.theme-nanosuit .data-btn{
-  background:linear-gradient(135deg,#0a1420 0%,#050810 100%);
-  border-color:#1a3040;
+  background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-color:rgba(0,212,255,0.16);
   color:#5a8899;
 }
 body.theme-nanosuit .data-btn:hover{border-color:var(--red);color:var(--red);}
 body.theme-nanosuit .weight-chart-wrap{
-  background:linear-gradient(135deg,#0a1420 0%,#050810 100%);
-  border-color:#1a3040;
+  background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-color:rgba(0,212,255,0.16);
 }
 body.theme-nanosuit .wlog-list{
-  background:linear-gradient(135deg,#0a1420 0%,#050810 100%);
-  border:1px solid #1a3040;
+  background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(0,212,255,0.16);
   padding:2px 12px;
 }
 
@@ -5562,7 +5566,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.58.9';
+const APP_VERSION = '3.58.10';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
