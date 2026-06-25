@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.58.8 — 2026-06-25
+**Nanosuit — bottennaven (The Chain/Progress/Weight/Settings) får samma frostat-glas-behandling som headern.** Hade fortfarande den platta `rgba(5,8,16,0.92)`-bakgrunden — exakt samma för-höga-opacitet-fel som headern hade innan 3.58.6. Bytt till samma korrigerade recept (gradient + `backdrop-filter:blur(18px)`), riktningen speglad jämfört med headern (låg→hög istället för hög→låg) eftersom naven ankrar mot skärmens underkant — samma riktning Overgrowth/Undertow redan kör på sin nav (`rgba(255,255,255,0.25→0.62)`). Värt att notera: Overgrowth och Undertow hade redan frostat glas på sin nav sedan tidigare — Nanosuit är inte först med detta, men är nu först bland de "energiserade" mörka temana.
+
 ## 3.58.7 — 2026-06-25
 **Nanosuit — header ljusare, övningar frostade, header-layout omstrukturerad.** Niklas bekräftade headern äntligen är opak-men-genomskinlig (3.58.6 löste det) men ville ha 5-10% till genomskinlighet — sänkt till `rgba(8,22,36,0.42→0.18)` (från 0.5→0.26). `.ex-block` (övningskorten) använde fortfarande 3.58.2:s helt solida `var(--surface-elevated)`/`var(--surface-saved)` utan alpha — bytt till samma frostat-glas-recept som header/chain-intro, men hållet i den högre änden (0.5-0.68) av det fungerande 10-55%-spannet eftersom korten har betydligt tätare text (set-nummer, taggar) än headerns korta rader.
 - **Header-layout omstrukturerad** efter skiss: viktloggen (am-pill) flyttad ner i linje med Edit-knappen (samma rad, `.header-bottom-row`) istället för i linje med sync-raden. Version och Sync+prick var tidigare EN textsträng (`v3.58.6 · Sync ●`) som kunde radbryta så pricken hamnade ensam på egen rad — nu uppdelat i `.header-version` (egen rad) + `.header-sync-row` (Sync + prick, `white-space:nowrap` + flex så de garanterat aldrig separeras).

@@ -1998,10 +1998,16 @@ body.theme-nanosuit .sync-dot.ok{
 }
 
 /* Bottom nav — angular cut corners */
+/* Frosted glass, same corrected recipe as header (3.58.6/3.58.7) — gradient
+   direction mirrored vs. header (low->high instead of high->low) since nav
+   anchors the bottom edge, matching Overgrowth/Undertow's nav treatment
+   (rgba(255,255,255,0.25->0.62)+blur(6px)) which already does this. Previous
+   flat rgba(5,8,16,0.92) was the same too-opaque mistake the header had. */
 body.theme-nanosuit nav{
   border-top:1px solid #00d4ff;
-  background:rgba(5,8,16,0.92);
-  backdrop-filter:blur(10px);
+  background:linear-gradient(180deg,rgba(8,22,36,0.18) 0%,rgba(8,22,36,0.45) 100%);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
 }
 body.theme-nanosuit nav button{
   font-family:'Orbitron',sans-serif;
@@ -5523,7 +5529,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.58.7';
+const APP_VERSION = '3.58.8';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
