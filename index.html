@@ -63,7 +63,8 @@ header{border-bottom:1px solid #1e1e1e;padding:11px 14px;display:flex;align-item
 .header-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
 .header-user{font-family:var(--mono);font-size:.58rem;color:#aaa;letter-spacing:.1em;text-transform:uppercase;}
 .header-user strong{color:var(--white);}
-.header-sync{font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;}
+.header-sync{font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;text-align:right;}
+.header-sync-row{display:flex;align-items:center;justify-content:flex-end;gap:4px;white-space:nowrap;}
 .header-bottom-row{display:flex;align-items:center;gap:8px;}
 /* AM-pill — morning weight i header */
 .am-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 12px;border:1px solid var(--border-subtle);border-radius:8px;background:var(--surface-base);font-family:var(--mono);font-size:.7rem;color:var(--gray-light);cursor:pointer;transition:border-color .15s,color .15s,background .15s;letter-spacing:.04em;}
@@ -1965,7 +1966,7 @@ body.theme-nanosuit::before{
    Fix: drop the tint to 26-50% and lighten it off pure-black so the haze itself
    reads as frosted glass even in the gaps between pulses, not just during one. */
 body.theme-nanosuit header{
-  background:linear-gradient(180deg,rgba(8,22,36,0.5) 0%,rgba(8,22,36,0.26) 100%);
+  background:linear-gradient(180deg,rgba(8,22,36,0.42) 0%,rgba(8,22,36,0.18) 100%);
   backdrop-filter:blur(18px);
   -webkit-backdrop-filter:blur(18px);
   border-bottom:1px solid #00d4ff;
@@ -2166,13 +2167,21 @@ body.theme-nanosuit .ex-tag{
    blocked the weave: the canvas was stacking on top of it, not behind it. */
 body.theme-nanosuit .view{position:relative;z-index:1;}
 
-/* Exercise blocks — fully opaque panel; the hex weave is chrome, it must not fight the workout UI for attention */
+/* Exercise blocks — frosted glass, same recipe as header/chain-intro (3.58.6
+   note above the header rule explains the opacity range). Denser text than the
+   header (set numbers, tags) so kept on the higher end of the working 10-55%
+   band rather than matching header's lighter 18-42%. */
 body.theme-nanosuit .ex-block{
-  background:var(--surface-elevated);
+  position:relative;z-index:1;
+  background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
   border:1px solid rgba(0,212,255,0.16);
 }
 body.theme-nanosuit .ex-block.saved{
-  background:var(--surface-saved);
+  background:linear-gradient(180deg,rgba(10,26,40,0.68) 0%,rgba(10,26,40,0.52) 100%);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
   border-color:rgba(80,255,136,0.22);
 }
 
@@ -2226,7 +2235,6 @@ body.theme-nanosuit .chain-intro{
   border-bottom:1px solid rgba(0,212,255,0.14);
 }
 body.theme-nanosuit .chain-bar{position:relative;z-index:1;}
-body.theme-nanosuit .ex-block{position:relative;z-index:1;}
 
 /* Section titles */
 body.theme-nanosuit .section-title,
@@ -4763,6 +4771,10 @@ body.theme-cosmic-horror .set-logged-indicator{
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">
+        <div class="header-version">v<span id="headerVersion">—</span></div>
+        <div class="header-sync-row">Sync <span class="sync-dot" id="syncDot"></span></div>
+      </div>
       <div class="header-bottom-row">
         <div class="am-pill missing" id="amPill" onclick="expandAmPill(event)" title="Morning weight">
           <span class="am-pill-icon">⚖</span>
@@ -4771,9 +4783,8 @@ body.theme-cosmic-horror .set-logged-indicator{
           <span class="am-pill-unit" id="amPillUnit" style="display:none">kg</span>
           <button class="am-pill-log" id="amPillLog" style="display:none" onclick="event.stopPropagation();logWeight();">Log</button>
         </div>
-        <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">v<span id="headerVersion">—</span> · Sync <span class="sync-dot" id="syncDot"></span></div>
+        <button class="btn-chain-edit" title="Configure chain" onclick="showEditPage()"><svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit</button>
       </div>
-      <button class="btn-chain-edit" title="Configure chain" onclick="showEditPage()"><svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit</button>
     </div>
   </header>
   <nav>
@@ -5512,7 +5523,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.58.6';
+const APP_VERSION = '3.58.7';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
