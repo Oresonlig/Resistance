@@ -1958,8 +1958,7 @@ body.theme-nanosuit::before{
 }
 
 body.theme-nanosuit header{
-  background:color-mix(in srgb, var(--surface-deep) 97%, transparent);
-  backdrop-filter:blur(8px);
+  background:var(--surface-deep);
   border-bottom:1px solid #00d4ff;
   box-shadow:0 0 24px rgba(0,212,255,0.15),inset 0 -1px 0 rgba(0,255,240,0.3);
 }
@@ -2151,14 +2150,14 @@ body.theme-nanosuit .ex-tag{
 }
 /* Nanosuit tag colors — se tokens i body.theme-nanosuit ovan (3.34.11) */
 
-/* Exercise blocks — opaque panel so the hex weave reads as a backdrop, not noise behind the text */
+/* Exercise blocks — fully opaque panel; the hex weave is chrome, it must not fight the workout UI for attention */
 body.theme-nanosuit .ex-block{
-  background:color-mix(in srgb, var(--surface-elevated) 88%, transparent);
-  border:1px solid rgba(0,212,255,0.14);
+  background:var(--surface-elevated);
+  border:1px solid rgba(0,212,255,0.16);
 }
 body.theme-nanosuit .ex-block.saved{
-  background:color-mix(in srgb, var(--surface-saved) 90%, transparent);
-  border-color:rgba(80,255,136,0.18);
+  background:var(--surface-saved);
+  border-color:rgba(80,255,136,0.22);
 }
 
 /* Exercise name & detail */
@@ -2197,6 +2196,12 @@ body.theme-nanosuit .weight-log-btn{
 }
 body.theme-nanosuit .weight-log-btn:hover{border-color:var(--red);color:var(--red);}
 body.theme-nanosuit .weight-today{color:var(--red);font-family:'JetBrains Mono',monospace;}
+
+/* Chain-intro panel — opaque so the title/Edit row doesn't ghost against the weave as it scrolls past */
+body.theme-nanosuit .chain-intro{
+  background:var(--surface-base);
+  border-bottom:1px solid rgba(0,212,255,0.14);
+}
 
 /* Section titles */
 body.theme-nanosuit .section-title,
@@ -5481,7 +5486,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.58.1';
+const APP_VERSION = '3.58.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

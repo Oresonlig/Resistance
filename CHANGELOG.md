@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.58.2 — 2026-06-25
+**Nanosuit 2.0 — läsbarhetsfix #2 (helt opakt).** 3.58.1:s ~85-97%-opacitet räckte inte i praktiken på mobil — vävens ljusa toppar punchade fortfarande igenom. Bytt strategi: header, `.chain-intro` (titel/Edit-raden) och `.ex-block` (övningarna) är nu helt opaka (solid `var(--surface-X)`, ingen alpha/color-mix), samma princip som `.pass-card` redan följde. Väven är chrome och får synas i de tomma ytorna — inte tävla med funktionell text.
+
 ## 3.58.1 — 2026-06-25
 **Nanosuit 2.0 — läsbarhetsfix.** Energi-väven var så stark att övningarna knappt syntes mot den (ingen opacitet på `.ex-block` i nanosuit-temat — föll tillbaka på basreglens transparenta default, till skillnad från Obsidian/Cosmic Horror/Undertow/Overgrowth som alla redan hade en opak panel-bakgrund för sina canvas-backdrops). Fix:
 - `body.theme-nanosuit .ex-block` får nu en opak panel (`color-mix(var(--surface-elevated) 88%, transparent)` + tunn cyan-kant; `.saved` → `var(--surface-saved)` 90%) — väven syns fortfarande som en svag glöd genom panelen, men texten är läsbar.
