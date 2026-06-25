@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Chain · Nanosuit 2.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+  body {
+    background:
+      radial-gradient(ellipse 70% 50% at 50% 0%, #0a1828 0%, transparent 60%),
+      radial-gradient(ellipse 90% 70% at 50% 120%, #04101c 0%, transparent 65%),
+      #03060e;
+    color: #e0faff;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; position: relative;
+  }
+  #ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .stage-meta {
+    position: fixed; top: 22px; left: 50%; transform: translateX(-50%);
+    font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: 0.42em; color: #2f6f88;
+    font-weight: 600; z-index: 2; display: flex; align-items: center; gap: 14px; text-transform: uppercase;
+  }
+  .stage-meta .dot { width: 6px; height: 6px; border-radius: 50%; background: #00d4ff;
+    box-shadow: 0 0 8px #00d4ff; animation: hostpulse 2.4s ease-in-out infinite; }
+  @keyframes hostpulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  /* device frame with an energy edge-runner */
+  .stage-frame {
+    position: relative; width: 380px; height: 760px; border-radius: 30px; z-index: 1;
+    background: #03060e; padding: 3px;
+  }
+  /* travelling light around the border */
+  .stage-frame::before {
+    content: ''; position: absolute; inset: -2px; border-radius: 32px; padding: 2px; z-index: 0;
+    background: conic-gradient(from 0deg,
+      rgba(0,212,255,0.05) 0deg, rgba(0,212,255,0.05) 40deg,
+      #00fff0 70deg, #aef9ff 80deg, #00fff0 90deg,
+      rgba(0,212,255,0.05) 130deg, rgba(0,212,255,0.05) 220deg,
+      #00d4ff 250deg, rgba(0,212,255,0.05) 280deg, rgba(0,212,255,0.05) 360deg);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    animation: edgerun 5.5s linear infinite;
+  }
+  @keyframes edgerun { to { transform: rotate(360deg); } }
+  .stage-frame::after {
+    content: ''; position: absolute; inset: 0; border-radius: 30px; pointer-events: none; z-index: 3;
+    box-shadow: inset 0 0 0 1px rgba(0,212,255,0.25), 0 0 60px rgba(0,180,255,0.18);
+  }
+  .stage-screen {
+    position: relative; width: 100%; height: 100%; border-radius: 28px; overflow: hidden; z-index: 1;
+  }
+  #root { width: 100%; height: 100%; position: relative; }
+  /* when the phone fills the viewport, drop the host label so it doesn't
+     overlap the in-app topbar */
+  @media (max-height: 815px) { .stage-meta { display: none; } }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#050810"/>
+    <g fill="none" stroke="#00d4ff" stroke-width="3">
+      <path d="M50 30 L66 39 L66 57 L50 66 L34 57 L34 39 Z"/>
+    </g>
+    <circle cx="50" cy="48" r="4" fill="#00fff0"/>
+  </svg>
+</template>
+<canvas id="ambient"></canvas>
+<div class="stage-meta">
+  <span class="dot"></span>
+  <span>THE CHAIN · NANOSUIT 2.0</span>
+  <span class="dot"></span>
+</div>
+<div class="stage-frame">
+  <div class="stage-screen"><div id="root"></div></div>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script src="ambient-nanosuit.js"></script>
+<script type="text/babel" src="variants/nanosuit.jsx"></script>
+<script type="text/babel">
+  ReactDOM.createRoot(document.getElementById('root')).render(<NanosuitTheme />);
+</script>
+</body>
+</html>

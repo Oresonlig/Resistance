@@ -6,6 +6,14 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.58.0 — 2026-06-25
+**Nanosuit 2.0 — energised tactical armor.** Nanosuit-temat omarbetat med den rörelse originalet saknade. Internt id (`nanosuit`) + CSS-klass (`theme-nanosuit`) oförändrade → ingen migration, befintliga val intakta; bara visningsnamnet blir "Nanosuit 2.0".
+- **Energising hex-väv-bakgrund (det stora):** ny viewport-fast canvas-backdrop (`mountNanosuitBg`/`_startNanosuitHex`, portad från Claude Designs `createHexField`) — ett hex-rutnät där cyan-ljusvågor sveper över ytan (expanderande ringar + diagonala sweeps + konstant idle-shimmer), som Crysis-dräkten som rippler. Följer canvas-tema-mönstret (Undertow/Overgrowth): `setTransform(dpr,0,0,dpr,0,0)`, monteras/avmonteras i `applyTheme`/`initTheme`. Perf (S23): ~30fps-tak + dpr-cap 1.5 + offscreen-förrenderad statisk väv. Den statiska SVG-väven i CSS-bakgrunden borttagen (canvasen ritar väven nu — annars dubblering/moiré).
+- **Ambient Effects-toggeln** styr den tunga canvasen: av → en enda statisk väv-frame ritas (ej blank). Lätta CSS-mikroanimationer (scan-line, kort-morph, sync-heartbeat) körs alltid, som tidigare.
+- **Full energising:** scan-line sveper nedför viewporten (~var 7:e s), travelling energy-edge (sheen) + glow-puls på next-up-passkortet, enstaka cyan-flicker på chain-titeln. `prefers-reduced-motion` stänger av allt.
+- **Session-väljaren oförändrad** — kvar som den horisontella swipe-strippen (läser redan cyan via `--red`/`--gold`-tokens); 2.0 lägger bara en aktiv-glow. Mockupens vertikala kortlista adopterades INTE.
+- Referens/handoff: `theme/Nanosuit 2.0/` (Nanosuit.html, ambient-nanosuit.js, variants/nanosuit.jsx, README).
+
 ## 3.57.1 — 2026-06-24
 **#5 följdfix — Log-knappens höjd på mobil.** 3.57.0:s `align-self:stretch` sträckte knappen över hela grid-radens höjd = `.set-input` + dess `.set-unit`-label under → uppblåst på mobil (dolde sig på desktop pga större input-padding). Fix: Log-knappen wrappas nu i `.set-logcell` (flex-kolumn) med knappen (`flex:1`) + en osynlig `.set-unit`-spacer — speglar input-cellens struktur så knappen blir exakt lika hög som input-BOXen på alla breakpoints, oberoende av tema.
 
