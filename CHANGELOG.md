@@ -6,6 +6,12 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.58.4 — 2026-06-25
+**Dubblerad "The Chain"-titel borttagen, Edit flyttad till headern.** `.chain-intro` (under chain-strippen) hade en egen "The Chain"-titel — ren kvarleva, ren dubblering av loggan i den övre sticky headern. Borttagen (alla teman, delad markup). `.chain-intro` visar nu bara `X/Y sessions done · Round Z` + %. Edit-knappen (öppnar Configure chain) flyttad in i headern, ny rad under v-nr/Sync-raden i `.header-right` — headern växer automatiskt i höjd (flex, ingen hårdkodad height). Ingen ny CSS behövdes — `.btn-chain-edit` har redan per-tema-styling för alla teman.
+
+## 3.58.3 — 2026-06-25
+**Nanosuit 2.0 — läsbarhetsfix #3 (hittade rotorsaken).** 3.58.1/3.58.2:s opacitets-höjningar på `.ex-block` hade noll synlig effekt, trots korrekt, helt solid CSS — för att `#view-chain` (`.view`) är ett vanligt `position:static`-element. Det fasta hex-canvas-backdroppet (`#nanosuit-bg`, `position:fixed;z-index:0`) staplas (paintas) ALLTID ovanpå icke-positionerade element, oavsett DOM-ordning eller hur opak deras egen bakgrund är — väven låg alltså bokstavligen *framför* övningskorten, inte bakom dem, så `.ex-block`s egen bakgrund kunde aldrig blockera den. Samma mönster fanns redan löst för Crusader-temat (`body.theme-crusader .view{position:relative;z-index:1;}`, rad ~3407) men hade inte applicerats på Nanosuit. Fix: `body.theme-nanosuit .view{position:relative;z-index:1;}` lyfter hela vyn (inkl. `.ex-block` och `.chain-intro`) ovanför canvasen — nu blockerar de opaka bakgrunderna från 3.58.2 faktiskt väven, som avsett.
+
 ## 3.58.2 — 2026-06-25
 **Nanosuit 2.0 — läsbarhetsfix #2 (helt opakt).** 3.58.1:s ~85-97%-opacitet räckte inte i praktiken på mobil — vävens ljusa toppar punchade fortfarande igenom. Bytt strategi: header, `.chain-intro` (titel/Edit-raden) och `.ex-block` (övningarna) är nu helt opaka (solid `var(--surface-X)`, ingen alpha/color-mix), samma princip som `.pass-card` redan följde. Väven är chrome och får synas i de tomma ytorna — inte tävla med funktionell text.
 
