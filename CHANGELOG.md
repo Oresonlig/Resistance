@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.58.1 — 2026-06-25
+**Nanosuit 2.0 — läsbarhetsfix.** Energi-väven var så stark att övningarna knappt syntes mot den (ingen opacitet på `.ex-block` i nanosuit-temat — föll tillbaka på basreglens transparenta default, till skillnad från Obsidian/Cosmic Horror/Undertow/Overgrowth som alla redan hade en opak panel-bakgrund för sina canvas-backdrops). Fix:
+- `body.theme-nanosuit .ex-block` får nu en opak panel (`color-mix(var(--surface-elevated) 88%, transparent)` + tunn cyan-kant; `.saved` → `var(--surface-saved)` 90%) — väven syns fortfarande som en svag glöd genom panelen, men texten är läsbar.
+- Header-bakgrunden höjd från 85% till 97% opacitet (`color-mix(var(--surface-deep) 97%, transparent)`) — eliminerar spöktext-genomblödning av "The Chain"-introtiteln när den scrollar in under den sticky headern.
+
 ## 3.58.0 — 2026-06-25
 **Nanosuit 2.0 — energised tactical armor.** Nanosuit-temat omarbetat med den rörelse originalet saknade. Internt id (`nanosuit`) + CSS-klass (`theme-nanosuit`) oförändrade → ingen migration, befintliga val intakta; bara visningsnamnet blir "Nanosuit 2.0".
 - **Energising hex-väv-bakgrund (det stora):** ny viewport-fast canvas-backdrop (`mountNanosuitBg`/`_startNanosuitHex`, portad från Claude Designs `createHexField`) — ett hex-rutnät där cyan-ljusvågor sveper över ytan (expanderande ringar + diagonala sweeps + konstant idle-shimmer), som Crysis-dräkten som rippler. Följer canvas-tema-mönstret (Undertow/Overgrowth): `setTransform(dpr,0,0,dpr,0,0)`, monteras/avmonteras i `applyTheme`/`initTheme`. Perf (S23): ~30fps-tak + dpr-cap 1.5 + offscreen-förrenderad statisk väv. Den statiska SVG-väven i CSS-bakgrunden borttagen (canvasen ritar väven nu — annars dubblering/moiré).

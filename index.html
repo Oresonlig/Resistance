@@ -1958,7 +1958,7 @@ body.theme-nanosuit::before{
 }
 
 body.theme-nanosuit header{
-  background:rgba(5,8,16,0.85);
+  background:color-mix(in srgb, var(--surface-deep) 97%, transparent);
   backdrop-filter:blur(8px);
   border-bottom:1px solid #00d4ff;
   box-shadow:0 0 24px rgba(0,212,255,0.15),inset 0 -1px 0 rgba(0,255,240,0.3);
@@ -2150,6 +2150,16 @@ body.theme-nanosuit .ex-tag{
   clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%);
 }
 /* Nanosuit tag colors — se tokens i body.theme-nanosuit ovan (3.34.11) */
+
+/* Exercise blocks — opaque panel so the hex weave reads as a backdrop, not noise behind the text */
+body.theme-nanosuit .ex-block{
+  background:color-mix(in srgb, var(--surface-elevated) 88%, transparent);
+  border:1px solid rgba(0,212,255,0.14);
+}
+body.theme-nanosuit .ex-block.saved{
+  background:color-mix(in srgb, var(--surface-saved) 90%, transparent);
+  border-color:rgba(80,255,136,0.18);
+}
 
 /* Exercise name & detail */
 body.theme-nanosuit .ex-name{
@@ -5471,7 +5481,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.58.0';
+const APP_VERSION = '3.58.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
