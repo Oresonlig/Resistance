@@ -1957,8 +1957,14 @@ body.theme-nanosuit::before{
   background-size:100% 3px;
 }
 
+/* Frosted glass, not a flat block — same recipe as Overgrowth's header
+   (gradient + backdrop-filter blur), tuned heavier since the hex pulse is
+   brighter than Overgrowth's vines. The weave should read as diffused light
+   through glass, never as sharp lines fighting the header text. */
 body.theme-nanosuit header{
-  background:var(--surface-deep);
+  background:linear-gradient(180deg,rgba(6,12,24,0.94) 0%,rgba(6,12,24,0.82) 100%);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
   border-bottom:1px solid #00d4ff;
   box-shadow:0 0 24px rgba(0,212,255,0.15),inset 0 -1px 0 rgba(0,255,240,0.3);
 }
@@ -2204,11 +2210,19 @@ body.theme-nanosuit .weight-log-btn{
 body.theme-nanosuit .weight-log-btn:hover{border-color:var(--red);color:var(--red);}
 body.theme-nanosuit .weight-today{color:var(--red);font-family:'JetBrains Mono',monospace;}
 
-/* Chain-intro panel — opaque so the title/Edit row doesn't ghost against the weave as it scrolls past */
+/* Chain-intro panel — same frosted-glass recipe as the header. position:relative;
+   z-index:1 explicit here too (not just inherited via .view) — same belt-and-
+   suspenders lift Crusader uses for its .chain-intro/.chain-bar/.weight-banner
+   against its fixed cross-glow (line ~3416/~3707). */
 body.theme-nanosuit .chain-intro{
-  background:var(--surface-base);
+  position:relative;z-index:1;
+  background:linear-gradient(180deg,rgba(10,22,40,0.9) 0%,rgba(10,22,40,0.72) 100%);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
   border-bottom:1px solid rgba(0,212,255,0.14);
 }
+body.theme-nanosuit .chain-bar{position:relative;z-index:1;}
+body.theme-nanosuit .ex-block{position:relative;z-index:1;}
 
 /* Section titles */
 body.theme-nanosuit .section-title,
@@ -5494,7 +5508,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.58.4';
+const APP_VERSION = '3.58.5';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

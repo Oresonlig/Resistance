@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.58.5 — 2026-06-25
+**Nanosuit — frostat glas istället för platt block, + chain-intro fortfarande inte opak.** Skärmdump visade att 3.58.3:s `.view`-lyft inte räckte för `.chain-intro` (vävmönstret syntes fortfarande bakom "X/Y sessions done"), trots att `.ex-block` löstes av samma fix. Crusader-temat löser exakt samma typ av problem genom att INTE bara lyfta `.view`, utan ge varje opak panel sin egen explicita `position:relative;z-index:1` (se `.chain-intro`/`.chain-bar`/`.weight-banner` rad ~3416/~3707) — samma mönster applicerat här på `.chain-intro`, `.chain-bar` och `.ex-block`. Samtidigt: header och chain-intro bytt från platt solid färg till frostat-glas (gradient 72-94% opacitet + `backdrop-filter:blur(14px)`) — samma recept som Overgrowth redan använder på sin header (badrumsfönster-känsla: väven diffuseras till ett mjukt sken, syns aldrig som skarpa linjer mot texten).
+
 ## 3.58.4 — 2026-06-25
 **Dubblerad "The Chain"-titel borttagen, Edit flyttad till headern.** `.chain-intro` (under chain-strippen) hade en egen "The Chain"-titel — ren kvarleva, ren dubblering av loggan i den övre sticky headern. Borttagen (alla teman, delad markup). `.chain-intro` visar nu bara `X/Y sessions done · Round Z` + %. Edit-knappen (öppnar Configure chain) flyttad in i headern, ny rad under v-nr/Sync-raden i `.header-right` — headern växer automatiskt i höjd (flex, ingen hårdkodad height). Ingen ny CSS behövdes — `.btn-chain-edit` har redan per-tema-styling för alla teman.
 
