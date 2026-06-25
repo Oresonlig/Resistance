@@ -2207,6 +2207,7 @@ body.theme-nanosuit .ex-prev .pr-val{color:#00d4ff;text-shadow:0 0 4px rgba(0,21
 
 /* Weight banner — sensor readout */
 body.theme-nanosuit .weight-banner{
+  position:relative;z-index:1;
   background:#050810;
   border-bottom:1px solid rgba(0,212,255,0.2);
 }
@@ -2261,6 +2262,7 @@ body.theme-nanosuit .chain-intro-sub{
 
 /* Stat boxes — readouts */
 body.theme-nanosuit .stat-box{
+  position:relative;z-index:1;
   background:linear-gradient(135deg,#0a1420 0%,#050810 100%);
   border:1px solid #1a3040;
   clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
@@ -2273,10 +2275,17 @@ body.theme-nanosuit .stat-num{
 }
 body.theme-nanosuit .stat-desc{color:#4a7a99;font-family:'JetBrains Mono',monospace;}
 
-/* PR cards */
+/* PR cards — upgraded to the ex-block frosted-glass recipe (3.58.11), same
+   reasoning as the 3.58.10 settings-panel upgrade. Explicit position/z-index
+   lift added (not just inherited from .view) — per the established lesson,
+   the .view-level lift alone is empirically inconsistent for descendants, so
+   every individual opaque panel gets its own belt-and-suspenders lift. */
 body.theme-nanosuit .pr-card{
-  background:linear-gradient(135deg,#0a1420 0%,#050810 100%);
-  border:1px solid #1a3040;
+  position:relative;z-index:1;
+  background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(0,212,255,0.16);
   clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
 }
 body.theme-nanosuit .pr-card::before{
@@ -2291,15 +2300,32 @@ body.theme-nanosuit .pr-value{
   font-weight:900;
 }
 
-/* History */
+/* PR group headers (CHEST/BACK/SHOULDERS/...) — these were plain text rows
+   with NO background at all (not even the old flat-solid recipe), so the
+   weave showed straight through ("PR har ingen box", "subpr" bug report,
+   3.58.11). .pr-groups wraps the whole category list in one shared frosted
+   panel, same pattern as .wlog-list wrapping .wlog-row. */
+body.theme-nanosuit .pr-groups{
+  position:relative;z-index:1;
+  background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(0,212,255,0.16);
+  padding:2px 10px;
+}
+body.theme-nanosuit .pr-group-head{color:#5a8899;}
+body.theme-nanosuit .pr-group-head:hover{color:var(--red);}
+
+/* History — same frosted-glass upgrade + explicit lift as PR cards above. */
 body.theme-nanosuit .hist-entry{
-  background:linear-gradient(135deg,#0a1420 0%,#050810 100%);
-  border:1px solid #1a3040;
+  position:relative;z-index:1;
+  background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(0,212,255,0.16);
 }
 body.theme-nanosuit .hist-date{font-family:'Orbitron',sans-serif;font-weight:700;}
 body.theme-nanosuit .hist-pass{color:var(--red);font-family:'Orbitron',sans-serif;font-weight:600;}
-body.theme-nanosuit .pr-group-head{color:#5a8899;}
-body.theme-nanosuit .pr-group-head:hover{color:var(--red);}
 
 /* Settings/Weight panels — "wild west" fix (3.58.9), upgraded to the same
    frosted-glass recipe as .ex-block (3.58.10) so the dark-glass feel is
@@ -2307,6 +2333,7 @@ body.theme-nanosuit .pr-group-head:hover{color:var(--red);}
    blurred glass chrome. Inline border/padding on the element still wins where
    declared (untouched), this only supplies background+blur+border. */
 body.theme-nanosuit .settings-panel{
+  position:relative;z-index:1;
   background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
@@ -2314,6 +2341,7 @@ body.theme-nanosuit .settings-panel{
   padding:8px;
 }
 body.theme-nanosuit .data-btn{
+  position:relative;z-index:1;
   background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
@@ -2322,12 +2350,14 @@ body.theme-nanosuit .data-btn{
 }
 body.theme-nanosuit .data-btn:hover{border-color:var(--red);color:var(--red);}
 body.theme-nanosuit .weight-chart-wrap{
+  position:relative;z-index:1;
   background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
   border-color:rgba(0,212,255,0.16);
 }
 body.theme-nanosuit .wlog-list{
+  position:relative;z-index:1;
   background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
@@ -5566,7 +5596,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.58.10';
+const APP_VERSION = '3.58.11';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

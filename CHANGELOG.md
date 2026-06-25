@@ -6,6 +6,10 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.58.11 — 2026-06-25
+**Nanosuit — Progress-fliken missades helt i 3.58.9/10. Historik + PR-kort + PR-kategorirubriker fixade.** Niklas pekade ut att jag glömt Progress-fliken: history-korten ("tidigare session") använde fortfarande den gamla platta opaka recepten (ingen blur, ingen glas-känsla) istället för 3.58.10:s frostade-glas-standard, och PR-kategorirubrikerna (CHEST/BACK/SHOULDERS/...) hade INGEN bakgrund alls — bara textfärg, ren "vilda västern" mot väven ("PR har ingen box eller opaque. Även subpr"). Fix: `.hist-entry` + `.pr-card` uppgraderade till samma `.ex-block`-recept (`rgba(12,24,40,0.66→0.5)` + `blur(16px)` + cyan-kant). Ny `.pr-groups`-panel (samma frostade recept) wrappar hela kategori-listan, samma mönster som `.wlog-list` runt `.wlog-row`.
+- **Defensiv stacking-fix på alla opaka paneler:** la till explicit `position:relative;z-index:1` på `.stat-box`, `.pr-card`, `.hist-entry`, `.pr-groups`, `.weight-banner`, `.settings-panel`, `.data-btn`, `.weight-chart-wrap`, `.wlog-list` — INGEN av dessa hade sin egen lyft, bara ärvt `.view`-lyften. Per tidigare lärdom (3.58.3-5) är `.view`-lyften ensam empiriskt opålitlig för djupare barn — gör alla opaka paneler "belt and suspenders"-lyfta en gång för alla istället för att jaga en i taget per buggrapport.
+
 ## 3.58.10 — 2026-06-25
 **Nanosuit — Settings/Weight-boxarna (3.58.9) uppgraderade till samma frostat-glas-recept som övningar/header.** 3.58.9 gav `.settings-panel`/`.data-btn`/`.weight-chart-wrap`/`.wlog-list` en helt SOLID mörk gradient (samma som `.stat-box`/`.pr-card`, ingen alpha, ingen blur) — tekniskt opak men kändes platt och avvek från resten av temats genomgående frostade-glas-känsla. Bytt till exakt `.ex-block`-receptet: `rgba(12,24,40,0.66→0.5)` + `backdrop-filter:blur(16px)` + `border:1px solid rgba(0,212,255,0.16)`, så hela temat — header, nav, övningar OCH settings/weight-boxarna — delar samma mörka frostade känsla istället för en blandning av platta block och frostat glas.
 
