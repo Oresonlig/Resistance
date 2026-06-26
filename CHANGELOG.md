@@ -6,6 +6,14 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.58.13 — 2026-06-26
+**Tema-audit steg 1 — Settings/Progress/Weight-box-lagret tokeniserat till ALLA teman.** Theme-audit (`THEME_AUDIT.md`) visade att de bespoke "box"-behandlade panelerna i Settings/Progress/Weight (`.pr-groups`, `.pr-group-head`, `.settings-panel`, `.data-btn`, `.weight-chart-wrap`, `.wlog-list`) bara fanns i Nanosuit — alla andra teman (inkl. Iron/Cosmic) lämnade dem `background:none`/bara outline. Det var roten till "de flesta teman saknar box för PR-subgrupper". Fix: pekade om bas-reglerna på de befintliga semantiska tokens (`var(--surface-base)` + `var(--border-subtle)`) precis som `.stat-box`/`.pr-card`/`.hist-entry` redan gör → varje tema ärver nu sin egen box-färg automatiskt.
+- **Inga nya tokens** — återanvänder PM22-ytvariablerna (per design-token-tröskeln: lägg inte till tokens som kostar mer kod än de sparar).
+- **Nanosuits frostade glas vinner fortfarande** (mer specifik `body.theme-nanosuit .X`-selektor) — orörd.
+- **Void förblir spartansk gratis:** dess `--surface-base:#000` = samma som bakgrunden, så "box" = osynlig fyllning + tunn `#222`-outline, exakt dess befintliga stat-box-look. Ingen opt-out behövdes.
+- **Crusader** behåller sin egen `.data-btn`-outline (egen override vinner) — orörd inför sin kommande rework.
+- Tokeniserade samtidigt kvarvarande hardcoded färger i samma regler (`#bbb`→`var(--gray-light)` på pr-group-head för läsbarhet på ljusa teman, `#444`/`#222`/`#2c2c2c`→surface/border-tokens). Verifierat: brace-balans 0, 104/104 tester gröna.
+
 ## 3.58.12 — 2026-06-26
 **Dödkods-städning — rensat skräp som låg kvar, inkl. en stor mängd död tema-CSS.** Genomgång av hela `index.html`.
 
