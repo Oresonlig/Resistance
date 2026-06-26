@@ -6,6 +6,22 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.58.12 — 2026-06-26
+**Dödkods-städning — rensat skräp som låg kvar, inkl. en stor mängd död tema-CSS.** Genomgång av hela `index.html`.
+
+**JS-dödkod:**
+- **`obPickRest()` borttagen** — onboarding-rest-day-steget togs bort i 3.41.0 (`state.restSlots=[]`) men setter-funktionen blev kvar och anropades aldrig (enda funktionen i hela filen med noll referenser).
+- **14 happy-path `console.log` borttagna** — diagnostik-breadcrumbs (`[auth]`/`[loadState]`/`[login]`) som behölls medvetet i 3.36.0 under TDZ-login-saban. Login är stabilt sedan ~22 versioner; de fyrade vid varje lyckad inloggning och läckte e-post + session-info till konsolen. ALLA `console.warn`/`console.error` (felhantering, safety-guards, 8s/10s-failsafes) behölls orörda.
+
+**Tema-CSS-dödkod (242 regler borttagna, 15 grupp-selektorer trimmade, ~39 KB):** När gamla UI-element ersattes blev deras tema-styling kvar som dödkod i alla 12 temablock. Allt verifierat: noll förekomster i markup/JS, renderas aldrig. Klusterna:
+- **Gamla vertikala pass-korten** (`.pass-card` + `.pass-letter/name/preview/top/body/info/done-info`, `.chain-list`) — ersatta av den horisontella chain-stripen i **3.23.0**, DOM:en har inte funnits sedan dess (dokumenterat i kommentar vid `toggleSide`).
+- **Andra "THE CHAIN"-headern** (`.chain-intro-title`) — den dubblerade titeln som togs bort.
+- **Gamla morgonvikts-raden** (`.weight-banner/-label`, `.weight-input/-unit/-log-btn/-today`) — ersatt av am-pillen i 3.30.8.
+- **Gamla knappar/grids** (`.ex-btn-done` → numera `.ex-done-primary`, `.ex-mini-btn`/`.save-btn`, `.bw-snap`, `.ex-prev .pr-val`, pre-3.56.0 set-grids `.normal-set`/`.bw-set`).
+- **Gammal auth/edit-chrome** (`.auth-stay` + input, `.edit-back`, `.edit-save-bar`, `.edit-section-title`).
+
+Grupperade regler där bara EN selektor var död trimmades kirurgiskt (live-selektorer som `.section-title`, `.ex-block`, `.chain-intro`, `.chain-bar`, `.auth-checkbox-row`, `.ns-scanline`, `.sync-dot`, `.uni-set`, `.ex-btn-skip/edit` orörda). Verifierat efteråt: brace-balans 0, alla live-selektorer kvar, 104/104 tester gröna. Inga visuella ändringar — bara borttagen styling för element som inte renderas.
+
 ## 3.58.11 — 2026-06-25
 **Nanosuit — Progress-fliken missades helt i 3.58.9/10. Historik + PR-kort + PR-kategorirubriker fixade.** Niklas pekade ut att jag glömt Progress-fliken: history-korten ("tidigare session") använde fortfarande den gamla platta opaka recepten (ingen blur, ingen glas-känsla) istället för 3.58.10:s frostade-glas-standard, och PR-kategorirubrikerna (CHEST/BACK/SHOULDERS/...) hade INGEN bakgrund alls — bara textfärg, ren "vilda västern" mot väven ("PR har ingen box eller opaque. Även subpr"). Fix: `.hist-entry` + `.pr-card` uppgraderade till samma `.ex-block`-recept (`rgba(12,24,40,0.66→0.5)` + `blur(16px)` + cyan-kant). Ny `.pr-groups`-panel (samma frostade recept) wrappar hela kategori-listan, samma mönster som `.wlog-list` runt `.wlog-row`.
 - **Defensiv stacking-fix på alla opaka paneler:** la till explicit `position:relative;z-index:1` på `.stat-box`, `.pr-card`, `.hist-entry`, `.pr-groups`, `.weight-banner`, `.settings-panel`, `.data-btn`, `.weight-chart-wrap`, `.wlog-list` — INGEN av dessa hade sin egen lyft, bara ärvt `.view`-lyften. Per tidigare lärdom (3.58.3-5) är `.view`-lyften ensam empiriskt opålitlig för djupare barn — gör alla opaka paneler "belt and suspenders"-lyfta en gång för alla istället för att jaga en i taget per buggrapport.
