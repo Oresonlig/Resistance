@@ -909,10 +909,6 @@ body.theme-arctic #reset-password-form input:focus{
   border-color:var(--red);
   box-shadow:0 0 0 1px var(--red);
 }
-/* Ljusa teman — neutralisera browser-autofill (asymmetri mellan email/password) */
-body.theme-daylight #auth-email-form input:-webkit-autofill,
-body.theme-daylight #auth-signup-fields input:-webkit-autofill,
-body.theme-daylight #reset-password-form input:-webkit-autofill,
 body.theme-arctic #auth-email-form input:-webkit-autofill,
 body.theme-arctic #auth-signup-fields input:-webkit-autofill,
 body.theme-arctic #reset-password-form input:-webkit-autofill{
@@ -939,9 +935,9 @@ body.theme-arctic .btn-chain-edit{border-color:rgba(0,168,216,0.4);color:#1a2e3a
 body.theme-arctic .btn-chain-edit:hover{border-color:#0088b8;color:#003a5a;}
 
 /* ════════════════════════════════════════════════════════════
-   ARCTIC — paritet med Daylight (3.30.16)
+   ARCTIC (3.30.16)
    Default-CSS sätter mörka bakgrunder (#0d0d0d, #111, #1a1a1a) på massor av element.
-   Arctic hade tidigare bara ~57 overrides vs Daylight 124 — denna sektion stänger gapet.
+   Arctic override:ar dessa för ljus läsbarhet — denna sektion stänger gapet.
    Långsiktigt: PM22 — CSS-variabel-refaktor (--bg-surface etc) ersätter detta.
    ════════════════════════════════════════════════════════════ */
 
@@ -1654,8 +1650,7 @@ body.theme-nanosuit .ex-tag{
 }
 /* Nanosuit tag colors — se tokens i body.theme-nanosuit ovan (3.34.11) */
 
-/* Lift content above the fixed hex canvas (same fix as Crusader's cross-glow,
-   line ~3407) — #nanosuit-bg is position:fixed;z-index:0, and .view/.ex-block
+/* Lift content above the fixed hex canvas — #nanosuit-bg is position:fixed;z-index:0, and .view/.ex-block
    were plain static elements, which paint BELOW any positioned z-index:0 layer
    regardless of DOM order. That's why the opaque .ex-block bg below never
    blocked the weave: the canvas was stacking on top of it, not behind it. */
@@ -1692,9 +1687,9 @@ body.theme-nanosuit .ex-detail{
 body.theme-nanosuit .ex-prev .last-val{color:#00b8a0;}
 /* Chain-intro panel — same frosted-glass recipe as the header (see 3.58.6 note
    above the header rule for why opacity must stay low, not high). position:
-   relative;z-index:1 explicit here too (not just inherited via .view) — same
-   belt-and-suspenders lift Crusader uses for its .chain-intro/.chain-bar/
-   .weight-banner against its fixed cross-glow (line ~3416/~3707). */
+   relative;z-index:1 explicit here too (not just inherited via .view) — the
+   belt-and-suspenders lift, since the .view lift alone is empirically unreliable
+   for descendants. */
 body.theme-nanosuit .chain-intro{
   position:relative;z-index:1;
   background:linear-gradient(180deg,rgba(8,22,36,0.56) 0%,rgba(8,22,36,0.3) 100%);
@@ -2170,245 +2165,6 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
   margin-top:8px;
   min-height:14px;
 }
-
-
-
-/* ─────────────────────────────────────────────────────────────
-   8. DAYLIGHT — Sun-readable, paper-clean
-   For outdoor gym use, bright environments
-   Palette: Pure paper, deep charcoal, navy accent
-───────────────────────────────────────────────────────────── */
-body.theme-daylight{
-  --black:#fafaf7;          /* now means "background" — paper white */
-  --white:#0e1418;          /* now means "primary text" — near black */
-  --red:#c0392b;            /* keep brand red, slightly darker for contrast */
-  --gold:#a8830a;           /* darker for readability on white */
-  --green-bright:#2a7a3a;
-  --gray-mid:#e8e6df;
-  --gray-light:#6a6a6a;
-  /* PM22 surface-overrides — paper-clean ljus */
-  --surface-base:#ffffff;
-  --surface-elevated:#ffffff;
-  --surface-input:#ffffff;
-  --surface-saved:#f0f7ec;
-  --surface-deep:#f5f3ee;
-  --surface-overlay:rgba(0,0,0,0.04);
-  --border-subtle:#e0dcd0;
-  --border-strong:#d0ccc0;
-  /* 3.34.11 — Tag tokens (paper-clean ljus) */
-  --tag-ramp-bg:#fff8e6;     --tag-ramp-border:#a8830a;  --tag-ramp-color:#a8830a;
-  --tag-bw-bg:#f0f7ec;       --tag-bw-border:#2a7a3a;    --tag-bw-color:#2a7a3a;
-  --tag-uni-bg:#fdf2ec;      --tag-uni-border:#d0612b;   --tag-uni-color:#d0612b;
-  --display:'Bebas Neue',sans-serif;
-  --sans:'Inter',sans-serif;
-  --mono:'JetBrains Mono',monospace;
-  color-scheme:light;
-  background:#fafaf7;
-  color:#0e1418;
-}
-
-body.theme-daylight header{
-  background:#ffffff;
-  border-bottom:1px solid #e0dcd0;
-  box-shadow:0 1px 0 rgba(0,0,0,0.04);
-}
-body.theme-daylight .logo{color:#0e1418;font-weight:700;letter-spacing:.16em;}
-body.theme-daylight .logo span{color:var(--red);}
-body.theme-daylight .header-user{color:#666;}
-body.theme-daylight .header-user strong{color:#0e1418;}
-body.theme-daylight .header-logout{
-  border-color:#d0ccc0;
-  color:#666;
-}
-body.theme-daylight .header-logout:hover{
-  border-color:var(--red);color:var(--red);
-}
-
-body.theme-daylight nav{
-  background:#ffffff;
-  border-top:1px solid #e0dcd0;
-  box-shadow:0 -1px 0 rgba(0,0,0,0.04);
-}
-body.theme-daylight nav button{
-  color:#888;
-  font-family:var(--sans);
-  font-weight:500;
-}
-body.theme-daylight nav button.active{
-  border-top:2px solid var(--red);
-  color:var(--red);
-  background:none;
-}/* ex-block.saved: bg ärvs via var(--surface-saved). Override borttaget. */
-body.theme-daylight .btn-primary:disabled{background:#f0e8e8;color:#c0a0a0;}
-body.theme-daylight .chain-bar{background:#e8e6df;}
-body.theme-daylight .chain-fill{
-  background:linear-gradient(90deg,var(--red) 0%,#a02525 100%);
-}
-
-/* 3.34.1: Daylight btn-primary — solid + elevated shadow + clean hover lift */
-body.theme-daylight .btn-primary{
-  background:linear-gradient(180deg,var(--red) 0%,#a02525 100%);
-  color:#ffffff;
-  font-family:var(--display);
-  letter-spacing:.12em;
-  border:none;
-  border-radius:6px;
-  box-shadow:0 2px 6px rgba(192,57,43,0.25),inset 0 1px 0 rgba(255,180,160,0.3);
-  transition:all .15s;
-}
-body.theme-daylight .btn-primary:hover{
-  background:linear-gradient(180deg,#d04535 0%,#a02525 100%);
-  box-shadow:0 4px 12px rgba(192,57,43,0.4),inset 0 1px 0 rgba(255,200,180,0.4);
-  transform:translateY(-1px);
-}body.theme-daylight .ex-btn-skip{
-  border-color:#aaa49a;
-  color:#555;
-}
-body.theme-daylight .ex-btn-edit{
-  border-color:#aaa49a;
-  color:#444;
-}
-body.theme-daylight .ex-saved-badge{color:var(--green-bright);}
-
-body.theme-daylight .set-input{
-  background:#ffffff;
-  border:1px solid #d0ccc0;
-  color:#0e1418;
-  font-family:var(--mono);
-  font-weight:600;
-}
-body.theme-daylight .set-input:focus{
-  border-color:var(--red);
-  box-shadow:0 0 0 2px rgba(192,57,43,0.15);
-  outline:none;
-}
-body.theme-daylight .set-input.work-set{border-color:#c0c0b8;}
-body.theme-daylight .set-input.warmup{border-color:#e0dcd0;color:#888;}
-body.theme-daylight .set-unit{color:var(--red);font-weight:600;}
-body.theme-daylight .set-num{color:var(--red);font-family:var(--display);font-weight:700;}
-body.theme-daylight .sets-group-label{
-  color:#666;
-  border-top:1px dashed #d0ccc0;
-  font-family:var(--sans);
-  font-weight:600;
-}
-body.theme-daylight .sets-group-label.work-group{color:var(--red);}
-
-body.theme-daylight .ex-name{color:#0e1418;font-family:var(--sans);font-weight:700;}
-body.theme-daylight .ex-detail{color:#666;}
-body.theme-daylight .ex-prev .last-val{color:var(--green-bright);}
-/* Daylight tag colors — se tokens i body.theme-daylight ovan (3.34.11) */
-
-body.theme-daylight #userScreen{
-  background:#fafaf7;
-}
-body.theme-daylight .auth-bg{
-  /* Lighter hexagons on white */
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='48' viewBox='0 0 84 48'%3E%3Cg fill='none' stroke='%23c0392b' stroke-width='1' stroke-opacity='0.08'%3E%3Cpath d='M14 24L0 16L0 0L14 -8L28 0L28 16L14 24L14 48'/%3E%3Cpath d='M14 0L14 16L0 24L0 40L14 48L28 40L28 24L14 16'/%3E%3Cpath d='M70 24L56 16L56 0L70 -8L84 0L84 16L70 24L70 48'/%3E%3C/g%3E%3C/svg%3E");
-}
-body.theme-daylight .auth-logo{color:#0e1418;}
-body.theme-daylight .auth-logo span{color:var(--red);}
-body.theme-daylight .auth-tagline{color:#888;}
-body.theme-daylight .auth-btn-google{
-  background:#ffffff;
-  border:1px solid #d0ccc0;
-  color:#0e1418;
-}
-body.theme-daylight .auth-btn-google:hover{
-  background:#f5f3ee;
-  border-color:#888;
-}
-body.theme-daylight .auth-divider{color:#888;}
-body.theme-daylight .auth-divider::before,
-body.theme-daylight .auth-divider::after{background:#e0dcd0;}
-body.theme-daylight #auth-email-form input,
-body.theme-daylight #auth-signup-fields input,
-body.theme-daylight #reset-password-form input{
-  background:#ffffff;
-  border:1px solid #d0ccc0;
-  color:#0e1418;
-}
-body.theme-daylight #auth-email-form input:focus,
-body.theme-daylight #auth-signup-fields input:focus,
-body.theme-daylight #reset-password-form input:focus{
-  border-color:var(--red);
-  box-shadow:0 0 0 1px var(--red);
-}
-body.theme-daylight .auth-checkbox-row{color:#666;}
-body.theme-daylight .auth-disclaimer{
-  background:#f5f3ee;
-  border-left-color:#d0ccc0;
-  color:#666;
-}
-body.theme-daylight .auth-btn-primary{background:var(--red);color:#ffffff;}
-body.theme-daylight .auth-btn-primary:hover{background:#a02525;}
-body.theme-daylight .auth-btn-secondary{
-  background:none;border-color:#d0ccc0;color:#666;
-}
-body.theme-daylight .auth-btn-secondary:hover{border-color:#888;color:#0e1418;}
-body.theme-daylight .auth-footer a{color:#888;}
-body.theme-daylight .auth-footer a:hover{color:var(--red);}
-body.theme-daylight .section-title{
-  color:#0e1418;
-  font-family:var(--display);
-  font-weight:700;
-}
-body.theme-daylight .section-sub,
-body.theme-daylight .chain-intro-sub{color:#888;}
-
-/* stat-box, pr-card: bg + border ärvs via semantic vars. */
-body.theme-daylight .stat-num{color:var(--red);font-family:var(--display);}
-body.theme-daylight .stat-desc{color:#666;}
-body.theme-daylight .pr-card::before{background:#f0ece4;color:var(--gold);}
-body.theme-daylight .pr-value{color:var(--red);font-weight:700;}
-/* hist-entry: bg + border ärvs. Border-left är unique override. */
-body.theme-daylight .hist-entry{border-left:2px solid var(--red);}
-body.theme-daylight .hist-date{color:#0e1418;font-weight:600;}
-body.theme-daylight .hist-pass{color:var(--red);font-weight:600;}
-body.theme-daylight .hist-ex strong{color:#0e1418;}
-body.theme-daylight .hist-set{color:#666;}
-
-body.theme-daylight .toast{
-  background:#ffffff;
-  border:1px solid var(--red);
-  color:var(--red);
-  box-shadow:0 4px 16px rgba(0,0,0,0.1);
-}
-
-body.theme-daylight::-webkit-scrollbar-track{background:#f0eee8;}
-body.theme-daylight::-webkit-scrollbar-thumb{background:#c0c0b8;}
-
-body.theme-daylight .app-modal-card{border-color:var(--red);}
-body.theme-daylight .app-modal-title{color:#0e1418;}
-body.theme-daylight .app-modal-body{color:#666;}
-body.theme-daylight .app-modal-input,
-
-body.theme-daylight .app-modal-btn{
-  background:#ffffff;
-  border-color:#d0ccc0;
-  color:#666;
-}
-body.theme-daylight .app-modal-btn:hover{
-  border-color:#888;color:#0e1418;
-}
-body.theme-daylight .app-modal-btn-primary{
-  background:var(--red);
-  border-color:var(--red);
-  color:#ffffff;
-}
-body.theme-daylight .app-modal-btn-primary:hover{background:#a02525;}
-body.theme-daylight .app-modal-btn-danger{
-  background:#ffffff;
-  border-color:var(--red);
-  color:var(--red);
-}
-body.theme-daylight .app-modal-btn-danger:hover{
-  background:var(--red);
-  color:#ffffff;
-}
-body.theme-daylight .ex-note-banner{color:#7a5200;background:rgba(160,110,0,0.1);border-color:#8a6200;}
-body.theme-daylight .ex-note-save{background:rgba(255,255,255,0.7);border-color:#8a6200;color:#7a5200;}body.theme-daylight .draft-notice{color:#2a7a2a;border-color:rgba(42,122,42,0.4);background:rgba(255,255,255,0.5);}
-
 /* ── DONE PRIMARY BUTTON ─────────────────────────────────────*/
 .ex-done-primary{
   width:100%;margin-top:3px;
@@ -2442,12 +2198,7 @@ body.theme-nightcity .btn-primary{clip-path:polygon(6px 0,100% 0,calc(100% - 6px
 body.theme-void .ex-done-primary,
 body.theme-void .btn-primary{border-radius:18px;}
 body.theme-arctic .ex-done-primary,
-body.theme-arctic .btn-primary{border-radius:14px;}
-body.theme-daylight .ex-done-primary,
-body.theme-daylight .btn-primary{border-radius:14px;}
-body.theme-daylight .ex-done-primary{border-color:#e0dcd0;color:#d0ccc0;}
-body.theme-daylight .ex-done-primary.ready{background:var(--red);border-color:var(--red);color:#fff;}
-body.theme-ember .ex-done-primary.ready{background:#c0392b;border-color:#c0392b;color:#ffe8cc;}
+body.theme-arctic .btn-primary{border-radius:14px;}body.theme-ember .ex-done-primary.ready{background:#c0392b;border-color:#c0392b;color:#ffe8cc;}
 body.theme-nightcity .ex-done-primary.ready{background:#c0392b;border-color:#c0392b;color:#ffe020;}
 body.theme-void .ex-done-primary.ready{background:#fff;border-color:#fff;color:#000;}
 body.theme-arctic .ex-done-primary.ready{background:var(--red);border-color:var(--red);color:#fff;}
@@ -2461,20 +2212,6 @@ body.theme-nanosuit .ex-done-primary.ready{background:linear-gradient(135deg,#00
     font-size:16px !important;
   }
 }
-
-/* ── DAYLIGHT SELECT FIX ─────────────────────────────────────*/
-body.theme-daylight select,
-body.theme-daylight .swap-select,
-body.theme-daylight .app-modal-select{
-  background:#ffffff !important;
-  color:#0e1418 !important;
-  border-color:#d0ccc0 !important;
-}
-body.theme-daylight select option,
-body.theme-daylight .swap-select option{background:#ffffff;color:#0e1418;}
-body.theme-daylight select optgroup,
-body.theme-daylight .swap-select optgroup{background:#f5f3ee;color:#555;}
-
 
 /* ── UNDERTOW ──────────────────────────────────────────────────
    Palette: Cool water surface → abyss navy, frosted glass, caustic light
@@ -2731,318 +2468,6 @@ body.theme-understory .us-fleck.f5{width:110px;height:110px;left:18%;top:30%;ani
 body.theme-understory .add-set-btn{color:#3d5e3a;border-color:rgba(50,90,45,0.4);}
 body.theme-understory .ex-note-banner{color:#7a5000;background:rgba(150,100,0,0.1);border-color:#8a6000;}
 body.theme-understory .ex-note-save{background:rgba(252,255,247,0.8);border-color:#7a5000;color:#7a5000;}body.theme-understory .draft-notice{color:#2f7a4a;border-color:rgba(47,122,74,0.3);background:rgba(252,255,247,0.5);}
-
-/* ── CRUSADER ─────────────────────────────────────────────────
-   Palette: Dark warm charcoal, blood red, aged bronze, weathered ash
-   Atmosphere: Templar warrior, battle-worn, cross looms in the shadow
-   Cross via crusader2.jpg + mix-blend-mode:multiply (white background drops out)
-─────────────────────────────────────────────────────────────── */
-body.theme-crusader{
-  --black:#1a1612;            /* semantic dark warm charcoal */
-  --white:#d8c8a8;            /* semantic warm parchment text */
-  --red:#a82828;
-  --gold:#8a7048;             /* aged bronze */
-  --green-bright:#6a8a3a;
-  --gray-mid:#3a322a;--gray-light:#7a6e58;
-  /* PM22 surface-overrides — warm parchment */
-  --surface-base:#221d17;
-  --surface-elevated:#2a241c;
-  --surface-input:#2a241c;
-  --surface-saved:#1f2a18;
-  --surface-deep:#1a1612;
-  --surface-overlay:rgba(216,200,168,0.05);
-  --border-subtle:#3a322a;
-  --border-strong:#4a3e30;
-  /* 3.34.11 — Tag tokens (warm parchment) */
-  --tag-ramp-bg:#2a241c;  --tag-ramp-border:#8a7048;  --tag-ramp-color:#a89668;
-  --tag-bw-bg:#1f2a18;    --tag-bw-border:#6a8a3a;    --tag-bw-color:#9ab06a;
-  --tag-uni-bg:#2a1c18;   --tag-uni-border:#c05030;   --tag-uni-color:#d86a48;
-  --display:'Cinzel',serif;
-  --sans:'Crimson Pro',serif;
-  --mono:'DM Mono',monospace;
-  background-color:#1a1612;
-  background-image:
-    radial-gradient(ellipse 110% 70% at 50% 100%,rgba(0,0,0,0.45) 0%,transparent 70%),
-    radial-gradient(ellipse 90% 50% at 50% 0%,rgba(0,0,0,0.30) 0%,transparent 65%),
-    radial-gradient(ellipse 60% 40% at 70% 50%,rgba(168,40,40,0.06) 0%,transparent 70%),
-    linear-gradient(180deg,#211c16 0%,#1a1612 50%,#13100c 100%);
-  background-attachment:fixed;
-  color:#d8c8a8;
-}
-
-/* Templar cross backdrop — off-center RIGHT, behind everything.
-   crusader2.jpg has white background → mix-blend-mode:multiply drops it out
-   against the dark charcoal body. Sized so it doesn't overflow viewport
-   on mobile (which would visually shift the centered cross to the wrong side). */
-#crusader-cross-bg{
-  display:none;
-  position:fixed;
-  top:50%;
-  right:0;
-  width:65vh;
-  max-width:75vw;
-  height:auto;
-  transform:translate(18%,-50%);
-  z-index:0;
-  pointer-events:none;
-  opacity:0.9;
-  mix-blend-mode:multiply;
-}
-body.theme-crusader #crusader-cross-bg{display:block;}
-body.theme-crusader #crusader-cross-img{
-  width:100%;
-  height:auto;
-  display:block;
-  user-select:none;
-  -webkit-user-drag:none;
-}
-/* Glow layer — separate fixed div with screen blend so red ADDS against
-   dark background (multiply on the cross would mute any brightness pulse).
-   Screen + opacity + scale = visible heartbeat that doesn't fight the cross blend. */
-#crusader-cross-glow{
-  display:none;
-  position:fixed;
-  top:50%;
-  right:0;
-  width:65vh;
-  max-width:75vw;
-  aspect-ratio:1;
-  transform:translate(18%,-50%);
-  z-index:0;
-  pointer-events:none;
-  background:radial-gradient(ellipse 45% 55% at 50% 50%,rgba(232,64,64,0.55) 0%,rgba(168,40,40,0.22) 38%,transparent 72%);
-  mix-blend-mode:screen;
-  animation:crusader-cross-pulse 3s ease-in-out infinite;
-}
-body.theme-crusader #crusader-cross-glow{display:block;}
-@keyframes crusader-cross-pulse{
-  0%,100%{opacity:0.22;transform:translate(18%,-50%) scale(0.9);}
-  50%{opacity:0.95;transform:translate(18%,-50%) scale(1.08);}
-}
-/* Lift content above the fixed cross */
-body.theme-crusader .view{position:relative;z-index:1;}
-body.theme-crusader .chain-intro,
-body.theme-crusader .chain-bar{position:relative;z-index:1;}
-
-/* HEADER — sits above cross via z-index */
-body.theme-crusader header{
-  background:linear-gradient(180deg,#221d17 0%,#181410 100%);
-  border-bottom:none;
-  box-shadow:0 1px 0 rgba(138,112,72,0.35),0 3px 16px rgba(0,0,0,0.4);
-}
-body.theme-crusader header::after{
-  content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;
-  background:linear-gradient(90deg,transparent 0%,#8a7048 20%,#a82828 50%,#8a7048 80%,transparent 100%);
-  animation:crusader-line 7s ease-in-out infinite;
-}
-@keyframes crusader-line{
-  0%,100%{opacity:0.55;height:1px;}
-  50%{opacity:1;height:2px;filter:blur(0.5px);}
-}
-
-body.theme-crusader .logo{
-  font-family:'Cinzel',serif;font-weight:700;
-  color:#d8c8a8;letter-spacing:.2em;text-transform:uppercase;
-}
-body.theme-crusader .logo span{
-  color:#c83838;
-  animation:crusader-logo 5s ease-in-out infinite;
-}
-@keyframes crusader-logo{
-  0%,100%{text-shadow:0 0 6px rgba(200,56,56,0.35);}
-  50%{text-shadow:0 0 16px rgba(200,56,56,0.7),0 0 28px rgba(138,112,72,0.35);}
-}
-body.theme-crusader .header-user{color:#9a8e72;}
-body.theme-crusader .header-user strong{color:#d8c8a8;font-family:'Cinzel',serif;}
-body.theme-crusader .header-logout{border-color:#4a3e30;color:#9a8e72;}
-body.theme-crusader .header-logout:hover{border-color:#a82828;color:#c83838;}
-
-/* NAV */
-body.theme-crusader nav{
-  background:linear-gradient(0deg,#181410 0%,#221d17 100%);
-  border-top:none;
-  box-shadow:0 -1px 0 rgba(138,112,72,0.3),0 -4px 12px rgba(0,0,0,0.4);
-}
-body.theme-crusader nav::before{
-  content:'';position:absolute;left:0;right:0;top:-1px;height:1px;
-  background:linear-gradient(90deg,transparent 0%,#8a7048 30%,#a82828 50%,#8a7048 70%,transparent 100%);
-  opacity:0.55;
-}
-body.theme-crusader nav button{
-  font-family:'Cinzel',serif;font-weight:600;
-  letter-spacing:.1em;color:#7a6e58;text-transform:uppercase;font-size:.46rem;
-}
-body.theme-crusader nav button.active{
-  border-top:2px solid #a82828;color:#c83838;
-  background:linear-gradient(180deg,rgba(168,40,40,0.12) 0%,transparent 60%);
-}@keyframes crusader-beacon{
-  0%,100%{box-shadow:
-    inset 0 1px 0 rgba(232,180,100,0.18),
-    inset 0 -2px 0 rgba(0,0,0,0.55),
-    0 5px 18px rgba(0,0,0,0.65),
-    0 0 22px rgba(168,40,40,0.22);}
-  50%{box-shadow:
-    inset 0 1px 0 rgba(255,200,120,0.28),
-    inset 0 -2px 0 rgba(0,0,0,0.55),
-    0 5px 24px rgba(0,0,0,0.7),
-    0 0 42px rgba(232,64,64,0.45);}
-}body.theme-crusader .ex-block.saved{background:rgba(34,42,28,0.92);}
-body.theme-crusader .btn-primary:disabled{background:#3a322a;color:#7a6e58;}@keyframes crusader-letter{
-  0%,100%{color:#a82828;text-shadow:0 0 6px rgba(168,40,40,0.35);}
-  50%{color:#e84040;text-shadow:0 0 14px rgba(232,64,64,0.7);}
-}
-/* CHAIN BAR — blood red advance, no shiny gold */
-body.theme-crusader .chain-bar{background:rgba(36,30,24,0.7);}
-body.theme-crusader .chain-fill{
-  background:linear-gradient(90deg,#5a0808 0%,#a82828 25%,#c83838 50%,#a82828 75%,#5a0808 100%);
-  background-size:200% 100%;
-  animation:crusader-march 5s linear infinite;
-  box-shadow:0 0 8px rgba(168,40,40,0.55);
-}
-@keyframes crusader-march{
-  0%{background-position:0% 50%;}
-  100%{background-position:200% 50%;}
-}
-
-/* BUTTONS */
-body.theme-crusader .btn-primary{
-  background:linear-gradient(180deg,#a82828 0%,#7a1515 100%);
-  color:#f5eed8;font-family:'Cinzel',serif;font-weight:700;
-  letter-spacing:.14em;text-transform:uppercase;border:none;
-  box-shadow:0 2px 10px rgba(168,40,40,0.35),inset 0 1px 0 rgba(255,200,100,0.15);
-  transition:all .2s;
-}
-body.theme-crusader .btn-primary:hover{
-  background:linear-gradient(180deg,#c03030 0%,#8b1a1a 100%);
-  box-shadow:0 4px 18px rgba(168,40,40,0.5);transform:translateY(-1px);
-}
-body.theme-crusader .btn-secondary{background:none;border:1px solid #4a3e30;color:#9a8e72;}
-body.theme-crusader .btn-secondary:hover{border-color:#a82828;color:#c83838;}
-body.theme-crusader .data-btn{background:none;border:1px solid #4a3e30;color:#9a8e72;}
-body.theme-crusader .data-btn:hover{border-color:#a82828;color:#c83838;}body.theme-crusader .ex-btn-skip{border-color:#8a7048;color:#a89668;}
-body.theme-crusader .ex-btn-edit{border-color:#4a3e30;color:#9a8e72;}
-body.theme-crusader .ex-saved-badge{color:#9ab06a;}
-body.theme-crusader .ex-done-primary{border-color:#3a322a;color:#5a4e3a;}
-body.theme-crusader .ex-done-primary.ready{
-  background:linear-gradient(180deg,#a82828 0%,#7a1515 100%);
-  border-color:#a82828;color:#f5eed8;
-}
-
-/* SET INPUTS */
-body.theme-crusader .set-input{
-  background:#2a241c;border:1px solid #4a3e30;
-  color:#e84040;font-family:var(--mono);font-weight:700;
-}
-body.theme-crusader .set-input:focus{
-  border-color:#a82828;box-shadow:0 0 0 2px rgba(168,40,40,0.25);outline:none;
-}
-body.theme-crusader .set-input.work-set{border-color:#5a4a36;}
-body.theme-crusader .set-input.warmup{border-color:#3a322a;color:#7a6e58;}
-body.theme-crusader .set-unit{color:#c83838;font-weight:600;}
-body.theme-crusader .set-num{color:#c83838;font-family:'Cinzel',serif;font-weight:700;font-variant-numeric:tabular-nums;}
-body.theme-crusader .set-input{font-family:'IBM Plex Mono',monospace;}
-body.theme-crusader .sets-group-label{
-  color:#9a8e72;border-top:1px dashed #4a3e30;
-  font-family:'Cinzel',serif;font-weight:600;
-}
-body.theme-crusader .sets-group-label.work-group{color:#c83838;}
-
-/* EXERCISE NAMES */
-body.theme-crusader .ex-name{
-  color:#d8c8a8;font-family:'Cinzel',serif;font-weight:600;
-  letter-spacing:.03em;font-size:.88rem;
-}
-body.theme-crusader .ex-detail{color:#9a8e72;}
-body.theme-crusader .ex-prev .last-val{color:#9ab06a;}/* Crusader tag colors — se tokens i body.theme-crusader ovan (3.34.11) */
-
-/* AUTH SCREEN */
-body.theme-crusader #userScreen{background:#13100c;}
-body.theme-crusader .auth-bg{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23a82828' stroke-width='1' stroke-opacity='0.10'%3E%3Cline x1='30' y1='0' x2='30' y2='60'/%3E%3Cline x1='0' y1='30' x2='60' y2='30'/%3E%3Crect x='4' y='4' width='52' height='52'/%3E%3C/g%3E%3C/svg%3E");
-}
-body.theme-crusader .auth-logo{color:#d8c8a8;font-family:'Cinzel',serif;font-weight:700;}
-body.theme-crusader .auth-logo span{color:#c83838;}
-body.theme-crusader .auth-tagline{color:#9a8e72;}
-body.theme-crusader .auth-btn-google{background:#221d17;border:1px solid #4a3e30;color:#d8c8a8;}
-body.theme-crusader .auth-btn-google:hover{background:#2a241c;border-color:#a82828;}
-body.theme-crusader .auth-divider{color:#7a6e58;}
-body.theme-crusader .auth-divider::before,
-body.theme-crusader .auth-divider::after{background:#4a3e30;}
-body.theme-crusader #auth-email-form input,
-body.theme-crusader #auth-signup-fields input,
-body.theme-crusader #reset-password-form input{background:#2a241c;border:1px solid #4a3e30;color:#d8c8a8;}
-body.theme-crusader #auth-email-form input:focus,
-body.theme-crusader #auth-signup-fields input:focus,
-body.theme-crusader #reset-password-form input:focus{border-color:#a82828;box-shadow:0 0 0 1px #a82828;}
-body.theme-crusader .auth-checkbox-row{color:#9a8e72;}
-body.theme-crusader .auth-disclaimer{background:#221d17;border-left-color:#4a3e30;color:#9a8e72;}
-body.theme-crusader .auth-btn-primary{
-  background:linear-gradient(180deg,#a82828 0%,#7a1515 100%);
-  color:#f5eed8;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.1em;
-}
-body.theme-crusader .auth-btn-primary:hover{background:linear-gradient(180deg,#c03030 0%,#8b1a1a 100%);}
-body.theme-crusader .auth-btn-secondary{background:none;border-color:#4a3e30;color:#9a8e72;}
-body.theme-crusader .auth-btn-secondary:hover{border-color:#a82828;color:#d8c8a8;}
-body.theme-crusader .auth-footer a{color:#7a6e58;}
-body.theme-crusader .auth-footer a:hover{color:#c83838;}
-/* SECTION TITLES */
-body.theme-crusader .section-title{
-  color:#d8c8a8;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.06em;
-}
-body.theme-crusader .section-sub,
-body.theme-crusader .chain-intro-sub{color:#7a6e58;}
-
-/* STATS & PRs — 3.34.10: bg ärvs via --surface-base. Border-strong override behålls. */
-body.theme-crusader .stat-box{border-color:var(--border-strong);}
-body.theme-crusader .stat-num{color:#c83838;font-family:'Cinzel',serif;}
-body.theme-crusader .stat-desc{color:#9a8e72;}
-body.theme-crusader .pr-card{border-color:var(--border-strong);}
-body.theme-crusader .pr-card::before{background:#3a2e22;color:#a89668;}
-body.theme-crusader .pr-value{color:#e84040;font-weight:700;}
-
-/* HISTORY — bg ärvs. Border + border-left är unique. */
-body.theme-crusader .hist-entry{border-color:var(--border-strong);border-left:3px solid #a82828;}
-body.theme-crusader .hist-date{color:#d8c8a8;font-family:'Cinzel',serif;font-weight:600;}
-body.theme-crusader .hist-pass{color:#c83838;}
-body.theme-crusader .hist-ex strong{color:#d8c8a8;}
-body.theme-crusader .hist-set{color:#9a8e72;}
-
-/* TOAST */
-body.theme-crusader .toast{
-  background:#221d17;border:1px solid #a82828;color:#e84040;
-  box-shadow:0 4px 20px rgba(0,0,0,0.6);font-family:'Cinzel',serif;
-}
-
-/* SCROLLBAR */
-body.theme-crusader::-webkit-scrollbar-track{background:#1a1612;}
-body.theme-crusader::-webkit-scrollbar-thumb{background:#3a322a;}
-
-/* MODAL */
-body.theme-crusader .app-modal-card{background:#221d17;border-color:#8a7048;color:#d8c8a8;}
-body.theme-crusader .app-modal-title{color:#d8c8a8;font-family:'Cinzel',serif;}
-body.theme-crusader .app-modal-body{color:#9a8e72;}
-body.theme-crusader .app-modal-input,
-body.theme-crusader .app-modal-btn{background:#2a241c;border-color:#4a3e30;color:#9a8e72;}
-body.theme-crusader .app-modal-btn:hover{border-color:#a82828;color:#d8c8a8;}
-body.theme-crusader .app-modal-btn-primary{
-  background:linear-gradient(180deg,#a82828 0%,#7a1515 100%);
-  border-color:#a82828;color:#f5eed8;
-}
-body.theme-crusader .app-modal-btn-primary:hover{background:linear-gradient(180deg,#c03030 0%,#8b1a1a 100%);}
-body.theme-crusader .app-modal-btn-danger{background:#2a1c18;border-color:#a82828;color:#e84040;}
-body.theme-crusader .app-modal-btn-danger:hover{background:#a82828;color:#f5eed8;}
-
-/* SELECT FIX (dark theme — needs explicit dark surfaces) */
-body.theme-crusader select,
-body.theme-crusader .swap-select,
-body.theme-crusader .app-modal-select{
-  background:#2a241c !important;color:#d8c8a8 !important;border-color:#4a3e30 !important;
-}
-body.theme-crusader select option,
-body.theme-crusader .swap-select option{background:#221d17;color:#d8c8a8;}
-body.theme-crusader select optgroup,
-body.theme-crusader .swap-select optgroup{background:#1a1612;color:#a89668;}
-
 /* ═════════════════════════════════════════════════════════════
    OBSIDIAN — Dark fantasy · Gothic scriptorium · Breathing gold embers
    Designed in Claude Design (Niklas + Claude), ported 2026-05-22.
@@ -3762,37 +3187,6 @@ body.theme-arctic .set-log-btn{
 }
 body.theme-arctic .set-log-btn:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,0.6),0 4px 16px rgba(0,168,216,0.55);}
 body.theme-arctic .set-log-btn.has-value{background:linear-gradient(180deg,rgba(0,224,255,0.95) 0%,rgba(0,160,200,0.92) 100%);}
-
-/* Daylight — clean solid red pill, Bebas Neue, modern */
-body.theme-daylight .set-log-btn{
-  clip-path:none;
-  background:var(--red); border:none; color:#fff;
-  font-family:'Bebas Neue',sans-serif; letter-spacing:.14em;
-  border-radius:14px;
-  text-shadow:0 1px 0 rgba(0,0,0,0.2);
-  box-shadow:0 1px 3px rgba(192,57,43,0.4);
-}
-body.theme-daylight .set-log-btn:hover{background:#d04535;box-shadow:0 2px 8px rgba(192,57,43,0.5);}
-body.theme-daylight .set-log-btn.has-value{background:#a02525;}
-
-/* Crusader — forged stamped metal med rust edge + red glow */
-body.theme-crusader .set-log-btn{
-  clip-path:none;
-  background:linear-gradient(180deg,#a82828 0%,#5a1010 100%);
-  border:1px solid #6a1a14;
-  border-top-color:#c83838; border-bottom-color:#3a0808;
-  color:#f5eed8;
-  font-family:'Cinzel',serif; font-weight:700; letter-spacing:.14em; font-size:.66rem;
-  text-shadow:0 1px 0 rgba(0,0,0,0.5),0 0 6px rgba(255,180,100,0.3);
-  box-shadow:
-    inset 0 1px 0 rgba(255,200,160,0.25),
-    inset 0 -1px 0 rgba(0,0,0,0.5),
-    0 1px 0 rgba(168,40,40,0.4),
-    0 2px 4px rgba(0,0,0,0.6);
-}
-body.theme-crusader .set-log-btn:hover{background:linear-gradient(180deg,#c83838 0%,#7a1818 100%);box-shadow:inset 0 1px 0 rgba(255,200,160,0.35),inset 0 -1px 0 rgba(0,0,0,0.5),0 0 12px rgba(232,64,64,0.5),0 2px 6px rgba(0,0,0,0.7);}
-body.theme-crusader .set-log-btn.has-value{background:linear-gradient(180deg,#c83838 0%,#7a1818 100%);}
-
 /* ── SET LOGGED STATE ────────────────────────────────────────*/
 /* 3.36.0 — Niklas-feedback P7: done-state aer "ihaalig" version av temats
    unika Log-knapp. Behaalls samma form (clip-path/border-radius) men med
@@ -3850,18 +3244,7 @@ body.theme-arctic .set-logged-indicator{
   border-radius:14px;border:1px solid rgba(0,168,216,0.6);background:rgba(255,255,255,0.15);
   backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
   color:rgba(0,120,160,0.9);
-}
-/* Daylight — pill outline red */
-body.theme-daylight .set-logged-indicator{
-  border-radius:14px;border:1px solid rgba(192,57,43,0.55);background:transparent;
-  color:rgba(192,57,43,0.85);
-}
-/* Crusader — rectangle outline red */
-body.theme-crusader .set-logged-indicator{
-  border:1px solid rgba(168,40,40,0.6);background:transparent;
-  color:rgba(216,80,80,0.85);
-}
-/* Obsidian — rectangle outline gold */
+}/* Obsidian — rectangle outline gold */
 body.theme-obsidian .set-logged-indicator{
   border:1px solid rgba(201,163,90,0.55);background:transparent;
   color:rgba(201,163,90,0.85);text-shadow:0 0 4px rgba(201,163,90,0.3);
@@ -4700,7 +4083,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.58.13';
+const APP_VERSION = '3.58.14';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5125,6 +4508,14 @@ function migratePassKeysToSession(){
   state.migrations.passKeysToSession_v1 = Date.now();
 }
 
+// 3.58.14 — Crusader + Daylight borttagna ur appen. Remappa befintliga användare
+// till närmaste kvarvarande tema (annars → Iron-fallback i applyTheme). Idempotent.
+function migrateRemovedThemes(){
+  if(!state) return;
+  const remap = { daylight:'arctic', crusader:'obsidian' };
+  if(state.theme && remap[state.theme]) state.theme = remap[state.theme];
+}
+
 function runSchemaMigrations(){
   if(!state) return;
   let cur = (typeof state.schemaVersion === 'number') ? state.schemaVersion : 0;
@@ -5144,6 +4535,7 @@ function runSchemaMigrations(){
   }
   // 3.55.0 — körs på alla load-paths (denna funktion är ovillkorlig single-source).
   try{ migrateRotatorCuffMerge(); }catch(e){ console.error('rotatorCuffMerge failed', e); }
+  try{ migrateRemovedThemes(); }catch(e){ console.error('removedThemes migration failed', e); }
 }
 
 function newCycle(){
@@ -8557,10 +7949,8 @@ const THEMES = [
   {id:'cosmic-horror', name:'Cosmic Horror', cat:'dark', desc:'Biological alien · Teal veins · Cormorant italic',     class:'theme-cosmic-horror'},
   // LIGHT
   {id:'arctic',        name:'Arctic Terminal',cat:'light',desc:'Frozen lake · Liquid nitrogen · Frosted glass',  class:'theme-arctic'},
-  {id:'daylight',      name:'Daylight · WIP',cat:'light', desc:'Clean white · Charcoal text · Bright sun-readable',   class:'theme-daylight'},
   {id:'undertow',      name:'Undertow',      cat:'light', desc:'Cold water · Abyss navy · Caustic light + bubble gasps', class:'theme-undertow'},
   {id:'understory',    name:'Overgrowth',    cat:'light', desc:'Canopy closes in · Deep sap green · Creeping vines over the field of view', class:'theme-understory'},
-  {id:'crusader',      name:'Crusader · WIP',cat:'light', desc:'Weathered parchment · Blood red · Templar warrior', class:'theme-crusader'},
 ];
 
 function applyTheme(themeId){
@@ -10054,11 +9444,6 @@ if('serviceWorker' in navigator){
 }
 
 </script>
-<!-- Crusader theme: Templar cross backdrop + heartbeat glow layer (visible only when theme-crusader is active) -->
-<div id="crusader-cross-bg" aria-hidden="true">
-  <img id="crusader-cross-img" src="crusader2.jpg" alt="" draggable="false">
-</div>
-<div id="crusader-cross-glow" aria-hidden="true"></div>
 <!-- Obsidian theme: ember canvas (visible only when theme-obsidian is active; mounted/unmounted via JS in applyTheme) -->
 <canvas id="obsidianEmberCanvas" aria-hidden="true"></canvas>
 <!-- Cosmic Horror theme: SVG vein-background (procedurally generated, world-coord scrollar med content) -->

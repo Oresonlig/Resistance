@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.58.14 — 2026-06-26
+**Crusader + Daylight borttagna ur appen.** Båda var WIP/förlegade (Daylight = appens första ljusa tema, utdaterat; Crusader = aldrig nöjd, ska omarbetas av Claude Design senare). Borttaget ur `index.html`: 183 CSS-regler + 6 `@keyframes crusader-*` + Templar-cross-markupen (`#crusader-cross-bg`/`-img`/`-glow`) + båda `THEMES`-posterna (12→10 teman), ~26 KB. **`theme/`-mapparna i repot är ORÖRDA** (Claude Design ska titta på dem senare; `crusader2.jpg`-assetet lämnas också kvar, nu oanvänt). Migrering: befintliga användare på dessa teman remappas till närmaste kvarvarande (`daylight→arctic`, `crusader→obsidian`) via `migrateRemovedThemes()` i `runSchemaMigrations` — ingen hamnar på Iron-fallback. Delad Arctic+Daylight `-webkit-autofill`-regel trimmad (Arctic behållen). Städade stale-kommentarer som refererade borttagen Crusader/Daylight/weight-banner. Verifierat: brace-balans 0, 104/104 tester gröna.
+
 ## 3.58.13 — 2026-06-26
 **Tema-audit steg 1 — Settings/Progress/Weight-box-lagret tokeniserat till ALLA teman.** Theme-audit (`THEME_AUDIT.md`) visade att de bespoke "box"-behandlade panelerna i Settings/Progress/Weight (`.pr-groups`, `.pr-group-head`, `.settings-panel`, `.data-btn`, `.weight-chart-wrap`, `.wlog-list`) bara fanns i Nanosuit — alla andra teman (inkl. Iron/Cosmic) lämnade dem `background:none`/bara outline. Det var roten till "de flesta teman saknar box för PR-subgrupper". Fix: pekade om bas-reglerna på de befintliga semantiska tokens (`var(--surface-base)` + `var(--border-subtle)`) precis som `.stat-box`/`.pr-card`/`.hist-entry` redan gör → varje tema ärver nu sin egen box-färg automatiskt.
 - **Inga nya tokens** — återanvänder PM22-ytvariablerna (per design-token-tröskeln: lägg inte till tokens som kostar mer kod än de sparar).
