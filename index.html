@@ -23,6 +23,7 @@
   --gold:#b8922a;--green-bright:#3a9a5a;
   --gray-mid:#666;--gray-light:#999;
   --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Bebas Neue',sans-serif;
+  --ui-mono:'IBM Plex Mono',monospace; /* 3.59.4 — LÅST hörn-font (Cosmic-standard), frikopplad från titel-fonten --display. Teman ska INTE override:a (sätt aldrig egen font-family/font-size på header-user/sync/logout/btn-chain-edit/am-pill). */
   /* ── PM22: Semantic surface variables (3.32.0). Default = mörka värden.
      Ljusa teman override:ar dessa istället för att duplicera per-fall.
      CSS-regler ska använda var(--surface-X) istället av hardcoded background. */
@@ -60,23 +61,16 @@ body{background:var(--black);color:var(--white);font-family:var(--sans);min-heig
 header{border-bottom:1px solid #1e1e1e;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--black);z-index:100;}
 .logo{font-family:var(--display);font-size:1.5rem;letter-spacing:.08em;cursor:pointer;}
 .logo span{color:var(--red);}
-/* 3.59.3 PREVIEW (ENDAST Iron) — header-titel-geometri-standard.
-   Iron = body:not([class*="theme-"]) (ingen body-klass, THEMES class:''). Behåller
-   Irons skin (Bebas Neue, .08em, röd/vit) — bara STORLEKEN justeras.
-   1rem (3.59.1) blev minimal, 1.3rem (3.59.2) prövades. Niklas: matcha EMBERS storlek.
-   Ember sätter ingen egen font-size → ärver bas-.logo = 1.5rem. Så Iron→1.5rem.
-   Vid utrullning: standard = 1.5rem (= bas), Cosmic behåller sin 1rem-override, breda
-   teman (Obsidian/Night City) trimmar letter-spacing för enradighet. Lås font-size
-   per tema (analogt .set-num 3.50.1). */
-body:not([class*="theme-"]) .logo{font-size:1.5rem;}
+/* Titel = per tema (--display), AVSIKTLIGT olika fonter/storlekar. Inte kopplad till
+   hörnet (--ui-mono). Title-geometri-standardisering förkastad 3.59.4 (Niklas). */
 .header-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
-.header-user{font-family:var(--mono);font-size:.58rem;color:#aaa;letter-spacing:.1em;text-transform:uppercase;}
+.header-user{font-family:var(--ui-mono);font-size:.5rem;color:#aaa;letter-spacing:.1em;text-transform:uppercase;}
 .header-user strong{color:var(--white);}
-.header-sync{font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;text-align:right;}
+.header-sync{font-family:var(--ui-mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;text-align:right;}
 .header-sync-row{display:flex;align-items:center;justify-content:flex-end;gap:4px;white-space:nowrap;}
 .header-bottom-row{display:flex;align-items:center;gap:8px;}
 /* AM-pill — morning weight i header */
-.am-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 12px;border:1px solid var(--border-subtle);border-radius:8px;background:var(--surface-base);font-family:var(--mono);font-size:.7rem;color:var(--gray-light);cursor:pointer;transition:border-color .15s,color .15s,background .15s;letter-spacing:.04em;}
+.am-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 12px;border:1px solid var(--border-subtle);border-radius:8px;background:var(--surface-base);font-family:var(--ui-mono);font-size:.7rem;color:var(--gray-light);cursor:pointer;transition:border-color .15s,color .15s,background .15s;letter-spacing:.04em;}
 .am-pill:hover{border-color:var(--gray-light);color:var(--white);}
 .am-pill.logged{color:var(--green-bright);border-color:#2a3a2a;}
 .am-pill.logged:hover{border-color:var(--green-bright);}
@@ -84,7 +78,7 @@ body:not([class*="theme-"]) .logo{font-size:1.5rem;}
 .am-pill.missing:hover{border-color:#a82828;color:#c83838;}
 .am-pill-icon{font-size:.85rem;line-height:1;}
 .am-pill-value{font-weight:600;white-space:nowrap;}
-.am-pill-input{background:transparent;border:none;color:inherit;font-family:var(--mono);font-size:.75rem;width:56px;text-align:center;padding:0;-moz-appearance:textfield;font-weight:600;}
+.am-pill-input{background:transparent;border:none;color:inherit;font-family:var(--ui-mono);font-size:.75rem;width:56px;text-align:center;padding:0;-moz-appearance:textfield;font-weight:600;}
 .am-pill-input:focus{outline:none;}
 .am-pill-input::-webkit-outer-spin-button,.am-pill-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 .am-pill-unit{opacity:.7;}
@@ -279,7 +273,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .btn-primary:disabled{background:#3a1a1a;color:#5a3a3a;cursor:not-allowed;border-color:#2a1010;box-shadow:none;text-shadow:none;}
 .btn-secondary{background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.52rem;letter-spacing:.06em;padding:0 10px;cursor:pointer;text-transform:uppercase;transition:all .15s;}
 .btn-secondary:hover{border-color:#555;color:var(--gray-light);}
-.btn-chain-edit{background:none;border:1px solid #444;color:#888;font-family:var(--mono);font-size:.7rem;padding:3px 9px;cursor:pointer;transition:all .15s;line-height:1;}
+.btn-chain-edit{background:none;border:1px solid #444;color:#888;font-family:var(--ui-mono);font-size:.7rem;padding:3px 9px;cursor:pointer;transition:all .15s;line-height:1;}
 .btn-chain-edit:hover{border-color:var(--red);color:var(--white);}
 .btn-ghost{flex:1;background:none;border:1px solid #3a3a3a;color:#888;font-family:var(--display);font-size:.95rem;letter-spacing:.1em;padding:10px;cursor:pointer;transition:all .15s;}
 .btn-ghost:hover{border-color:#444;color:#777;}
@@ -533,7 +527,7 @@ body.theme-nightcity .logo span{
   color:var(--red);
   text-shadow:0 0 20px rgba(255,230,0,0.8),0 0 40px rgba(255,230,0,0.4);
 }
-body.theme-nightcity .header-user{font-family:var(--mono);color:var(--gray-light);font-size:.5rem;}
+body.theme-nightcity .header-user{color:var(--gray-light);}
 body.theme-nightcity .header-user strong{color:var(--green-bright);text-shadow:0 0 8px rgba(0,255,240,0.6);}
 
 /* SYNC DOT — triple-pulse */
@@ -2039,7 +2033,7 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
 /* Logout button (replaces switchUser) */
 .header-logout{
   background:none;border:1px solid #2a2a2a;
-  color:#666;font-family:var(--mono);
+  color:#666;font-family:var(--ui-mono);
   font-size:.5rem;letter-spacing:.12em;
   padding:4px 10px;cursor:pointer;
   text-transform:uppercase;
@@ -2556,13 +2550,13 @@ body.theme-obsidian header{
 }
 body.theme-obsidian .logo{font-family:'Cinzel',serif;font-weight:600;letter-spacing:.34em;color:#c9a35a;}
 body.theme-obsidian .logo span{color:#c9a35a;}
-body.theme-obsidian .header-user{font-family:'Cinzel',serif;color:#6a5a3a;font-size:.5rem;letter-spacing:.2em;font-weight:600;}
+body.theme-obsidian .header-user{color:#6a5a3a;letter-spacing:.2em;font-weight:600;}
 body.theme-obsidian .header-user strong{color:#c9a35a;}
-body.theme-obsidian .header-logout{font-family:'Cinzel',serif;color:#a8442e;border:1px solid #4a2018;letter-spacing:.2em;font-weight:600;}
+body.theme-obsidian .header-logout{color:#a8442e;border:1px solid #4a2018;letter-spacing:.2em;font-weight:600;}
 body.theme-obsidian .header-logout:hover{background:rgba(168,68,46,0.15);color:#d68262;}
 
 /* AM-pill — gold ring, ember icon */
-body.theme-obsidian .am-pill{background:rgba(40,28,12,0.6);border-color:#4a3a18;color:#8a7a58;font-family:'Cinzel',serif;}
+body.theme-obsidian .am-pill{background:rgba(40,28,12,0.6);border-color:#4a3a18;color:#8a7a58;}
 body.theme-obsidian .am-pill:hover{border-color:#c9a35a;color:#f0d99c;}
 body.theme-obsidian .am-pill.logged{color:#9ab57a;border-color:rgba(154,181,122,0.4);background:rgba(20,30,15,0.6);}
 body.theme-obsidian .am-pill.missing{color:#a8442e;border-color:rgba(168,68,46,0.5);background:rgba(40,15,10,0.5);}
@@ -2898,13 +2892,13 @@ body.theme-cosmic-horror header{
 }
 body.theme-cosmic-horror .logo{font-family:'Cormorant SC',serif;font-weight:500;letter-spacing:.38em;color:#aedcd0;font-size:1rem;}
 body.theme-cosmic-horror .logo span{color:#aedcd0;}
-body.theme-cosmic-horror .header-user{font-family:'IBM Plex Mono',monospace;color:#4f6a64;font-size:.5rem;letter-spacing:.16em;font-weight:400;}
+body.theme-cosmic-horror .header-user{color:#4f6a64;letter-spacing:.16em;font-weight:400;}
 body.theme-cosmic-horror .header-user strong{color:#aedcd0;}
-body.theme-cosmic-horror .header-logout{font-family:'IBM Plex Mono',monospace;color:#a8424c;border:1px solid #5a2530;letter-spacing:.16em;font-weight:400;border-radius:4px 10px 4px 10px;}
+body.theme-cosmic-horror .header-logout{color:#a8424c;border:1px solid #5a2530;letter-spacing:.16em;font-weight:400;border-radius:4px 10px 4px 10px;}
 body.theme-cosmic-horror .header-logout:hover{background:rgba(168,66,76,0.15);color:#c46878;}
 
 /* AM-pill — organic blob */
-body.theme-cosmic-horror .am-pill{background:rgba(10,30,28,0.6);border-color:rgba(127,200,180,0.22);color:#7a948c;font-family:'IBM Plex Mono',monospace;border-radius:10px 4px 10px 4px;}
+body.theme-cosmic-horror .am-pill{background:rgba(10,30,28,0.6);border-color:rgba(127,200,180,0.22);color:#7a948c;border-radius:10px 4px 10px 4px;}
 body.theme-cosmic-horror .am-pill:hover{border-color:#7fc8b4;color:#e8f7f0;}
 body.theme-cosmic-horror .am-pill.logged{color:#bedab0;border-color:rgba(190,218,176,0.4);background:rgba(20,40,28,0.6);}
 body.theme-cosmic-horror .am-pill.missing{color:#a8424c;border-color:rgba(168,66,76,0.45);background:rgba(30,15,18,0.5);}
@@ -4092,7 +4086,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.59.3';
+const APP_VERSION = '3.59.4';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
