@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.59.6 — 2026-06-28
+**Header-hörnet hårt låst (recurrence-proof).** Obsidians Edit-knapp var fortf. större/serif trots 3.59.4 — `.btn-chain-edit` har ingen Obsidian-override (ska vara IBM Plex Mono .7rem), så orsaken var antingen en ospårbar kaskad-läcka eller stale SW-cache. Istället för att jaga spöket: hårt lås på hela hörnet med `!important` så **inget** tema (nu eller framtida) kan läcka in sin display/mono-font eller egen storlek på kontrollerna (`header .header-user/.header-sync/.header-version/.header-logout/.btn-chain-edit/.am-pill`+barn → `font-family:var(--ui-mono)!important` + låst font-size på header-user/.btn-chain-edit/.am-pill). FÄRG/border/letter-spacing förblir temats skin. Versionsbumpen bustar även SW-cachen (versionerad cache-key) → garanterad färsk CSS. Detta är svaret på "lös så det inte återkommer med nya teman".
+
 ## 3.59.5 — 2026-06-28
 **Obsidian header-hörn fix.** Efter 3.59.4 såg hörnet bra ut på alla teman utom Obsidian: det hade kvar sin Cinzel-tunade typografi (`letter-spacing:.2em` + `font-weight:600`) på `.header-user`/`.header-logout` som nu satt på IBM Plex Mono → bredspärrat + fetare än övriga (som kör bas-typografin). Strippat till bara färg (guld kvar), matchar nu standarden. Plus: `.am-pill-log` (Log-knappen i vikt-pillen) använde fortf. `var(--mono)` → bytt till `var(--ui-mono)` så även den ärver hörn-standarden (var Cinzel på Obsidian när vikt-loggning expanderas).
 
