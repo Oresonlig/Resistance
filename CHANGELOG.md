@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.59.7 — 2026-06-28
+**Obsidian Edit-knapp: FAKTISK rotorsak (radbrytning, inte font).** 3.59.4-6 jagade fel axel (font/storlek). Den verkliga buggen: Obsidians Edit-knapp var *kvadratisk* för att ikonen (SVG) staplades ÖVANPÅ texten "Edit" — en radbrytning. `.btn-chain-edit` är ett flex-barn i `.header-bottom-row` utan `white-space:nowrap`; när raden trängs ihop (Obsidians högra kluster bredare) krymper knappen till sin min-content och bryter ikon/text på två rader = kvadrat. Övriga teman trängdes inte tillräckligt. Fix: `white-space:nowrap` + `flex-shrink:0` på `.btn-chain-edit` → ikon+label kan aldrig brytas, knappen förblir avlång i ALLA teman (recurrence-proof). Font-låsen från 3.59.4-6 behålls (de var korrekta för font-konsistens, bara inte rätt diagnos för formen).
+
 ## 3.59.6 — 2026-06-28
 **Header-hörnet hårt låst (recurrence-proof).** Obsidians Edit-knapp var fortf. större/serif trots 3.59.4 — `.btn-chain-edit` har ingen Obsidian-override (ska vara IBM Plex Mono .7rem), så orsaken var antingen en ospårbar kaskad-läcka eller stale SW-cache. Istället för att jaga spöket: hårt lås på hela hörnet med `!important` så **inget** tema (nu eller framtida) kan läcka in sin display/mono-font eller egen storlek på kontrollerna (`header .header-user/.header-sync/.header-version/.header-logout/.btn-chain-edit/.am-pill`+barn → `font-family:var(--ui-mono)!important` + låst font-size på header-user/.btn-chain-edit/.am-pill). FÄRG/border/letter-spacing förblir temats skin. Versionsbumpen bustar även SW-cachen (versionerad cache-key) → garanterad färsk CSS. Detta är svaret på "lös så det inte återkommer med nya teman".
 
