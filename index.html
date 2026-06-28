@@ -60,6 +60,11 @@ body{background:var(--black);color:var(--white);font-family:var(--sans);min-heig
 header{border-bottom:1px solid #1e1e1e;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--black);z-index:100;}
 .logo{font-family:var(--display);font-size:1.5rem;letter-spacing:.08em;cursor:pointer;}
 .logo span{color:var(--red);}
+/* 3.59.1 PREVIEW (ENDAST Iron) — header-titel-geometri efter Cosmic (1rem, en rad).
+   Iron = body:not([class*="theme-"]) (ingen body-klass, THEMES class:''). Behåller
+   Irons skin (Bebas Neue, .08em, röd/vit) — bara STORLEKEN flyttas till Cosmic-nivå.
+   Om godkänt → flytta till bas .logo + lås font-size per tema (analogt .set-num 3.50.1). */
+body:not([class*="theme-"]) .logo{font-size:1rem;}
 .header-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
 .header-user{font-family:var(--mono);font-size:.58rem;color:#aaa;letter-spacing:.1em;text-transform:uppercase;}
 .header-user strong{color:var(--white);}
@@ -4083,7 +4088,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.59.0';
+const APP_VERSION = '3.59.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

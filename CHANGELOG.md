@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.59.1 — 2026-06-28
+**Header-geometri PREVIEW (endast Iron).** Niklas vill att header-element (titel + Edit) får en låst geometri-standard efter Cosmic — teman ska bara skinna (font/färg/effekt), aldrig sätta egen `font-size` (analogt `.set-num`-regeln 3.50.1). Rotorsak till spretet: bas `.logo` = 1.5rem ärvs av nästan alla teman → wrappar till två rader med breda typsnitt; Cosmic är enda temat som pinnar 1rem. Detta är en isolerad preview på **bara Iron** (`body:not([class*="theme-"]) .logo{font-size:1rem}`) så han kan godkänna Cosmic-skalan innan utrullning till samtliga. Irons skin (Bebas Neue, .08em, röd/vit) orörd — bara storleken. Inget annat tema påverkat.
+
 ## 3.59.0 — 2026-06-28
 **Set-försvinna-buggen löst i grunden — slut på lapptäcket.** Niklas tappade en uppvärmning på Unilateral Cable Row (uni → 2 warmup default) live på gymmet. Rotorsak via copy-draft: `ensureExtraSets` hade "lösts" fem gånger (3.39.0 stabila sid, 3.44.2 stale-pad, 3.49.0 setEdited-guard, 3.52.1 RAMP-tre-fas, 3.55.0 `_noWorkLogged`) — men ALLA fixar paddade bara WORK sets. **Warmups hade aldrig något skyddsnät** → en försvunnen uppvärmning var permanent borta. Den underliggande skörheten: set-listan räknades om via lager av heuristiska gates istället för en invariant.
 
