@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.59.3 — 2026-06-28
+**Header-preview: matcha Embers storlek (fortf. endast Iron).** Niklas tror Embers titelstorlek är närmare önskad standard. Ember sätter ingen egen `font-size` → ärver bas-`.logo` = 1.5rem. Iron-previewn satt därför till 1.5rem (= app-original). Trolig standard = 1.5rem (bas), Cosmic behåller sin 1rem-override, breda teman (Obsidian/Night City) trimmar letter-spacing för enradighet.
+
 ## 3.59.2 — 2026-06-28
 **Header-preview justerad (fortf. endast Iron): 1rem→1.3rem.** Niklas: titeln blev minimal på Iron vid 1rem. Fynd: Cosmics närvaro kommer från dess breda letter-spacing (.38em), inte font-size — Iron (Bebas Neue, kondenserat, .08em) blir därför mycket mindre footprint vid samma rem. Literal Cosmic-rem är fel standard-modell. 1.3rem = lugnare/konsekventare än original 1.5 men behåller närvaro. Utrullningsplan: bas `.logo`→1.3rem, Cosmic behåller sin 1rem-override (referensen orörd), breda teman (Obsidian/Night City) trimmar letter-spacing för enradighet, lås font-size per tema. Fortf. bara Iron i denna preview.
 
