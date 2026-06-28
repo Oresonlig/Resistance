@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.59.5 — 2026-06-28
+**Obsidian header-hörn fix.** Efter 3.59.4 såg hörnet bra ut på alla teman utom Obsidian: det hade kvar sin Cinzel-tunade typografi (`letter-spacing:.2em` + `font-weight:600`) på `.header-user`/`.header-logout` som nu satt på IBM Plex Mono → bredspärrat + fetare än övriga (som kör bas-typografin). Strippat till bara färg (guld kvar), matchar nu standarden. Plus: `.am-pill-log` (Log-knappen i vikt-pillen) använde fortf. `var(--mono)` → bytt till `var(--ui-mono)` så även den ärver hörn-standarden (var Cinzel på Obsidian när vikt-loggning expanderas).
+
 ## 3.59.4 — 2026-06-28
 **Högra hörnet frikopplat från titeln + låst till Cosmic-standard.** Niklas insikt: titel-fonten (`--display`) och hörn-fonten ("logged in as"/sync/Edit/vikt) är separata variabler, inte kopplade — det bara *blev* så att Obsidian satte sin `--mono` till Cinzel (serif) och därför fick titel-känsla i hörnet. **Beslut:** titlar förblir per tema (avsiktligt olika fonter/storlekar), men hela högra hörnet låses till EN font + Cosmic-storlekar, **färg kvar per tema**. Ny token `--ui-mono:'IBM Plex Mono'` (= Cosmics) på `.header-user`/`.header-sync`/`.header-logout`/`.btn-chain-edit`/`.am-pill`(+input) — ersätter `var(--mono)` så temats egna mono (DM/JetBrains/Spline/Cinzel) inte läcker in. `.header-user` storlek låst .58→.5rem (Cosmic-värdet) överallt. Strippade per-tema font-overrides på hörnet i Night City/Obsidian/Cosmic (behöll färg/border/letter-spacing). Titel-geometri-standardiseringen (3.59.1-3.59.3 Iron-preview) förkastad — Iron-override borttagen. Teman ska aldrig sätta egen font-family/font-size på hörn-elementen (ny regel, analogt `.set-num` 3.50.1).
 
