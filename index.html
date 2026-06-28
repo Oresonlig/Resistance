@@ -4083,7 +4083,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.58.14';
+const APP_VERSION = '3.59.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -7236,70 +7236,86 @@ function getTagDefaults(ex, measure){
   if(measure && MEASURE_SET_DEFAULTS[measure]) return MEASURE_SET_DEFAULTS[measure];
   return TAG_DEFAULTS[pt || '_none'];
 }
-function getDefaultSets(ex){
-  // Carry forward work-set count from last completed session (cap 8 for sanity).
-  // 3.40.0: keyat på exId (följer övningen) med slot-fallback för pre-migration-data.
+// 3.59.0 — set-target = single source of truth för warmup/work-antal. Används av
+// BÅDE getDefaultSets (fräsch lista) och ensureExtraSets reconcile (självläkning).
+function getSetTargets(ex){
+  // Carry forward från förra avslutade passet (cap 8). 3.40.0: keyat på exId
+  // (följer övningen) med slot-fallback för pre-migration-data.
   const _exId = getRenderExId(ex.id) || ex.id;
   const measure = getMeasure(_exId, ex);
   const def = getTagDefaults(ex, measure);
   const lastWork = Math.min(state.lastSessionSetCount?.[_exId] ?? state.lastSessionSetCount?.[ex.id] ?? 0, 8);
-  const workCount = lastWork || def.work;
-  // 3.57.0 #3: uppvärmningsantalet följer med från förra passet om det finns, annars tag/measure-default.
-  // Ramp påverkas inte — dess warmups filtreras bort av RAMP-filtret i ensureExtraSets oavsett.
+  const work = lastWork || def.work;
+  // 3.57.0 #3: warmup-antalet följer med från förra passet om det finns, annars default.
+  // Ramp påverkas inte — dess warmups strippas av reconcileSets oavsett.
   const lastWarm = state.lastSessionWarmupCount?.[_exId] ?? state.lastSessionWarmupCount?.[ex.id];
-  const warmupCount = (lastWarm!=null) ? Math.min(lastWarm, 8) : def.warmup;
-  return defSets(warmupCount, workCount);
+  const warm = (lastWarm!=null) ? Math.min(lastWarm, 8) : def.warmup;
+  return { warm, work };
+}
+function getDefaultSets(ex){
+  const t = getSetTargets(ex);
+  return defSets(t.warm, t.work);
+}
+// 3.59.0 — speglad från src/set-reconcile.js (testad där, 14 fall). EN symmetrisk
+// regel för warmup+work; ersätter det gamla work-only-lapptäcket. ÄNDRA BÅDA.
+function reconcileSets(opts){
+  const { current, targetWarm=0, targetWork=0, isRamp=false, locked=false, mintSid } = opts||{};
+  let sets = Array.isArray(current) ? current.slice() : [];
+  const removed = [];
+  const padded = { warm:0, work:0 };
+  if(isRamp){
+    for(const s of sets) if(s&&s.warmup) removed.push(s.sid);
+    sets = sets.filter(s=>s&&!s.warmup);
+  }
+  if(!locked){
+    const want = { warmup: isRamp?0:targetWarm, work: targetWork };
+    for(const warm of [true,false]){
+      const key = warm?'warmup':'work';
+      const have = sets.filter(s=>s&&(!!s.warmup===warm)).length;
+      for(let i=have;i<want[key];i++){ sets.push({sid:mintSid(),warmup:warm}); if(warm)padded.warm++; else padded.work++; }
+    }
+  }
+  if(sets.length===0){ sets.push({sid:mintSid(),warmup:false}); padded.work++; }
+  return { sets, removed, padded };
 }
 function ensureExtraSets(exId, passId){
   ensureDraft(passId);
   const isExtra=exId.startsWith('extra_');
   const chain=getEffectiveChain();
   const pass=chain.find(p=>p.id===passId);
-  // 3.54.0: extras får ett syntetiskt ex-objekt → SAMMA defaults/RAMP/pad-väg som ordinarie
+  // 3.54.0: extras får ett syntetiskt ex-objekt → SAMMA reconcile-väg som ordinarie
   const ex=isExtra?makeExtraEx(state.draft.extras?.find(e=>e.id===exId)):pass?.exercises.find(e=>e.id===exId);
-  // Phase 1: Create fresh sets or ensure sids on existing draft.
+  // Phase 1: fräsch skapelse — deterministiska sid (wu0/wk0…) så next-up-preview
+  // matchar första Log:s sid. En fräsch lista är per definition redan på target.
   if(state.draft.extraSets[exId]===undefined||state.draft.extraSets[exId].length===0){
     state.draft.extraSets[exId]=ex?getDefaultSets(ex):defSets(2,1);
-  } else {
-    state.draft.extraSets[exId]=ensureSetIds(state.draft.extraSets[exId]);
+    return;
   }
-  // Phase 2: RAMP filter — must run BEFORE stale-pad.
-  // Rotorsak: loggade warmup-sids (t.ex. W1/W2 med reps-only, inget kg) levde kvar i
-  // loggedSets efter filtret tog bort dem ur extraSets → _noLogged=false → stale-pad
-  // körde aldrig → för få work sets och/eller orphan-sids matchade wk-sids → ✓ utan data.
-  // Fix: filtret rensar också orphan-sids från loggedSets/inputBuffer.
-  {
-    const exTagOvr2=state.exerciseTagOverrides?.[exId]||{};
-    const isRampCheck=exTagOvr2.ramp!==undefined?exTagOvr2.ramp:!!ex?.ramp;
-    if(isRampCheck&&state.draft.extraSets[exId].some(s=>s.warmup)){
-      const removedSids=state.draft.extraSets[exId].filter(s=>s.warmup).map(s=>s.sid);
-      state.draft.extraSets[exId]=state.draft.extraSets[exId].filter(s=>!s.warmup);
-      if(state.draft.extraSets[exId].length===0)
-        state.draft.extraSets[exId]=defSets(0,2);
-      for(const sid of removedSids){
-        if(state.draft.loggedSets?.[exId]) delete state.draft.loggedSets[exId][sid];
-        if(state.draft.inputBuffer?.[exId]) delete state.draft.inputBuffer[exId][sid];
-      }
-    }
+  state.draft.extraSets[exId]=ensureSetIds(state.draft.extraSets[exId]);
+  if(!ex) return;
+  // Phase 2: ROOT-FIX (3.59.0). EN symmetrisk reconcile ersätter det gamla RAMP-filtret
+  // + work-only-stale-paddet. Warmup OCH work paddas mot target (självläkande mot
+  // försvinnande set), loggade set bevaras, ramp strippar warmups, setEdited/saved
+  // låser formen. Slut på lapptäcket (3.39/3.44/3.49/3.52/3.55) där warmups saknade
+  // skyddsnät → Unilateral Row tappade en uppvärmning permanent.
+  const exTagOvr=state.exerciseTagOverrides?.[exId]||{};
+  const isRamp = exTagOvr.ramp!==undefined ? exTagOvr.ramp : !!ex.ramp;
+  const locked = !!state.draft.setEdited?.[exId] || !!state.draft.savedExercises?.[exId];
+  const t = getSetTargets(ex);
+  const { sets, removed, padded } = reconcileSets({
+    current: state.draft.extraSets[exId],
+    targetWarm: t.warm, targetWork: t.work, isRamp, locked, mintSid: nextSid,
+  });
+  state.draft.extraSets[exId]=sets;
+  for(const sid of removed){
+    if(state.draft.loggedSets?.[exId]) delete state.draft.loggedSets[exId][sid];
+    if(state.draft.inputBuffer?.[exId]) delete state.draft.inputBuffer[exId][sid];
   }
-  // Phase 3: Stale-draft-fix — pad work sets to lastSessionSetCount when no work sets
-  // are logged yet and count wasn't manually adjusted. _noLogged is now clean (Phase 2
-  // removed orphaned warmup entries) so this correctly fires after swap+RAMP too.
-  if(ex && !state.draft.savedExercises?.[exId]){
-    // 3.55.0 (#5): gate på avsaknad av loggade WORK-set, inte avsaknad av ALLA loggade.
-    // Tidigare räckte EN loggad uppvärmning för att stänga av work-set-paddningen →
-    // ett borttappat arbetsset kunde aldrig återställas (permanent borta). Warmups
-    // loggas oftast först, därför drabbade buggen BARA work sets, aldrig warmups.
-    const _logged=state.draft.loggedSets?.[exId];
-    const _noWorkLogged=!_logged||Object.values(_logged).every(s=>s&&s.warmup);
-    // Skip if user explicitly adjusted set count (add/remove) — pad would snap sets back.
-    if(_noWorkLogged && !state.draft.setEdited?.[exId]){
-      const _sid2=getRenderExId(ex.id)||ex.id;
-      const _last=Math.min(state.lastSessionSetCount?.[_sid2]??state.lastSessionSetCount?.[ex.id]??0,8);
-      const _target=_last||getTagDefaults(ex, getMeasure(_sid2, ex)).work;
-      const _curWork=state.draft.extraSets[exId].filter(s=>!s.warmup).length;
-      for(let _i=_curWork;_i<_target;_i++) state.draft.extraSets[exId].push({sid:nextSid(),warmup:false});
-    }
+  // INSTRUMENT: en BEFINTLIG draft som måste paddas = något hade tappat ett set
+  // (vanish). Logga det så copy-draftens incidents[] visar mekanismen nästa pass.
+  if(padded.warm>0 || padded.work>0){
+    _dbgPush({type:'SET_RESTORED@reconcile', exId, padded, target:t, isRamp, locked,
+      loggedN:Object.keys(state.draft.loggedSets?.[exId]||{}).length});
   }
 }
 // PM11: Iterera ALLA exercises i nuvarande draft och fånga deras DOM-input-värden
@@ -8799,6 +8815,12 @@ function copyDebugState(){
     loggedSets: d?.loggedSets || null,
     inputBuffer: d?.inputBuffer || null,
     savedExerciseKeys: d ? Object.keys(d.savedExercises||{}) : null,
+    // 3.59.0 — avgörande för att skilja "bugg tappade set" från "user tog bort":
+    setEdited: d?.setEdited || null,
+    swaps: d?.swaps || null,
+    tagOverrides: state.exerciseTagOverrides || null,
+    measureOverrides: state.exerciseMeasureOverride || null,
+    permanentSwaps: state.permanentSwaps || null,
     lastSessionSetCount: state.lastSessionSetCount || null,
     lastSessionWarmupCount: state.lastSessionWarmupCount || null,
     lastSyncRead: (typeof lastSyncRead!=='undefined')?lastSyncRead:null,

@@ -6,6 +6,13 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.59.0 — 2026-06-28
+**Set-försvinna-buggen löst i grunden — slut på lapptäcket.** Niklas tappade en uppvärmning på Unilateral Cable Row (uni → 2 warmup default) live på gymmet. Rotorsak via copy-draft: `ensureExtraSets` hade "lösts" fem gånger (3.39.0 stabila sid, 3.44.2 stale-pad, 3.49.0 setEdited-guard, 3.52.1 RAMP-tre-fas, 3.55.0 `_noWorkLogged`) — men ALLA fixar paddade bara WORK sets. **Warmups hade aldrig något skyddsnät** → en försvunnen uppvärmning var permanent borta. Den underliggande skörheten: set-listan räknades om via lager av heuristiska gates istället för en invariant.
+
+**Rotfix:** ny ren modul `src/set-reconcile.js` (`reconcileSets`) med EN symmetrisk regel för båda kolumnerna — warmup OCH work paddas mot target (självläkande mot försvinnande set), loggade set bevaras alltid, ramp strippar warmups, `setEdited`/`saved` låser formen. Ersätter RAMP-filtret (Phase 2) + work-only-stale-paddet (Phase 3). `getSetTargets()` extraherad som single source of truth för set-antal (delas av `getDefaultSets` + reconcile). 14 nya matris-tester (measure × tag × logg × locked × ramp), totalt 118 gröna.
+
+**Instrument:** `ensureExtraSets` loggar nu `SET_RESTORED@reconcile` när en befintlig draft måste paddas (= ett set hade tappats) → copy-draftens `incidents[]` visar mekanismen. Copy-draften utbyggd med `setEdited`, `swaps`, `tagOverrides`, `measureOverrides`, `permanentSwaps` — så vi kan skilja "bugg tappade set" från "user tog bort".
+
 ## 3.58.14 — 2026-06-26
 **Crusader + Daylight borttagna ur appen.** Båda var WIP/förlegade (Daylight = appens första ljusa tema, utdaterat; Crusader = aldrig nöjd, ska omarbetas av Claude Design senare). Borttaget ur `index.html`: 183 CSS-regler + 6 `@keyframes crusader-*` + Templar-cross-markupen (`#crusader-cross-bg`/`-img`/`-glow`) + båda `THEMES`-posterna (12→10 teman), ~26 KB. **`theme/`-mapparna i repot är ORÖRDA** (Claude Design ska titta på dem senare; `crusader2.jpg`-assetet lämnas också kvar, nu oanvänt). Migrering: befintliga användare på dessa teman remappas till närmaste kvarvarande (`daylight→arctic`, `crusader→obsidian`) via `migrateRemovedThemes()` i `runSchemaMigrations` — ingen hamnar på Iron-fallback. Delad Arctic+Daylight `-webkit-autofill`-regel trimmad (Arctic behållen). Städade stale-kommentarer som refererade borttagen Crusader/Daylight/weight-banner. Verifierat: brace-balans 0, 104/104 tester gröna.
 
