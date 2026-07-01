@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.60.0 — 2026-07-01
+**Gymfeedback: cardio-tid i minuter + nya cardio-övningar.** Steady-state cardio (`measure:'cardio'` — Walk, Bike Cardio, ny Running/Incline Walk) loggas nu i minuter istf sekunder (decimal, t.ex. `32.5`). Internt lagras fortfarande `secs` (ingen migration/PR/historik-kod rörd — de visade redan minuter härlett från secs, bara input-cellen bytte enhet). Konvertering min→sec vid båda capture-punkterna (draft→sets, sets→buffer). Dead Hang (`timed`) och Assault Bike (`cardiosprint`, sekunder+sprintantal) opåverkade — redan korrekta per Niklas. Nya biblioteksrader: `Incline Walk` + `Running`, båda `cat:'Cardio', measure:'cardio'` — ren data, ingen ny logik. Ab Wheel dubbelkollad: redan `bwreps` (PR=reps, inget viktfält) — ingen åtgärd.
+
 ## 3.59.7 — 2026-06-28
 **Obsidian Edit-knapp: FAKTISK rotorsak (radbrytning, inte font).** 3.59.4-6 jagade fel axel (font/storlek). Den verkliga buggen: Obsidians Edit-knapp var *kvadratisk* för att ikonen (SVG) staplades ÖVANPÅ texten "Edit" — en radbrytning. `.btn-chain-edit` är ett flex-barn i `.header-bottom-row` utan `white-space:nowrap`; när raden trängs ihop (Obsidians högra kluster bredare) krymper knappen till sin min-content och bryter ikon/text på två rader = kvadrat. Övriga teman trängdes inte tillräckligt. Fix: `white-space:nowrap` + `flex-shrink:0` på `.btn-chain-edit` → ikon+label kan aldrig brytas, knappen förblir avlång i ALLA teman (recurrence-proof). Font-låsen från 3.59.4-6 behålls (de var korrekta för font-konsistens, bara inte rätt diagnos för formen).
 

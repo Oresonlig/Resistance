@@ -3987,6 +3987,8 @@ const EXERCISE_LIBRARY = [
   {name:'Bike Cardio', cat:'Cardio', measure:'cardio', tip:'20 min steady state'},
   {name:'Dead Hang', cat:'Cardio', measure:'timed', tip:'Supinated or neutral'},
   {name:'Farmers Walk', cat:'Cardio', measure:'carry'},
+  {name:'Incline Walk', cat:'Cardio', measure:'cardio', tip:'Treadmill incline'},
+  {name:'Running', cat:'Cardio', measure:'cardio'},
   {name:'Sled Push', cat:'Cardio', measure:'carry'},
   {name:'Walk', cat:'Cardio', measure:'cardio'},
 ];
@@ -4096,7 +4098,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.59.7';
+const APP_VERSION = '3.60.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -6812,8 +6814,10 @@ function saveExercise(passId,exId){
     } else if(measure==='timed'){
       const rRaw=dom('r'); base={sid, secs: rRaw!=null?_int(rRaw):(b.secs??null), forced, warmup};
     } else if(measure==='cardio'){
+      // Input is minutes (UX), stored as secs internally (see measureCells).
       const rRaw=dom('r');const dRaw=dom('dist');
-      base={sid, secs: rRaw!=null?_int(rRaw):(b.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(b.dist??null), warmup};
+      const minsVal=rRaw!=null?parseFloat(rRaw):null;
+      base={sid, secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(b.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(b.dist??null), warmup};
     } else if(measure==='cardiosprint'){
       const sRaw=dom('spr');const sprints=sRaw!=null?_int(sRaw):(b.sprints??null);
       if(sprintBase==='dist'){const dRaw=dom('dist');base={sid, dist: dRaw!=null?(parseFloat(dRaw)||null):(b.dist??null), sprints, warmup};}
@@ -7136,6 +7140,9 @@ function measureCells(measure, sprintBase, exId, sid, savedSet, bufVal, dis, wCl
   const bwCell = `<div><input class="set-input${wCls}" type="number" id="bw-${exId}-${sid}" placeholder="0" value="${valDisp('extra')}" min="-50" step="${unitL==='lbs'?'1':'1.25'}" ${dis}><div class="set-unit">+ ${unitL}</div></div>`;
   const repsCell = `<div><input class="set-input${wCls}" type="number" id="r-${exId}-${sid}" placeholder="—" value="${valNum('reps')}" min="1" max="50" ${dis}><div class="set-unit">reps</div></div>`;
   const secsCell = `<div><input class="set-input${wCls} timed" type="number" id="r-${exId}-${sid}" placeholder="—" value="${valNum('secs')}" min="1" max="3600" ${dis}><div class="set-unit time-unit">sec</div></div>`;
+  // Cardio (steady-state) logs time in minutes; stored internally as secs (see capture sites).
+  const cardioMinVal = (()=>{ const s=valNum('secs'); return s!==''&&s!=null ? Math.round((s/60)*10)/10 : ''; })();
+  const cardioTimeCell = `<div><input class="set-input${wCls} timed" type="number" id="r-${exId}-${sid}" placeholder="—" value="${cardioMinVal}" min="0.5" max="600" step="0.5" ${dis}><div class="set-unit time-unit">min</div></div>`;
   const forcedCell = `<div><input class="set-input${wCls} forced" type="number" id="f-${exId}-${sid}" placeholder="0" value="${savedSet?.forced!=null?savedSet.forced:(bufVal?.forced||'')}" min="0" max="20" ${dis}><div class="set-unit forced-unit">+f</div></div>`;
   const distCell = `<div><input class="set-input${wCls}" type="number" id="dist-${exId}-${sid}" placeholder="—" value="${valNum('dist')}" min="0" step="0.1" ${dis}><div class="set-unit">km</div></div>`;
   const distmCell = `<div><input class="set-input${wCls}" type="number" id="distm-${exId}-${sid}" placeholder="—" value="${valNum('distm')}" min="0" step="1" ${dis}><div class="set-unit">m</div></div>`;
@@ -7144,7 +7151,7 @@ function measureCells(measure, sprintBase, exId, sid, savedSet, bufVal, dis, wCl
     case 'bw':           return bwCell+repsCell+forcedCell;
     case 'bwreps':       return repsCell+forcedCell;
     case 'timed':        return secsCell+forcedCell;
-    case 'cardio':       return secsCell+distCell;
+    case 'cardio':       return cardioTimeCell+distCell;
     case 'cardiosprint': return (sprintBase==='dist'?distCell:secsCell)+sprintsCell;
     case 'carry':        return weightCell+distmCell;
     case 'weight':
@@ -7391,8 +7398,10 @@ function captureInputsToSetsBuffer(exId,passId){
     } else if(measure==='timed'){
       const rRaw=dom('r'); rec={secs: rRaw!=null?_int(rRaw):(p.secs??null), forced};
     } else if(measure==='cardio'){
+      // Input is minutes (UX), stored as secs internally (see measureCells).
       const rRaw=dom('r');const dRaw=dom('dist');
-      rec={secs: rRaw!=null?_int(rRaw):(p.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(p.dist??null)};
+      const minsVal=rRaw!=null?parseFloat(rRaw):null;
+      rec={secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(p.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(p.dist??null)};
     } else if(measure==='cardiosprint'){
       const sRaw=dom('spr');const sprints=sRaw!=null?_int(sRaw):(p.sprints??null);
       if(sprintBase==='dist'){const dRaw=dom('dist');rec={dist: dRaw!=null?(parseFloat(dRaw)||null):(p.dist??null), sprints};}
