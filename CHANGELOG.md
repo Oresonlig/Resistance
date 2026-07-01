@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.61.0 — 2026-07-01
+**Weight Goal + rullande trendlinje på Weight Curve.** Settings: ny opt-in "Weight Goal"-toggle (mirror:ar Rest Timer-mönstret) med målvikt-fält. Aktiverad: ny "To Goal"-stat-box (signed diff mot mål) + streckad mållinje (`--green-bright`) på grafen. Ny 14-dagars rullande medelvärdeslinje (`--gold`) ovanpå rådata på ALLTID (oavsett mål) — jämnar ut dagsbrus (vatten/mat-svängningar) utan att dölja punkterna. Fönstret är kalenderdagar, inte antal loggningar (matchar oregelbunden loggningstakt). "Change"-statistiken (all-time, dag 1 → idag) lämnad orörd på Niklas begäran — han vill se hela resan sedan start.
+
 ## 3.60.0 — 2026-07-01
 **Gymfeedback: cardio-tid i minuter + nya cardio-övningar.** Steady-state cardio (`measure:'cardio'` — Walk, Bike Cardio, ny Running/Incline Walk) loggas nu i minuter istf sekunder (decimal, t.ex. `32.5`). Internt lagras fortfarande `secs` (ingen migration/PR/historik-kod rörd — de visade redan minuter härlett från secs, bara input-cellen bytte enhet). Konvertering min→sec vid båda capture-punkterna (draft→sets, sets→buffer). Dead Hang (`timed`) och Assault Bike (`cardiosprint`, sekunder+sprintantal) opåverkade — redan korrekta per Niklas. Nya biblioteksrader: `Incline Walk` + `Running`, båda `cat:'Cardio', measure:'cardio'` — ren data, ingen ny logik. Ab Wheel dubbelkollad: redan `bwreps` (PR=reps, inget viktfält) — ingen åtgärd.
 

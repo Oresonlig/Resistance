@@ -3639,6 +3639,8 @@ function ensureStateDefaults(){
   if(!state.sessionNameOverrides) state.sessionNameOverrides = {};
   if(typeof state.timerDefault !== 'number') state.timerDefault = 120;
   if(typeof state.timerEnabled !== 'boolean') state.timerEnabled = false;
+  if(typeof state.weightGoalEnabled !== 'boolean') state.weightGoalEnabled = false;
+  if(state.weightGoal === undefined) state.weightGoal = null;
   if(!state.exerciseNotes) state.exerciseNotes = {};
   if(typeof state.onboardingDone !== 'boolean') state.onboardingDone = false;
   if(!state.theme) state.theme = 'iron';
@@ -3726,6 +3728,7 @@ function freshState(){
     importedPRs:[], exerciseOrder:{}, ignoredPRs:[],
     lastSessionSetCount:{}, lastSessionWarmupCount:{},
     migrations:{},
+    weightGoalEnabled:false, weightGoal:null,
     schemaVersion: SCHEMA_VERSION,
     deletions: { customExercises:{}, exerciseNotes:{} }
   };
@@ -4098,7 +4101,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.60.0';
+const APP_VERSION = '3.61.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -7951,27 +7954,57 @@ function renderWeight(){
   const latest=sorted[sorted.length-1];const first=sorted[0];
   const latestDisp=toDisplay(latest.weight);const firstDisp=toDisplay(first.weight);
   const diff=(latestDisp-firstDisp).toFixed(1);
-  let html=`<div class="section-title">Weight Curve</div><div class="stats-grid"><div class="stat-box"><div class="stat-num">${latestDisp}</div><div class="stat-desc">Latest (${unitLabel()})</div></div><div class="stat-box"><div class="stat-num">${diff>0?'+':''}${diff}</div><div class="stat-desc">Change (${unitLabel()})</div></div><div class="stat-box"><div class="stat-num">${sorted.length}</div><div class="stat-desc">Entries</div></div></div><div class="weight-chart-wrap"><canvas id="weightChart" height="190"></canvas></div><div class="section-sub">Log</div><div class="wlog-list">`;
+  const hasGoal=state.weightGoalEnabled && state.weightGoal!=null;
+  const goalDisp=hasGoal?toDisplay(state.weightGoal):null;
+  const toGoal=hasGoal?(latestDisp-goalDisp).toFixed(1):null;
+  const goalBox=hasGoal?`<div class="stat-box"><div class="stat-num">${toGoal>0?'+':''}${toGoal}</div><div class="stat-desc">To Goal (${unitLabel()})</div></div>`:'';
+  let html=`<div class="section-title">Weight Curve</div><div class="stats-grid"><div class="stat-box"><div class="stat-num">${latestDisp}</div><div class="stat-desc">Latest (${unitLabel()})</div></div><div class="stat-box"><div class="stat-num">${diff>0?'+':''}${diff}</div><div class="stat-desc">Change (${unitLabel()})</div></div><div class="stat-box"><div class="stat-num">${sorted.length}</div><div class="stat-desc">Entries</div></div>${goalBox}</div><div class="weight-chart-wrap"><canvas id="weightChart" height="190"></canvas></div><div class="section-sub">Log</div><div class="wlog-list">`;
   [...sorted].reverse().forEach(e=>{html+=`<div class="wlog-row"><span>${e.date}</span><strong>${toDisplay(e.weight)} ${unitLabel()}</strong><button class="wlog-delete" onclick="deleteWeight('${e.date}')">Delete</button></div>`;});
   html+=`</div>`;el.innerHTML=html;
-  drawChart(sorted.map(e=>({...e,weight:toDisplay(e.weight)})));
+  drawChart(sorted.map(e=>({...e,weight:toDisplay(e.weight)})), goalDisp);
 }
-function drawChart(data){
+// Rullande medelvärde över kalenderdagar (inte antal loggningar — loggningstakten
+// är oregelbunden, ett kalenderfönster ger en rättvisande trend oavsett gap).
+function weightTrend(data, windowDays){
+  return data.map(d=>{
+    const cutoff=new Date(d.date);cutoff.setDate(cutoff.getDate()-(windowDays-1));
+    const cutoffStr=cutoff.toISOString().slice(0,10);
+    const win=data.filter(e=>e.date>=cutoffStr && e.date<=d.date);
+    return win.reduce((s,e)=>s+e.weight,0)/win.length;
+  });
+}
+function drawChart(data, goalDisp){
   const c=document.getElementById('weightChart');if(!c)return;
   const ctx=c.getContext('2d');const W=c.offsetWidth||320;const H=190;c.width=W;c.height=H;
   const ws=data.map(d=>d.weight);const labels=data.map(d=>d.date.slice(5));
-  const mn=Math.min(...ws)-1;const mx=Math.max(...ws)+1;
+  const allVals=goalDisp!=null?[...ws,goalDisp]:ws;
+  const mn=Math.min(...allVals)-1;const mx=Math.max(...allVals)+1;
   const p={t:16,r:12,b:32,l:42};const cw=W-p.l-p.r;const ch=H-p.t-p.b;
+  const yFor=(v)=>p.t+ch*(1-(v-mn)/(mx-mn));
   ctx.clearRect(0,0,W,H);ctx.strokeStyle='#1a1a1a';ctx.lineWidth=1;
   for(let i=0;i<=4;i++){const y=p.t+ch*(i/4);ctx.beginPath();ctx.moveTo(p.l,y);ctx.lineTo(p.l+cw,y);ctx.stroke();ctx.fillStyle='#333';ctx.font='9px DM Mono,monospace';ctx.textAlign='right';ctx.fillText((mx-(mx-mn)*(i/4)).toFixed(1),p.l-3,y+3);}
+  if(goalDisp!=null){
+    const goalColor=(getComputedStyle(document.documentElement).getPropertyValue('--green-bright')||'').trim()||'#3a9a5a';
+    const gy=yFor(goalDisp);
+    ctx.save();ctx.setLineDash([4,4]);ctx.strokeStyle=goalColor;ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(p.l,gy);ctx.lineTo(p.l+cw,gy);ctx.stroke();ctx.restore();
+    ctx.fillStyle=goalColor;ctx.font='9px DM Mono,monospace';ctx.textAlign='left';ctx.fillText('Goal',p.l+3,gy-3);
+  }
   if(data.length<2){ctx.beginPath();ctx.arc(p.l+cw/2,p.t+ch/2,3,0,Math.PI*2);ctx.fillStyle='#c0392b';ctx.fill();return;}
-  const pts=data.map((d,i)=>({x:p.l+cw*(i/(data.length-1)),y:p.t+ch*(1-(d.weight-mn)/(mx-mn))}));
+  const pts=data.map((d,i)=>({x:p.l+cw*(i/(data.length-1)),y:yFor(d.weight)}));
   ctx.beginPath();ctx.moveTo(pts[0].x,p.t+ch);pts.forEach(pt=>ctx.lineTo(pt.x,pt.y));ctx.lineTo(pts[pts.length-1].x,p.t+ch);ctx.closePath();
   const g=ctx.createLinearGradient(0,p.t,0,p.t+ch);g.addColorStop(0,'rgba(192,57,43,.2)');g.addColorStop(1,'rgba(192,57,43,0)');ctx.fillStyle=g;ctx.fill();
   ctx.beginPath();pts.forEach((pt,i)=>i===0?ctx.moveTo(pt.x,pt.y):ctx.lineTo(pt.x,pt.y));ctx.strokeStyle='#c0392b';ctx.lineWidth=2;ctx.stroke();
   pts.forEach((pt,i)=>{ctx.beginPath();ctx.arc(pt.x,pt.y,2.5,0,Math.PI*2);ctx.fillStyle='#c0392b';ctx.fill();if(data.length<=8||i%(Math.ceil(data.length/6))===0){ctx.fillStyle='#333';ctx.font='9px DM Mono,monospace';ctx.textAlign='center';ctx.fillText(labels[i],pt.x,H-p.b+12);}});
+  // 14-dagars rullande trend ovanpå rådata — jämnar ut dagsbrus (vatten/mat) utan att dölja punkterna.
+  const trend=weightTrend(data,14);
+  const trendColor=(getComputedStyle(document.documentElement).getPropertyValue('--gold')||'').trim()||'#b8922a';
+  const tpts=data.map((d,i)=>({x:p.l+cw*(i/(data.length-1)),y:yFor(trend[i])}));
+  ctx.beginPath();tpts.forEach((pt,i)=>i===0?ctx.moveTo(pt.x,pt.y):ctx.lineTo(pt.x,pt.y));ctx.strokeStyle=trendColor;ctx.lineWidth=2;ctx.stroke();
 }
 function deleteWeight(date){state.weightLog=state.weightLog.filter(e=>e.date!==date);save();renderWeight();}
+function toggleWeightGoal(){state.weightGoalEnabled=!state.weightGoalEnabled;save();renderData();}
+function setWeightGoal(v){const n=parseFloat(v);state.weightGoal=(v!==''&&!isNaN(n))?toKg(n):null;save();renderData();}
 
 // ── DATA VIEW ─────────────────────────────────────────────────
 
@@ -8707,6 +8740,20 @@ function renderData(){
   <div class="section-sub">Weight Unit</div>
   <div style="font-family:var(--mono);font-size:.54rem;color:var(--gray-light);margin-bottom:8px;">Currently: <strong style="color:var(--white)">${(state.unit||'kg').toUpperCase()}</strong></div>
   <div class="settings-panel" style="display:flex;gap:6px;margin-bottom:18px">${unitBtn('kg')}${unitBtn('lbs')}</div>
+  <div class="section-sub">Weight Goal</div>
+  <div class="settings-panel" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--gray-mid);margin-bottom:${state.weightGoalEnabled?'10px':'18px'};">
+    <div>
+      <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);margin-bottom:2px;">Weight Goal</div>
+      <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);">Shows progress + a target line on the Weight Curve.</div>
+    </div>
+    <button onclick="toggleWeightGoal()" style="background:${state.weightGoalEnabled?'var(--green-bright)':'var(--gray-mid)'};border:1px solid ${state.weightGoalEnabled?'var(--green-bright)':'var(--gray-mid)'};color:${state.weightGoalEnabled?'var(--black)':'var(--gray-light)'};font-family:var(--mono);font-size:.54rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:all .2s;">${state.weightGoalEnabled?'ON':'OFF'}</button>
+  </div>
+  ${state.weightGoalEnabled ? `<div class="settings-panel" style="display:flex;align-items:center;gap:8px;margin-bottom:18px;">
+    <input type="number" id="weightGoalInput" value="${state.weightGoal!=null?toDisplay(state.weightGoal):''}" placeholder="Target weight" step="0.5"
+      style="flex:1;background:var(--surface-input);border:1px solid var(--border-strong);color:var(--white);font-family:var(--sans);font-size:.82rem;padding:7px 10px;"
+      onblur="setWeightGoal(this.value)">
+    <div style="font-family:var(--mono);font-size:.6rem;color:var(--gray-light);">${unitLabel()}</div>
+  </div>` : ''}
   <div class="section-sub">Custom Exercises</div>
   ${(state.customExercises||[]).length===0
     ? `<div style="font-family:var(--mono);font-size:.52rem;color:#666;margin-bottom:16px;">No custom exercises yet. Create one via any exercise's Edit ▾ → Swap → + Custom.</div>`
