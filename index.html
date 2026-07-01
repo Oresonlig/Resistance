@@ -4101,7 +4101,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.61.1';
+const APP_VERSION = '3.61.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8750,9 +8750,6 @@ function renderData(){
   </div>
   <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);margin-bottom:8px;">Rest duration</div>
   <div class="settings-panel" style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;">${[60,90,120,180,240,300].map(s=>`<button onclick="state.timerDefault=${s};save();renderData();" style="background:${state.timerDefault===s?selBg:'none'};border:1px solid ${state.timerDefault===s?selBorder:'#444'};color:${state.timerDefault===s?selFg:'#888'};font-family:var(--mono);font-size:.5rem;padding:6px 10px;cursor:pointer;transition:all .15s;">${s<60?s+'s':Math.floor(s/60)+(s%60?':'+String(s%60).padStart(2,'0'):'')+' min'}</button>`).join('')}</div>
-  <div class="section-sub">Weight Unit</div>
-  <div style="font-family:var(--mono);font-size:.54rem;color:var(--gray-light);margin-bottom:8px;">Currently: <strong style="color:var(--white)">${(state.unit||'kg').toUpperCase()}</strong></div>
-  <div class="settings-panel" style="display:flex;gap:6px;margin-bottom:18px">${unitBtn('kg')}${unitBtn('lbs')}</div>
   <div class="section-sub">Weight Goal</div>
   <div class="settings-panel" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--gray-mid);margin-bottom:${state.weightGoalEnabled?'10px':'18px'};">
     <div>
@@ -8767,6 +8764,17 @@ function renderData(){
       onblur="setWeightGoal(this.value)">
     <div style="font-family:var(--mono);font-size:.6rem;color:var(--gray-light);">${unitLabel()}</div>
   </div>` : ''}
+  <div class="section-sub">Ambient Effects</div>
+  <div class="settings-panel" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--gray-mid);margin-bottom:18px;">
+    <div>
+      <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);margin-bottom:2px;">Animations &amp; particles</div>
+      <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);">Ember particles in Obsidian + other animation-heavy themes. Turn off to save battery or reduce distraction.</div>
+    </div>
+    <button onclick="toggleAmbientEffects()" style="background:${state.ambientEffects!==false?'var(--green-bright)':'var(--gray-mid)'};border:1px solid ${state.ambientEffects!==false?'var(--green-bright)':'var(--gray-mid)'};color:${state.ambientEffects!==false?'var(--black)':'var(--gray-light)'};font-family:var(--mono);font-size:.54rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:all .2s;">${state.ambientEffects!==false?'ON':'OFF'}</button>
+  </div>
+  <div class="section-sub">Weight Unit</div>
+  <div style="font-family:var(--mono);font-size:.54rem;color:var(--gray-light);margin-bottom:8px;">Currently: <strong style="color:var(--white)">${(state.unit||'kg').toUpperCase()}</strong></div>
+  <div class="settings-panel" style="display:flex;gap:6px;margin-bottom:18px">${unitBtn('kg')}${unitBtn('lbs')}</div>
   <div class="section-sub">Custom Exercises</div>
   ${(state.customExercises||[]).length===0
     ? `<div style="font-family:var(--mono);font-size:.52rem;color:#666;margin-bottom:16px;">No custom exercises yet. Create one via any exercise's Edit ▾ → Swap → + Custom.</div>`
@@ -8819,14 +8827,6 @@ function renderData(){
         ${active?`<div style="position:absolute;top:6px;right:8px;color:${selFg};font-size:.6rem;">✓</div>`:''}
       </button>`;
     }).join('')}
-  </div>
-  <div class="section-sub">Ambient Effects</div>
-  <div class="settings-panel" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--gray-mid);margin-bottom:18px;">
-    <div>
-      <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);margin-bottom:2px;">Animations &amp; particles</div>
-      <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);">Ember particles in Obsidian + other animation-heavy themes. Turn off to save battery or reduce distraction.</div>
-    </div>
-    <button onclick="toggleAmbientEffects()" style="background:${state.ambientEffects!==false?'var(--green-bright)':'var(--gray-mid)'};border:1px solid ${state.ambientEffects!==false?'var(--green-bright)':'var(--gray-mid)'};color:${state.ambientEffects!==false?'var(--black)':'var(--gray-light)'};font-family:var(--mono);font-size:.54rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:all .2s;">${state.ambientEffects!==false?'ON':'OFF'}</button>
   </div>
   <div class="section-sub">Sync Status</div>
   <div id="sync-status-card" class="settings-panel" style="border:1px solid var(--gray-mid);padding:12px 14px;margin-bottom:18px;font-family:var(--mono);font-size:.55rem;color:var(--gray-light);line-height:1.9;">

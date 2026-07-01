@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.61.2 — 2026-07-01
+**Settings: gruppera alla toggles.** Rest Timer, Weight Goal och Ambient Effects (animationer/partiklar) flyttade till samma sammanhängande block (i den ordningen), direkt efter Debug. Weight Unit + Custom Exercises följer efter. Ren omflyttning av befintliga sektioner, ingen ny logik. "To Goal" (6:e boxen på Weight Curve) fanns redan i 3.61.0 — syns så fort Weight Goal är ON + ett mål är satt.
+
 ## 3.61.1 — 2026-07-01
 **Weight Curve: två nya sifferboxar** (gymfeedback — "trendlinjen är bra, men tydliga siffror är tydligare"). **Trend (14d avg)** = trendlinjens senaste värde som konkret tal. **Weekly Rate** = snitt senaste 7 kalenderdagarna minus snittet 7 dagarna innan — svarar på "går det åt rätt håll just nu och hur fort", till skillnad från Change som är hela resan sedan dag 1. Tomt/inget värde om för lite historik i något fönster (visas bara när beräkningsbart).
 
