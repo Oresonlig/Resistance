@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.61.1 — 2026-07-01
+**Weight Curve: två nya sifferboxar** (gymfeedback — "trendlinjen är bra, men tydliga siffror är tydligare"). **Trend (14d avg)** = trendlinjens senaste värde som konkret tal. **Weekly Rate** = snitt senaste 7 kalenderdagarna minus snittet 7 dagarna innan — svarar på "går det åt rätt håll just nu och hur fort", till skillnad från Change som är hela resan sedan dag 1. Tomt/inget värde om för lite historik i något fönster (visas bara när beräkningsbart).
+
 ## 3.61.0 — 2026-07-01
 **Weight Goal + rullande trendlinje på Weight Curve.** Settings: ny opt-in "Weight Goal"-toggle (mirror:ar Rest Timer-mönstret) med målvikt-fält. Aktiverad: ny "To Goal"-stat-box (signed diff mot mål) + streckad mållinje (`--green-bright`) på grafen. Ny 14-dagars rullande medelvärdeslinje (`--gold`) ovanpå rådata på ALLTID (oavsett mål) — jämnar ut dagsbrus (vatten/mat-svängningar) utan att dölja punkterna. Fönstret är kalenderdagar, inte antal loggningar (matchar oregelbunden loggningstakt). "Change"-statistiken (all-time, dag 1 → idag) lämnad orörd på Niklas begäran — han vill se hela resan sedan start.
 

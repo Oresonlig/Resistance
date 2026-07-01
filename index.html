@@ -4101,7 +4101,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.61.0';
+const APP_VERSION = '3.61.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -7958,10 +7958,23 @@ function renderWeight(){
   const goalDisp=hasGoal?toDisplay(state.weightGoal):null;
   const toGoal=hasGoal?(latestDisp-goalDisp).toFixed(1):null;
   const goalBox=hasGoal?`<div class="stat-box"><div class="stat-num">${toGoal>0?'+':''}${toGoal}</div><div class="stat-desc">To Goal (${unitLabel()})</div></div>`:'';
-  let html=`<div class="section-title">Weight Curve</div><div class="stats-grid"><div class="stat-box"><div class="stat-num">${latestDisp}</div><div class="stat-desc">Latest (${unitLabel()})</div></div><div class="stat-box"><div class="stat-num">${diff>0?'+':''}${diff}</div><div class="stat-desc">Change (${unitLabel()})</div></div><div class="stat-box"><div class="stat-num">${sorted.length}</div><div class="stat-desc">Entries</div></div>${goalBox}</div><div class="weight-chart-wrap"><canvas id="weightChart" height="190"></canvas></div><div class="section-sub">Log</div><div class="wlog-list">`;
+  const dispData=sorted.map(e=>({...e,weight:toDisplay(e.weight)}));
+  const trendArr=weightTrend(dispData,14);
+  const trendNow=trendArr[trendArr.length-1];
+  const trendBox=`<div class="stat-box"><div class="stat-num">${trendNow.toFixed(1)}</div><div class="stat-desc">Trend (14d avg)</div></div>`;
+  // Weekly rate: senaste 7 kalenderdagarnas snitt mot de 7 dagarna innan — jämnare
+  // "riktning just nu"-siffra än Change (som är hela resan sedan dag 1).
+  const daysAgoStr=(n)=>{const d=new Date(latest.date);d.setDate(d.getDate()-n);return d.toISOString().slice(0,10);};
+  const recentWin=dispData.filter(e=>e.date>daysAgoStr(7));
+  const priorWin=dispData.filter(e=>e.date>daysAgoStr(14)&&e.date<=daysAgoStr(7));
+  const recentAvg=recentWin.length?recentWin.reduce((s,e)=>s+e.weight,0)/recentWin.length:null;
+  const priorAvg=priorWin.length?priorWin.reduce((s,e)=>s+e.weight,0)/priorWin.length:null;
+  const weeklyRate=(recentAvg!=null&&priorAvg!=null)?(recentAvg-priorAvg):null;
+  const rateBox=weeklyRate!=null?`<div class="stat-box"><div class="stat-num">${weeklyRate>0?'+':''}${weeklyRate.toFixed(1)}</div><div class="stat-desc">Weekly Rate (${unitLabel()})</div></div>`:'';
+  let html=`<div class="section-title">Weight Curve</div><div class="stats-grid"><div class="stat-box"><div class="stat-num">${latestDisp}</div><div class="stat-desc">Latest (${unitLabel()})</div></div><div class="stat-box"><div class="stat-num">${diff>0?'+':''}${diff}</div><div class="stat-desc">Change (${unitLabel()})</div></div><div class="stat-box"><div class="stat-num">${sorted.length}</div><div class="stat-desc">Entries</div></div>${trendBox}${rateBox}${goalBox}</div><div class="weight-chart-wrap"><canvas id="weightChart" height="190"></canvas></div><div class="section-sub">Log</div><div class="wlog-list">`;
   [...sorted].reverse().forEach(e=>{html+=`<div class="wlog-row"><span>${e.date}</span><strong>${toDisplay(e.weight)} ${unitLabel()}</strong><button class="wlog-delete" onclick="deleteWeight('${e.date}')">Delete</button></div>`;});
   html+=`</div>`;el.innerHTML=html;
-  drawChart(sorted.map(e=>({...e,weight:toDisplay(e.weight)})), goalDisp);
+  drawChart(dispData, goalDisp);
 }
 // Rullande medelvärde över kalenderdagar (inte antal loggningar — loggningstakten
 // är oregelbunden, ett kalenderfönster ger en rättvisande trend oavsett gap).
