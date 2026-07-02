@@ -6,6 +6,15 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.62.2 — 2026-07-02
+**Returnerande enheter visar korrekt data direkt, inte gammal data som byts ut några sekunder senare.** Sista biten i dagens synk-arbete. `loadStateForUser()` renderade tidigare direkt med lokal (potentiellt stale) data när en enhet hade använt appen förut, och hämtade molnet asynkront/o-väntat i bakgrunden — bytet till korrekt data hände flera sekunder senare via en icke-väntad `syncFromCloud()` längst ner i `handleSession`. Det är exakt fönstret där en otålig gym-användare hinner logga mot fel program eller stänga appen innan bytet syns — den ursprungliga rapporterade buggen igen, fast i en annan del av koden än gate/CAS-arbetet tidigare idag.
+
+Fix: `loadStateForUser()` väntar nu på en BUNDEN (max 5s) `syncFromCloud()`-pull innan `handleSession` ritar upp appen, istället för att rendera lokalt först. `syncFromCloud` avvisar aldrig (sväljer sina egna fel internt), så en offline/långsam pull kostar högst 5 sekunder — därefter faller vi tillbaka på lokal data precis som förut, ingen risk att fastna (gott om marginal under den befintliga 8s hard-failsafen). "Updated from cloud ✓"-toasten tystad specifikt under denna boot-merge (`isLoading===true`) — det är nu den normala inloggningsvägen, inte en överraskande bakgrundsuppdatering; toasten finns kvar för äkta bakgrundsuppdateringar (periodic sync/focus) medan användaren redan tittar på appen.
+
+Bieffekter, båda positiva: (1) skriv-gaten (`_cloudSeenThisSession`) sätts nu betydligt tidigare i en session — mindre risk att en tidig edit blockeras av gaten. (2) Om lokal data är korrupt (`JSON.parse` failar → `freshState()`, `onboardingDone:false`) hann tidigare onboarding-guiden ibland flimra fram innan den sena cloud-synken hann rätta till det — nu hämtas riktig data (inkl. `onboardingDone:true`) innan det beslutet fattas.
+
+**Inte löst i denna version (medvetet, separat spec):** riktigt vattentät serverside-enforcement mot gamla klienters blinda skrivningar (Postgres RPC + indragna direkta skriv-rättigheter på `app_state`) — kräver Supabase Dashboard-åtkomst hemifrån. Spec förberedd i `SYNC_CAS_SERVER_SPEC.md` för Fable.
+
 ## 3.62.1 — 2026-07-02
 **Stänger residual-hålet från 3.62.0: en öppen flik kan nu inte längre köra gammal (osäker) push-logik på obestämd tid.** 3.62.0 gjorde skrivningar CAS-säkra, men bara i den nya koden — en flik som redan har GAMMAL JS laddad i minnet (öppnad innan denna deploy, aldrig omladdad) kör fortfarande sin gamla blinda push tills den faktiskt laddas om. Två delar löser detta:
 

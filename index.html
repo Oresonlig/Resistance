@@ -3568,6 +3568,22 @@ async function loadStateForUser(){
       console.warn('Local state parse failed', e);
       state = freshState();
     }
+    // 3.62.2 — Ge molnet en BUNDEN chans att hinna med innan vi ritar. Utan detta
+    // renderades den gamla lokala datan direkt, och bytet till rätt (nyare) data
+    // skedde sekunder senare via en icke-väntad syncFromCloud längst ned i
+    // handleSession — exakt det fönster där en otålig gym-användare hinner logga
+    // mot fel program eller stänga appen innan bytet syns. syncFromCloud avvisar
+    // aldrig (sväljer sina egna fel internt), så Promise.race:en blockerar bara
+    // tills endera är klar: en lyckad pull, eller 5s. Misslyckas/timeoutar pullen
+    // har vi redan lokal data att falla tillbaka på — ingen risk att fastna, och
+    // gott om marginal under 8s-hard-failsafen i handleSession. Bieffekt: sätter
+    // _cloudSeenThisSession (skriv-gaten) betydligt tidigare än förut också.
+    try{
+      await Promise.race([
+        syncFromCloud(currentUser.id),
+        new Promise(resolve => setTimeout(resolve, 5000))
+      ]);
+    }catch(e){ /* syncFromCloud sväljer redan sina egna fel — extra skydd bara */ }
   } else {
     // No local data — must reach cloud to know if user has existing data.
     // 7s timeout prevents indefinite hang (under 8s-login-failsafen).
@@ -4120,7 +4136,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.62.1';
+const APP_VERSION = '3.62.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4848,7 +4864,11 @@ async function _syncFromCloudInner(userId){
         THEMES.forEach(t=>{ if(t.class) document.body.classList.remove(t.class); });
         if(theme.class) document.body.classList.add(theme.class);
         renderChain();
-        showToast('Updated from cloud ✓');
+        // 3.62.2 — Tyst under boot-merge (isLoading===true, se loadStateForUser):
+        // det här ÄR den normala inloggningsvägen nu, inte en överraskande
+        // bakgrundsuppdatering. Toast är kvar för äkta bakgrunds-uppdateringar
+        // (periodic sync/focus) medan användaren redan tittar på appen.
+        if(!isLoading) showToast('Updated from cloud ✓');
       } else if(logsChanged){
         state.log = mergedLog;
         state.weightLog = mergedWeight;
