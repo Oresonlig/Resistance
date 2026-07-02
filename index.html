@@ -4120,7 +4120,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.62.0';
+const APP_VERSION = '3.62.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4751,7 +4751,7 @@ async function _syncFromCloudInner(userId){
       const cloud=rows[0].data;
       const cloudVersion = cloud.appVersion;
       if(cloudVersion && compareVersions(cloudVersion, APP_VERSION) > 0){
-        showOldVersionBanner(cloudVersion);
+        autoReloadForNewVersion(cloudVersion);
       }
       const cloudServerTime = new Date(rows[0].updated_at||0).getTime() || 0;
       const lastSyncedTime = state.lastSyncedCloudTime || 0;
@@ -9515,18 +9515,32 @@ function compareVersions(a, b){
   return 0;
 }
 
-function showOldVersionBanner(cloudVersion){
-  // Don't show twice
-  if(document.getElementById('old-version-banner')) return;
-  const banner = document.createElement('div');
-  banner.id = 'old-version-banner';
-  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#8b1a2a;color:#fff;font-family:var(--mono);font-size:.6rem;text-align:center;padding:8px 12px;z-index:9999;letter-spacing:.05em;line-height:1.5;cursor:pointer;border-bottom:1px solid #c8960c;';
-  banner.innerHTML = '<strong>Update available</strong> — your app: v' + APP_VERSION + ' · cloud: v' + escapeHTML(cloudVersion) + '<br><span style="font-size:.55rem;opacity:.85;">Tap here to reload (or close tab and reopen)</span>';
-  banner.onclick = ()=>{
-    // Cache-bust via query string — location.reload(true) is deprecated
+// 3.62.1 — Ersätter den gamla dismiss-bara showOldVersionBanner(). Ett SW-baserat
+// "kolla efter uppdatering"-schema visade sig INTE fungera för vårt schema: SW:n
+// registreras med versionen i query-strängen (`./sw.js?v=X`), så registration.update()
+// från en redan-öppen flik bara re-kollar SIN EGEN (gamla) URL om och om igen —
+// den kan aldrig upptäcka en NY url utan att sidan faktiskt laddas om först. Moment 22.
+//
+// Den riktiga signalen finns redan: varje periodisk pull (`syncFromCloud`, var 30:e
+// sekund medan fliken är synlig) jämför molnets `appVersion` mot vår egen. Att bara
+// visa en banner och lita på att användaren trycker var precis den typen av
+// "löst i teorin, inte i praktiken"-lösning som orsakade synk-buggen — en flik som
+// aldrig trycks kör gammal (ev. osäker) push-logik på obestämd tid. Nu: tvingad
+// reload inom en synk-cykel istället, ingen knapptryckning krävs.
+let _reloadingForNewVersion = false;
+function autoReloadForNewVersion(cloudVersion){
+  if(_reloadingForNewVersion) return; // redan på väg att ladda om
+  _reloadingForNewVersion = true;
+  console.warn('[version] Cloud is on v' + cloudVersion + ', this tab is v' + APP_VERSION + ' — reloading');
+  // Säkra osparade edits till localStorage FÖRE reload. Ofarligt: reload rensar
+  // bara in-memory state, inte localStorage — den nya (fixade) koden läser den
+  // lokala datan och synkar den på vanligt gated+CAS-vis efter omladdning.
+  try{ captureAllDraftInputs(); }catch(e){}
+  try{ if(currentUser && !isFreshState(state)) localStorage.setItem(lsKey(currentUser.id), JSON.stringify(state)); }catch(e){}
+  try{ showToast && showToast('New version available — reloading…', 4000); }catch(e){}
+  setTimeout(()=>{
     location.href = location.pathname + '?v=' + Date.now();
-  };
-  document.body.appendChild(banner);
+  }, 1500);
 }
 
 // PM12: Detektera iOS Safari Private Browsing (eller annan localStorage-blockering).

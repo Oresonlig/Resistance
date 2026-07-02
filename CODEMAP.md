@@ -61,6 +61,8 @@
 - `~9540` — `keepaliveCloudPush()` — gate-check + CAS-PATCH (villkorad, fire-and-forget; konflikt = tyst no-op, datat kvar i localStorage). `__periodicSyncTimer` (30s) strax ovan.
 - `~9600` — event-handlers: `visibilitychange`, `beforeunload`, `pagehide`
 - Forensik: `PUSH_BLOCKED@gate` + `PUSH_CONFLICT@cas` i `_dbgPush`-ringbufferten
+- **`autoReloadForNewVersion(cloudVersion)` (3.62.1)** — ersatte dismiss-bar `showOldVersionBanner`. Triggas i `syncFromCloud` när `cloud.appVersion > APP_VERSION`. Säkrar lokal data → toast → `location.reload()` efter 1.5s. Stänger residual-risken att en öppen flik med gammal (pre-CAS) JS pushar blint på obestämd tid — self-healer inom en periodisk synk-cykel (≤30s synlig flik) istället för att kräva manuell refresh. **OBS:** `registration.update()`-polling för SW FUNGERAR INTE med query-string-versionering (`./sw.js?v=X`) — en redan-registrerad flik re-kollar bara sin egen gamla URL. Försök inte den vägen igen.
+- `sw.js`: network-first för navigations-requests (HTML-shell) sedan 3.62.1 — SWR på shellen var rotorsaken till "refresha två gånger vid deploy". SWR kvar för fonter/CDN/bilder.
 
 ### Modaler & UI-utilities
 - `~10052` — `askModalText(title, opts)` returnerar `{text, select}` (INTE en string)
