@@ -4136,7 +4136,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.62.2';
+const APP_VERSION = '3.62.3';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5230,7 +5230,8 @@ function buildRemovedSection(passId){
   if(!removedItems.length)return'';
   let h=`<div style="padding:10px 14px 4px;margin-top:6px;border-top:1px dashed #2a2a2a;font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;">Removed</div>`;
   removedItems.forEach(ex=>{
-    const name=escapeHTML(state.exerciseOverrides?.[ex.id]||ex.name);
+    // 3.62.3 — samma permanentSwaps-oversight som Edit Program-listan (gymnotes 2026-07-02)
+    const name=escapeHTML(state.permanentSwaps?.[ex.id]||state.exerciseOverrides?.[ex.id]||ex.name);
     h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;font-family:var(--sans);gap:6px;"><span style="color:#666;font-size:.78rem;text-decoration:line-through;flex:1;">${name}</span><div style="display:flex;gap:6px;"><button onclick="permanentlyDeleteRemoved('${ex.id}','${passId}')" style="background:none;border:1px solid #6a2a2a;color:#c06060;font-family:var(--mono);font-size:.5rem;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">✕ Delete</button><button onclick="restoreExerciseToSession('${ex.id}','${passId}')" style="background:none;border:1px solid #3a3a3a;color:#888;font-family:var(--mono);font-size:.5rem;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">+ Restore</button></div></div>`;
   });
   return h;
@@ -6464,7 +6465,11 @@ function showEditExercises(passId){
     <div id="ex-sort-list">`;
 
   allActive.forEach(ex => {
-    const name = state.exerciseOverrides?.[ex.id] || ex.name;
+    // 3.62.3 — permanentSwaps saknades här (gymnotes 2026-07-02): listan visade
+    // basövningen även efter permanent swap. Samma prioritet som render-koden
+    // använder på andra ställen (t.ex. rad ~6972): swap före rename före bas.
+    // Ingen draft.swaps att ta hänsyn till — Edit Program är utanför aktiv session.
+    const name = state.permanentSwaps?.[ex.id] || state.exerciseOverrides?.[ex.id] || ex.name;
     const isAdded = !!addedExs.find(a => a.id === ex.id);
     const removeFn = isAdded
       ? `removeAddedExercise('${ex.id}','${passId}');showEditExercises('${passId}');`
@@ -6489,7 +6494,7 @@ function showEditExercises(passId){
   if(removedExs.length > 0){
     html += `<div style="font-family:var(--mono);font-size:.48rem;color:#555;text-transform:uppercase;letter-spacing:.08em;padding:10px 0 6px;border-top:1px dashed #2a2a2a;margin-top:8px;">Removed:</div>`;
     removedExs.forEach(ex => {
-      const name = state.exerciseOverrides?.[ex.id] || ex.name;
+      const name = state.permanentSwaps?.[ex.id] || state.exerciseOverrides?.[ex.id] || ex.name;
       html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid #1a1a1a;margin-bottom:6px;opacity:.5;">
         <span style="font-family:var(--sans);font-size:.84rem;color:#666;text-decoration:line-through;">${escapeHTML(name)}</span>
         <button onclick="restoreExerciseToSession('${ex.id}','${passId}');showEditExercises('${passId}');" style="background:none;border:1px solid #2a3a2a;color:#4a7a4a;font-family:var(--mono);font-size:.48rem;padding:5px 10px;cursor:pointer;text-transform:uppercase;">Restore</button>
@@ -7730,16 +7735,21 @@ function undoSession(passId){
 
 // 3.56.0 — shape-medveten formattering: läser settets EGEN form (oberoende av
 // övningens nuvarande measure), täcker alla 7 mätsätt. Används av copy + historik.
+// reps=0 är ett GILTIGT resultat (t.ex. forced negativ på bänk, eller misslyckad
+// stående Ab Wheel-set) — inte "okänt". `set.reps||'?'` trillar in i fallback-grenen
+// för 0 pga JS falsy, vilket visade "?r" istf "0r" i historiken (regression, gymnotes
+// 2026-07-02). `reps!=null` skiljer korrekt på "0 loggat" vs "aldrig loggat".
+function fmtReps(reps){ return reps!=null ? reps : '?'; }
 function formatSetLine(set,u){
   let str;
   if(set.sprints!=null)         str=(set.dist!=null?set.dist+'km':(set.secs!=null?set.secs+'s':''))+((set.dist!=null||set.secs!=null)?' · ':'')+set.sprints+' sprints';
   else if(set.distm!=null)      str=(set.weight!=null?toDisplay(set.weight)+' '+u:'')+' · '+set.distm+'m';
   else if(set.dist!=null)       str=set.dist+'km'+(set.secs!=null?' · '+Math.round(set.secs/60)+'min':'');
   else if(set.extra!=null&&set.secs!=null) str='BW + '+toDisplay(set.extra)+' '+u+' · '+set.secs+'s';
-  else if(set.extra!=null)      str='BW + '+toDisplay(set.extra)+' '+u+' × '+(set.reps||'?')+'r';
+  else if(set.extra!=null)      str='BW + '+toDisplay(set.extra)+' '+u+' × '+fmtReps(set.reps)+'r';
   else if(set.secs!=null)       str=set.secs+'s';
-  else if(set.weight==null&&set.reps!=null) str=(set.reps||'?')+'r';
-  else                          str=(set.weight!=null?toDisplay(set.weight)+' '+u:'')+' × '+(set.reps||'?')+'r';
+  else if(set.weight==null&&set.reps!=null) str=fmtReps(set.reps)+'r';
+  else                          str=(set.weight!=null?toDisplay(set.weight)+' '+u:'')+' × '+fmtReps(set.reps)+'r';
   if(set.forced)                str+=' (+'+set.forced+'f)';
   return str;
 }
@@ -8030,13 +8040,13 @@ function togglePRGroup(cat){
 }
 function prCardHTML(pr){
   let val,sub;const u=unitLabel();const m=pr.measure||(pr.timed?'timed':pr.bw?'bw':'weight');
-  if(m==='bw'){val=`BW + ${toDisplay(pr.extra)||0}${u}`;sub=`BW ${toDisplay(pr.bwSnap)||0}${u} · ${pr.reps||'?'}r`;}
-  else if(m==='bwreps'){val=`${pr.reps||'?'} reps`;sub='bodyweight';}
-  else if(m==='timed'){val=`${pr.secs||'?'}s`;sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${u}`:(pr.weight?`at ${toDisplay(pr.weight)}${u}`:'');}
+  if(m==='bw'){val=`BW + ${toDisplay(pr.extra)||0}${u}`;sub=`BW ${toDisplay(pr.bwSnap)||0}${u} · ${fmtReps(pr.reps)}r`;}
+  else if(m==='bwreps'){val=`${fmtReps(pr.reps)} reps`;sub='bodyweight';}
+  else if(m==='timed'){val=`${pr.secs!=null?pr.secs:'?'}s`;sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${u}`:(pr.weight?`at ${toDisplay(pr.weight)}${u}`:'');}
   else if(m==='cardio'){val=`${pr.dist!=null?pr.dist:'?'} km`;sub=pr.secs?`${Math.round(pr.secs/60)} min`:'';}
   else if(m==='cardiosprint'){val=`${pr.sprints!=null?pr.sprints:'?'} sprints`;sub=pr.dist!=null?`${pr.dist} km`:(pr.secs?`${Math.round(pr.secs/60)} min`:'');}
   else if(m==='carry'){val=`${toDisplay(pr.weight)||'?'}${u}`;sub=pr.distm!=null?`${pr.distm} m`:'';}
-  else{val=`${toDisplay(pr.weight)}${u}`;sub=`${pr.reps||'?'} reps`;}
+  else{val=`${toDisplay(pr.weight)}${u}`;sub=`${fmtReps(pr.reps)} reps`;}
   const safeName=escapeHTML(pr.name);const jsName=JSON.stringify(pr.name);
   return `<div class="pr-card"><button class="pr-delete" onclick="ignorePR(${escapeHTML(jsName)})" title="Remove this PR" aria-label="Remove ${safeName}">✕</button><div class="pr-ex-name">${safeName}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div></div>`;
 }

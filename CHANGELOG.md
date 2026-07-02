@@ -6,6 +6,13 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.62.3 — 2026-07-02
+**Gymnotes-batch (2026-07-02), de två icke-Fable-punkterna.**
+
+**#3 — "?" i historik löst, verkligt rotfix (regression identifierad).** `formatSetLine` (och `prCardHTML`) använde `set.reps||'?'` på tre ställen — klassisk JS-falsy-fälla: `reps=0` (ett GILTIGT resultat, t.ex. forced negativ på bänk eller misslyckad stående Ab Wheel-set) föll in i `'?'`-grenen precis som `null`/`undefined` gjorde. Ny `fmtReps()`-helper skiljer korrekt `reps!=null` (0 räknas som loggat) från "aldrig loggat". Samma fix i PR-korten (`pr.reps||'?'`, `pr.secs||'?'`) för konsekvens, även om fail-set redan exkluderas ur PR-beräkning så den vägen sällan triggas i praktiken.
+
+**#2 — Permanent swap syns nu i Edit Program.** `showEditExercises` (aktiv-listan + Removed-listan) och `buildRemovedSection` (Removed-listan i aktiv session) läste bara `exerciseOverrides` (namnbyten), aldrig `permanentSwaps` — en permanent swappad övning visade fortsatt basnamnet i alla tre listorna. Fix: samma prioritet som render-koden redan använder på andra ställen (`permanentSwaps > exerciseOverrides > bas`). Djupare logik (taggar/mätsätt/PR/historik via `getRenderExId`) var redan swap-medveten sedan tidigare — bara det VISADE namnet var fel, ordning/reorder fungerade korrekt under huven (stabila slot-id:n).
+
 ## 3.62.2 — 2026-07-02
 **Returnerande enheter visar korrekt data direkt, inte gammal data som byts ut några sekunder senare.** Sista biten i dagens synk-arbete. `loadStateForUser()` renderade tidigare direkt med lokal (potentiellt stale) data när en enhet hade använt appen förut, och hämtade molnet asynkront/o-väntat i bakgrunden — bytet till korrekt data hände flera sekunder senare via en icke-väntad `syncFromCloud()` längst ner i `handleSession`. Det är exakt fönstret där en otålig gym-användare hinner logga mot fel program eller stänga appen innan bytet syns — den ursprungliga rapporterade buggen igen, fast i en annan del av koden än gate/CAS-arbetet tidigare idag.
 
