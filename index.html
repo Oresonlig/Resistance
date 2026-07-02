@@ -3485,9 +3485,13 @@ function authMsg(text, kind){
 async function handleSession(session){
   if(!session){
     currentUser = null;
+    _cloudSeenThisSession = false; // 3.62.0 — nästa användare på denna enhet måste läsa molnet innan skrivning
     showAuthScreen();
     return;
   }
+  // 3.62.0 — user-byte (eller första login) nollställer läs-före-skriv-gaten.
+  // Token-refresh för samma användare lämnar den orörd.
+  if(!currentUser || currentUser.id !== session.user?.id) _cloudSeenThisSession = false;
   isLoading = true; // block save() during entire load sequence
   // 3.35.9 - HARD FAILSAFE: 8s timeout paa hela login-sekvensen. Om naagot
   // haenger (profile-fetch, loadStateForUser, etc) tvingas appen att visas
@@ -3566,20 +3570,24 @@ async function loadStateForUser(){
     }
   } else {
     // No local data — must reach cloud to know if user has existing data.
-    // 4s timeout prevents indefinite hang.
+    // 7s timeout prevents indefinite hang (under 8s-login-failsafen).
     let cloudReached = false;
     try{
       const cloudPromise = sbGet('app_state','id=eq.'+currentUser.id+'&select=data,updated_at');
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('cloud timeout')), 4000)
+        setTimeout(() => reject(new Error('cloud timeout')), 7000)
       );
       const rows = await Promise.race([cloudPromise, timeoutPromise]);
       cloudReached = true;
+      _cloudSeenThisSession = true; // 3.62.0 — restore/tomt moln räknas som läsning
       if(rows && rows.length && rows[0].data && rows[0].data.cycles){
         state = rows[0].data;
         migratePassKeysToSession && migratePassKeysToSession();
         ensureStateDefaults && ensureStateDefaults();
         runSchemaMigrations && runSchemaMigrations();
+        // 3.62.0 — CAS-referens från restore-läsningen (annars konfliktar första pushen i onödan)
+        state.lastSyncedCloudTime = new Date(rows[0].updated_at||0).getTime() || 0;
+        state.lastSyncedCloudISO = rows[0].updated_at || null;
         localStorage.setItem(lsKey(currentUser.id), JSON.stringify(state));
         showToast && showToast('Restored from cloud ✓');
       } else {
@@ -3588,8 +3596,10 @@ async function loadStateForUser(){
       }
     }catch(e){
       // OFFLINE — we cannot tell if user has existing data.
-      // Show a fresh state but DO NOT mark it complete; pushState's
-      // isFreshState guard will prevent corrupting cloud.
+      // Show a fresh state. 3.62.0: läs-före-skriv-gaten (_cloudSeenThisSession)
+      // blockerar ALLA pushes tills en pull lyckats — även om användaren hinner
+      // göra onboarding/ändringar som gör state icke-fresh. Förr kunde det
+      // scenariot skriva över molnets riktiga data med ett default-program.
       state = freshState();
       // Show a clear message so user knows what happened
       setTimeout(()=>{
@@ -3665,6 +3675,8 @@ function ensureStateDefaults(){
   if(!Array.isArray(state.ignoredPRs)) state.ignoredPRs = [];
   if(!state.hiddenRemoved || typeof state.hiddenRemoved !== 'object') state.hiddenRemoved = {};
   if(typeof state.schemaVersion !== 'number') state.schemaVersion = 0;
+  if(typeof state.lastSyncedCloudTime !== 'number') state.lastSyncedCloudTime = 0;
+  if(state.lastSyncedCloudISO === undefined) state.lastSyncedCloudISO = null;
   // Template-sessioner (G–N): BASE_SESSIONS.push skedde bara i den session där
   // passet lades till (addSessionToChain/finishOnboarding/onboarding-import).
   // Efter reload saknades passet i BASE_SESSIONS → buildEffectiveChain droppade
@@ -3729,6 +3741,7 @@ function freshState(){
     lastSessionSetCount:{}, lastSessionWarmupCount:{},
     migrations:{},
     weightGoalEnabled:false, weightGoal:null,
+    lastSyncedCloudTime:0, lastSyncedCloudISO:null,
     schemaVersion: SCHEMA_VERSION,
     deletions: { customExercises:{}, exerciseNotes:{} }
   };
@@ -3880,6 +3893,12 @@ whenSbReady(async () => {
       return;
     }
     if(inPasswordRecovery) return; // ignore all events until recovery form completes
+    // 3.62.0 — Token-refresh för redan inloggad användare ska INTE köra om hela
+    // load-sekvensen: loadStateForUser gjorde state = JSON.parse(localStorage)
+    // ovillkorligt → levande in-memory-state (osparade edits mellan debounces)
+    // kunde ersättas av snapshot mitt under ett pass. getAuthHeaders läser färsk
+    // token från sb.auth.getSession() vid varje anrop, så inget mer behövs här.
+    if(event === 'TOKEN_REFRESHED' && currentUser && session?.user?.id === currentUser.id) return;
     handleSession(session);
   });
 
@@ -4101,7 +4120,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.61.2';
+const APP_VERSION = '3.62.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4707,16 +4726,27 @@ function mergeMapOfArrayById(local, cloud, idKey='id'){
   return out;
 }
 
-// SL7: Mutex så två snabba syncFromCloud-anrop inte krockar (BASE_SESSIONS-mutering m.m.)
-let _syncInFlight = false;
-async function syncFromCloud(userId){
-  if(_syncInFlight) return;
-  _syncInFlight = true;
+// SL7 (3.62.0): Koalescerad sync — parallella anrop VÄNTAR på pågående pull
+// istället för att tyst no-op:a. Gamla mutexen (return direkt) lät pushState
+// skippa pull-before-push medan en sync var i flykt → en stale enhet kunde
+// skriva över molnet innan den någonsin läst det.
+let _syncPromise = null;
+// 3.62.0 — Läs-före-skriv-gate: sätts EFTER första lyckade molnläsningen denna
+// session. Ingen skrivning (pushState/keepalive) tillåts innan dess — en enhet
+// som aldrig läst molnet kan inte veta om dess lokala state är stale.
+let _cloudSeenThisSession = false;
+function syncFromCloud(userId){
+  if(_syncPromise) return _syncPromise;
+  _syncPromise = _syncFromCloudInner(userId).finally(()=>{ _syncPromise = null; });
+  return _syncPromise;
+}
+async function _syncFromCloudInner(userId){
   setSyncDot('syncing');
   const _dbgSyncBefore = _dbgDraftSig(); // DEBUG: draft-set-antal före ev. merge
   try{
     const rows=await sbGet('app_state','id=eq.'+userId+'&select=data,updated_at');
     lastSyncRead = Date.now();
+    _cloudSeenThisSession = true; // molnet läst — skrivningar får nu ske
     if(rows&&rows.length&&rows[0].data){
       const cloud=rows[0].data;
       const cloudVersion = cloud.appVersion;
@@ -4812,6 +4842,7 @@ async function syncFromCloud(userId){
         state.log = mergedLog;
         state.weightLog = mergedWeight;
         state.lastSyncedCloudTime = cloudServerTime;
+        state.lastSyncedCloudISO = rows[0].updated_at || null; // CAS-referens för nästa push
         localStorage.setItem(lsKey(userId),JSON.stringify(state));
         const theme = THEMES.find(t=>t.id===state.theme) || THEMES[0];
         THEMES.forEach(t=>{ if(t.class) document.body.classList.remove(t.class); });
@@ -4822,11 +4853,18 @@ async function syncFromCloud(userId){
         state.log = mergedLog;
         state.weightLog = mergedWeight;
         state.lastSyncedCloudTime = cloudServerTime;
+        state.lastSyncedCloudISO = rows[0].updated_at || null;
         localStorage.setItem(lsKey(userId),JSON.stringify(state));
         renderChain();
       } else {
         state.lastSyncedCloudTime = cloudServerTime;
+        state.lastSyncedCloudISO = rows[0].updated_at || null;
       }
+    } else {
+      // Ingen rad i molnet (ny användare eller raderad rad) — rensa CAS-referensen
+      // så nästa push tar INSERT-vägen istället för att PATCH:a mot en rad som inte finns.
+      state.lastSyncedCloudISO = null;
+      state.lastSyncedCloudTime = 0;
     }
     // PM17: clear error vid lyckad pull
     _lastSyncError = '';
@@ -4836,8 +4874,6 @@ async function syncFromCloud(userId){
     console.warn('Background sync error:',e);
     _lastSyncError = 'Pull failed: ' + (e?.message || 'unknown');
     setSyncDot('err');
-  } finally {
-    _syncInFlight = false;
   }
 }
 
@@ -4856,16 +4892,62 @@ async function getAuthHeaders(){
 
 async function sbGet(table,query=''){
   const headers = await getAuthHeaders();
-  const r=await fetch(`${SB_URL}/rest/v1/${table}${query?'?'+query:''}`,{headers,mode:'cors'});
-  if(!r.ok)throw new Error(await r.text());
-  return r.json();
+  // 3.62.0 — 12s abort-timeout: en hängd fetch fick förr synk-mutexen att fastna
+  // resten av sessionen (inga pulls, alla pushes utan pull).
+  const ctrl = new AbortController();
+  const t = setTimeout(()=>ctrl.abort(), 12000);
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/${table}${query?'?'+query:''}`,{headers,mode:'cors',signal:ctrl.signal});
+    if(!r.ok)throw new Error(await r.text());
+    return await r.json();
+  } finally {
+    clearTimeout(t);
+  }
 }
-async function sbUpsert(table,data){
+// 3.62.0 — CAS-skrivningar (compare-and-swap) ersätter blind upsert. Blind
+// last-writer-wins var rotorsaken till att en stale enhet kunde skriva över
+// ett nybyggt program i molnet. PATCH:en är villkorad på exakt den updated_at
+// vi senast läste — matchar den inte har någon annan skrivit emellan → 'conflict'.
+async function sbPatchStateIfMatch(id, matchISO, data, nowISO){
   const headers = await getAuthHeaders();
-  // SL5: be om return=representation så vi får tillbaka server-timestamp för lastSyncedCloudTime
-  const r=await fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:{...headers,'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify(data),mode:'cors'});
-  if(!r.ok)throw new Error(await r.text());
-  try{ return await r.json(); } catch(e){ return null; }
+  // Samma 12s abort-timeout som sbGet — en hängd skrivning får inte frysa pushState
+  const ctrl = new AbortController();
+  const t = setTimeout(()=>ctrl.abort(), 12000);
+  try{
+    const r = await fetch(`${SB_URL}/rest/v1/app_state?id=eq.${encodeURIComponent(id)}&updated_at=eq.${encodeURIComponent(matchISO)}`,{
+      method:'PATCH',
+      headers:{...headers,'Prefer':'return=representation'},
+      body:JSON.stringify({data, updated_at: nowISO}),
+      mode:'cors',
+      signal:ctrl.signal
+    });
+    if(!r.ok)throw new Error(await r.text());
+    const rows = await r.json().catch(()=>null);
+    // Tomt svar = filtret matchade ingen rad = molnet ändrat sedan vi läste
+    return (Array.isArray(rows) && rows.length) ? rows : 'conflict';
+  } finally {
+    clearTimeout(t);
+  }
+}
+async function sbInsertState(id, data, nowISO){
+  const headers = await getAuthHeaders();
+  const ctrl = new AbortController();
+  const t = setTimeout(()=>ctrl.abort(), 12000);
+  try{
+    const r = await fetch(`${SB_URL}/rest/v1/app_state`,{
+      method:'POST',
+      headers:{...headers,'Prefer':'return=representation'},
+      body:JSON.stringify({id, data, updated_at: nowISO}),
+      mode:'cors',
+      signal:ctrl.signal
+    });
+    if(r.status === 409) return 'conflict'; // raden fanns redan — annan enhet hann före
+    if(!r.ok)throw new Error(await r.text());
+    const rows = await r.json().catch(()=>null);
+    return (Array.isArray(rows) && rows.length) ? rows : null;
+  } finally {
+    clearTimeout(t);
+  }
 }
 
 let saveTimer=null;
@@ -4905,7 +4987,8 @@ async function checkCloudVersion(){
       const el = document.getElementById('sync-cloud-version');
       if(el){
         const match = cv === APP_VERSION;
-        el.innerHTML = `Cloud version: <span style="color:${match?'#aaa':'var(--gold)'};">${cv}${match?'':' (different)'}</span>`;
+        // escapeHTML: appVersion kommer ur cloud-blobben — lita aldrig på molninnehåll i innerHTML
+        el.innerHTML = `Cloud version: <span style="color:${match?'#aaa':'var(--gold)'};">${escapeHTML(cv)}${match?'':' (different)'}</span>`;
       }
     }
   }catch(e){
@@ -4925,10 +5008,23 @@ async function pushState(opts={}){
     console.warn('Refusing to push fresh state to cloud (safety guard)');
     return;
   }
-  // SL3: Pull-before-push så lokala ändringar mergas med andra enheters innan vi skriver.
-  // Skippa vid retry (vi har redan failed state att skicka) och om sync redan pågår.
-  if(!opts.skipPull && !_syncInFlight){
-    try{ await syncFromCloud(currentUser.id); } catch(e){ /* fortsätt även om pull misslyckas */ }
+  // Nytt topnivå-anrop (ny edit/sync-trigger) = ny retry-budget. Utan denna
+  // fastnade _pushRetries på 3 efter ihållande fel och inga retries schemalades mer.
+  if(!opts._backoffRetry && !opts._casRetry) _pushRetries = 0;
+  // SL3 (3.62.0): pull-before-push — ALLTID. syncFromCloud koalescerar numera,
+  // så en pågående pull awaitas istället för att (som förr) tyst skippas.
+  if(!opts.skipPull){
+    try{ await syncFromCloud(currentUser.id); } catch(e){ /* gate:n nedan avgör */ }
+  }
+  // 3.62.0 — Läs-före-skriv-gate: har denna session aldrig lyckats läsa molnet
+  // vägrar vi skriva. Ändringar ligger kvar i localStorage och pushas när en
+  // pull väl lyckats (periodic 30s / focus / nästa save).
+  if(!_cloudSeenThisSession){
+    console.warn('Push blocked: no successful cloud read this session');
+    _lastSyncError = 'Not synced yet — changes saved locally';
+    _dbgPush({type:'PUSH_BLOCKED@gate'});
+    setSyncDot('err');
+    return;
   }
   setSyncDot('syncing');
   try{
@@ -4937,13 +5033,27 @@ async function pushState(opts={}){
     const payload = {...state};
     delete payload.draft;
     delete payload.drafts;
-    const result = await sbUpsert('app_state',{id:currentUser.id,data:payload,updated_at:new Date().toISOString()});
+    const nowISO = new Date().toISOString();
+    let result;
+    if(state.lastSyncedCloudISO){
+      // 3.62.0 — CAS: skriv BARA om molnraden har exakt den updated_at vi senast
+      // såg. Annars har en annan enhet skrivit emellan → pull+merge → retry EN gång.
+      result = await sbPatchStateIfMatch(currentUser.id, state.lastSyncedCloudISO, payload, nowISO);
+    } else {
+      // Första skrivningen för denna användare (ingen molnrad sedd)
+      result = await sbInsertState(currentUser.id, payload, nowISO);
+    }
+    if(result === 'conflict'){
+      if(opts._casRetry) throw new Error('push conflict persisted after merge');
+      _dbgPush({type:'PUSH_CONFLICT@cas'});
+      await syncFromCloud(currentUser.id); // mergar in nyare cloud + uppdaterar CAS-referens
+      return pushState({skipPull:true, _casRetry:true});
+    }
     lastSyncWrite = Date.now();
-    // SL5: hämta server-timestamp från upsert response istället för klient-Date.now()
-    const serverTime = (result && result[0] && result[0].updated_at)
-      ? new Date(result[0].updated_at).getTime()
-      : Date.now();
-    state.lastSyncedCloudTime = serverTime;
+    // SL5: serverns serialisering av updated_at från response = nästa CAS-referens
+    const row = result && result[0];
+    state.lastSyncedCloudTime = (row && row.updated_at) ? new Date(row.updated_at).getTime() : Date.now();
+    state.lastSyncedCloudISO = (row && row.updated_at) || nowISO;
     // PM17: clear error vid lyckad push
     _lastSyncError = '';
     setSyncDot('ok');setTimeout(()=>setSyncDot(''),3000);
@@ -4953,12 +5063,12 @@ async function pushState(opts={}){
     console.error('Cloud push error:',e);
     _lastSyncError = 'Push failed: ' + (e?.message || 'unknown');
     setSyncDot('err');
-    // SL8: exponential backoff retry
+    // SL8: exponential backoff retry — kör FULLT flöde (pull + CAS), aldrig blind push
     if(_pushRetries < 3){
       const delay = Math.pow(2, _pushRetries) * 2000; // 2s, 4s, 8s
       _pushRetries++;
       clearTimeout(_pushRetryTimer);
-      _pushRetryTimer = setTimeout(()=>{ pushState({skipPull:true}); }, delay);
+      _pushRetryTimer = setTimeout(()=>{ pushState({_backoffRetry:true}); }, delay);
     }
   }
 }
@@ -9411,7 +9521,7 @@ function showOldVersionBanner(cloudVersion){
   const banner = document.createElement('div');
   banner.id = 'old-version-banner';
   banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#8b1a2a;color:#fff;font-family:var(--mono);font-size:.6rem;text-align:center;padding:8px 12px;z-index:9999;letter-spacing:.05em;line-height:1.5;cursor:pointer;border-bottom:1px solid #c8960c;';
-  banner.innerHTML = '<strong>Update available</strong> — your app: v' + APP_VERSION + ' · cloud: v' + cloudVersion + '<br><span style="font-size:.55rem;opacity:.85;">Tap here to reload (or close tab and reopen)</span>';
+  banner.innerHTML = '<strong>Update available</strong> — your app: v' + APP_VERSION + ' · cloud: v' + escapeHTML(cloudVersion) + '<br><span style="font-size:.55rem;opacity:.85;">Tap here to reload (or close tab and reopen)</span>';
   banner.onclick = ()=>{
     // Cache-bust via query string — location.reload(true) is deprecated
     location.href = location.pathname + '?v=' + Date.now();
@@ -9467,6 +9577,14 @@ function startPeriodicSync(){
 function keepaliveCloudPush(){
   if(!currentUser) return;
   if(isFreshState(state)) return;
+  // 3.62.0 — Läs-före-skriv-gate + CAS även här. Förr pushade keepalive hela
+  // lokala state OVILLKORLIGT vid pagehide — en mobil som öppnats med gammal
+  // localStorage och backgroundats innan första pull hann klart skrev över
+  // molnets nybyggda program deterministiskt. Nu: (1) ingen skrivning alls om
+  // molnet inte lästs denna session, (2) PATCH villkorad på senast sedda
+  // updated_at — matchar den inte sker ingen skrivning (datat ligger kvar i
+  // localStorage och pushas efter nästa lyckade pull).
+  if(!_cloudSeenThisSession) return;
   // Hämta auth-token synkront från Supabase-clients localStorage-nyckel
   let authToken = SB_KEY;
   try{
@@ -9483,21 +9601,28 @@ function keepaliveCloudPush(){
   const _payloadState = {...state};
   delete _payloadState.draft;
   delete _payloadState.drafts;
-  const payload = JSON.stringify({
-    id: currentUser.id,
-    data: _payloadState,
-    updated_at: new Date().toISOString()
-  });
+  const nowISO = new Date().toISOString();
+  let url, method, body;
+  if(state.lastSyncedCloudISO){
+    url = SB_URL+'/rest/v1/app_state?id=eq.'+encodeURIComponent(currentUser.id)
+        +'&updated_at=eq.'+encodeURIComponent(state.lastSyncedCloudISO);
+    method = 'PATCH';
+    body = JSON.stringify({data:_payloadState, updated_at: nowISO});
+  } else {
+    // Ny användare utan molnrad (gate passerad = molnet bekräftat tomt) → insert
+    url = SB_URL+'/rest/v1/app_state';
+    method = 'POST';
+    body = JSON.stringify({id:currentUser.id, data:_payloadState, updated_at: nowISO});
+  }
   try{
-    fetch(SB_URL+'/rest/v1/app_state',{
-      method:'POST',
+    fetch(url,{
+      method,
       headers:{
         'apikey':SB_KEY,
         'Authorization':'Bearer '+authToken,
-        'Content-Type':'application/json',
-        'Prefer':'resolution=merge-duplicates'
+        'Content-Type':'application/json'
       },
-      body:payload,
+      body,
       keepalive:true
     }).catch(()=>{});
   }catch(e){ /* best-effort */ }
