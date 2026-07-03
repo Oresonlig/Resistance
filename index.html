@@ -4136,7 +4136,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.62.3';
+const APP_VERSION = '3.63.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -6943,6 +6943,11 @@ function saveExercise(passId,exId){
     const fRaw=dom('f');
     const forced = (fRaw!=null) ? (parseInt(fRaw)||null) : (b.forced ?? null);
     const fail = state.draft?.loggedSets?.[exId]?.[sid]?.fail || undefined;
+    // 3.63.0 — side läses FÖRE mätsätts-grenarna: knappen renderas för weight/bw/bwreps
+    // men bara weight-grenen sparade den → uni BW-övningar tappade side vid Done.
+    const sideBtn=document.getElementById('side-'+exId+'-'+sid);
+    const _sideTxt=sideBtn?sideBtn.textContent.trim():null;
+    const sideVal=(_sideTxt&&_sideTxt!=='—')?_sideTxt:(b.side??null);
     let base;
     if(measure==='bw'){
       const bwRaw=dom('bw');const rRaw=dom('r');
@@ -6965,11 +6970,10 @@ function saveExercise(passId,exId){
       base={sid, weight: wRaw!=null?toKg(parseFloat(wRaw)):(b.weight??null), distm: dmRaw!=null?_int(dmRaw):(b.distm??null), warmup};
     } else {
       const wRaw=dom('w');const rRaw=dom('r');
-      const sideBtn=document.getElementById('side-'+exId+'-'+sid);
-      const side=sideBtn?sideBtn.textContent.trim():null;const sideVal=(side&&side!=='—')?side:(b.side??null);
-      base={sid, weight: wRaw!=null?toKg(parseFloat(wRaw)):(b.weight??null), reps: rRaw!=null?_int(rRaw):(b.reps??null), forced, warmup, side:sideVal};
+      base={sid, weight: wRaw!=null?toKg(parseFloat(wRaw)):(b.weight??null), reps: rRaw!=null?_int(rRaw):(b.reps??null), forced, warmup};
     }
     if(fail) base.fail = true;
+    if(sideVal) base.side = sideVal;
     return base;
   });
   let displayName;
@@ -7751,6 +7755,7 @@ function formatSetLine(set,u){
   else if(set.weight==null&&set.reps!=null) str=fmtReps(set.reps)+'r';
   else                          str=(set.weight!=null?toDisplay(set.weight)+' '+u:'')+' × '+fmtReps(set.reps)+'r';
   if(set.forced)                str+=' (+'+set.forced+'f)';
+  if(set.side)                  str+=' ('+set.side+')';
   return str;
 }
 
@@ -8096,7 +8101,8 @@ function renderWeight(){
   const diff=(latestDisp-firstDisp).toFixed(1);
   const hasGoal=state.weightGoalEnabled && state.weightGoal!=null;
   const goalDisp=hasGoal?toDisplay(state.weightGoal):null;
-  const toGoal=hasGoal?(latestDisp-goalDisp).toFixed(1):null;
+  // 3.63.0 — riktningen du måste röra dig: goal-latest → minus = gå ner, plus = upp kvar
+  const toGoal=hasGoal?(goalDisp-latestDisp).toFixed(1):null;
   const goalBox=hasGoal?`<div class="stat-box"><div class="stat-num">${toGoal>0?'+':''}${toGoal}</div><div class="stat-desc">To Goal (${unitLabel()})</div></div>`:'';
   const dispData=sorted.map(e=>({...e,weight:toDisplay(e.weight)}));
   const trendArr=weightTrend(dispData,14);

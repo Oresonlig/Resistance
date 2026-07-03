@@ -6,6 +6,15 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.63.0 — 2026-07-03
+**Gymfeedback (live): To Goal med riktningstecken + unilateral side i historiken.**
+
+**#1 — To Goal räknar nu i riktningen du måste röra dig.** Var `latest − goal` (över målet → `+2.5`, kändes bakvänt vid cut). Nu `goal − latest`: över målet → `−2.5` ("gå ner 2.5"), under ett bulk-mål → `+X` ("upp X kvar"). Ren teckenflipp i `renderWeight`, plus-prefixet på positiva värden orört.
+
+**#2 — Side (L/R) visas i historiken.** `side` sparades redan per set (samma vanliga datafält som `fail`/`forced` — inga specialregler) men `formatSetLine` ritade aldrig ut det. Nu appendas ` (L)`/` (R)` → syns i "Last (Xd ago)", fulla historiken och copy samtidigt, retroaktivt för redan loggade set. PR-funktionerna läser aldrig `side` → per-side-PR uppstår inte by construction, ingen exkluderingslogik behövdes.
+
+**Bonus-lucka stängd:** SIDE-knappen renderas för weight/bw/bwreps-mätsätt men `saveExercise` sparade bara `side` i weight-grenen — en unilateral BW-övning (t.ex. uni-chins) tappade side vid Done. Side-läsningen hissad ovanför mätsätts-grenarna, sätts nu likt `fail` (`if(sideVal) base.side=sideVal` — inga null-fält på övriga set).
+
 ## 3.62.3 — 2026-07-02
 **Gymnotes-batch (2026-07-02), de två icke-Fable-punkterna.**
 
