@@ -6,6 +6,17 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.63.2 — 2026-07-04
+**PM9/PM19 riktad granskningsrunda: 3 fynd (samma format som 3.27.0/3.51.4).**
+
+**#1 KRITISK (cross-user) — template-import saknade id/värde-validering.** Namn escapas vid render, men fil-levererade **id:n** (`addedExercises[].id`, `customExercises[].id`, map-nycklar) landar råa i `onclick="...('${id}')"` och `id="..."`-attribut (JS-strängkontext escapas aldrig), och **importerade PR-värden** renderas råa via `toDisplay`/`fmtReps` i `prCardHTML` (kg-läge returnerar värdet orört). En preparerad template-fil — appens enda cross-user-yta, folk delar dem — kunde alltså exekvera JS hos importören. Fix: ny `sanitizeTemplateFields(d)` vid import-gränsen — id:n valideras mot `[A-Za-z0-9_-]+` (övriga entries droppas), PR-fält tvingas genom `Number()`/`isFinite`, namn måste vara strängar. Normaliserar även v1→v2 så båda import-vägarna (Settings + onboarding) delar en väg — dedup-bonus. Session-id-vektorn var redan stängd by construction (okända id:n i `sessionOrder` når aldrig rendering — bara kända `SESSION_TEMPLATES` re-pushas).
+
+**#2 — `currentUser.name` oescapad i tag-editorn.** "Changes apply for X only"-raden i `buildTagEditorHTML` — samma klass som 3.27.0-fixen i renderData, denna missades. Fix: `escapeHTML`.
+
+**#3 — `side` (L/R) whitelistas nu i hela kedjan** (capture, save, `formatSetLine`, set-radens knapp) — enda strängfältet i set-datat som renderades oescapat. Bonus-bugg hittad i samma rad: knappen fick `class="side-btn L"` men CSS:en definierar `.left`/`.right` → en sparad side-knapp tappade sin blå/röda färg vid varje omrendering. Nu mappas L→left, R→right.
+
+Verifierat i övrigt: alla 3.51.4-eran-escapes intakta, alla numeriska set-fält parseFloat/parseInt vid capture, `getMeasure`/`getSprintBase` validerar mot sluten enum, tema-SVG:er statiska, `slugifyExId` säker teckenmängd, modaler/onboarding/settings rena.
+
 ## 3.63.1 — 2026-07-04
 **Säkerhets-quick-wins: CSP-header + npm audit fix.**
 

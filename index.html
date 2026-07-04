@@ -4137,7 +4137,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.63.1';
+const APP_VERSION = '3.63.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5592,8 +5592,13 @@ function buildPassBodyHTML(pass,cycle,nextId){
             // 3.56.0 — enhetlig measure-driven set-rad. measureCells bygger fält-cellerna;
             // grid-kolumnerna styrs av .m-${measure}-klassen (olika fält-antal per mätsätt).
             const cells = measureCells(measure, sprintBase, ex.id, sid, savedSet, bufVal, dis, wCls, unitL);
+            // side: whitelist L/R (renderas oescapad) + mappa till CSS-klasserna
+            // .left/.right — förut sattes class="L"/"R" som aldrig matchade CSS:en,
+            // så en sparad side-knapp tappade sin färg vid varje omrendering.
+            const _sdRaw = savedSet?.side||bufVal?.side;
+            const _sd = (_sdRaw==='L'||_sdRaw==='R') ? _sdRaw : null;
             const sideBtn = (isUni && (measure==='weight'||measure==='bw'||measure==='bwreps'))
-              ? `<button class="side-btn ${savedSet?.side||bufVal?.side||''}" id="side-${ex.id}-${sid}" onclick="toggleSide('${ex.id}','${sid}')" ${dis}>${savedSet?.side||bufVal?.side||'—'}</button>` : '';
+              ? `<button class="side-btn ${_sd==='L'?'left':_sd==='R'?'right':''}" id="side-${ex.id}-${sid}" onclick="toggleSide('${ex.id}','${sid}')" ${dis}>${_sd||'—'}</button>` : '';
             const logCell = (!isSaved&&!isDone)
               ? (isLogged
                 ? `<div style="display:flex;flex-direction:column;align-items:center"><span class="set-logged-indicator" onclick="unlogSet('${ex.id}','${sid}','${passId}')" title="Tap to unlog">✓${isFail?'<span class="set-fail-mark">✗</span>':''}</span><button class="set-fail-btn${isFail?' active':''}" onclick="toggleSetFail('${ex.id}','${sid}','${passId}')">Fail</button></div>`
@@ -6126,20 +6131,21 @@ async function obImportFromOnboarding(e){
     const text = await file.text();
     const d = JSON.parse(text);
     if(d.format !== 'thechain-template') throw new Error('Invalid template');
-    const isV2 = d.version === 2 || (d.sessionOrder && !d.passOrder);
-    const passOrder = isV2 ? d.sessionOrder : d.passOrder;
-    if(!Array.isArray(passOrder)) throw new Error('Invalid template');
+    // Normalize v1 → v2 + sanera fil-levererade id:n/PR-värden (3.63.2, PM19)
+    const t = sanitizeTemplateFields(d);
+    if(!t.passOrder || !t.passOrder.length) throw new Error('Invalid template');
+    const passOrder = t.passOrder;
     state.sessionOrder = passOrder;
-    state.restSlots = isV2 ? (d.restAfterSessions||[]) : (d.restSlots||[]);
-    state.sessionNameOverrides = isV2 ? (d.sessionNames||{}) : (d.passNameOverrides||{});
-    state.removedExercises = d.removedExercises || {};
-    state.addedExercises = d.addedExercises || {};
-    state.permanentSwaps = isV2 ? (d.exerciseSwaps||{}) : (d.permanentSwaps||{});
-    state.exerciseTagOverrides = isV2 ? (d.exerciseTags||{}) : (d.exerciseTagOverrides||{});
-    state.exerciseOverrides = isV2 ? (d.exerciseRenames||{}) : (d.exerciseOverrides||{});
-    state.importedPRs = isV2 ? (d.personalRecords||[]) : (d.prs||[]);
+    state.restSlots = t.restSlots;
+    state.sessionNameOverrides = t.passNameOverrides;
+    state.removedExercises = t.removedExercises;
+    state.addedExercises = t.addedExercises;
+    state.permanentSwaps = t.permanentSwaps;
+    state.exerciseTagOverrides = t.exerciseTagOverrides;
+    state.exerciseOverrides = t.exerciseOverrides;
+    state.importedPRs = t.prs;
     const existingNames = new Set((state.customExercises||[]).map(x=>x.name.toLowerCase()));
-    for(const ex of (d.customExercises||[])){
+    for(const ex of t.customExercises){
       if(!existingNames.has(ex.name.toLowerCase())) state.customExercises.push(ex);
     }
     state.unit = 'kg';
@@ -6756,7 +6762,7 @@ function buildTagEditorHTML(ex, passId){
     sprintSel='<div style="display:flex;gap:6px;align-items:center;margin-top:6px;"><span style="font-family:var(--mono);font-size:.46rem;color:#888;">Base:</span>'+['time','dist'].map(function(v){const a=cb===v;return '<button onclick="setSprintBase(\''+eid+'\',\''+pid+'\',\''+v+'\')" style="font-family:var(--mono);font-size:.46rem;padding:3px 8px;cursor:pointer;background:'+(a?'#08101a':'none')+';border:1px solid '+(a?'#7ab':'#333')+';color:'+(a?'#7ab':'#555')+';">'+(v==='time'?'Time':'Distance')+'</button>';}).join('')+'</div>';
   }
   const measureBlock='<div style="margin-bottom:10px;padding-top:8px;border-top:1px solid var(--border-subtle);"><div style="font-family:var(--mono);font-size:.48rem;color:#7ab;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Logged as</div>'+measureSel+sprintSel+'</div>';
-  const user=currentUser?.name||'you';
+  const user=escapeHTML(currentUser?.name||'you');
   return ['<div id="tagwrap-',eid,'" style="display:none;margin:6px 0;padding:8px;border:1px solid var(--border-subtle);background:var(--surface-elevated);">',
     '<div style="font-family:var(--mono);font-size:.48rem;color:#7ab;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Exercise Tags</div>',
     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">',btnHtml,'</div>',
@@ -6948,7 +6954,8 @@ function saveExercise(passId,exId){
     // men bara weight-grenen sparade den → uni BW-övningar tappade side vid Done.
     const sideBtn=document.getElementById('side-'+exId+'-'+sid);
     const _sideTxt=sideBtn?sideBtn.textContent.trim():null;
-    const sideVal=(_sideTxt&&_sideTxt!=='—')?_sideTxt:(b.side??null);
+    const _sideRaw=(_sideTxt&&_sideTxt!=='—')?_sideTxt:(b.side??null);
+    const sideVal=(_sideRaw==='L'||_sideRaw==='R')?_sideRaw:null; // whitelist — side renderas oescapad
     let base;
     if(measure==='bw'){
       const bwRaw=dom('bw');const rRaw=dom('r');
@@ -7564,7 +7571,7 @@ function captureInputsToSetsBuffer(exId,passId){
     const sideBtn=document.getElementById('side-'+exId+'-'+s.sid);
     if(sideBtn && nb[s.sid]){
       const sv=sideBtn.textContent.trim();
-      nb[s.sid].side=(sv==='—')?null:sv||null;
+      nb[s.sid].side=(sv==='L'||sv==='R')?sv:null; // whitelist — side renderas oescapad
     }
   });
 }
@@ -7756,7 +7763,7 @@ function formatSetLine(set,u){
   else if(set.weight==null&&set.reps!=null) str=fmtReps(set.reps)+'r';
   else                          str=(set.weight!=null?toDisplay(set.weight)+' '+u:'')+' × '+fmtReps(set.reps)+'r';
   if(set.forced)                str+=' (+'+set.forced+'f)';
-  if(set.side)                  str+=' ('+set.side+')';
+  if(set.side==='L'||set.side==='R') str+=' ('+set.side+')';
   return str;
 }
 
@@ -9139,6 +9146,48 @@ function downloadBlankTemplate(){
   showToast('Blank template downloaded!');
 }
 
+// 3.63.2 — PM19-granskningsfynd: templates delas MELLAN användare, och fil-
+// levererade id:n landar i onclick/id-attribut (JS-strängkontext, escapas aldrig)
+// medan importerade PR-värden renderas råa via toDisplay/fmtReps i prCardHTML.
+// Namn escapas vid render — id:n och siffror MÅSTE därför valideras här, vid
+// import-gränsen (appens enda cross-user-yta). Normaliserar även v1→v2 så båda
+// call-sites (importTemplate + obImportFromOnboarding) delar en väg.
+function sanitizeTemplateFields(d){
+  const isV2 = d.version===2 || (d.sessionOrder && !d.passOrder);
+  const safeId = (s)=> typeof s==='string' && /^[A-Za-z0-9_-]+$/.test(s);
+  const cleanKeys = (o,vOk)=>{ const r={}; if(o&&typeof o==='object'){ for(const k of Object.keys(o)){ if(safeId(k)&&(!vOk||vOk(o[k]))) r[k]=o[k]; } } return r; };
+  const num = (v)=>{ const n=Number(v); return Number.isFinite(n)?n:null; };
+  const isStr = (v)=> typeof v==='string';
+  const passOrderRaw = isV2 ? d.sessionOrder : d.passOrder;
+  const restRaw = isV2 ? d.restAfterSessions : d.restSlots;
+  const added = cleanKeys(d.addedExercises, Array.isArray);
+  for(const k of Object.keys(added)){
+    added[k] = added[k].filter(e=> e && safeId(e.id) && isStr(e.name));
+  }
+  const removed = cleanKeys(d.removedExercises, Array.isArray);
+  for(const k of Object.keys(removed)){
+    removed[k] = removed[k].filter(safeId);
+  }
+  const prsRaw = isV2 ? d.personalRecords : d.prs;
+  const prs = (Array.isArray(prsRaw)?prsRaw:[]).filter(p=> p && isStr(p.name)).map(p=>({
+    name:p.name, measure:(p.measure&&MEASURES[p.measure])?p.measure:null,
+    bw:!!p.bw, timed:!!p.timed,
+    weight:num(p.weight), reps:num(p.reps), secs:num(p.secs), dist:num(p.dist),
+    distm:num(p.distm), sprints:num(p.sprints), extra:num(p.extra), bwSnap:num(p.bwSnap),
+  }));
+  return {
+    passOrder: Array.isArray(passOrderRaw) ? passOrderRaw.filter(safeId) : null,
+    restSlots: Array.isArray(restRaw) ? restRaw.filter(v=>safeId(String(v))) : [],
+    passNameOverrides: cleanKeys(isV2?d.sessionNames:d.passNameOverrides, isStr),
+    permanentSwaps: cleanKeys(isV2?d.exerciseSwaps:d.permanentSwaps, isStr),
+    exerciseOverrides: cleanKeys(isV2?d.exerciseRenames:d.exerciseOverrides, isStr),
+    exerciseTagOverrides: cleanKeys(isV2?d.exerciseTags:d.exerciseTagOverrides, v=>v&&typeof v==='object'),
+    removedExercises: removed,
+    addedExercises: added,
+    customExercises: (Array.isArray(d.customExercises)?d.customExercises:[]).filter(c=> c && safeId(c.id) && isStr(c.name)),
+    prs,
+  };
+}
 async function importTemplate(e){
   const file=e.target.files[0];if(!file)return;
   e.target.value='';
@@ -9147,16 +9196,10 @@ async function importTemplate(e){
     try{
       const d=JSON.parse(ev.target.result);
       if(d.format!=='thechain-template')throw new Error('Invalid template');
-      // Normalize v1 → v2 field names
-      const isV2=d.version===2||(d.sessionOrder&&!d.passOrder);
-      const passOrder=isV2?d.sessionOrder:d.passOrder;
-      if(!Array.isArray(passOrder))throw new Error('Invalid template');
-      const passNameOverrides=isV2?(d.sessionNames||{}):(d.passNameOverrides||{});
-      const restSlots=isV2?(d.restAfterSessions||[]):(d.restSlots||[]);
-      const permanentSwaps=isV2?(d.exerciseSwaps||{}):(d.permanentSwaps||{});
-      const exerciseTagOverrides=isV2?(d.exerciseTags||{}):(d.exerciseTagOverrides||{});
-      const exerciseOverrides=isV2?(d.exerciseRenames||{}):(d.exerciseOverrides||{});
-      const prs=isV2?(d.personalRecords||[]):(d.prs||[]);
+      // Normalize v1 → v2 + sanera fil-levererade id:n/PR-värden (3.63.2, PM19)
+      const t=sanitizeTemplateFields(d);
+      if(!t.passOrder||!t.passOrder.length)throw new Error('Invalid template');
+      const {passOrder,passNameOverrides,restSlots,permanentSwaps,exerciseTagOverrides,exerciseOverrides,prs}=t;
       // Build confirmation text
       const sessionNames=passOrder.map(id=>{
         const ov=passNameOverrides[id];
@@ -9196,14 +9239,14 @@ async function importTemplate(e){
       state.sessionOrder=passOrder;
       state.restSlots=restSlots;
       state.sessionNameOverrides=passNameOverrides;
-      state.removedExercises=d.removedExercises||{};
-      state.addedExercises=d.addedExercises||{};
+      state.removedExercises=t.removedExercises;
+      state.addedExercises=t.addedExercises;
       state.permanentSwaps=permanentSwaps;
       state.exerciseTagOverrides=exerciseTagOverrides;
       state.exerciseOverrides=exerciseOverrides;
       // Merge custom exercises (skip duplicates by name)
       const existingNames=new Set((state.customExercises||[]).map(e=>e.name.toLowerCase()));
-      for(const ex of (d.customExercises||[])){
+      for(const ex of t.customExercises){
         if(!existingNames.has(ex.name.toLowerCase()))state.customExercises.push(ex);
       }
       // Import PRs
