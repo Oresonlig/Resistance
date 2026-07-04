@@ -6,6 +6,15 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.63.1 — 2026-07-04
+**Säkerhets-quick-wins: CSP-header + npm audit fix.**
+
+**CSP meta-tag** (skyddsnät under PM9/PM19-arkitekturen, inte ersättning): `default-src 'self'` med explicit allowlist — script från jsdelivr (SortableJS) + esm.sh (supabase-js), style/font från Google Fonts, `connect-src` ENDAST egna Supabase-instansen, `img-src 'self' data:`, `manifest-src data:` (data-URI-manifestet), `worker-src 'self'` (sw.js), `object-src 'none'`, `frame-src 'none'`, `base-uri 'self'`, `form-action 'self'`. Effekt: ett eventuellt kvarvarande XSS-hål kan inte längre ladda externa script eller exfiltrera data till godtycklig domän — `fetch`/XHR mot allt utom Supabase blockeras av browsern.
+
+**Ärlig begränsning:** `script-src` kräver `'unsafe-inline'` — hela appen är ett inline-script + onclick-attribut (single-file-arkitekturen). CSP:n stoppar alltså inte inline-injektion i sig, bara vad injicerad kod kan göra (ingen extern kod, ingen exfiltration). Fulla skyddet kräver PM9/PM19-migreringen.
+
+**npm audit fix:** vite 8.0.x HIGH (launch-editor NTLMv2 + server.fs.deny-bypass, båda Windows) → 0 sårbarheter. Transitiv dev-dependency via vitest, skeppades aldrig till produktion. 118/118 tester gröna efter bump.
+
 ## 3.63.0 — 2026-07-03
 **Gymfeedback (live): To Goal med riktningstecken + unilateral side i historiken.**
 
