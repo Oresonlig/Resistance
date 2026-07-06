@@ -6,6 +6,19 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.65.0 — 2026-07-06
+**PM9/PM19 riktad granskningsrunda #4 (Fable): importData var den sista osanerade fil-gränsen.**
+
+**Huvudfynd:** `importData` (Settings → Import) gjorde `state=d` — rå fil-JSON ersatte hela state utan validering. Templates fick gräns-sanering i 3.63.2 eftersom de delas mellan användare; backup-filer delas via exakt samma sociala vektor och gick runt hela skyddet. Gemensam rot för alla sinks: render-lagret antar att set-värden är NUMMER — garantin kommer från capture-vägen (verifierad numerisk 3.63.2), och importData kringgick den.
+
+**Nåbara sinks (verifierade innan fix):** historik-rendern + "Last (Xd ago)"-raden (`formatSetLine`-output rå i innerHTML — `secs`/`dist`/`sprints`/`forced` m.fl. strängbara via fil), weight-loggen (`e.date` rå i både HTML-text och onclick-JS-strängkontext), done-badgens `completedData.date`, `state.unit` via `unitLabel()` (falsy-check, aldrig whitelistad — interpoleras rått på dussintals ställen), measureCells `value`-attribut (nås via done-sets → `undoSession`-restore samt drafts i filen).
+
+**Fix i två lager (samma arkitektur som 3.63.2):**
+1. **Gräns-sanering** — ny `sanitizeImportedState(d)` vid importData-gränsen: Number/isFinite-koercion av alla set-fält (log + cycle.done + importedPRs), `side` L/R-whitelist, `fail`/`warmup` booleaniseras, ex.id + sid mot `[A-Za-z0-9_-]+` (legitima id-format matchar alltid), weightLog-datum mot `YYYY-MM-DD`-regex, unit-whitelist, done-date utan HTML-metatecken. `draft`/`drafts` droppas helt — device-lokala per SL6, ska inte kunna planteras via fil.
+2. **Sink-härdning (djupförsvar):** `escapeHTML` på `formatSetLine`-output (historik + Last-raden), `e.date` i båda kontexterna (JSON.stringify-mönstret för onclick, samma som prCardHTML), done-badgens date, samt unit-whitelist i `ensureStateDefaults` (ersätter falsy-checken — täcker ALLA load-vägar inkl. gamla korrupta states, inte bara import).
+
+Verifierat oförändrat säkra i samma svep: notes/reminders (escapas), hist-entry namn/passName (escapas), `confirmDeleteCustomEx` (korrekt JSON.stringify+escapeHTML-mönster), tag-editorns optioner, `d.author` vid template-import, theme-resolvern (THEMES-lookup med fallback).
+
 ## 3.64.0 — 2026-07-06
 **Server-side CAS-lås för app_state (SYNC_CAS_SERVER_SPEC.md, steg 4/5).**
 

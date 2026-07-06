@@ -3661,7 +3661,9 @@ function ensureStateDefaults(){
   if(!state.permanentSwaps) state.permanentSwaps = {};
   if(state.sessionOrder === undefined) state.sessionOrder = null;
   if(state.restSlots === undefined) state.restSlots = null;
-  if(!state.unit) state.unit = 'kg';
+  // 3.65.0 — whitelist istället för falsy-check: unitLabel() interpoleras rått i
+  // dussintals innerHTML-strängar, så unit får aldrig vara en godtycklig sträng.
+  if(state.unit!=='kg' && state.unit!=='lbs') state.unit = 'kg';
   if(!state.exerciseOverrides) state.exerciseOverrides = {};
   if(!state.sessionNameOverrides) state.sessionNameOverrides = {};
   if(typeof state.timerDefault !== 'number') state.timerDefault = 120;
@@ -4137,7 +4139,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.64.0';
+const APP_VERSION = '3.65.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5275,7 +5277,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
   const todayWkg=getTodayWeight();
 
   let statusBadge='';
-  if(isDone){const _dur=formatDuration(completedData?.duration);statusBadge=`<span class="session-ex-status done">Done${completedData?.date?' · '+completedData.date:''}${_dur?' · '+_dur:''}</span>`;}
+  if(isDone){const _dur=formatDuration(completedData?.duration);statusBadge=`<span class="session-ex-status done">Done${completedData?.date?' · '+escapeHTML(completedData.date):''}${_dur?' · '+_dur:''}</span>`;}
   else if(inProgress)statusBadge=`<span class="session-ex-status progress">Draft</span>`;
   else if(isNext)statusBadge=`<span class="session-ex-status next-up">Next up</span>`;
 
@@ -5356,7 +5358,9 @@ function buildPassBodyHTML(pass,cycle,nextId){
           // 3.55.0: rendera varje LAGRAT set efter sin egen form (BW/timed/vikt),
           // oberoende av övningens NUVARANDE tagg/swap-state. Annars visade en
           // BW-övning som swappats/taggats om "—kg" istället för "BW + X" (#4).
-          const fmtSet = (s)=>formatSetLine(s, unitLabel());
+          // 3.65.0 — escapeHTML på output: set-fälten är nummer via capture, men
+          // formatSetLine själv escapar inget och historik-data kan komma ur importfil.
+          const fmtSet = (s)=>escapeHTML(formatSetLine(s, unitLabel()));
           // Show only the last work set (most recent, highest index)
           const workSets=lastSession.sets.filter(s=>!s.warmup);
           const lastSet=workSets[workSets.length-1]||lastSession.sets[lastSession.sets.length-1];
@@ -8077,7 +8081,7 @@ function renderProgress(){
     }
   }
   html+=`<div class="section-sub">History</div>`;
-  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;let _hw=0,_hs=0;const sh=(ex.sets||[]).map(s=>{const _lbl=s.warmup?'W'+(++_hw):'S'+(++_hs);return `<div class="hist-set">${_lbl}: ${formatSetLine(s,unitLabel())}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;}).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
+  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;let _hw=0,_hs=0;const sh=(ex.sets||[]).map(s=>{const _lbl=s.warmup?'W'+(++_hw):'S'+(++_hs);return `<div class="hist-set">${_lbl}: ${escapeHTML(formatSetLine(s,unitLabel()))}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;}).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
   el.innerHTML=html;
 }
 
@@ -8108,7 +8112,10 @@ function renderWeight(){
   const weeklyRate=(recentAvg!=null&&priorAvg!=null)?(recentAvg-priorAvg):null;
   const rateBox=weeklyRate!=null?`<div class="stat-box"><div class="stat-num">${weeklyRate>0?'+':''}${weeklyRate.toFixed(1)}</div><div class="stat-desc">Weekly Rate (${unitLabel()})</div></div>`:'';
   let html=`<div class="section-title">Weight Curve</div><div class="stats-grid"><div class="stat-box"><div class="stat-num">${latestDisp}</div><div class="stat-desc">Latest (${unitLabel()})</div></div><div class="stat-box"><div class="stat-num">${diff>0?'+':''}${diff}</div><div class="stat-desc">Change (${unitLabel()})</div></div><div class="stat-box"><div class="stat-num">${sorted.length}</div><div class="stat-desc">Entries</div></div>${trendBox}${rateBox}${goalBox}</div><div class="weight-chart-wrap"><canvas id="weightChart" height="190"></canvas></div><div class="section-sub">Log</div><div class="wlog-list">`;
-  [...sorted].reverse().forEach(e=>{html+=`<div class="wlog-row"><span>${e.date}</span><strong>${toDisplay(e.weight)} ${unitLabel()}</strong><button class="wlog-delete" onclick="deleteWeight('${e.date}')">Delete</button></div>`;});
+  // 3.65.0 — date escapas i båda kontexterna (HTML-text + onclick-JS-sträng via
+  // JSON.stringify-mönstret, samma som prCardHTML). Datat är app-genererat men
+  // round-trippar genom exportfil → importData.
+  [...sorted].reverse().forEach(e=>{html+=`<div class="wlog-row"><span>${escapeHTML(e.date)}</span><strong>${toDisplay(e.weight)} ${unitLabel()}</strong><button class="wlog-delete" onclick="deleteWeight(${escapeHTML(JSON.stringify(e.date))})">Delete</button></div>`;});
   html+=`</div>`;el.innerHTML=html;
   drawChart(dispData, goalDisp);
 }
@@ -9300,7 +9307,66 @@ User: ${currentUser?.name || 'unknown'}
 `);
   window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
 }
-function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.cycles||!d.log)throw new Error('Invalid file');state=d;
+// 3.65.0 — PM19: importData var den sista osanerade fil-gränsen (jfr sanitizeTemplateFields
+// 3.63.2 — backup-filer delas mellan användare på samma sätt som templates). Render-lagret
+// antar att set-värden är NUMMER (formatSetLine/measureCells/prCardHTML interpolerar rått);
+// den garantin kommer normalt från capture-vägen och måste återskapas här när hela state
+// ersätts av fil-JSON. Muterar och returnerar d.
+function sanitizeImportedState(d){
+  const num=(v)=>{ const n=Number(v); return Number.isFinite(n)?n:null; };
+  const safeId=(s)=> typeof s==='string' && /^[A-Za-z0-9_-]+$/.test(s);
+  const cleanSet=(s)=>{
+    if(!s||typeof s!=='object') return null;
+    for(const k of ['weight','reps','secs','dist','distm','sprints','extra','forced','bwSnap'])
+      if(s[k]!==undefined) s[k]=num(s[k]);
+    if(s.side!=='L'&&s.side!=='R') delete s.side;
+    if(s.fail!==undefined) s.fail=!!s.fail;
+    if(s.warmup!==undefined) s.warmup=!!s.warmup;
+    if(s.sid!==undefined && !safeId(String(s.sid))) delete s.sid;
+    return s;
+  };
+  // ex.id-kravet: legitima id:n (A1, extra_B_2, added_123, custom_456) matchar alltid
+  // safeId — okända format kan bara komma från en preparerad fil och droppas hela.
+  const cleanExList=(list)=>{
+    if(!Array.isArray(list)) return list;
+    const kept=list.filter(ex=> ex && typeof ex==='object' && (ex.id===undefined || safeId(ex.id)));
+    kept.forEach(ex=>{
+      if(Array.isArray(ex.sets)) ex.sets=ex.sets.map(cleanSet).filter(Boolean);
+      if(Array.isArray(ex.allSets)) ex.allSets=ex.allSets.map(cleanSet).filter(Boolean);
+    });
+    return kept;
+  };
+  d.weightLog=(Array.isArray(d.weightLog)?d.weightLog:[])
+    .filter(e=> e && typeof e.date==='string' && /^\d{4}-\d{2}-\d{2}$/.test(e.date) && Number.isFinite(Number(e.weight)))
+    .map(e=>({date:e.date, weight:Number(e.weight)}));
+  (Array.isArray(d.log)?d.log:[]).forEach(en=>{
+    if(!en||typeof en!=='object') return;
+    en.timestamp=num(en.timestamp); en.duration=num(en.duration);
+    en.exercises=cleanExList(en.exercises);
+  });
+  (Array.isArray(d.cycles)?d.cycles:[]).forEach(c=>{
+    if(!c||!c.done||typeof c.done!=='object') return;
+    for(const k of Object.keys(c.done)){
+      const dn=c.done[k]; if(!dn||typeof dn!=='object') continue;
+      dn.timestamp=num(dn.timestamp); dn.duration=num(dn.duration);
+      if(typeof dn.date!=='string' || /[<>"'&]/.test(dn.date)) delete dn.date;
+      dn.exercises=cleanExList(dn.exercises);
+    }
+  });
+  if(Array.isArray(d.importedPRs)){
+    d.importedPRs=d.importedPRs.filter(p=> p && typeof p.name==='string');
+    d.importedPRs.forEach(p=>{
+      for(const k of ['weight','reps','secs','dist','distm','sprints','extra','bwSnap'])
+        if(p[k]!==undefined) p[k]=num(p[k]);
+    });
+  }
+  if(d.unit!=='kg'&&d.unit!=='lbs') d.unit='kg';
+  // Drafts är device-lokala (SL6, exkluderas ur molnpayload av samma skäl) — en
+  // importerad fil ska inte kunna plantera in-flight input-buffrar/savedExercises.
+  delete d.draft; delete d.drafts;
+  return d;
+}
+function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.cycles||!d.log)throw new Error('Invalid file');state=sanitizeImportedState(d);
   // Kör samma migrations-pipeline som loadStateForUser — gamla exporter kan
   // sakna nyare fält/schema (tidigare patchades bara unit+exerciseOverrides ad hoc).
   migratePassKeysToSession();
