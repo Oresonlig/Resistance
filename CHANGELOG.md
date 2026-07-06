@@ -7,11 +7,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 ---
 
 ## 3.64.0 — 2026-07-06
-**Server-side CAS-lås för app_state (SYNC_CAS_SERVER_SPEC.md, steg 4/5).** Klientkod klar och testad — **INTE ännu pushad/live**, se not nedan.
+**Server-side CAS-lås för app_state (SYNC_CAS_SERVER_SPEC.md, steg 4/5).**
 
-3.62.0 gav klientsidig CAS (PATCH villkorad på senast sedda `updated_at`), men det villkoret var något klienten valde att skicka — en pre-3.62.0-klient kunde fortfarande göra en helt vanlig blind skrivning. Ny Postgres-funktion `write_app_state_cas(p_expected_updated_at, p_data)` (körd mot prod-DB, steg 0+1 i specen) gör CAS-kontrollen atomärt server-side. Klientkod: `sbWriteStateCas()` ersätter `sbPatchStateIfMatch`/`sbInsertState`, `pushState()` och `keepaliveCloudPush()` går nu via RPC:n istället för rå PATCH/POST. Syntax OK, 118/118 tester gröna.
+3.62.0 gav klientsidig CAS (PATCH villkorad på senast sedda `updated_at`), men det villkoret var något klienten valde att skicka — en pre-3.62.0-klient kunde fortfarande göra en helt vanlig blind skrivning. Ny Postgres-funktion `write_app_state_cas(p_expected_updated_at, p_data)` (körd mot prod-DB 2026-07-06, steg 0+1 i specen) gör CAS-kontrollen atomärt server-side. Klientkod: `sbWriteStateCas()` ersätter `sbPatchStateIfMatch`/`sbInsertState`, `pushState()` och `keepaliveCloudPush()` går nu via RPC:n istället för rå PATCH/POST. Syntax OK, 118/118 tester gröna. Fable-granskad (modellbyte mitt i sessionen): parametrar/konfliktdetektering/retry-flöde/först-skrivning-race verifierade korrekta.
 
-**Kvarstår innan detta är komplett/live:** revoke av direkt INSERT/UPDATE-rättighet på `app_state` för `authenticated` (steg 2 i specen) — måste ske SAMTIDIGT som denna kods deploy, annars stänger vi ute alla skrivningar från klienter som inte hunnit uppdatera. Väntar på att Niklas är hemma för browser-test av en riktig inloggad session direkt efter deploy.
+**Kvarstår innan hålet är HELT stängt:** revoke av direkt INSERT/UPDATE på `app_state` (steg 2 i specen) — körs EFTER att denna version verifierats live (klientkod-före-revoke är den säkra ordningen; omvänd ordning låser ute alla skrivningar). Revoka då från både `authenticated` OCH `anon` (grants-inspektionen visade att anon också har skrivgrants — RLS blockerar i praktiken, men belt-and-braces).
 
 ## 3.63.2 — 2026-07-04
 **PM9/PM19 riktad granskningsrunda: 3 fynd (samma format som 3.27.0/3.51.4).**
