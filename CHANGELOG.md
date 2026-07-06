@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.66.0 — 2026-07-06
+**Settings → hubb med undersidor (Edit Program-mönstret).** Fliken öppnar nu en meny med stora tryckytor — Training (rest timer, weight goal, units, weight step, custom exercises), Appearance (teman, ambient effects), Data & Sync (synk-status, program-delning, backup, reset), Support (feedback, debug) — istället för dagens enda långa scroll. "← Done" tillbaka till hubben, samma navigationsvokabulär som Edit Program. Synk-hälsan + version visas som enrads-status direkt på hubben (tap → Data & Sync); header-synk-pricken deep-linkar dit. Ren omflytt av befintligt innehåll — ingen ny funktionalitet, Help-vyn kommer i 3.67.0.
+
+**Bifynd fixade i samma svep:** (1) De tre osynliga fil-inputarna (template/backup/onboarding-import) bodde i renderData-markupen — onboardingens "import"-väg klickade på ett element som bara fanns om Settings hunnit renderas (latent död väg för färska användare). Nu statiska i body. (2) Sista svenska UI-strängarna ("Rensa logg", debug-toaster) översatta (3.54.1-regeln). Nytt jsdom-test: hubb → undersida → tillbaka + fil-inputarnas existens. 146/146 gröna.
+
 ## 3.65.1 — 2026-07-06
 **isFreshState-guarden var delvis avväpnad — hittad av de nya synk-testerna.**
 

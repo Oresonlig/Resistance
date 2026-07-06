@@ -3362,7 +3362,7 @@ body.theme-cosmic-horror .set-logged-indicator{
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
       <button class="header-logout" onclick="logoutUser()">Log out</button>
-      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="showView('data', document.querySelector('nav button:nth-child(4)'));">
+      <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="_settingsPage='data';showView('data', document.querySelector('nav button:nth-child(4)'));">
         <div class="header-version">v<span id="headerVersion">—</span></div>
         <div class="header-sync-row">Sync <span class="sync-dot" id="syncDot"></span></div>
       </div>
@@ -3382,12 +3382,18 @@ body.theme-cosmic-horror .set-logged-indicator{
     <button class="active" onclick="showView('chain',this)">The Chain</button>
     <button onclick="showView('progress',this)">Progress</button>
     <button onclick="showView('weight',this)">Weight</button>
-    <button onclick="showView('data',this)">Settings</button>
+    <button onclick="_settingsPage=null;showView('data',this)">Settings</button>
   </nav>
   <div id="view-chain" class="view active"></div>
   <div id="view-progress" class="view"></div>
   <div id="view-weight" class="view"></div>
   <div id="view-data" class="view"></div>
+  <!-- 3.66.0 — Fil-inputar statiska (inte i renderData-markup): triggas från både
+       Settings-undersidor OCH onboarding (obImportFile klickades förr på ett element
+       som bara fanns om Settings hunnit renderas = latent död import-väg i onboarding) -->
+  <input type="file" id="importTemplateFile" accept=".json" style="display:none" onchange="importTemplate(event)">
+  <input type="file" id="obImportFile" accept=".json" style="display:none" onchange="obImportFromOnboarding(event)">
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
 </div>
 <div class="toast" id="toast"></div>
 <!-- rest timer injected dynamically -->
@@ -4143,7 +4149,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.65.1';
+const APP_VERSION = '3.66.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8863,6 +8869,13 @@ function _startUnderstoryVines(canvas){
   _usVineRaf=requestAnimationFrame(tick);
 }
 
+// 3.66.0 — Settings är en HUBB med undersidor (Edit Program-mönstret: gå in,
+// "← Done" tillbaka). _settingsPage styr vilken sida som visas; null = hubben.
+// Nav-fliken nollställer alltid till hubben; header-sync-pricken deep-linkar
+// till 'data' (Data & Sync). Device-lokal — medvetet INTE i state.
+let _settingsPage = null;
+function openSettingsPage(p){ _settingsPage = p; renderData(); try{ window.scrollTo(0,0); }catch(e){} }
+function closeSettingsPage(){ _settingsPage = null; renderData(); try{ window.scrollTo(0,0); }catch(e){} }
 function renderData(){
   const el=document.getElementById('view-data');
   // Async cloud version check — throttled to once per 30s (avoid spamming Supabase on every re-render)
@@ -8882,11 +8895,10 @@ function renderData(){
   const selFg = isVoid ? '#000' : isUndertow ? '#eaf2fb' : isUnderstory ? '#f3f8ea' : 'var(--white)';
   const selBorder = isVoid ? '#888' : 'var(--red)';
   const unitBtn=(u)=>`<button onclick="state.unit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.unit===u?selBg:'none'};border:1px solid ${state.unit===u?selBorder:'#2a2a2a'};color:${state.unit===u?selFg:'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u.toUpperCase()}</button>`;
-  el.innerHTML=`<div class="section-title">Settings</div>
-  <div style="font-family:var(--mono);font-size:.58rem;color:#444;margin-bottom:18px">Supabase · ${escapeHTML(currentUser?.name||'')} · ${size} KB · ${state.log.length} sessions</div>
-  <div class="section-sub">Debug</div>
-  <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);line-height:1.7;margin-bottom:8px">If a set disappears: tap here IMMEDIATELY after — copies draft state to clipboard. Paste it in a chat to Claude.</div>
-  <div class="data-row" style="margin-bottom:18px;"><button class="data-btn" onclick="copyDebugState()">🐛 Copy draft state</button><button class="data-btn" onclick="clearDebugLog()">Rensa logg</button></div>
+  const back=`<button class="btn-secondary" onclick="closeSettingsPage()" style="margin-bottom:16px;">← Done</button>`;
+
+  if(_settingsPage==='training'){
+    el.innerHTML=`${back}<div class="section-title">Training</div>
   <div class="section-sub">Rest Timer</div>
   <div class="settings-panel" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border:1px solid var(--gray-mid);padding:10px 12px;margin-bottom:10px;">
     <div>
@@ -8911,17 +8923,23 @@ function renderData(){
       onblur="setWeightGoal(this.value)">
     <div style="font-family:var(--mono);font-size:.6rem;color:var(--gray-light);">${unitLabel()}</div>
   </div>` : ''}
-  <div class="section-sub">Ambient Effects</div>
-  <div class="settings-panel" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--gray-mid);margin-bottom:18px;">
-    <div>
-      <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);margin-bottom:2px;">Animations &amp; particles</div>
-      <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);">Ember particles in Obsidian + other animation-heavy themes. Turn off to save battery or reduce distraction.</div>
-    </div>
-    <button onclick="toggleAmbientEffects()" style="background:${state.ambientEffects!==false?'var(--green-bright)':'var(--gray-mid)'};border:1px solid ${state.ambientEffects!==false?'var(--green-bright)':'var(--gray-mid)'};color:${state.ambientEffects!==false?'var(--black)':'var(--gray-light)'};font-family:var(--mono);font-size:.54rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:all .2s;">${state.ambientEffects!==false?'ON':'OFF'}</button>
-  </div>
   <div class="section-sub">Weight Unit</div>
   <div style="font-family:var(--mono);font-size:.54rem;color:var(--gray-light);margin-bottom:8px;">Currently: <strong style="color:var(--white)">${(state.unit||'kg').toUpperCase()}</strong></div>
   <div class="settings-panel" style="display:flex;gap:6px;margin-bottom:18px">${unitBtn('kg')}${unitBtn('lbs')}</div>
+  <div class="section-sub">Weight Step</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;margin-bottom:18px;border-bottom:1px solid var(--gray-mid);">
+    <div>
+      <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);">Weight step</div>
+      <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);margin-top:2px;">Used by +/− steppers on set inputs</div>
+    </div>
+    <select onchange="state.weightStep=parseFloat(this.value);save();" style="background:var(--surface-input);border:1px solid var(--border-strong);color:var(--white);font-family:var(--mono);font-size:.7rem;padding:6px 10px;cursor:pointer;">
+      <option value="1.25" ${(state.weightStep||2.5)===1.25?"selected":""}>1.25 kg</option>
+      <option value="2.5"  ${(state.weightStep||2.5)===2.5?"selected":""}>2.5 kg</option>
+      <option value="5"    ${(state.weightStep||2.5)===5?"selected":""}>5 kg</option>
+      <option value="10"   ${(state.weightStep||2.5)===10?"selected":""}>10 kg</option>
+      <option value="20"   ${(state.weightStep||2.5)===20?"selected":""}>20 kg</option>
+    </select>
+  </div>
   <div class="section-sub">Custom Exercises</div>
   ${(state.customExercises||[]).length===0
     ? `<div style="font-family:var(--mono);font-size:.52rem;color:#666;margin-bottom:16px;">No custom exercises yet. Create one via any exercise's Edit ▾ → Swap → + Custom.</div>`
@@ -8944,8 +8962,12 @@ function renderData(){
             }).join('')}
           </div>
         </div>`).join('')}
-      </div>`}
+      </div>`}`;
+    return;
+  }
 
+  if(_settingsPage==='appearance'){
+    el.innerHTML=`${back}<div class="section-title">Appearance</div>
   <div class="section-sub">Theme</div>
   <div style="font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Dark</div>
   <div class="settings-panel" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
@@ -8975,6 +8997,19 @@ function renderData(){
       </button>`;
     }).join('')}
   </div>
+  <div class="section-sub">Ambient Effects</div>
+  <div class="settings-panel" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--gray-mid);margin-bottom:18px;">
+    <div>
+      <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);margin-bottom:2px;">Animations &amp; particles</div>
+      <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);">Ember particles in Obsidian + other animation-heavy themes. Turn off to save battery or reduce distraction.</div>
+    </div>
+    <button onclick="toggleAmbientEffects()" style="background:${state.ambientEffects!==false?'var(--green-bright)':'var(--gray-mid)'};border:1px solid ${state.ambientEffects!==false?'var(--green-bright)':'var(--gray-mid)'};color:${state.ambientEffects!==false?'var(--black)':'var(--gray-light)'};font-family:var(--mono);font-size:.54rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:all .2s;">${state.ambientEffects!==false?'ON':'OFF'}</button>
+  </div>`;
+    return;
+  }
+
+  if(_settingsPage==='data'){
+    el.innerHTML=`${back}<div class="section-title">Data &amp; Sync</div>
   <div class="section-sub">Sync Status</div>
   <div id="sync-status-card" class="settings-panel" style="border:1px solid var(--gray-mid);padding:12px 14px;margin-bottom:18px;font-family:var(--mono);font-size:.55rem;color:var(--gray-light);line-height:1.9;">
     <div id="sync-health" style="color:${_lastSyncError?'var(--red)':'var(--green-bright)'};font-size:.62rem;margin-bottom:5px;">${_lastSyncError?('⚠ '+escapeHTML(_lastSyncError)):'✓ All changes synced'}</div>
@@ -8988,40 +9023,47 @@ function renderData(){
     </div>
   </div>
 
-  <div class="section-sub">Training Settings</div>
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;margin-bottom:8px;border-bottom:1px solid var(--gray-mid);">
-    <div>
-      <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);">Weight step</div>
-      <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);margin-top:2px;">Used by +/− steppers on set inputs</div>
-    </div>
-    <select onchange="state.weightStep=parseFloat(this.value);save();" style="background:var(--surface-input);border:1px solid var(--border-strong);color:var(--white);font-family:var(--mono);font-size:.7rem;padding:6px 10px;cursor:pointer;">
-      <option value="1.25" ${(state.weightStep||2.5)===1.25?"selected":""}>1.25 kg</option>
-      <option value="2.5"  ${(state.weightStep||2.5)===2.5?"selected":""}>2.5 kg</option>
-      <option value="5"    ${(state.weightStep||2.5)===5?"selected":""}>5 kg</option>
-      <option value="10"   ${(state.weightStep||2.5)===10?"selected":""}>10 kg</option>
-      <option value="20"   ${(state.weightStep||2.5)===20?"selected":""}>20 kg</option>
-    </select>
-  </div>
+  <div class="section-sub">Program</div>
+  <div style="font-family:var(--mono);font-size:.58rem;color:var(--gray-light);line-height:1.8;margin-bottom:10px">Import a program from another method or coach. Export yours to share. Download a blank template to build one from scratch.</div>
+  <div class="data-row"><button class="data-btn" onclick="exportTemplate()">↓ Export my program</button><button class="data-btn" onclick="document.getElementById('importTemplateFile').click()">↑ Import program</button></div>
+  <div class="data-row" style="margin-top:8px"><button class="data-btn" onclick="downloadBlankTemplate()">↓ Blank template</button></div>
+  <div class="section-sub" style="margin-top:24px">Backup</div>
+  <div style="font-family:var(--mono);font-size:.58rem;color:var(--gray-light);line-height:1.8;margin-bottom:10px">Export all data as JSON. Import to restore.</div>
+  <div class="data-row"><button class="data-btn" onclick="exportData()">↓ Export JSON</button><button class="data-btn" onclick="document.getElementById('importFile').click()">↑ Import JSON</button></div>
+  <div class="section-sub" style="margin-top:24px">Reset</div>
+  <div class="data-row"><button class="data-btn danger" onclick="resetAll()">✕ Reset all data</button></div>`;
+    return;
+  }
 
+  if(_settingsPage==='support'){
+    el.innerHTML=`${back}<div class="section-title">Support</div>
   <div class="section-sub">Feedback</div>
   <div style="font-family:var(--mono);font-size:.58rem;color:var(--gray-light);line-height:1.8;margin-bottom:10px">Found a bug? Have a feature request? Open your email app with a pre-filled message including app version + your user ID for quick debugging.</div>
   <div class="data-row" style="margin-bottom:18px;">
     <button class="data-btn" onclick="reportBug()">🐛 Report a bug</button>
     <button class="data-btn" onclick="sendFeedback()">💡 Send feedback</button>
   </div>
+  <div class="section-sub">Debug</div>
+  <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);line-height:1.7;margin-bottom:8px">If a set disappears: tap here IMMEDIATELY after — copies draft state to clipboard. Paste it in a chat to Claude.</div>
+  <div class="data-row" style="margin-bottom:18px;"><button class="data-btn" onclick="copyDebugState()">🐛 Copy draft state</button><button class="data-btn" onclick="clearDebugLog()">Clear log</button></div>`;
+    return;
+  }
 
-  <div class="section-sub">Program</div>
-  <div style="font-family:var(--mono);font-size:.58rem;color:var(--gray-light);line-height:1.8;margin-bottom:10px">Import a program from another method or coach. Export yours to share. Download a blank template to build one from scratch.</div>
-  <div class="data-row"><button class="data-btn" onclick="exportTemplate()">↓ Export my program</button><button class="data-btn" onclick="document.getElementById('importTemplateFile').click()">↑ Import program</button></div>
-  <div class="data-row" style="margin-top:8px"><button class="data-btn" onclick="downloadBlankTemplate()">↓ Blank template</button></div>
-  <input type="file" id="importTemplateFile" accept=".json" style="display:none" onchange="importTemplate(event)">
-  <input type="file" id="obImportFile" accept=".json" style="display:none" onchange="obImportFromOnboarding(event)">
-  <div class="section-sub" style="margin-top:24px">Backup</div>
-  <div style="font-family:var(--mono);font-size:.58rem;color:var(--gray-light);line-height:1.8;margin-bottom:10px">Export all data as JSON. Import to restore.</div>
-  <div class="data-row"><button class="data-btn" onclick="exportData()">↓ Export JSON</button><button class="data-btn" onclick="document.getElementById('importFile').click()">↑ Import JSON</button></div>
-  <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-  <div class="section-sub" style="margin-top:24px">Reset</div>
-  <div class="data-row"><button class="data-btn danger" onclick="resetAll()">✕ Reset all data</button></div>`;
+  // ── Hubben (default) ──────────────────────────────────────────
+  const row=(page,label,desc)=>`<button class="settings-panel" onclick="openSettingsPage('${page}')" style="display:flex;align-items:center;justify-content:space-between;width:100%;border:1px solid var(--gray-mid);padding:16px 14px;margin-bottom:8px;cursor:pointer;text-align:left;">
+    <div>
+      <div style="font-family:var(--sans);font-size:.9rem;color:var(--white);margin-bottom:3px;">${label}</div>
+      <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);letter-spacing:.04em;line-height:1.5;">${desc}</div>
+    </div>
+    <span style="color:#555;font-size:1.15rem;flex-shrink:0;margin-left:10px;">›</span>
+  </button>`;
+  el.innerHTML=`<div class="section-title">Settings</div>
+  <div style="font-family:var(--mono);font-size:.58rem;color:#444;margin-bottom:10px">Supabase · ${escapeHTML(currentUser?.name||'')} · ${size} KB · ${state.log.length} sessions</div>
+  <div onclick="openSettingsPage('data')" style="cursor:pointer;font-family:var(--mono);font-size:.6rem;margin-bottom:18px;color:${_lastSyncError?'var(--red)':'var(--green-bright)'};">${_lastSyncError?('⚠ '+escapeHTML(_lastSyncError)):'✓ All changes synced'} <span style="color:#555;">· v${APP_VERSION} ›</span></div>
+  ${row('training','Training','Rest timer · weight goal · units · custom exercises')}
+  ${row('appearance','Appearance','Themes · ambient effects')}
+  ${row('data','Data & Sync','Sync status · program sharing · backup · reset')}
+  ${row('support','Support','Report a bug · send feedback · debug tools')}`;
 }
 function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`thechain-${currentUser?.id}-${todayStr()}.json`;a.click();showToast('Export done!');}
 
@@ -9057,11 +9099,11 @@ function copyDebugState(){
     lastSyncedCloudTime: state.lastSyncedCloudTime || null,
   };
   writeClipboard(JSON.stringify(dump,null,2));
-  showToast(incidents.length?`Kopierat · ${incidents.length} incident(er)`:'Kopierat · 0 incidenter');
+  showToast(`Copied · ${incidents.length} incident(s)`);
 }
 function clearDebugLog(){
   try{ localStorage.removeItem(_DBG_KEY); }catch(e){}
-  showToast('Debug-logg rensad');
+  showToast('Debug log cleared');
 }
 
 // ── CHAIN TEMPLATE EXPORT / IMPORT ───────────────────────────

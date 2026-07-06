@@ -221,6 +221,35 @@ describe('importData (backup-fil, 3.65.0-saneringen på riktiga flödet)', () =>
   });
 });
 
+describe('Settings-hubben (3.66.0)', () => {
+  it('hubb → undersida → tillbaka, och fil-inputarna finns statiskt', () => {
+    T.currentUser = { id: 'u1', name: 'Test' };
+    window.renderData();
+    const view = document.getElementById('view-data');
+    expect(view.innerHTML).toContain("openSettingsPage('training')");
+    expect(view.innerHTML).toContain("openSettingsPage('data')");
+
+    window.openSettingsPage('training');
+    expect(view.innerHTML).toContain('Rest Timer');
+    expect(view.innerHTML).toContain('Custom Exercises');
+    expect(view.innerHTML).toContain('closeSettingsPage()');
+    expect(view.innerHTML).not.toContain("openSettingsPage('appearance')"); // inte hubben längre
+
+    window.openSettingsPage('data');
+    expect(view.innerHTML).toContain('Sync Status');
+    expect(view.innerHTML).toContain('Reset all data');
+
+    window.closeSettingsPage();
+    expect(view.innerHTML).toContain("openSettingsPage('appearance')"); // hubben igen
+
+    // Fil-inputarna är statiska i body (onboarding-import var latent död utan detta)
+    expect(document.getElementById('obImportFile')).toBeTruthy();
+    expect(document.getElementById('importTemplateFile')).toBeTruthy();
+    expect(document.getElementById('importFile')).toBeTruthy();
+    T.currentUser = null;
+  });
+});
+
 describe('importTemplate (template-fil, 3.63.2-saneringen på riktiga flödet)', () => {
   it('applicerar kedjestruktur, droppar fientliga id:n, sätter onboardingDone', async () => {
     const origConfirm = window.askModalConfirm;
