@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.67.1 — 2026-07-06
+**Settings-undersidor: tydlig temastylad Done-knapp.** Niklas mobilfeedback på 3.66.0: "← Done" (btn-secondary) var knappt märkbar. Nu exakt samma huvud som Edit Program — titel till vänster, `btn-primary` "Done" till höger i flex-rad. btn-primary är temastylad i alla teman (3.34.1: Iron metal stamp, Nanosuit octagonal HUD, osv.) → knappen följer respektive tema gratis.
+
 ## 3.67.0 — 2026-07-06
 **PM18 — In-app Help.** Ny Help-undersida i Settings-hubben: 9 ämnen som accordion (The Chain model, Logging sets, Tags, Measurement types, Swapping, Extras, Reminders, Personal records, Sync/backup/sharing). Innehållet är en `HELP_TOPICS`-datastruktur + en render-loop (measure-arkitektur-principen — ingen per-ämne-specialkod). Statiskt författad engelska; förklarar bl.a. temp-vs-permanent swap (Johannes-frågan), att failade set inte räknas som PR, och skillnaden template-delning vs backup. Temaadaptiv gratis via `.settings-panel`-tokens. jsdom-test: alla ämnen renderas, accordion öppnar/stänger. 147/147 gröna.
 

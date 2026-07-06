@@ -4152,7 +4152,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.67.0';
+const APP_VERSION = '3.67.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8937,10 +8937,14 @@ function renderData(){
   const selFg = isVoid ? '#000' : isUndertow ? '#eaf2fb' : isUnderstory ? '#f3f8ea' : 'var(--white)';
   const selBorder = isVoid ? '#888' : 'var(--red)';
   const unitBtn=(u)=>`<button onclick="state.unit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.unit===u?selBg:'none'};border:1px solid ${state.unit===u?selBorder:'#2a2a2a'};color:${state.unit===u?selFg:'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u.toUpperCase()}</button>`;
-  const back=`<button class="btn-secondary" onclick="closeSettingsPage()" style="margin-bottom:16px;">← Done</button>`;
+  // 3.67.1 — samma Done-huvud som Edit Program (btn-primary = temastylad i alla teman)
+  const subHead=(title)=>`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <div class="section-title" style="margin-bottom:0;">${title}</div>
+    <button class="btn-primary" style="padding:8px 20px;font-size:.8rem;flex-shrink:0;margin-left:12px;white-space:nowrap;" onclick="closeSettingsPage()">Done</button>
+  </div>`;
 
   if(_settingsPage==='training'){
-    el.innerHTML=`${back}<div class="section-title">Training</div>
+    el.innerHTML=`${subHead('Training')}
   <div class="section-sub">Rest Timer</div>
   <div class="settings-panel" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border:1px solid var(--gray-mid);padding:10px 12px;margin-bottom:10px;">
     <div>
@@ -9009,7 +9013,7 @@ function renderData(){
   }
 
   if(_settingsPage==='appearance'){
-    el.innerHTML=`${back}<div class="section-title">Appearance</div>
+    el.innerHTML=`${subHead('Appearance')}
   <div class="section-sub">Theme</div>
   <div style="font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Dark</div>
   <div class="settings-panel" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
@@ -9051,7 +9055,7 @@ function renderData(){
   }
 
   if(_settingsPage==='data'){
-    el.innerHTML=`${back}<div class="section-title">Data &amp; Sync</div>
+    el.innerHTML=`${subHead('Data &amp; Sync')}
   <div class="section-sub">Sync Status</div>
   <div id="sync-status-card" class="settings-panel" style="border:1px solid var(--gray-mid);padding:12px 14px;margin-bottom:18px;font-family:var(--mono);font-size:.55rem;color:var(--gray-light);line-height:1.9;">
     <div id="sync-health" style="color:${_lastSyncError?'var(--red)':'var(--green-bright)'};font-size:.62rem;margin-bottom:5px;">${_lastSyncError?('⚠ '+escapeHTML(_lastSyncError)):'✓ All changes synced'}</div>
@@ -9078,7 +9082,7 @@ function renderData(){
   }
 
   if(_settingsPage==='help'){
-    el.innerHTML=`${back}<div class="section-title">Help</div>
+    el.innerHTML=`${subHead('Help')}
   <div style="font-family:var(--mono);font-size:.55rem;color:var(--gray-light);line-height:1.7;margin-bottom:14px;">How The Chain works. Tap a topic.</div>
   ${HELP_TOPICS.map(t=>{
     const open=_helpOpenTopic===t.id;
@@ -9094,7 +9098,7 @@ function renderData(){
   }
 
   if(_settingsPage==='support'){
-    el.innerHTML=`${back}<div class="section-title">Support</div>
+    el.innerHTML=`${subHead('Support')}
   <div class="section-sub">Feedback</div>
   <div style="font-family:var(--mono);font-size:.58rem;color:var(--gray-light);line-height:1.8;margin-bottom:10px">Found a bug? Have a feature request? Open your email app with a pre-filled message including app version + your user ID for quick debugging.</div>
   <div class="data-row" style="margin-bottom:18px;">
