@@ -50,15 +50,16 @@
 - UI: tag-editor har measure single-select (`setExerciseMeasure`) + sprintBase-toggle (`setSprintBase`).
 - Library-data: bw=Chins/Pull-ups/Dips/Back Ext, bwreps=Ab Wheel/core, timed=Plank/Dead Hang, cardio=Bike/Walk, cardiosprint=Assault Bike, carry=Farmers/Sled.
 
-### Synk-lagret (3.62.0 — läs-före-skriv + CAS)
+### Synk-lagret (3.62.0 läs-före-skriv+CAS, 3.64.0 server-enforced CAS)
 - **Två invarianter sedan 3.62.0 — bryt dem ALDRIG:** (1) `_cloudSeenThisSession`-gate: ingen skrivning mot molnet (pushState/keepalive) förrän en lyckad molnläsning skett denna session. (2) CAS: alla skrivningar villkoras på senast sedda `updated_at` (`state.lastSyncedCloudISO`); konflikt → pull+merge → retry en gång. Blind upsert (`sbUpsert`) FINNS INTE längre — återinför den inte.
+- **Sedan 3.64.0: CAS är server-enforced, inte bara klient-konvention.** Direkt `INSERT`/`UPDATE` på `app_state` är indraget för rollen `authenticated` (Supabase Dashboard, se `SYNC_CAS_SERVER_SPEC.md`) — all skrivning MÅSTE gå genom Postgres-funktionen `write_app_state_cas(p_expected_updated_at, p_data)`. En gammal pre-3.64.0-klient som försöker en rå PATCH/POST får `403`.
 - `~4646` — `mergeLogEntries`, `mergeWeightEntries`, `mergeArrayById`, `mergeKeyedMap`, `mergeArrayUnion`, `mergeMapOfArrays`, `mergeMapOfArrayById`
 - `~4720` — `syncFromCloud(userId)` — koalescerad (`_syncPromise` delas; parallella anrop AWAITAR pågående pull, no-op:ar inte). Preserverar lokala `state.drafts`. Sätter gate + `lastSyncedCloudISO` i alla branches; tom molnrad rensar ISO (→ insert-väg).
-- `~4880` — `sbGet` (12s abort-timeout), `sbPatchStateIfMatch` (CAS-PATCH, `'conflict'` vid tomt svar), `sbInsertState` (första raden, 409 → `'conflict'`)
-- `~4990` — `pushState(opts)` — pull-before-push (alltid awaitad) → gate-check → CAS-skrivning → konflikt = pull+merge+retry(`_casRetry`). Backoff-retry kör fullt flöde (aldrig skipPull). Drafts exkluderas ur payload.
+- `~4880` — `sbGet` (12s abort-timeout), `sbWriteStateCas(expectedISO, data)` (POST mot `/rest/v1/rpc/write_app_state_cas`, `'conflict'` vid `cas_conflict`-fel eller tomt svar). Ersätter f.d. `sbPatchStateIfMatch`/`sbInsertState` (rå PATCH/POST — finns inte längre).
+- `~4990` — `pushState(opts)` — pull-before-push (alltid awaitad) → gate-check → CAS-skrivning (`sbWriteStateCas`) → konflikt = pull+merge+retry(`_casRetry`). Backoff-retry kör fullt flöde (aldrig skipPull). Drafts exkluderas ur payload.
 - `~5050` — `save()` — isFreshState-guard + QuotaExceededError-toast
 - `finishSession(passId)` — rensar `state.drafts[passId]`
-- `~9540` — `keepaliveCloudPush()` — gate-check + CAS-PATCH (villkorad, fire-and-forget; konflikt = tyst no-op, datat kvar i localStorage). `__periodicSyncTimer` (30s) strax ovan.
+- `~9540` — `keepaliveCloudPush()` — gate-check + `sbWriteStateCas` via RPC (fire-and-forget; konflikt/403 = tyst no-op, datat kvar i localStorage). `__periodicSyncTimer` (30s) strax ovan.
 - `~9600` — event-handlers: `visibilitychange`, `beforeunload`, `pagehide`
 - Forensik: `PUSH_BLOCKED@gate` + `PUSH_CONFLICT@cas` i `_dbgPush`-ringbufferten
 - **`autoReloadForNewVersion(cloudVersion)` (3.62.1)** — ersatte dismiss-bar `showOldVersionBanner`. Triggas i `syncFromCloud` när `cloud.appVersion > APP_VERSION`. Säkrar lokal data → toast → `location.reload()` efter 1.5s. Stänger residual-risken att en öppen flik med gammal (pre-CAS) JS pushar blint på obestämd tid — self-healer inom en periodisk synk-cykel (≤30s synlig flik) istället för att kräva manuell refresh. **OBS:** `registration.update()`-polling för SW FUNGERAR INTE med query-string-versionering (`./sw.js?v=X`) — en redan-registrerad flik re-kollar bara sin egen gamla URL. Försök inte den vägen igen.

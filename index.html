@@ -4137,7 +4137,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.63.2';
+const APP_VERSION = '3.64.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4925,47 +4925,33 @@ async function sbGet(table,query=''){
     clearTimeout(t);
   }
 }
-// 3.62.0 — CAS-skrivningar (compare-and-swap) ersätter blind upsert. Blind
-// last-writer-wins var rotorsaken till att en stale enhet kunde skriva över
-// ett nybyggt program i molnet. PATCH:en är villkorad på exakt den updated_at
-// vi senast läste — matchar den inte har någon annan skrivit emellan → 'conflict'.
-async function sbPatchStateIfMatch(id, matchISO, data, nowISO){
+// 3.64.0 — Server-side CAS via Postgres RPC. 3.62.0 gav klientsidig CAS
+// (PATCH villkorad på updated_at) men det villkoret är något klienten VÄLJER
+// att skicka — en gammal pre-3.62.0 klient kunde fortfarande göra en helt
+// vanlig blind POST/PATCH utan villkor. write_app_state_cas() gör CAS-kontrollen
+// atomärt server-side; direkt INSERT/UPDATE på app_state är indraget för
+// authenticated (se SYNC_CAS_SERVER_SPEC.md) så den vägen ger 403 oavsett innehåll.
+async function sbWriteStateCas(expectedISO, data){
   const headers = await getAuthHeaders();
   // Samma 12s abort-timeout som sbGet — en hängd skrivning får inte frysa pushState
   const ctrl = new AbortController();
   const t = setTimeout(()=>ctrl.abort(), 12000);
   try{
-    const r = await fetch(`${SB_URL}/rest/v1/app_state?id=eq.${encodeURIComponent(id)}&updated_at=eq.${encodeURIComponent(matchISO)}`,{
-      method:'PATCH',
-      headers:{...headers,'Prefer':'return=representation'},
-      body:JSON.stringify({data, updated_at: nowISO}),
-      mode:'cors',
-      signal:ctrl.signal
-    });
-    if(!r.ok)throw new Error(await r.text());
-    const rows = await r.json().catch(()=>null);
-    // Tomt svar = filtret matchade ingen rad = molnet ändrat sedan vi läste
-    return (Array.isArray(rows) && rows.length) ? rows : 'conflict';
-  } finally {
-    clearTimeout(t);
-  }
-}
-async function sbInsertState(id, data, nowISO){
-  const headers = await getAuthHeaders();
-  const ctrl = new AbortController();
-  const t = setTimeout(()=>ctrl.abort(), 12000);
-  try{
-    const r = await fetch(`${SB_URL}/rest/v1/app_state`,{
+    const r = await fetch(`${SB_URL}/rest/v1/rpc/write_app_state_cas`,{
       method:'POST',
-      headers:{...headers,'Prefer':'return=representation'},
-      body:JSON.stringify({id, data, updated_at: nowISO}),
+      headers:{...headers,'Content-Type':'application/json'},
+      body:JSON.stringify({p_expected_updated_at: expectedISO || null, p_data: data}),
       mode:'cors',
       signal:ctrl.signal
     });
-    if(r.status === 409) return 'conflict'; // raden fanns redan — annan enhet hann före
-    if(!r.ok)throw new Error(await r.text());
+    if(!r.ok){
+      const errBody = await r.text().catch(()=>'');
+      // cas_conflict = raden ändrades av annan enhet mellan vår senaste läsning och denna skrivning
+      if(errBody.includes('cas_conflict')) return 'conflict';
+      throw new Error(errBody || ('HTTP '+r.status));
+    }
     const rows = await r.json().catch(()=>null);
-    return (Array.isArray(rows) && rows.length) ? rows : null;
+    return (Array.isArray(rows) && rows.length) ? rows : 'conflict';
   } finally {
     clearTimeout(t);
   }
@@ -5055,15 +5041,11 @@ async function pushState(opts={}){
     delete payload.draft;
     delete payload.drafts;
     const nowISO = new Date().toISOString();
-    let result;
-    if(state.lastSyncedCloudISO){
-      // 3.62.0 — CAS: skriv BARA om molnraden har exakt den updated_at vi senast
-      // såg. Annars har en annan enhet skrivit emellan → pull+merge → retry EN gång.
-      result = await sbPatchStateIfMatch(currentUser.id, state.lastSyncedCloudISO, payload, nowISO);
-    } else {
-      // Första skrivningen för denna användare (ingen molnrad sedd)
-      result = await sbInsertState(currentUser.id, payload, nowISO);
-    }
+    // 3.64.0 — CAS: skriv BARA om molnraden har exakt den updated_at vi senast
+    // såg (eller ingen molnrad alls, för första skrivningen). Annars har en
+    // annan enhet skrivit emellan → pull+merge → retry EN gång. RPC:n avgör
+    // själv insert-vs-update server-side (p_expected_updated_at IS NULL-grenen).
+    let result = await sbWriteStateCas(state.lastSyncedCloudISO || null, payload);
     if(result === 'conflict'){
       if(opts._casRetry) throw new Error('push conflict persisted after merge');
       _dbgPush({type:'PUSH_CONFLICT@cas'});
@@ -9695,22 +9677,15 @@ function keepaliveCloudPush(){
   const _payloadState = {...state};
   delete _payloadState.draft;
   delete _payloadState.drafts;
-  const nowISO = new Date().toISOString();
-  let url, method, body;
-  if(state.lastSyncedCloudISO){
-    url = SB_URL+'/rest/v1/app_state?id=eq.'+encodeURIComponent(currentUser.id)
-        +'&updated_at=eq.'+encodeURIComponent(state.lastSyncedCloudISO);
-    method = 'PATCH';
-    body = JSON.stringify({data:_payloadState, updated_at: nowISO});
-  } else {
-    // Ny användare utan molnrad (gate passerad = molnet bekräftat tomt) → insert
-    url = SB_URL+'/rest/v1/app_state';
-    method = 'POST';
-    body = JSON.stringify({id:currentUser.id, data:_payloadState, updated_at: nowISO});
-  }
+  // 3.64.0 — RPC statt rå PATCH/POST: direkt INSERT/UPDATE på app_state är
+  // indraget för authenticated (se SYNC_CAS_SERVER_SPEC.md), så keepalive måste
+  // gå genom samma write_app_state_cas() som pushState. RPC:n avgör själv
+  // insert-vs-update via p_expected_updated_at IS NULL-grenen.
+  const url = SB_URL+'/rest/v1/rpc/write_app_state_cas';
+  const body = JSON.stringify({p_expected_updated_at: state.lastSyncedCloudISO || null, p_data: _payloadState});
   try{
     fetch(url,{
-      method,
+      method:'POST',
       headers:{
         'apikey':SB_KEY,
         'Authorization':'Bearer '+authToken,
