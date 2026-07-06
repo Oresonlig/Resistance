@@ -3732,7 +3732,11 @@ function isFreshState(s){
   // Real states have log entries, weight log entries, or cycle progress
   const hasLog = Array.isArray(s.log) && s.log.length > 0;
   const hasWeight = Array.isArray(s.weightLog) && s.weightLog.length > 0;
-  const hasProgress = s.cycles && s.cycles.some(c => c.done && Object.keys(c.done).length > 0);
+  // 3.65.1 — Object.values().some(v=>v), INTE keys.length: newCycle() förfyller done
+  // med {A:null,...} (3.35.12-beroende på när den anropas) och null-slots är inte
+  // progress. Med keys-checken var guarden avväpnad för varje state vars cykel hunnit
+  // förfyllas — att den fungerade vid boot berodde på TDZ-catchens tomma done.
+  const hasProgress = s.cycles && s.cycles.some(c => c.done && Object.values(c.done).some(v => v));
   const hasCustomEx = Array.isArray(s.customExercises) && s.customExercises.length > 0;
   const hasOverrides = s.exerciseOverrides && Object.keys(s.exerciseOverrides).length > 0;
   const hasSwaps = s.permanentSwaps && Object.keys(s.permanentSwaps).length > 0;
@@ -4139,7 +4143,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.65.0';
+const APP_VERSION = '3.65.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

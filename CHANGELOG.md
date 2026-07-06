@@ -6,6 +6,13 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.65.1 — 2026-07-06
+**isFreshState-guarden var delvis avväpnad — hittad av de nya synk-testerna.**
+
+`hasProgress` räknade `Object.keys(cycle.done).length > 0`, men `newCycle()` förfyller `done` med `{A:null, B:null, ...}` när `getEffectiveChain()` är tillgänglig — null-slots utan ett enda avslutat pass räknades som "progress". Konsekvens: varje state vars cykel hunnit förfyllas klassades som icke-fresh, och PM6/pushState/keepalive-skyddet mot att tomma enheter skriver över molndata vilade i praktiken på 3.35.12-TDZ-catchens råkat-tomma `done` vid script-load. Fix: `Object.values(done).some(v => v)` — bara faktiskt avslutade pass räknas. Alla 9 call-sites genomgångna (pushState/save/keepalive/pagehide-persist/finishOnboarding-safety-net): skarpare fresh-detektering är rätt riktning i samtliga.
+
+Hittad av PM5 Option B-synktesterna (samma session): testet "vägrar pusha fresh state" föll — mot riktiga koden, inte en spegel.
+
 ## 3.65.0 — 2026-07-06
 **PM9/PM19 riktad granskningsrunda #4 (Fable): importData var den sista osanerade fil-gränsen.**
 

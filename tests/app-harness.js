@@ -42,6 +42,16 @@ export function bootApp(){
     get currentUser(){return currentUser}, set currentUser(v){currentUser=v},
     get isLoading(){return isLoading}, set isLoading(v){isLoading=v},
     get BASE_SESSIONS(){return BASE_SESSIONS},
+    get APP_VERSION(){return APP_VERSION},
+    // Synk-lagrets modul-lets (3.62.0/3.64.0) — exponerade för synk-testerna
+    get cloudSeen(){return _cloudSeenThisSession}, set cloudSeen(v){_cloudSeenThisSession=v},
+    get syncPromise(){return _syncPromise},
+    get pushRetries(){return _pushRetries}, set pushRetries(v){_pushRetries=v},
+    get pushRetryTimer(){return _pushRetryTimer},
+    get saveTimer(){return saveTimer}, set saveTimer(v){saveTimer=v},
+    get lastSyncError(){return _lastSyncError}, set lastSyncError(v){_lastSyncError=v},
+    get lastSyncRead(){return lastSyncRead}, set lastSyncRead(v){lastSyncRead=v},
+    get lastSyncWrite(){return lastSyncWrite}, set lastSyncWrite(v){lastSyncWrite=v},
   };`;
   blocks.forEach((code, i)=>{
     (0, eval)(i === blocks.length-1 ? code + epilogue : code);
@@ -58,5 +68,13 @@ export function resetState(){
   T.state = window.freshState();
   window.ensureStateDefaults();
   window.invalidateChainCache();
+  // Synk-globaler: nollställ + döda hängande timers så tester inte läcker in i varandra
+  clearTimeout(T.pushRetryTimer);
+  clearTimeout(T.saveTimer); T.saveTimer = null;
+  T.pushRetries = 0;
+  T.cloudSeen = false;
+  T.lastSyncError = '';
+  T.lastSyncRead = 0;
+  T.lastSyncWrite = 0;
   return T;
 }
