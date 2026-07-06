@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.67.2 — 2026-07-06
+**Fix: Done trycktes utanför skärmen på Settings-undersidor i Obsidian.** Rotorsak: undersidorna använde `.section-title`, som har extrema tema-overrides (Obsidian: Cinzel + `.32em` letter-spacing + uppercase → "APPEARANCE" enormt bred; Cosmic Horror snarlik). Edit Program använder `.edit-title` — ärver temats font via `var(--display)` men utan tracking-explosionen, noll tema-overrides — därför funkar dess huvud i alla teman. Fix: undersidorna använder nu `.edit-title` (temafonten följer fortfarande med) + ellipsis-skyddsnät (`min-width:0`) så Done aldrig kan tryckas ut oavsett framtida tema. Genomgång av övriga `section-title`-ställen: alla står ensamma på egen rad utan knapp — ingen mer yta med samma problem.
+
 ## 3.67.1 — 2026-07-06
 **Settings-undersidor: tydlig temastylad Done-knapp.** Niklas mobilfeedback på 3.66.0: "← Done" (btn-secondary) var knappt märkbar. Nu exakt samma huvud som Edit Program — titel till vänster, `btn-primary` "Done" till höger i flex-rad. btn-primary är temastylad i alla teman (3.34.1: Iron metal stamp, Nanosuit octagonal HUD, osv.) → knappen följer respektive tema gratis.
 
