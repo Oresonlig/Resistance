@@ -43,6 +43,7 @@ export function bootApp(){
     get isLoading(){return isLoading}, set isLoading(v){isLoading=v},
     get BASE_SESSIONS(){return BASE_SESSIONS},
     get APP_VERSION(){return APP_VERSION},
+    get HELP_TOPICS(){return HELP_TOPICS},
     // Synk-lagrets modul-lets (3.62.0/3.64.0) — exponerade för synk-testerna
     get cloudSeen(){return _cloudSeenThisSession}, set cloudSeen(v){_cloudSeenThisSession=v},
     get syncPromise(){return _syncPromise},

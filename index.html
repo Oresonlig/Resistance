@@ -378,6 +378,9 @@ canvas#weightChart{width:100%!important;display:block;}
 .data-btn.danger:hover{border-color:var(--red);color:var(--red);}
 .empty-state{text-align:center;padding:44px 16px;font-family:var(--mono);font-size:.6rem;color:#555;text-transform:uppercase;letter-spacing:.1em;line-height:2.2;}
 .settings-panel{background:var(--surface-base);border:1px solid var(--border-subtle);}
+.help-body p{margin:0 0 10px;}
+.help-body p:last-child{margin-bottom:0;}
+.help-body strong{color:var(--white);font-weight:600;}
 .rest-timer{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom, 0px));left:50%;transform:translateX(-50%) translateY(120px);background:#0d1a0d;border:1px solid var(--green-bright);color:var(--green-bright);font-family:var(--display);font-size:2rem;letter-spacing:.1em;padding:10px 24px;transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:99;pointer-events:all;display:flex;align-items:center;gap:12px;white-space:nowrap;}
 .rest-timer.show{transform:translateX(-50%) translateY(0);}
 .rest-timer.warning{border-color:var(--gold);color:var(--gold);}
@@ -4149,7 +4152,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.66.0';
+const APP_VERSION = '3.67.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8869,6 +8872,45 @@ function _startUnderstoryVines(canvas){
   _usVineRaf=requestAnimationFrame(tick);
 }
 
+// 3.67.0 — PM18: in-app-hjälp. Innehåll som DATA + en render-loop (samma princip
+// som mätsätten) — aldrig per-ämne-specialkod. Statiskt författad HTML, ingen
+// användardata → ingen escaping behövs i body.
+const HELP_TOPICS=[
+  {id:'chain',title:'The Chain model',body:`
+    <p>Your program is a <strong>chain</strong> of sessions (A, B, C…) done in order. Finish one, move to the next. When the last session is done, the chain restarts — that's one <strong>cycle</strong>.</p>
+    <p>Rest days are golden links in the chain strip. Tap <em>Done</em> on a rest day to log it and move on.</p>
+    <p>There's no weekly schedule on purpose: the chain doesn't care which day it is. Train when you're recovered, and the order takes care of progression.</p>`},
+  {id:'logging',title:'Logging sets',body:`
+    <p><strong>W</strong> rows are warm-up sets, <strong>S</strong> rows are work sets. Fill in the values and tap <em>Log</em> — the row locks with a ✓. Tap the ✓ to unlock it.</p>
+    <p><strong>+F</strong> = forced reps (reps you got with help after failure). The <strong>Fail</strong> button marks a set where you missed the target — failed sets never count as PRs.</p>
+    <p>For unilateral exercises the <strong>L/R</strong> button tracks which side the set was. Use <em>+ Warm-up</em> / <em>+ Work Set</em> to add rows, ✕ to remove. Tap <em>✓ Done</em> when the exercise is finished, or <em>Skip</em> in the Edit ▾ menu.</p>
+    <p>Set counts carry forward: next time, the exercise starts with the same number of sets you actually did.</p>`},
+  {id:'tags',title:'Tags (Ramp, BW+, Unilateral…)',body:`
+    <p>Tags describe <em>how</em> an exercise is done, and drive the default set structure. Tap an exercise's name row to open the tag editor.</p>
+    <p><strong>Ramp</strong> — increase weight each set, no separate warm-ups. <strong>BW+</strong> — bodyweight plus added load. <strong>Unilateral</strong> — one side at a time (extra warm-up by default, L/R tracking). <strong>Timed</strong> — measured in seconds. <strong>Singles</strong> — heavy single reps.</p>
+    <p>Changes apply to you only and follow the exercise, not the session slot.</p>`},
+  {id:'measures',title:'Measurement types',body:`
+    <p>Every exercise has a <strong>measurement type</strong> that decides which input fields you get and how PRs are counted. Change it in the tag editor if an exercise measures the wrong thing.</p>
+    <p><strong>Weight × reps</strong> — the standard. <strong>BW + load</strong> — chins, dips. <strong>Reps only</strong> — ab wheel, core. <strong>Timed</strong> — planks, dead hangs (seconds). <strong>Cardio</strong> — time in minutes + distance. <strong>Sprint</strong> — intervals + sprint count. <strong>Carry</strong> — weight + distance in meters.</p>`},
+  {id:'swap',title:'Swapping exercises',body:`
+    <p>Edit ▾ → Swap on any exercise. <strong>This session</strong> = temporary: "the machine is taken today" — your program is unchanged and the original is back next time. <strong>Permanently</strong> = the exercise is replaced in your program until you swap it back.</p>
+    <p>History, PRs and reminders follow the <em>exercise</em>, not the slot — swap back and forth and nothing is lost or mixed up. <em>+ Custom</em> lets you create your own exercises.</p>`},
+  {id:'extras',title:'Extra exercises',body:`
+    <p><em>+ Add exercise</em> at the bottom of a session adds something just for today. Extras work exactly like ordinary exercises — tags, history, PRs.</p>
+    <p>Want to keep it? <em>+ Program</em> in the extra's Edit ▾ menu makes it a permanent part of the session.</p>`},
+  {id:'reminders',title:'Reminders',body:`
+    <p><em>+ Reminder for next time</em> under an exercise saves a note ("raise seat to 4", "go up 2.5 kg"). It shows with a 📝 every session until you clear it with ✕ or change it.</p>
+    <p>Reminders follow the exercise through swaps.</p>`},
+  {id:'prs',title:'Personal records',body:`
+    <p>PRs are computed from your history automatically, per exercise and measurement type: heaviest weight, most added load, most reps, longest time — depending on the measure. Failed sets don't count.</p>
+    <p>Find them under <strong>Progress</strong>, grouped by muscle group. The ✕ on a PR card hides that record (use it for typos). PRs imported with a shared program show until your own results replace them.</p>`},
+  {id:'sync',title:'Sync, backup & sharing',body:`
+    <p>Your data saves on the device first, then syncs to the cloud — sync problems never lose data, pushes retry automatically once you're back online. The dot in the header shows sync status; tap it for details.</p>
+    <p><strong>Backup</strong> (Data &amp; Sync) exports <em>everything</em> as a file. <strong>Program</strong> export shares your chain structure + PRs — but no training history — so a friend can import your program and start fresh.</p>`},
+];
+let _helpOpenTopic=null;
+function toggleHelpTopic(id){ _helpOpenTopic = _helpOpenTopic===id ? null : id; renderData(); }
+
 // 3.66.0 — Settings är en HUBB med undersidor (Edit Program-mönstret: gå in,
 // "← Done" tillbaka). _settingsPage styr vilken sida som visas; null = hubben.
 // Nav-fliken nollställer alltid till hubben; header-sync-pricken deep-linkar
@@ -9035,6 +9077,22 @@ function renderData(){
     return;
   }
 
+  if(_settingsPage==='help'){
+    el.innerHTML=`${back}<div class="section-title">Help</div>
+  <div style="font-family:var(--mono);font-size:.55rem;color:var(--gray-light);line-height:1.7;margin-bottom:14px;">How The Chain works. Tap a topic.</div>
+  ${HELP_TOPICS.map(t=>{
+    const open=_helpOpenTopic===t.id;
+    return `<div class="settings-panel" style="border:1px solid var(--gray-mid);margin-bottom:8px;">
+      <button onclick="toggleHelpTopic('${t.id}')" style="display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:none;padding:14px;cursor:pointer;text-align:left;">
+        <span style="font-family:var(--sans);font-size:.86rem;color:var(--white);">${t.title}</span>
+        <span style="color:#555;font-size:.7rem;flex-shrink:0;margin-left:10px;">${open?'▾':'▸'}</span>
+      </button>
+      ${open?`<div class="help-body" style="padding:0 14px 14px;font-family:var(--sans);font-size:.74rem;color:var(--gray-light);line-height:1.65;">${t.body}</div>`:''}
+    </div>`;
+  }).join('')}`;
+    return;
+  }
+
   if(_settingsPage==='support'){
     el.innerHTML=`${back}<div class="section-title">Support</div>
   <div class="section-sub">Feedback</div>
@@ -9063,6 +9121,7 @@ function renderData(){
   ${row('training','Training','Rest timer · weight goal · units · custom exercises')}
   ${row('appearance','Appearance','Themes · ambient effects')}
   ${row('data','Data & Sync','Sync status · program sharing · backup · reset')}
+  ${row('help','Help','How the chain, tags, PRs and sync work')}
   ${row('support','Support','Report a bug · send feedback · debug tools')}`;
 }
 function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`thechain-${currentUser?.id}-${todayStr()}.json`;a.click();showToast('Export done!');}

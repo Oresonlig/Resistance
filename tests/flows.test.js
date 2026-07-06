@@ -248,6 +248,23 @@ describe('Settings-hubben (3.66.0)', () => {
     expect(document.getElementById('importFile')).toBeTruthy();
     T.currentUser = null;
   });
+
+  it('Help-vyn (3.67.0): alla ämnen renderas, accordion öppnar/stänger', () => {
+    T.currentUser = { id: 'u1', name: 'Test' };
+    window.openSettingsPage('help');
+    const view = document.getElementById('view-data');
+    // innerHTML serialiserar & som &amp; — normalisera titeln likadant
+    T.HELP_TOPICS.forEach(t => expect(view.innerHTML).toContain(t.title.replace(/&/g, '&amp;')));
+    expect(view.innerHTML).not.toContain('help-body'); // allt stängt initialt
+
+    window.toggleHelpTopic('swap');
+    expect(view.innerHTML).toContain('your program is unchanged'); // temp-swap-förklaringen synlig
+    window.toggleHelpTopic('swap');
+    expect(view.innerHTML).not.toContain('help-body'); // stängd igen
+
+    window.closeSettingsPage();
+    T.currentUser = null;
+  });
 });
 
 describe('importTemplate (template-fil, 3.63.2-saneringen på riktiga flödet)', () => {

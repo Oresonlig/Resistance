@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.67.0 — 2026-07-06
+**PM18 — In-app Help.** Ny Help-undersida i Settings-hubben: 9 ämnen som accordion (The Chain model, Logging sets, Tags, Measurement types, Swapping, Extras, Reminders, Personal records, Sync/backup/sharing). Innehållet är en `HELP_TOPICS`-datastruktur + en render-loop (measure-arkitektur-principen — ingen per-ämne-specialkod). Statiskt författad engelska; förklarar bl.a. temp-vs-permanent swap (Johannes-frågan), att failade set inte räknas som PR, och skillnaden template-delning vs backup. Temaadaptiv gratis via `.settings-panel`-tokens. jsdom-test: alla ämnen renderas, accordion öppnar/stänger. 147/147 gröna.
+
 ## 3.66.0 — 2026-07-06
 **Settings → hubb med undersidor (Edit Program-mönstret).** Fliken öppnar nu en meny med stora tryckytor — Training (rest timer, weight goal, units, weight step, custom exercises), Appearance (teman, ambient effects), Data & Sync (synk-status, program-delning, backup, reset), Support (feedback, debug) — istället för dagens enda långa scroll. "← Done" tillbaka till hubben, samma navigationsvokabulär som Edit Program. Synk-hälsan + version visas som enrads-status direkt på hubben (tap → Data & Sync); header-synk-pricken deep-linkar dit. Ren omflytt av befintligt innehåll — ingen ny funktionalitet, Help-vyn kommer i 3.67.0.
 
