@@ -4153,7 +4153,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.68.0';
+const APP_VERSION = '3.68.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -9343,6 +9343,27 @@ function downloadBlankTemplate(){
   showToast('Blank template downloaded!');
 }
 
+// PM4: Pre-import state snapshot — rollback-möjlighet om import var fel.
+// 7-dagars retention. Tyst fail vid quota (snapshot är safety-net, inte gating).
+// 3.68.1 — utbruten: delas av importTemplate + importData (som saknade den helt).
+function writePreImportSnapshot(){
+  try{
+    localStorage.setItem(`state_before_import_${Date.now()}`, JSON.stringify(state));
+    const SEVEN_DAYS = 7*24*60*60*1000;
+    const cutoff = Date.now() - SEVEN_DAYS;
+    const stale = [];
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if(!k || !k.startsWith('state_before_import_')) continue;
+      const ts = parseInt(k.slice('state_before_import_'.length), 10);
+      if(Number.isFinite(ts) && ts < cutoff) stale.push(k);
+    }
+    stale.forEach(k => localStorage.removeItem(k));
+  }catch(snapErr){
+    console.warn('Pre-import snapshot failed:', snapErr);
+  }
+}
+
 // 3.63.2 — PM19-granskningsfynd: templates delas MELLAN användare, och fil-
 // levererade id:n landar i onclick/id-attribut (JS-strängkontext, escapas aldrig)
 // medan importerade PR-värden renderas råa via toDisplay/fmtReps i prCardHTML.
@@ -9415,23 +9436,7 @@ async function importTemplate(e){
         {confirmLabel:'Import'}
       );
       if(!ok)return;
-      // PM4: Pre-import state snapshot — rollback-möjlighet om import var fel.
-      // 7-dagars retention. Tyst fail vid quota (snapshot är safety-net, inte gating).
-      try{
-        localStorage.setItem(`state_before_import_${Date.now()}`, JSON.stringify(state));
-        const SEVEN_DAYS = 7*24*60*60*1000;
-        const cutoff = Date.now() - SEVEN_DAYS;
-        const stale = [];
-        for(let i=0;i<localStorage.length;i++){
-          const k = localStorage.key(i);
-          if(!k || !k.startsWith('state_before_import_')) continue;
-          const ts = parseInt(k.slice('state_before_import_'.length), 10);
-          if(Number.isFinite(ts) && ts < cutoff) stale.push(k);
-        }
-        stale.forEach(k => localStorage.removeItem(k));
-      }catch(snapErr){
-        console.warn('Pre-import snapshot failed:', snapErr);
-      }
+      writePreImportSnapshot();
       // Apply chain structure
       state.sessionOrder=passOrder;
       state.restSlots=restSlots;
@@ -9569,20 +9574,85 @@ function sanitizeImportedState(d){
     });
   }
   if(d.unit!=='kg'&&d.unit!=='lbs') d.unit='kg';
+  // 3.68.1 — Fable-fynd #1: kedjestruktur-fälten nådde render RÅA från fil.
+  // addedExercises/customExercises-id:n landar i onclick/id-attribut (JS-sträng-
+  // kontext — samma vektor som 3.63.2 stängde för templates; backup-filer delas
+  // mellan användare på samma sätt). Samma safeId-regler som sanitizeTemplateFields.
+  const isStr=(v)=> typeof v==='string';
+  const cleanKeys=(o,vOk)=>{ const r={}; if(o&&typeof o==='object'){ for(const k of Object.keys(o)){ if(safeId(k)&&(!vOk||vOk(o[k]))) r[k]=o[k]; } } return r; };
+  if(d.sessionOrder!==undefined) d.sessionOrder=Array.isArray(d.sessionOrder)?d.sessionOrder.filter(safeId):null;
+  if(d.restSlots!==undefined) d.restSlots=Array.isArray(d.restSlots)?d.restSlots.map(num).filter(v=>v!==null):null;
+  d.sessionNameOverrides=cleanKeys(d.sessionNameOverrides,isStr);
+  d.exerciseOverrides=cleanKeys(d.exerciseOverrides,isStr);
+  d.permanentSwaps=cleanKeys(d.permanentSwaps,isStr);
+  d.exerciseTagOverrides=cleanKeys(d.exerciseTagOverrides,v=>v&&typeof v==='object'&&!Array.isArray(v));
+  d.removedExercises=cleanKeys(d.removedExercises,Array.isArray);
+  for(const k of Object.keys(d.removedExercises)) d.removedExercises[k]=d.removedExercises[k].filter(safeId);
+  d.addedExercises=cleanKeys(d.addedExercises,Array.isArray);
+  for(const k of Object.keys(d.addedExercises)) d.addedExercises[k]=d.addedExercises[k].filter(x=> x&&typeof x==='object'&&safeId(x.id)&&isStr(x.name));
+  d.exerciseOrder=cleanKeys(d.exerciseOrder,Array.isArray);
+  for(const k of Object.keys(d.exerciseOrder)) d.exerciseOrder[k]=d.exerciseOrder[k].filter(safeId);
+  d.customExercises=(Array.isArray(d.customExercises)?d.customExercises:[]).filter(c=> c&&typeof c==='object'&&safeId(c.id)&&isStr(c.name));
+  d.exerciseNotes=cleanKeys(d.exerciseNotes,isStr);
+  d.lastSessionSetCount=cleanKeys(d.lastSessionSetCount,Number.isFinite);
+  d.lastSessionWarmupCount=cleanKeys(d.lastSessionWarmupCount,Number.isFinite);
+  d.exerciseMeasureOverride=cleanKeys(d.exerciseMeasureOverride,v=>!!MEASURES[v]);
+  d.exerciseSprintBase=cleanKeys(d.exerciseSprintBase,v=>v==='time'||v==='dist');
+  d.deletions={
+    customExercises:cleanKeys(d.deletions&&d.deletions.customExercises,Number.isFinite),
+    exerciseNotes:cleanKeys(d.deletions&&d.deletions.exerciseNotes,Number.isFinite),
+  };
+  // 3.68.1 — Fable-fynd #3: schemaVersion/migrations rått från fil kunde tyst
+  // blockera FRAMTIDA migrationer (schemaVersion:99 hoppar allt och persisteras;
+  // okända flaggor kan pre-blockera). Koercera+clampa, whitelista kända flaggor.
+  const sv=num(d.schemaVersion);
+  d.schemaVersion=Math.max(0,Math.min(sv===null?0:sv,SCHEMA_VERSION));
+  const KNOWN_MIGRATIONS=['exerciseSplit_v2','passKeysToSession_v1','rotatorCuffMerge_v1','libraryUniform_v1'];
+  const mig={};
+  if(d.migrations&&typeof d.migrations==='object'){
+    for(const k of KNOWN_MIGRATIONS){ const v=num(d.migrations[k]); if(v) mig[k]=v; }
+  }
+  d.migrations=mig;
+  // 3.68.1 — Fable-fynd #4: filens synk-tidsstämplar beskriver en ANNAN enhets
+  // synkläge. Med dem kvar kunde cloudHasNewerState hoppa över merge på fel
+  // premiss. Nollställ → nästa sync gör riktig läsning+merge (3.62.0-invarianten).
+  d.lastSyncedCloudTime=0; d.lastSyncedCloudISO=null;
   // Drafts är device-lokala (SL6, exkluderas ur molnpayload av samma skäl) — en
   // importerad fil ska inte kunna plantera in-flight input-buffrar/savedExercises.
   delete d.draft; delete d.drafts;
   return d;
 }
-function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.cycles||!d.log)throw new Error('Invalid file');state=sanitizeImportedState(d);
-  // Kör samma migrations-pipeline som loadStateForUser — gamla exporter kan
-  // sakna nyare fält/schema (tidigare patchades bara unit+exerciseOverrides ad hoc).
-  migratePassKeysToSession();
-  ensureStateDefaults();
-  if(state.migrations && !state.migrations.exerciseSplit_v2) migrateExerciseNames();
-  runSchemaMigrations();
-  invalidateChainCache();
-  save();showToast('Data imported!');renderChain();}catch{showToast('Error: invalid file');}};reader.readAsText(file);}
+async function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  // 3.68.1 — Fable-fynd #5: utan reset triggar samma fil ingen onchange
+  // andra gången (t.ex. retry efter felmeddelande) → tyst no-op.
+  e.target.value='';
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(!d.cycles||!d.log)throw new Error('Invalid file');
+      // 3.68.1 — Fable-fynd #2: importData ersätter HELA staten + syncar till moln,
+      // men saknade både bekräftelse och PM4-snapshot (importTemplate hade båda).
+      const sessions=(Array.isArray(d.log)?d.log:[]).length;
+      const ok=await askModalConfirm('Import backup?',
+        `<strong>${sessions} logged session${sessions===1?'':'s'}</strong> in file.<br><br>This will <strong>replace all current data</strong> for <strong>${escapeHTML(currentUser?.name||'this account')}</strong> and sync to the cloud. A local snapshot of your current data is kept for 7 days.`,
+        {confirmLabel:'Replace data', danger:true});
+      if(!ok)return;
+      writePreImportSnapshot();
+      state=sanitizeImportedState(d);
+      // Kör samma migrations-pipeline som loadStateForUser — gamla exporter kan
+      // sakna nyare fält/schema (tidigare patchades bara unit+exerciseOverrides ad hoc).
+      migratePassKeysToSession();
+      ensureStateDefaults();
+      if(state.migrations && !state.migrations.exerciseSplit_v2) migrateExerciseNames();
+      runSchemaMigrations();
+      invalidateChainCache();
+      save();showToast('Data imported!');renderChain();
+    }catch{showToast('Error: invalid file');}
+  };
+  reader.readAsText(file);
+}
 async function resetAll(){
   const ok = await askModalConfirm('Reset all data?',
     `This will permanently erase all training data for <strong>${currentUser?.name || 'this account'}</strong> — sessions, weight logs, custom exercises, everything. This cannot be undone.`,

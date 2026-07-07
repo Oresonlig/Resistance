@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // PM5 Option B — end-to-end-tester av stateful flöden i index.html (riktiga koden,
 // inte src/-speglar). Se app-harness.js för hur appen bootas.
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { bootApp, resetState } from './app-harness.js';
 
 const T = bootApp();
@@ -140,6 +140,11 @@ describe('doSwap (temp/perm)', () => {
 });
 
 describe('importData (backup-fil, 3.65.0-saneringen på riktiga flödet)', () => {
+  // 3.68.1 — importData kräver numera bekräftelse (Fable-fynd #2); stubba som doSwap-testerna
+  let origConfirm;
+  beforeEach(() => { origConfirm = window.askModalConfirm; window.askModalConfirm = async () => true; });
+  afterEach(() => { window.askModalConfirm = origConfirm; });
+
   function importFile(obj){
     const file = new File([JSON.stringify(obj)], 'backup.json', { type:'application/json' });
     window.importData({ target: { files:[file], value:'' } });
@@ -218,6 +223,60 @@ describe('importData (backup-fil, 3.65.0-saneringen på riktiga flödet)', () =>
     // felgrenen är synkron efter FileReader-load — vänta en tick och verifiera oförändrat
     await new Promise(r => setTimeout(r, 50));
     expect(T.state).toBe(before);
+  });
+
+  it('avbruten confirm lämnar state orört (3.68.1 fynd #2)', async () => {
+    window.askModalConfirm = async () => false;
+    const before = T.state;
+    importFile({ ...window.freshState(), log: [{ passId:'A', exercises: [] }] });
+    await new Promise(r => setTimeout(r, 50));
+    expect(T.state).toBe(before);
+  });
+
+  it('sanerar kedjestruktur-fälten — 3.63.2-vektorn via backup (3.68.1 fynd #1)', async () => {
+    const evil = window.freshState();
+    evil.log = [{ passId:'A', exercises: [] }];
+    evil.addedExercises = {
+      A: [ { id: "added_1", name: 'Legit' }, { id: "x'),alert(1),('", name: 'Evil' } ],
+      "B'><img>": [ { id: 'added_2', name: 'DroppasMedNyckeln' } ],
+    };
+    evil.customExercises = [
+      { id: 'custom_9', name: 'Legit Custom' },
+      { id: "custom_'),alert(1),('", name: 'Evil Custom' },
+    ];
+    evil.permanentSwaps = { A1: 'Bench Press (DB)', "D2'><svg>": 'x' };
+    evil.exerciseOrder = { A: ['A1', "bad'id"], "C<svg>": ['C1'] };
+    evil.exerciseNotes = { ex_deadlift: 'ok', "ex_')</textarea><script>": 'evil' };
+    importFile(evil);
+    await vi.waitFor(() => expect(T.state.addedExercises.A?.length).toBe(1));
+
+    expect(T.state.addedExercises.A[0].id).toBe('added_1');
+    expect(Object.keys(T.state.addedExercises)).toEqual(['A']);
+    expect(T.state.customExercises.map(c => c.id)).toEqual(['custom_9']);
+    expect(Object.keys(T.state.permanentSwaps)).toEqual(['A1']);
+    expect(T.state.exerciseOrder.A).toEqual(['A1']);
+    expect(Object.keys(T.state.exerciseOrder)).toEqual(['A']);
+    expect(Object.keys(T.state.exerciseNotes)).toEqual(['ex_deadlift']);
+  });
+
+  it('smugglade migrations-flaggor och schemaVersion neutraliseras (3.68.1 fynd #3)', async () => {
+    const f = window.freshState();
+    f.log = [{ passId:'A', exercises: [] }];
+    f.schemaVersion = 99;
+    f.migrations = { framtida_flagga_v9: Date.now(), exerciseSplit_v2: 'inte-ett-nummer', libraryUniform_v1: 1234 };
+    f.lastSyncedCloudTime = Date.now() + 999999;
+    f.lastSyncedCloudISO = '2099-01-01T00:00:00Z';
+    importFile(f);
+    await vi.waitFor(() => expect(T.state.log.length).toBe(1));
+
+    expect(T.state.schemaVersion).toBe(2);                       // clampat till SCHEMA_VERSION
+    expect(T.state.migrations.framtida_flagga_v9).toBeUndefined(); // okänd flagga droppad
+    expect(T.state.migrations.libraryUniform_v1).toBe(1234);      // känd numerisk flagga behålls
+    // exerciseSplit_v2 var icke-numerisk → droppad → migrationen kördes om och satte den själv
+    expect(typeof T.state.migrations.exerciseSplit_v2).toBe('number');
+    // 3.68.1 fynd #4: filens synk-tidsstämplar nollställda → nästa sync gör riktig merge
+    expect(T.state.lastSyncedCloudTime).toBe(0);
+    expect(T.state.lastSyncedCloudISO ?? null).toBeNull();
   });
 });
 
