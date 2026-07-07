@@ -6,6 +6,9 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.68.2 — 2026-07-07
+**Sista svenska övningsnamnen bort: "Vader (seated/standing)" mergade in i Seated/Standing Calf Raise.** Vader = svenska för calves — låg som dubbletter i Legs bredvid de engelska posterna. Engångsmigration `vaderCalfMerge_v1` flödar ev. Vader-historik/notes/set-counts in i Calf Raise-posterna. Rename-motorn utbruten till `applyExerciseRenames()` (delad av 3.68.0-migrationen + denna, istället för kopierad). Flaggan tillagd i importens migrations-whitelist. Övriga biblioteket genomsökt: inga fler svenska namn.
+
 ## 3.68.1 — 2026-07-07
 **Import-härdning (Fable-granskningsrunda #5, alla 5 fynd åtgärdade).** #1 HÖG: `sanitizeImportedState` täckte inte kedjestruktur-fälten — fil-levererade `addedExercises`/`customExercises`-id:n landade råa i onclick/id-attribut (JS-strängkontext, 3.63.2-vektorn via backup-filen istället för template). Nu samma safeId/cleanKeys-regler som `sanitizeTemplateFields` på sessionOrder/restSlots/overrides/swaps/added/removed/custom/exerciseOrder/notes/set-counts/measure-overrides/deletions. #2: importData har nu confirm-dialog + PM4-snapshot (utbruten `writePreImportSnapshot()`, delad med importTemplate) — ersätter hela staten + syncar, hade ingetdera. #3: `schemaVersion` koerceras+clampas, `migrations` whitelistas till kända numeriska flaggor — smugglade flaggor kunde tyst blockera framtida migrationer. #4: filens `lastSyncedCloudTime/ISO` nollställs — beskrev en annan enhets synkläge och kunde hoppa över cloud-merge på fel premiss. #5: fil-inputen nollställs så samma fil kan väljas igen efter fel. +3 nya tester (150 totalt). Fable verifierade samtidigt att gamla backup-filer går genom hela migrations-pipelinen (inkl. 3.68.0-renames) vid import.
 

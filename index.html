@@ -4021,8 +4021,6 @@ const EXERCISE_LIBRARY = [
   {name:'Seated Calf Raise', cat:'Legs'},
   {name:'Seated Leg Curl', cat:'Legs'},
   {name:'Standing Calf Raise', cat:'Legs'},
-  {name:'Vader (seated)', cat:'Legs'},
-  {name:'Vader (standing)', cat:'Legs'},
   {name:'Zercher Squat', cat:'Legs'},
   // TRAPS
   {name:'Shrugs (BB)', cat:'Traps'},
@@ -4153,7 +4151,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.68.1';
+const APP_VERSION = '3.68.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4206,6 +4204,8 @@ const NAME_ALIASES = {
   'Barbell Curl':'Biceps Curl (BB)','Cable Curl':'Biceps Curl (Cable)','DB Curl':'Biceps Curl (DB)',
   'Incline DB Curl':'Incline Biceps Curl (DB)',
   'Barbell Shrugs':'Shrugs (BB)','DB Shrugs':'Shrugs (DB)','Trap Bar Shrugs':'Shrugs (Trap Bar)',
+  // 3.68.2 — "Vader" var svenska (= calves), dubbletter av Calf Raise-posterna
+  'Vader (seated)':'Seated Calf Raise','Vader (standing)':'Standing Calf Raise',
 };
 const SLOT_NAME_ALIASES = {
   'A4|Tri-finisher':'Tricep Pushdowns','E4|Tri-finisher':'Overhead Tricep Extension','C4|Calfs':'Seated Calf Raise',
@@ -4580,33 +4580,12 @@ function migrateRotatorCuffMerge(){
   state.migrations.rotatorCuffMerge_v1=Date.now();
 }
 
-// 3.68.0 — Enhetlig namnstandard: "Övningsnamn (Variant)" för utrustningsvarianter.
-// Skriver om name (exakt match mot rename-mappen) + exId (gammal slug → ny slug) i
-// logg/cykler/overrides/swaps/added/drafts, och flyttar exId-nycklade maps till nya
-// nycklar. exId skrivs ALDRIG om från namnet (rename-etiketter har exId ≠ slug(name)
-// by design) — bara via KEYMAP. Engångskörning.
-function migrateLibraryUniform(){
-  if(!state) return;
-  state.migrations = state.migrations || {};
-  if(state.migrations.libraryUniform_v1) return;
-  const RENAMES = {
-    'Flat BB Bench Press':'Bench Press (BB)','Flat DB Press':'Bench Press (DB)',
-    'Incline BB Press':'Incline Press (BB)','Incline DB Press':'Incline Press (DB)',
-    'Incline Smith Press':'Incline Press (Smith)',
-    'Decline Cable Press':'Decline Press (Cable)','Decline DB Press':'Decline Press (DB)',
-    'Decline Smith Press':'Decline Press (Smith)',
-    'Cable Flyes':'Flyes (Cable)','Incline Cable Flyes':'Incline Flyes (Cable)',
-    'Decline Cable Flyes':'Decline Flyes (Cable)','Single-Arm Cable Flyes':'Single-Arm Flyes (Cable)',
-    'Seated Cable Row':'Seated Row (Cable)','Seated Row':'Seated Row (Machine)',
-    'Unilateral Cable Row':'Unilateral Row (Cable)',
-    'Cable Lateral Raises':'Lateral Raises (Cable)','Lateral Raises':'Lateral Raises (DB)',
-    'Military Press (barbell)':'Military Press (BB)','Military Press - Smith':'Military Press (Smith)',
-    'DB Shoulder Press':'Shoulder Press (DB)','Standing Cable Front Raise':'Front Raise (Cable)',
-    'Rear Delt Flyes':'Rear Delt Flyes (DB)',
-    'Barbell Curl':'Biceps Curl (BB)','Cable Curl':'Biceps Curl (Cable)','DB Curl':'Biceps Curl (DB)',
-    'Incline DB Curl':'Incline Biceps Curl (DB)',
-    'Barbell Shrugs':'Shrugs (BB)','DB Shrugs':'Shrugs (DB)','Trap Bar Shrugs':'Shrugs (Trap Bar)',
-  };
+// 3.68.0/3.68.2 — Delad rename/merge-motor. Skriver om name (exakt match mot
+// rename-mappen) + exId (gammal slug → ny slug) i logg/cykler/overrides/swaps/
+// added/drafts, och flyttar exId-nycklade maps till nya nycklar. exId skrivs
+// ALDRIG om från namnet (rename-etiketter har exId ≠ slug(name) by design) —
+// bara via KEYMAP. Anroparen äger flag-guarden.
+function applyExerciseRenames(RENAMES){
   const KEYMAP={};
   Object.entries(RENAMES).forEach(([o,n])=>{ KEYMAP[slugifyExId(o)]=slugifyExId(n); });
   const fix=(e)=>{
@@ -4651,7 +4630,45 @@ function migrateLibraryUniform(){
       state.deletions.exerciseNotes[k]=Date.now();
     }
   }
+}
+
+// 3.68.0 — Enhetlig namnstandard: "Övningsnamn (Variant)" för utrustningsvarianter.
+function migrateLibraryUniform(){
+  if(!state) return;
+  state.migrations = state.migrations || {};
+  if(state.migrations.libraryUniform_v1) return;
+  applyExerciseRenames({
+    'Flat BB Bench Press':'Bench Press (BB)','Flat DB Press':'Bench Press (DB)',
+    'Incline BB Press':'Incline Press (BB)','Incline DB Press':'Incline Press (DB)',
+    'Incline Smith Press':'Incline Press (Smith)',
+    'Decline Cable Press':'Decline Press (Cable)','Decline DB Press':'Decline Press (DB)',
+    'Decline Smith Press':'Decline Press (Smith)',
+    'Cable Flyes':'Flyes (Cable)','Incline Cable Flyes':'Incline Flyes (Cable)',
+    'Decline Cable Flyes':'Decline Flyes (Cable)','Single-Arm Cable Flyes':'Single-Arm Flyes (Cable)',
+    'Seated Cable Row':'Seated Row (Cable)','Seated Row':'Seated Row (Machine)',
+    'Unilateral Cable Row':'Unilateral Row (Cable)',
+    'Cable Lateral Raises':'Lateral Raises (Cable)','Lateral Raises':'Lateral Raises (DB)',
+    'Military Press (barbell)':'Military Press (BB)','Military Press - Smith':'Military Press (Smith)',
+    'DB Shoulder Press':'Shoulder Press (DB)','Standing Cable Front Raise':'Front Raise (Cable)',
+    'Rear Delt Flyes':'Rear Delt Flyes (DB)',
+    'Barbell Curl':'Biceps Curl (BB)','Cable Curl':'Biceps Curl (Cable)','DB Curl':'Biceps Curl (DB)',
+    'Incline DB Curl':'Incline Biceps Curl (DB)',
+    'Barbell Shrugs':'Shrugs (BB)','DB Shrugs':'Shrugs (DB)','Trap Bar Shrugs':'Shrugs (Trap Bar)',
+  });
   state.migrations.libraryUniform_v1=Date.now();
+}
+
+// 3.68.2 — "Vader" (svenska för calves) låg kvar i biblioteket som dubbletter av
+// Calf Raise-posterna. Merge så ev. Vader-historik flödar in i de engelska.
+function migrateVaderCalfMerge(){
+  if(!state) return;
+  state.migrations = state.migrations || {};
+  if(state.migrations.vaderCalfMerge_v1) return;
+  applyExerciseRenames({
+    'Vader (seated)':'Seated Calf Raise',
+    'Vader (standing)':'Standing Calf Raise',
+  });
+  state.migrations.vaderCalfMerge_v1=Date.now();
 }
 
 function migratePassKeysToSession(){
@@ -4699,6 +4716,7 @@ function runSchemaMigrations(){
   try{ migrateRotatorCuffMerge(); }catch(e){ console.error('rotatorCuffMerge failed', e); }
   // 3.68.0 — körs efter rotatorCuffMerge så namnen redan är kanoniserade
   try{ migrateLibraryUniform(); }catch(e){ console.error('libraryUniform failed', e); }
+  try{ migrateVaderCalfMerge(); }catch(e){ console.error('vaderCalfMerge failed', e); }
   try{ migrateRemovedThemes(); }catch(e){ console.error('removedThemes migration failed', e); }
 }
 
@@ -9607,7 +9625,7 @@ function sanitizeImportedState(d){
   // okända flaggor kan pre-blockera). Koercera+clampa, whitelista kända flaggor.
   const sv=num(d.schemaVersion);
   d.schemaVersion=Math.max(0,Math.min(sv===null?0:sv,SCHEMA_VERSION));
-  const KNOWN_MIGRATIONS=['exerciseSplit_v2','passKeysToSession_v1','rotatorCuffMerge_v1','libraryUniform_v1'];
+  const KNOWN_MIGRATIONS=['exerciseSplit_v2','passKeysToSession_v1','rotatorCuffMerge_v1','libraryUniform_v1','vaderCalfMerge_v1'];
   const mig={};
   if(d.migrations&&typeof d.migrations==='object'){
     for(const k of KNOWN_MIGRATIONS){ const v=num(d.migrations[k]); if(v) mig[k]=v; }

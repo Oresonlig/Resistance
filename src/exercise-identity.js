@@ -83,6 +83,9 @@ export const NAME_ALIASES = {
   'Barbell Shrugs': 'Shrugs (BB)',
   'DB Shrugs': 'Shrugs (DB)',
   'Trap Bar Shrugs': 'Shrugs (Trap Bar)',
+  // 3.68.2 — "Vader" var svenska (= calves), dubbletter av Calf Raise-posterna
+  'Vader (seated)': 'Seated Calf Raise',
+  'Vader (standing)': 'Standing Calf Raise',
 };
 
 // Slot-specifika legacy-namn (historiskt tvetydiga — samma namn, olika övning per slot).
