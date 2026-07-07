@@ -153,12 +153,13 @@ describe('makeExtraEx — syntetiskt ex-objekt', () => {
 
 describe('extraExId — kanoniskt exId för extra-övning', () => {
   it('library-övning → namn-slug via resolveExId', () => {
-    expect(extraExId('Incline Cable Flyes', [])).toBe('ex_incline_cable_flyes');
+    // 3.68.0 — 'Incline Cable Flyes' är numera alias → 'Incline Flyes (Cable)'
+    expect(extraExId('Incline Cable Flyes', [])).toBe('ex_incline_flyes_cable');
   });
 
   it('alias-namn → resolvar till kanoniskt slug', () => {
-    // 'Flat BB' är alias för 'Flat BB Bench Press'
-    expect(extraExId('Flat BB', [])).toBe('ex_flat_bb_bench_press');
+    // 'Flat BB' kedjar → 'Flat BB Bench Press' → 'Bench Press (BB)' (3.68.0)
+    expect(extraExId('Flat BB', [])).toBe('ex_bench_press_bb');
   });
 
   it('custom-övning → returnerar custom-id:t (inte namn-slug)', () => {

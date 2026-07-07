@@ -24,10 +24,11 @@ describe('slugifyExId', () => {
 
 describe('canonicalName — alias-upplösning', () => {
   it('mappar bas-program-namn till bibliotek', () => {
-    expect(canonicalName('Flat BB')).toBe('Flat BB Bench Press');
-    expect(canonicalName('Flat DB')).toBe('Flat DB Press');
-    expect(canonicalName('Shrugs')).toBe('DB Shrugs');
-    expect(canonicalName('Military Press')).toBe('Military Press (barbell)');
+    // 3.68.0 — enhetlig namnstandard: kedjorna löper vidare till "Övningsnamn (Variant)"
+    expect(canonicalName('Flat BB')).toBe('Bench Press (BB)');
+    expect(canonicalName('Flat DB')).toBe('Bench Press (DB)');
+    expect(canonicalName('Shrugs')).toBe('Shrugs (DB)');
+    expect(canonicalName('Military Press')).toBe('Military Press (BB)');
     expect(canonicalName('Pull-ups')).toBe('Pull-ups (pronated)');
   });
   it('löser transitivt (gammalt → mellanled → kanoniskt)', () => {
@@ -64,7 +65,7 @@ describe('migrateExerciseIdentity — idempotent', () => {
     const state = { log:[{ exercises:[{id:'A1', name:'Flat BB', sets:[]}] }], cycles:[], customExercises:[] };
     const r = migrateExerciseIdentity(state);
     expect(r.changed).toBe(true);
-    expect(state.log[0].exercises[0].exId).toBe('ex_flat_bb_bench_press');
+    expect(state.log[0].exercises[0].exId).toBe('ex_bench_press_bb');
   });
   it('andra körningen ändrar inget (idempotent)', () => {
     const state = { log:[{ exercises:[{id:'A1', name:'Flat BB', sets:[]}] }], cycles:[], customExercises:[] };
@@ -106,7 +107,8 @@ describe('migrateExerciseIdentity — idempotent', () => {
       exerciseNotes:{ 'D2':'eldsjäl' },
     };
     migrateExerciseIdentity(state);
-    expect(state.exerciseNotes['ex_cable_lateral_raises']).toBe('eldsjäl');
+    // 'Cable Lateral Raises' → kanoniskt 'Lateral Raises (Cable)' sedan 3.68.0
+    expect(state.exerciseNotes['ex_lateral_raises_cable']).toBe('eldsjäl');
   });
   it('remappar tombstones (deletions.exerciseNotes)', () => {
     const state = {

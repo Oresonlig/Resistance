@@ -3942,23 +3942,23 @@ whenSbReady(async () => {
 
 
 const EXERCISE_LIBRARY = [
-  // CHEST
+  // CHEST — 3.68.0: enhetlig namnstandard "Övningsnamn (Variant)"
+  {name:'Bench Press (BB)', cat:'Chest'},
+  {name:'Bench Press (DB)', cat:'Chest'},
   {name:'Cable Crossover', cat:'Chest'},
-  {name:'Cable Flyes', cat:'Chest', tip:'Full ROM - Deep stretch'},
   {name:'Chest Dips', cat:'Chest', measure:'bw'},
-  {name:'Decline Cable Flyes', cat:'Chest'},
-  {name:'Decline Cable Press', cat:'Chest'},
-  {name:'Decline DB Press', cat:'Chest'},
-  {name:'Decline Smith Press', cat:'Chest'},
-  {name:'Flat BB Bench Press', cat:'Chest'},
-  {name:'Flat DB Press', cat:'Chest'},
+  {name:'Decline Flyes (Cable)', cat:'Chest'},
+  {name:'Decline Press (Cable)', cat:'Chest'},
+  {name:'Decline Press (DB)', cat:'Chest'},
+  {name:'Decline Press (Smith)', cat:'Chest'},
+  {name:'Flyes (Cable)', cat:'Chest', tip:'Full ROM - Deep stretch'},
   {name:'Hammer Strength Press', cat:'Chest'},
-  {name:'Incline BB Press', cat:'Chest'},
-  {name:'Incline Cable Flyes', cat:'Chest'},
-  {name:'Incline DB Press', cat:'Chest'},
-  {name:'Incline Smith Press', cat:'Chest'},
+  {name:'Incline Flyes (Cable)', cat:'Chest'},
+  {name:'Incline Press (BB)', cat:'Chest'},
+  {name:'Incline Press (DB)', cat:'Chest'},
+  {name:'Incline Press (Smith)', cat:'Chest'},
   {name:'Pec Deck', cat:'Chest'},
-  {name:'Single-Arm Cable Flyes', cat:'Chest'},
+  {name:'Single-Arm Flyes (Cable)', cat:'Chest'},
   // BACK
   {name:'Back Extension', cat:'Back', measure:'bw'},
   {name:'Bentover Row', cat:'Back'},
@@ -3972,35 +3972,36 @@ const EXERCISE_LIBRARY = [
   {name:'Power Clean + Shoulder Press', cat:'Back'},
   {name:'Pull-ups (pronated)', cat:'Back', measure:'bw'},
   {name:'Rack Pull', cat:'Back'},
-  {name:'Seated Cable Row', cat:'Back'},
-  {name:'Seated Row', cat:'Back'},
+  {name:'Seated Row (Cable)', cat:'Back'},
+  {name:'Seated Row (Machine)', cat:'Back'},
   {name:'Straight-arm Pulldown', cat:'Back'},
   {name:'T-bar Row', cat:'Back'},
-  {name:'Unilateral Cable Row', cat:'Back'},
+  {name:'Unilateral Row (Cable)', cat:'Back'},
   {name:'Wide-grip Pulldown', cat:'Back'},
   // SHOULDERS
   {name:'Arnold Press', cat:'Shoulders'},
   {name:'Band Pull-apart', cat:'Shoulders'},
-  {name:'Cable Lateral Raises', cat:'Shoulders'},
-  {name:'DB Shoulder Press', cat:'Shoulders'},
   {name:'External Rotator Cuff', cat:'Shoulders'},
   {name:'Face Pulls', cat:'Shoulders'},
   {name:'Face Pulls (external rotation)', cat:'Shoulders'},
+  {name:'Front Raise (Cable)', cat:'Shoulders'},
   {name:'Helms Rear Delt Row', cat:'Shoulders'},
   {name:'Internal Rotator Cuff', cat:'Shoulders'},
-  {name:'Lateral Raises', cat:'Shoulders'},
-  {name:'Military Press (barbell)', cat:'Shoulders'},
-  {name:'Military Press - Smith', cat:'Shoulders'},
-  {name:'Rear Delt Flyes', cat:'Shoulders'},
-  {name:'Standing Cable Front Raise', cat:'Shoulders'},
+  {name:'Lateral Raises (Cable)', cat:'Shoulders'},
+  {name:'Lateral Raises (DB)', cat:'Shoulders'},
+  {name:'Military Press (BB)', cat:'Shoulders'},
+  {name:'Military Press (Smith)', cat:'Shoulders'},
+  {name:'Rear Delt Flyes (Cable)', cat:'Shoulders'},
+  {name:'Rear Delt Flyes (DB)', cat:'Shoulders'},
+  {name:'Shoulder Press (DB)', cat:'Shoulders'},
   {name:'Upright Row', cat:'Shoulders'},
   // ARMS
-  {name:'Barbell Curl', cat:'Arms'},
-  {name:'Cable Curl', cat:'Arms'},
+  {name:'Biceps Curl (BB)', cat:'Arms'},
+  {name:'Biceps Curl (Cable)', cat:'Arms'},
+  {name:'Biceps Curl (DB)', cat:'Arms'},
   {name:'Close-Grip Bench', cat:'Arms'},
-  {name:'DB Curl', cat:'Arms'},
   {name:'Hammer Curl', cat:'Arms'},
-  {name:'Incline DB Curl', cat:'Arms'},
+  {name:'Incline Biceps Curl (DB)', cat:'Arms'},
   {name:'Overhead Tricep Extension', cat:'Arms'},
   {name:'Preacher Curl', cat:'Arms'},
   {name:'Skull Crushers', cat:'Arms'},
@@ -4024,9 +4025,9 @@ const EXERCISE_LIBRARY = [
   {name:'Vader (standing)', cat:'Legs'},
   {name:'Zercher Squat', cat:'Legs'},
   // TRAPS
-  {name:'Barbell Shrugs', cat:'Traps'},
-  {name:'DB Shrugs', cat:'Traps'},
-  {name:'Trap Bar Shrugs', cat:'Traps'},
+  {name:'Shrugs (BB)', cat:'Traps'},
+  {name:'Shrugs (DB)', cat:'Traps'},
+  {name:'Shrugs (Trap Bar)', cat:'Traps'},
   // CORE
   {name:'Ab Wheel', cat:'Core', measure:'bwreps'},
   {name:'Cable Crunch', cat:'Core'},
@@ -4057,12 +4058,12 @@ const DEFAULT_SESSION_ORDER=['A','B','C','D','E','F'];
 const DEFAULT_REST_SLOTS=[6]; // after F by default
 
 const BASE_SESSIONS=[
-  {id:'A',name:'Chest + Tri',exercises:[{id:'A1',name:'Flat BB',detail:'Ramping → 1 set failure',ramp:true},{id:'A2',name:'Incline Smith Press',detail:'1 set failure'},{id:'A3',name:'Cable Flyes',detail:'Full ROM - Deep stretch · 1 set failure'},{id:'A4',name:'Tricep Pushdowns',detail:'1 set failure'}]},
-  {id:'B',name:'Back Heavy + Biceps',exercises:[{id:'B1',name:'Dead Hang',detail:'Supinated or neutral · 1 set failure',bw:true,timed:true},{id:'B2',name:'Deadlift',detail:'Ramping → work sets to failure',ramp:true},{id:'B3',name:'Unilateral Cable Row',detail:'1 set failure',uni:true},{id:'B4',name:'Lat Prayers',detail:'1 set failure'}]},
-  {id:'C',name:'Legs + Calfs',exercises:[{id:'C1',name:'Zercher Squat',detail:'Ramping → 1 set failure',ramp:true},{id:'C2',name:'Lying Leg Curl',detail:'1 set failure'},{id:'C3',name:'Leg Extension',detail:'1 set failure'},{id:'C4',name:'Seated Calf Raises',detail:'2 sets'}]},
-  {id:'D',name:'Shoulders + Traps',exercises:[{id:'D1',name:'Military Press',detail:'Ramping → 1 set failure',ramp:true},{id:'D2',name:'Lateral Raises',detail:'1 set failure'},{id:'D3',name:'Face Pulls',detail:'1 set failure'},{id:'D4',name:'External Rotator Cuff',detail:'1 set'}]},
-  {id:'E',name:'Chest pt. 2',exercises:[{id:'E1',name:'Flat DB',detail:'Ramping → 1 set failure',ramp:true},{id:'E2',name:'Decline Smith Press',detail:'1 set failure'},{id:'E3',name:'Cable Flyes',detail:'1 set failure'},{id:'E4',name:'Overhead Tricep Extension',detail:'1 set failure'}]},
-  {id:'F',name:'Back pt. 2',exercises:[{id:'F1',name:'Pull-ups',detail:'1 set failure',bw:true},{id:'F2',name:'Unilateral Cable Row',detail:'1 set failure',uni:true},{id:'F3',name:'Shrugs',detail:'1 set failure'},{id:'F4',name:'Lat Prayers',detail:'1 set failure'}]},
+  {id:'A',name:'Chest + Tri',exercises:[{id:'A1',name:'Bench Press (BB)',detail:'Ramping → 1 set failure',ramp:true},{id:'A2',name:'Incline Press (Smith)',detail:'1 set failure'},{id:'A3',name:'Flyes (Cable)',detail:'Full ROM - Deep stretch · 1 set failure'},{id:'A4',name:'Tricep Pushdowns',detail:'1 set failure'}]},
+  {id:'B',name:'Back Heavy + Biceps',exercises:[{id:'B1',name:'Dead Hang',detail:'Supinated or neutral · 1 set failure',bw:true,timed:true},{id:'B2',name:'Deadlift',detail:'Ramping → work sets to failure',ramp:true},{id:'B3',name:'Unilateral Row (Cable)',detail:'1 set failure',uni:true},{id:'B4',name:'Lat Prayers',detail:'1 set failure'}]},
+  {id:'C',name:'Legs + Calfs',exercises:[{id:'C1',name:'Zercher Squat',detail:'Ramping → 1 set failure',ramp:true},{id:'C2',name:'Lying Leg Curl',detail:'1 set failure'},{id:'C3',name:'Leg Extension',detail:'1 set failure'},{id:'C4',name:'Seated Calf Raise',detail:'2 sets'}]},
+  {id:'D',name:'Shoulders + Traps',exercises:[{id:'D1',name:'Military Press (BB)',detail:'Ramping → 1 set failure',ramp:true},{id:'D2',name:'Lateral Raises (DB)',detail:'1 set failure'},{id:'D3',name:'Face Pulls',detail:'1 set failure'},{id:'D4',name:'External Rotator Cuff',detail:'1 set'}]},
+  {id:'E',name:'Chest pt. 2',exercises:[{id:'E1',name:'Bench Press (DB)',detail:'Ramping → 1 set failure',ramp:true},{id:'E2',name:'Decline Press (Smith)',detail:'1 set failure'},{id:'E3',name:'Flyes (Cable)',detail:'1 set failure'},{id:'E4',name:'Overhead Tricep Extension',detail:'1 set failure'}]},
+  {id:'F',name:'Back pt. 2',exercises:[{id:'F1',name:'Pull-ups',detail:'1 set failure',bw:true},{id:'F2',name:'Unilateral Row (Cable)',detail:'1 set failure',uni:true},{id:'F3',name:'Shrugs (DB)',detail:'1 set failure'},{id:'F4',name:'Lat Prayers',detail:'1 set failure'}]},
 ];
 
 // Build the effective chain from user's pass order + rest slot positions
@@ -4152,7 +4153,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.67.2';
+const APP_VERSION = '3.68.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4187,17 +4188,35 @@ const NAME_ALIASES = {
   'Calfs (standing + seated)':'Seated Calf Raise','Calfs':'Seated Calf Raise',
   'Lateral Raises DB/Cable':'Lateral Raises','Helms Rear Delt Row / Face Pulls':'Face Pulls',
   'Cable Rotator Cuff':'External Rotator Cuff','Rotator Cuff':'External Rotator Cuff',
+  // 3.68.0 — enhetlig namnstandard "Övningsnamn (Variant)". Gamla kanoniska namn
+  // kedjar hit transitivt (canonicalName loopar). Samma map som LIBRARY_RENAMES_V1.
+  'Flat BB Bench Press':'Bench Press (BB)','Flat DB Press':'Bench Press (DB)',
+  'Incline BB Press':'Incline Press (BB)','Incline DB Press':'Incline Press (DB)',
+  'Incline Smith Press':'Incline Press (Smith)',
+  'Decline Cable Press':'Decline Press (Cable)','Decline DB Press':'Decline Press (DB)',
+  'Decline Smith Press':'Decline Press (Smith)',
+  'Cable Flyes':'Flyes (Cable)','Incline Cable Flyes':'Incline Flyes (Cable)',
+  'Decline Cable Flyes':'Decline Flyes (Cable)','Single-Arm Cable Flyes':'Single-Arm Flyes (Cable)',
+  'Seated Cable Row':'Seated Row (Cable)','Seated Row':'Seated Row (Machine)',
+  'Unilateral Cable Row':'Unilateral Row (Cable)',
+  'Cable Lateral Raises':'Lateral Raises (Cable)','Lateral Raises':'Lateral Raises (DB)',
+  'Military Press (barbell)':'Military Press (BB)','Military Press - Smith':'Military Press (Smith)',
+  'DB Shoulder Press':'Shoulder Press (DB)','Standing Cable Front Raise':'Front Raise (Cable)',
+  'Rear Delt Flyes':'Rear Delt Flyes (DB)',
+  'Barbell Curl':'Biceps Curl (BB)','Cable Curl':'Biceps Curl (Cable)','DB Curl':'Biceps Curl (DB)',
+  'Incline DB Curl':'Incline Biceps Curl (DB)',
+  'Barbell Shrugs':'Shrugs (BB)','DB Shrugs':'Shrugs (DB)','Trap Bar Shrugs':'Shrugs (Trap Bar)',
 };
 const SLOT_NAME_ALIASES = {
   'A4|Tri-finisher':'Tricep Pushdowns','E4|Tri-finisher':'Overhead Tricep Extension','C4|Calfs':'Seated Calf Raise',
 };
 const BASE_SLOT_DEFAULT_NAME = {
-  A1:'Flat BB Bench Press',A2:'Incline Smith Press',A3:'Cable Flyes',A4:'Tricep Pushdowns',
-  B1:'Dead Hang',B2:'Deadlift',B3:'Unilateral Cable Row',B4:'Lat Prayers',
+  A1:'Bench Press (BB)',A2:'Incline Press (Smith)',A3:'Flyes (Cable)',A4:'Tricep Pushdowns',
+  B1:'Dead Hang',B2:'Deadlift',B3:'Unilateral Row (Cable)',B4:'Lat Prayers',
   C1:'Zercher Squat',C2:'Lying Leg Curl',C3:'Leg Extension',C4:'Seated Calf Raise',
-  D1:'Military Press (barbell)',D2:'Lateral Raises',D3:'Face Pulls',D4:'External Rotator Cuff',
-  E1:'Flat DB Press',E2:'Decline Smith Press',E3:'Cable Flyes',E4:'Overhead Tricep Extension',
-  F1:'Pull-ups (pronated)',F2:'Unilateral Cable Row',F3:'DB Shrugs',F4:'Lat Prayers',
+  D1:'Military Press (BB)',D2:'Lateral Raises (DB)',D3:'Face Pulls',D4:'External Rotator Cuff',
+  E1:'Bench Press (DB)',E2:'Decline Press (Smith)',E3:'Flyes (Cable)',E4:'Overhead Tricep Extension',
+  F1:'Pull-ups (pronated)',F2:'Unilateral Row (Cable)',F3:'Shrugs (DB)',F4:'Lat Prayers',
 };
 function canonicalName(name, slotId){
   if(slotId && SLOT_NAME_ALIASES[slotId+'|'+name]) return SLOT_NAME_ALIASES[slotId+'|'+name];
@@ -4561,6 +4580,80 @@ function migrateRotatorCuffMerge(){
   state.migrations.rotatorCuffMerge_v1=Date.now();
 }
 
+// 3.68.0 — Enhetlig namnstandard: "Övningsnamn (Variant)" för utrustningsvarianter.
+// Skriver om name (exakt match mot rename-mappen) + exId (gammal slug → ny slug) i
+// logg/cykler/overrides/swaps/added/drafts, och flyttar exId-nycklade maps till nya
+// nycklar. exId skrivs ALDRIG om från namnet (rename-etiketter har exId ≠ slug(name)
+// by design) — bara via KEYMAP. Engångskörning.
+function migrateLibraryUniform(){
+  if(!state) return;
+  state.migrations = state.migrations || {};
+  if(state.migrations.libraryUniform_v1) return;
+  const RENAMES = {
+    'Flat BB Bench Press':'Bench Press (BB)','Flat DB Press':'Bench Press (DB)',
+    'Incline BB Press':'Incline Press (BB)','Incline DB Press':'Incline Press (DB)',
+    'Incline Smith Press':'Incline Press (Smith)',
+    'Decline Cable Press':'Decline Press (Cable)','Decline DB Press':'Decline Press (DB)',
+    'Decline Smith Press':'Decline Press (Smith)',
+    'Cable Flyes':'Flyes (Cable)','Incline Cable Flyes':'Incline Flyes (Cable)',
+    'Decline Cable Flyes':'Decline Flyes (Cable)','Single-Arm Cable Flyes':'Single-Arm Flyes (Cable)',
+    'Seated Cable Row':'Seated Row (Cable)','Seated Row':'Seated Row (Machine)',
+    'Unilateral Cable Row':'Unilateral Row (Cable)',
+    'Cable Lateral Raises':'Lateral Raises (Cable)','Lateral Raises':'Lateral Raises (DB)',
+    'Military Press (barbell)':'Military Press (BB)','Military Press - Smith':'Military Press (Smith)',
+    'DB Shoulder Press':'Shoulder Press (DB)','Standing Cable Front Raise':'Front Raise (Cable)',
+    'Rear Delt Flyes':'Rear Delt Flyes (DB)',
+    'Barbell Curl':'Biceps Curl (BB)','Cable Curl':'Biceps Curl (Cable)','DB Curl':'Biceps Curl (DB)',
+    'Incline DB Curl':'Incline Biceps Curl (DB)',
+    'Barbell Shrugs':'Shrugs (BB)','DB Shrugs':'Shrugs (DB)','Trap Bar Shrugs':'Shrugs (Trap Bar)',
+  };
+  const KEYMAP={};
+  Object.entries(RENAMES).forEach(([o,n])=>{ KEYMAP[slugifyExId(o)]=slugifyExId(n); });
+  const fix=(e)=>{
+    if(!e) return;
+    if(e.name && RENAMES[e.name]) e.name=RENAMES[e.name];
+    if(e.exId && KEYMAP[e.exId]) e.exId=KEYMAP[e.exId];
+  };
+  (state.log||[]).forEach(en=>(en.exercises||[]).forEach(fix));
+  (state.cycles||[]).forEach(c=>Object.values(c.done||{}).forEach(p=>{ if(p&&p.exercises) p.exercises.forEach(fix); }));
+  Object.entries(state.exerciseOverrides||{}).forEach(([id,name])=>{ if(RENAMES[name]) state.exerciseOverrides[id]=RENAMES[name]; });
+  Object.entries(state.permanentSwaps||{}).forEach(([id,name])=>{ if(RENAMES[name]) state.permanentSwaps[id]=RENAMES[name]; });
+  Object.values(state.addedExercises||{}).forEach(list=>(list||[]).forEach(e=>{ if(e&&RENAMES[e.name]) e.name=RENAMES[e.name]; }));
+  const fixDraft=(d)=>{
+    if(!d) return;
+    Object.entries(d.swaps||{}).forEach(([k,n])=>{ if(RENAMES[n]) d.swaps[k]=RENAMES[n]; });
+    (d.extras||[]).forEach(e=>{ if(e&&RENAMES[e.name]) e.name=RENAMES[e.name]; });
+  };
+  fixDraft(state.draft);
+  Object.values(state.drafts||{}).forEach(fixDraft);
+  // exId-nycklade maps: flytta gammal nyckel → ny (först-vinner om ny redan finns)
+  const rekey=(m)=>{
+    if(!m || typeof m!=='object') return;
+    for(const k of Object.keys(m)){
+      const nk=KEYMAP[k]; if(!nk) continue;
+      if(m[nk]===undefined) m[nk]=m[k];
+      delete m[k];
+    }
+  };
+  rekey(state.lastSessionSetCount);
+  rekey(state.lastSessionWarmupCount);
+  rekey(state.exerciseMeasureOverride);
+  rekey(state.exerciseSprintBase);
+  // Notes har tombstone-infrastruktur — tombstona flyttade gamla nycklar så
+  // cloud-merge inte resurrectar dem (P4-lärdomen, 3.38.0).
+  if(state.exerciseNotes){
+    state.deletions = state.deletions || {};
+    state.deletions.exerciseNotes = state.deletions.exerciseNotes || {};
+    for(const k of Object.keys(state.exerciseNotes)){
+      const nk=KEYMAP[k]; if(!nk) continue;
+      if(state.exerciseNotes[nk]===undefined) state.exerciseNotes[nk]=state.exerciseNotes[k];
+      delete state.exerciseNotes[k];
+      state.deletions.exerciseNotes[k]=Date.now();
+    }
+  }
+  state.migrations.libraryUniform_v1=Date.now();
+}
+
 function migratePassKeysToSession(){
   // 3.34.9 — Guard: skip om redan migrerat (flag i state.migrations).
   // One-time rename of state keys from Swedish-origin names to English.
@@ -4604,6 +4697,8 @@ function runSchemaMigrations(){
   }
   // 3.55.0 — körs på alla load-paths (denna funktion är ovillkorlig single-source).
   try{ migrateRotatorCuffMerge(); }catch(e){ console.error('rotatorCuffMerge failed', e); }
+  // 3.68.0 — körs efter rotatorCuffMerge så namnen redan är kanoniserade
+  try{ migrateLibraryUniform(); }catch(e){ console.error('libraryUniform failed', e); }
   try{ migrateRemovedThemes(); }catch(e){ console.error('removedThemes migration failed', e); }
 }
 
@@ -5781,19 +5876,19 @@ function buildReorderUI(effectiveChain){
 
 // ── PASS MANAGEMENT — add/remove passes ──────────────────────
 const SESSION_TEMPLATES=[
-  {id:'A',name:'Chest + Tri',exercises:[{id:'A1',name:'Flat BB',detail:'Ramping → 1 set failure',ramp:true},{id:'A2',name:'Incline Smith Press',detail:'1 set failure'},{id:'A3',name:'Cable Flyes',detail:'Full ROM · 1 set failure'},{id:'A4',name:'Tricep Pushdowns',detail:'1 set failure'}]},
-  {id:'B',name:'Back Heavy + Biceps',exercises:[{id:'B1',name:'Dead Hang',detail:'1 set failure',bw:true,timed:true},{id:'B2',name:'Deadlift',detail:'Ramping → work sets to failure',ramp:true},{id:'B3',name:'Unilateral Cable Row',detail:'1 set failure',uni:true},{id:'B4',name:'Lat Prayers',detail:'1 set failure'}]},
-  {id:'C',name:'Legs + Calfs',exercises:[{id:'C1',name:'Zercher Squat',detail:'Ramping → 1 set failure',ramp:true},{id:'C2',name:'Lying Leg Curl',detail:'1 set failure'},{id:'C3',name:'Leg Extension',detail:'1 set failure'},{id:'C4',name:'Seated Calf Raises',detail:'2 sets'}]},
-  {id:'D',name:'Shoulders + Traps',exercises:[{id:'D1',name:'Military Press',detail:'Ramping → 1 set failure',ramp:true},{id:'D2',name:'Lateral Raises',detail:'1 set failure'},{id:'D3',name:'Face Pulls',detail:'1 set failure'},{id:'D4',name:'External Rotator Cuff',detail:'1 set'}]},
-  {id:'E',name:'Chest pt. 2',exercises:[{id:'E1',name:'Flat DB',detail:'Ramping → 1 set failure',ramp:true},{id:'E2',name:'Decline Smith Press',detail:'1 set failure'},{id:'E3',name:'Cable Flyes',detail:'1 set failure'},{id:'E4',name:'Overhead Tricep Extension',detail:'1 set failure'}]},
-  {id:'F',name:'Back pt. 2',exercises:[{id:'F1',name:'Pull-ups',detail:'1 set failure',bw:true},{id:'F2',name:'Unilateral Cable Row',detail:'1 set failure',uni:true},{id:'F3',name:'Shrugs',detail:'1 set failure'},{id:'F4',name:'Lat Prayers',detail:'1 set failure'}]},
-  {id:'G',name:'Arms',exercises:[{id:'G1',name:'Barbell Curl',detail:'1 set failure'},{id:'G2',name:'Hammer Curl',detail:'1 set failure'},{id:'G3',name:'Tricep Pushdowns',detail:'1 set failure'},{id:'G4',name:'Overhead Tricep Extension',detail:'1 set failure'}]},
-  {id:'H',name:'Full Body',exercises:[{id:'H1',name:'Deadlift',detail:'Ramping → work sets',ramp:true},{id:'H2',name:'Military Press',detail:'Ramping → 1 set failure',ramp:true},{id:'H3',name:'Pull-ups',detail:'1 set failure',bw:true},{id:'H4',name:'Dips',detail:'1 set failure',bw:true}]},
+  {id:'A',name:'Chest + Tri',exercises:[{id:'A1',name:'Bench Press (BB)',detail:'Ramping → 1 set failure',ramp:true},{id:'A2',name:'Incline Press (Smith)',detail:'1 set failure'},{id:'A3',name:'Flyes (Cable)',detail:'Full ROM · 1 set failure'},{id:'A4',name:'Tricep Pushdowns',detail:'1 set failure'}]},
+  {id:'B',name:'Back Heavy + Biceps',exercises:[{id:'B1',name:'Dead Hang',detail:'1 set failure',bw:true,timed:true},{id:'B2',name:'Deadlift',detail:'Ramping → work sets to failure',ramp:true},{id:'B3',name:'Unilateral Row (Cable)',detail:'1 set failure',uni:true},{id:'B4',name:'Lat Prayers',detail:'1 set failure'}]},
+  {id:'C',name:'Legs + Calfs',exercises:[{id:'C1',name:'Zercher Squat',detail:'Ramping → 1 set failure',ramp:true},{id:'C2',name:'Lying Leg Curl',detail:'1 set failure'},{id:'C3',name:'Leg Extension',detail:'1 set failure'},{id:'C4',name:'Seated Calf Raise',detail:'2 sets'}]},
+  {id:'D',name:'Shoulders + Traps',exercises:[{id:'D1',name:'Military Press (BB)',detail:'Ramping → 1 set failure',ramp:true},{id:'D2',name:'Lateral Raises (DB)',detail:'1 set failure'},{id:'D3',name:'Face Pulls',detail:'1 set failure'},{id:'D4',name:'External Rotator Cuff',detail:'1 set'}]},
+  {id:'E',name:'Chest pt. 2',exercises:[{id:'E1',name:'Bench Press (DB)',detail:'Ramping → 1 set failure',ramp:true},{id:'E2',name:'Decline Press (Smith)',detail:'1 set failure'},{id:'E3',name:'Flyes (Cable)',detail:'1 set failure'},{id:'E4',name:'Overhead Tricep Extension',detail:'1 set failure'}]},
+  {id:'F',name:'Back pt. 2',exercises:[{id:'F1',name:'Pull-ups',detail:'1 set failure',bw:true},{id:'F2',name:'Unilateral Row (Cable)',detail:'1 set failure',uni:true},{id:'F3',name:'Shrugs (DB)',detail:'1 set failure'},{id:'F4',name:'Lat Prayers',detail:'1 set failure'}]},
+  {id:'G',name:'Arms',exercises:[{id:'G1',name:'Biceps Curl (BB)',detail:'1 set failure'},{id:'G2',name:'Hammer Curl',detail:'1 set failure'},{id:'G3',name:'Tricep Pushdowns',detail:'1 set failure'},{id:'G4',name:'Overhead Tricep Extension',detail:'1 set failure'}]},
+  {id:'H',name:'Full Body',exercises:[{id:'H1',name:'Deadlift',detail:'Ramping → work sets',ramp:true},{id:'H2',name:'Military Press (BB)',detail:'Ramping → 1 set failure',ramp:true},{id:'H3',name:'Pull-ups',detail:'1 set failure',bw:true},{id:'H4',name:'Dips',detail:'1 set failure',bw:true}]},
   {id:'I',name:'Cardio / Conditioning',exercises:[{id:'I1',name:'Bike Cardio',detail:'20 min steady state',timed:true},{id:'I2',name:'Farmers Walk',detail:'3 sets'},{id:'I3',name:'Sled Push',detail:'3 sets'}]},
   {id:'J',name:'Glutes + Hamstrings',exercises:[{id:'J1',name:'Romanian Deadlift',detail:'Ramping → 1 set failure',ramp:true},{id:'J2',name:'Hip Thrust',detail:'1 set failure'},{id:'J3',name:'Lying Leg Curl',detail:'1 set failure'},{id:'J4',name:'Nordic Curl',detail:'1 set failure'}]},
   {id:'K',name:'Core + Abs',exercises:[{id:'K1',name:'Ab Wheel',detail:'1 set failure'},{id:'K2',name:'Hanging Leg Raise',detail:'1 set failure'},{id:'K3',name:'Cable Crunch',detail:'1 set failure'},{id:'K4',name:'Dead Bug',detail:'2 sets'}]},
-  {id:'L',name:'Upper Body Push',exercises:[{id:'L1',name:'Military Press',detail:'Ramping → 1 set failure',ramp:true},{id:'L2',name:'DB Shoulder Press',detail:'1 set failure'},{id:'L3',name:'Lateral Raises',detail:'1 set failure'},{id:'L4',name:'Tricep Pushdowns',detail:'1 set failure'}]},
-  {id:'M',name:'Upper Body Pull',exercises:[{id:'M1',name:'Pull-ups',detail:'1 set failure',bw:true},{id:'M2',name:'Seated Cable Row',detail:'1 set failure'},{id:'M3',name:'Face Pulls',detail:'1 set failure'},{id:'M4',name:'Barbell Curl',detail:'1 set failure'}]},
+  {id:'L',name:'Upper Body Push',exercises:[{id:'L1',name:'Military Press (BB)',detail:'Ramping → 1 set failure',ramp:true},{id:'L2',name:'Shoulder Press (DB)',detail:'1 set failure'},{id:'L3',name:'Lateral Raises (DB)',detail:'1 set failure'},{id:'L4',name:'Tricep Pushdowns',detail:'1 set failure'}]},
+  {id:'M',name:'Upper Body Pull',exercises:[{id:'M1',name:'Pull-ups',detail:'1 set failure',bw:true},{id:'M2',name:'Seated Row (Cable)',detail:'1 set failure'},{id:'M3',name:'Face Pulls',detail:'1 set failure'},{id:'M4',name:'Biceps Curl (BB)',detail:'1 set failure'}]},
   {id:'N',name:'Custom Session',exercises:[{id:'N1',name:'Exercise 1',detail:'1 set failure'},{id:'N2',name:'Exercise 2',detail:'1 set failure'},{id:'N3',name:'Exercise 3',detail:'1 set failure'},{id:'N4',name:'Exercise 4',detail:'1 set failure'}]},
 ];
 function toggleSessionRename(pid){
@@ -6569,7 +6664,7 @@ async function confirmAddPermEx(passId){
   if(val === '__CUSTOM__'){
     if(sel) sel.value = '';
     const result = await askModalText('Add custom exercise', {
-      placeholder: 'e.g. Cable Lateral Raises',
+      placeholder: 'e.g. Lateral Raises (Cable)',
       maxLength: 60,
       confirmLabel: 'Add',
       selectLabel: 'Category',
@@ -7239,8 +7334,8 @@ function finishSession(passId){
     const note=state.exerciseNotes?.[exId];
     if(note) ex.note=note;
   });
-  const today=new Date().toLocaleDateString('en-GB',{month:'short',day:'numeric'});
   const finishTs=Date.now();
+  const today=fmtDate(finishTs);
   const duration=state.draft.sessionStartTime ? finishTs-state.draft.sessionStartTime : null;
   curCycle().done[passId]={date:today,timestamp:finishTs,duration,exercises};
   state.log.push({passId,passName:getSessionName(pass.id),timestamp:finishTs,duration,exercises});
@@ -7613,7 +7708,7 @@ async function doSwap(exId,val,passId){
     if(sel) sel.value='';
     
     const result = await askModalText('Add custom exercise', {
-      placeholder: 'e.g. Cable Lateral Raises',
+      placeholder: 'e.g. Lateral Raises (Cable)',
       maxLength: 60,
       confirmLabel: 'Add',
       selectLabel: 'Category',
@@ -7669,7 +7764,7 @@ async function confirmAddEx(passId){
   if(name==='__CUSTOM__'){
     if(inp) inp.value='';
     const result = await askModalText('Add custom exercise', {
-      placeholder: 'e.g. Cable Lateral Raises',
+      placeholder: 'e.g. Lateral Raises (Cable)',
       maxLength: 60,
       confirmLabel: 'Add',
       selectLabel: 'Category',
@@ -7715,7 +7810,7 @@ function removeExtra(passId,extraId){
 }
 
 // ── PASS MANAGEMENT ───────────────────────────────────────────
-function doneRest(passId){const today=new Date().toLocaleDateString('en-GB',{month:'short',day:'numeric'});curCycle().done[passId]={date:today,exercises:[]};save();showToast('Rest logged ✓');renderChain();}
+function doneRest(passId){const today=fmtDate(Date.now());curCycle().done[passId]={date:today,exercises:[]};save();showToast('Rest logged ✓');renderChain();}
 function undoSession(passId){
   const completed=curCycle().done[passId];
   curCycle().done[passId]=null;

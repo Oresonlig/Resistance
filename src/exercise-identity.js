@@ -49,6 +49,40 @@ export const NAME_ALIASES = {
   'Calfs': 'Seated Calf Raise',
   'Lateral Raises DB/Cable': 'Lateral Raises',
   'Helms Rear Delt Row / Face Pulls': 'Face Pulls',
+  // 3.55.0 — rotator cuff-merge (speglades sent; index.html hade dessa sedan tidigare)
+  'Cable Rotator Cuff': 'External Rotator Cuff',
+  'Rotator Cuff': 'External Rotator Cuff',
+  // 3.68.0 — enhetlig namnstandard "Övningsnamn (Variant)". Gamla kanoniska namn
+  // kedjar hit transitivt (canonicalName loopar).
+  'Flat BB Bench Press': 'Bench Press (BB)',
+  'Flat DB Press': 'Bench Press (DB)',
+  'Incline BB Press': 'Incline Press (BB)',
+  'Incline DB Press': 'Incline Press (DB)',
+  'Incline Smith Press': 'Incline Press (Smith)',
+  'Decline Cable Press': 'Decline Press (Cable)',
+  'Decline DB Press': 'Decline Press (DB)',
+  'Decline Smith Press': 'Decline Press (Smith)',
+  'Cable Flyes': 'Flyes (Cable)',
+  'Incline Cable Flyes': 'Incline Flyes (Cable)',
+  'Decline Cable Flyes': 'Decline Flyes (Cable)',
+  'Single-Arm Cable Flyes': 'Single-Arm Flyes (Cable)',
+  'Seated Cable Row': 'Seated Row (Cable)',
+  'Seated Row': 'Seated Row (Machine)',
+  'Unilateral Cable Row': 'Unilateral Row (Cable)',
+  'Cable Lateral Raises': 'Lateral Raises (Cable)',
+  'Lateral Raises': 'Lateral Raises (DB)',
+  'Military Press (barbell)': 'Military Press (BB)',
+  'Military Press - Smith': 'Military Press (Smith)',
+  'DB Shoulder Press': 'Shoulder Press (DB)',
+  'Standing Cable Front Raise': 'Front Raise (Cable)',
+  'Rear Delt Flyes': 'Rear Delt Flyes (DB)',
+  'Barbell Curl': 'Biceps Curl (BB)',
+  'Cable Curl': 'Biceps Curl (Cable)',
+  'DB Curl': 'Biceps Curl (DB)',
+  'Incline DB Curl': 'Incline Biceps Curl (DB)',
+  'Barbell Shrugs': 'Shrugs (BB)',
+  'DB Shrugs': 'Shrugs (DB)',
+  'Trap Bar Shrugs': 'Shrugs (Trap Bar)',
 };
 
 // Slot-specifika legacy-namn (historiskt tvetydiga — samma namn, olika övning per slot).
@@ -62,12 +96,12 @@ export const SLOT_NAME_ALIASES = {
 // Bas-slot (A1…F4) → kanoniskt default-namn. Spegel av BASE_SESSIONS-defaults
 // efter alias. Används för att resolva slot-keyade notes → exId vid migration.
 export const BASE_SLOT_DEFAULT_NAME = {
-  A1: 'Flat BB Bench Press', A2: 'Incline Smith Press', A3: 'Cable Flyes', A4: 'Tricep Pushdowns',
-  B1: 'Dead Hang', B2: 'Deadlift', B3: 'Unilateral Cable Row', B4: 'Lat Prayers',
+  A1: 'Bench Press (BB)', A2: 'Incline Press (Smith)', A3: 'Flyes (Cable)', A4: 'Tricep Pushdowns',
+  B1: 'Dead Hang', B2: 'Deadlift', B3: 'Unilateral Row (Cable)', B4: 'Lat Prayers',
   C1: 'Zercher Squat', C2: 'Lying Leg Curl', C3: 'Leg Extension', C4: 'Seated Calf Raise',
-  D1: 'Military Press (barbell)', D2: 'Lateral Raises', D3: 'Face Pulls', D4: 'Cable Rotator Cuff',
-  E1: 'Flat DB Press', E2: 'Decline Smith Press', E3: 'Cable Flyes', E4: 'Overhead Tricep Extension',
-  F1: 'Pull-ups (pronated)', F2: 'Unilateral Cable Row', F3: 'DB Shrugs', F4: 'Lat Prayers',
+  D1: 'Military Press (BB)', D2: 'Lateral Raises (DB)', D3: 'Face Pulls', D4: 'External Rotator Cuff',
+  E1: 'Bench Press (DB)', E2: 'Decline Press (Smith)', E3: 'Flyes (Cable)', E4: 'Overhead Tricep Extension',
+  F1: 'Pull-ups (pronated)', F2: 'Unilateral Row (Cable)', F3: 'Shrugs (DB)', F4: 'Lat Prayers',
 };
 
 // Övningar som finns i programmet men saknades i EXERCISE_LIBRARY — läggs till där.

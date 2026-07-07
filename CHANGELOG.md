@@ -6,6 +6,12 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.68.0 — 2026-07-07
+**Enhetlig namnstandard i övningsbiblioteket: "Övningsnamn (Variant)".** 29 renames (Bench Press (BB/DB), Incline/Decline Press (BB/DB/Smith/Cable), Flyes (Cable), Lateral Raises (DB/Cable), Military Press (BB/Smith), Biceps Curl (BB/Cable/DB), Shrugs (BB/DB/Trap Bar), Seated Row (Cable/Machine), m.fl.). Splittar: Lateral Raises → DB+Cable, Rear Delt Flyes → DB+Cable (DB tar historiken), Seated Row → Machine+Cable (Machine tar historiken — Johannes cable-historik på gamla namnet blir Machine-märkt, kosmetiskt). Engångsmigration `libraryUniform_v1` skriver om name+exId i logg/cykler/overrides/swaps/drafts och flyttar exId-nycklade maps (notes m. tombstones, set-counts, measure/sprint-overrides). exId skrivs aldrig om från namnet — rename-etiketter har exId ≠ slug(name) by design. UX-beslut: övningsnamn först (varianter sorterar ihop i dropdowns, rörelse-först-tänk), inte utrustning-först (dropdowns är native selects utan textsök — sökargumentet föll). Spegelfil src/exercise-identity.js synkad (inkl. försenad 3.55.0 rotator cuff-spegling).
+
+## 3.67.3 — 2026-07-07
+**Veckodag i datum överallt.** Done-badgen på pass-kort och Copy last session visade bara "Jul 7" medan History-vyn redan visade "Tue Jul 7" (`fmtDate` har `weekday:'short'`). Rotorsak: pass-done och rest-done byggde egna datumsträngar utan veckodag istället för att använda `fmtDate()`. Nu återanvänder båda `fmtDate()` — en enda datumkälla. Gäller nya loggar; redan sparade `done.date`-strängar är frysta och behåller gamla formatet.
+
 ## 3.67.2 — 2026-07-06
 **Fix: Done trycktes utanför skärmen på Settings-undersidor i Obsidian.** Rotorsak: undersidorna använde `.section-title`, som har extrema tema-overrides (Obsidian: Cinzel + `.32em` letter-spacing + uppercase → "APPEARANCE" enormt bred; Cosmic Horror snarlik). Edit Program använder `.edit-title` — ärver temats font via `var(--display)` men utan tracking-explosionen, noll tema-overrides — därför funkar dess huvud i alla teman. Fix: undersidorna använder nu `.edit-title` (temafonten följer fortfarande med) + ellipsis-skyddsnät (`min-width:0`) så Done aldrig kan tryckas ut oavsett framtida tema. Genomgång av övriga `section-title`-ställen: alla står ensamma på egen rad utan knapp — ingen mer yta med samma problem.
 
