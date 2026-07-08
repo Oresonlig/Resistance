@@ -1900,14 +1900,25 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
 }
 @keyframes clBreath{0%,100%{opacity:0.72;}50%{opacity:1;}}
 .cl-hex{
-  position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0.045;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'%3E%3Cg fill='none' stroke='%23d1442a' stroke-opacity='0.5' stroke-width='1'%3E%3Cpath d='M28 0 L56 16 L56 50 L28 66 L0 50 L0 16 Z'/%3E%3Cpath d='M28 50 L56 66 L56 100 L28 116 L0 100 L0 66 Z'/%3E%3C/g%3E%3C/svg%3E");
-  background-size:56px 100px;
-  /* mask-image uses LUMINANCE masking on a plain gradient (white=show, black=hide) —
-     not alpha. #000 as the "visible" stop was backwards and made the mask fail open
-     (flat hard-edged rectangle instead of a soft feather — Niklas screenshot). */
-  -webkit-mask-image:radial-gradient(ellipse 90% 90% at 50% 45%, #fff 25%, transparent 82%);
-  mask-image:radial-gradient(ellipse 90% 90% at 50% 45%, #fff 25%, transparent 82%);
+  position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0.12;
+  /* 3.72.4: themed + de-boxed. Was a hardcoded-orange hex IMAGE whose radial mask
+     still read as a rectangular-ish block (Niklas: "still very square, split it up,
+     fade nicer, follow the font colour"). Now the hexes are a MASK on an accent
+     fill (so they follow the theme) intersected with a soft, large, off-centre
+     fade that dissolves them into the scene with no hard edge or square boundary. */
+  background:var(--accent);
+  --cl-hexmask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1'%3E%3Cpath d='M28 0 L56 16 L56 50 L28 66 L0 50 L0 16 Z'/%3E%3Cpath d='M28 50 L56 66 L56 100 L28 116 L0 100 L0 66 Z'/%3E%3C/g%3E%3C/svg%3E");
+  --cl-hexfade:radial-gradient(ellipse 104% 82% at 48% 38%, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 52%, transparent 84%);
+  -webkit-mask-image:var(--cl-hexmask), var(--cl-hexfade);
+  -webkit-mask-size:56px 100px, 100% 100%;
+  -webkit-mask-repeat:repeat, no-repeat;
+  -webkit-mask-position:center, center;
+  -webkit-mask-composite:source-in;
+  mask-image:var(--cl-hexmask), var(--cl-hexfade);
+  mask-size:56px 100px, 100% 100%;
+  mask-repeat:repeat, no-repeat;
+  mask-position:center, center;
+  mask-composite:intersect;
 }
 .cl-vignette{
   position:absolute;inset:0;z-index:6;pointer-events:none;
@@ -2003,11 +2014,23 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
   box-shadow:0 0 90px 10px var(--glow-soft);
 }
 .cl-aura-hex{
-  position:absolute;inset:-54px -44px;z-index:-1;opacity:0.14;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='42' height='74' viewBox='0 0 42 74'%3E%3Cg fill='none' stroke='%23e0663f' stroke-width='1'%3E%3Cpath d='M21 0 L42 12 L42 37 L21 49 L0 37 L0 12 Z'/%3E%3Cpath d='M21 37 L42 49 L42 74 L21 86 L0 74 L0 49 Z'/%3E%3C/g%3E%3C/svg%3E");
-  background-size:42px 74px;
-  -webkit-mask-image:radial-gradient(ellipse 74% 84% at 50% 50%, transparent 42%, #fff 66%, transparent 100%);
-  mask-image:radial-gradient(ellipse 74% 84% at 50% 50%, transparent 42%, #fff 66%, transparent 100%);
+  position:absolute;inset:-54px -44px;z-index:-1;opacity:0.16;
+  /* 3.72.4: themed (accent) + softer ring, same mask-composite technique as
+     .cl-hex — the hex ring that seats the form now follows the theme colour and
+     feathers gently instead of the hardcoded-orange block. */
+  background:var(--accent);
+  --cl-ahexmask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='42' height='74' viewBox='0 0 42 74'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1'%3E%3Cpath d='M21 0 L42 12 L42 37 L21 49 L0 37 L0 12 Z'/%3E%3Cpath d='M21 37 L42 49 L42 74 L21 86 L0 74 L0 49 Z'/%3E%3C/g%3E%3C/svg%3E");
+  --cl-ahexfade:radial-gradient(ellipse 82% 90% at 50% 50%, transparent 38%, rgba(0,0,0,0.85) 62%, transparent 100%);
+  -webkit-mask-image:var(--cl-ahexmask), var(--cl-ahexfade);
+  -webkit-mask-size:42px 74px, 100% 100%;
+  -webkit-mask-repeat:repeat, no-repeat;
+  -webkit-mask-position:center, center;
+  -webkit-mask-composite:source-in;
+  mask-image:var(--cl-ahexmask), var(--cl-ahexfade);
+  mask-size:42px 74px, 100% 100%;
+  mask-repeat:repeat, no-repeat;
+  mask-position:center, center;
+  mask-composite:intersect;
 }
 .cl-auth{position:relative;display:flex;flex-direction:column;width:100%;}
 .cl-oauth{
@@ -2076,15 +2099,29 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
 
 /* ---------- responsive ---------- */
 @media (max-width:940px){
-  .cl-grid{justify-content:center;padding:108px 24px 56px;}
-  .cl-col{width:100%;max-width:400px;align-items:center;text-align:center;gap:32px;}
+  .cl-grid{justify-content:center;padding:100px 24px 52px;}
+  .cl-col{width:100%;max-width:400px;align-items:center;text-align:center;gap:26px;}
   .cl-hero{max-width:460px;}
-  .cl-mark{font-size:46px;}
+  .cl-mark{font-size:44px;}
   .cl-mark .t, .cl-mark .c{display:inline;}
-  .cl-serif{margin-left:auto;margin-right:auto;}
+  /* 3.72.4: serif poem hidden on mobile — Niklas: too much text, too packed;
+     it also frees the vertical band the focus chain now owns as the hero. */
+  .cl-serif{display:none;}
   .cl-authwrap{width:100%;max-width:360px;}
-  .cl-chain-focus{left:50%;margin-left:-75px;opacity:0.5;}
+  /* 3.72.4: on mobile the focus chain WAS a faded 0.5 backdrop with its labels
+     hidden — indistinguishable from the background field, "out of sight", said
+     nothing (Niklas). Now it's the hero: sharper, shortened to 5 links (via JS
+     in bootChainLogin so the glowing hot link sits in the upper hero band, above
+     the form), and ONLY the hot link keeps its label ("+ FORGE YOUR NEXT LINK"),
+     re-centred BELOW the link so it doesn't overflow the narrow screen to the left. */
+  .cl-chain-focus{left:50%;margin-left:-75px;opacity:0.72;}
   .cl-chain-focus .cl-label{display:none;}
+  .cl-chain-focus .cl-label.active{
+    display:flex;flex-direction:row;justify-content:center;
+    transform:translate(-50%,22px);width:max-content;max-width:82vw;
+  }
+  .cl-chain-focus .cl-label.active .tick{display:none;}
+  .cl-chain-focus .cl-label.active .txt{font-size:11px;letter-spacing:0.2em;}
   .cl-masthead{font-size:9.5px;letter-spacing:0.14em;left:20px;right:20px;}
   .cl-masthead .brand-min{display:none;}
 }
@@ -4186,7 +4223,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.72.3';
+const APP_VERSION = '3.72.4';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8640,11 +8677,11 @@ function stopAuthThemeDemo(){
     // centre, so the same chain count reads as a dense clutter that drowns the
     // focus chain (Niklas mobile feedback: "chains all over that say nothing").
     // Cut the background density hard on mobile — it's atmosphere, not the point.
-    const mob = window.innerWidth <= 700;
+    const mob = window.innerWidth <= 940;
     const layers = mob ? [
-      {n:6,  s:[0.16,0.30],o:[0.04,0.08],blur:2.4,stroke:'#4a453f',z:0},
-      {n:4,  s:[0.34,0.55],o:[0.05,0.10],blur:1.4,stroke:'#5a544d',z:1},
-      {n:2,  s:[1.0,1.6],  o:[0.04,0.07],blur:5.0,stroke:'#544e47',z:0},
+      {n:5,  s:[0.16,0.30],o:[0.03,0.06],blur:2.4,stroke:'#4a453f',z:0},
+      {n:3,  s:[0.34,0.55],o:[0.04,0.08],blur:1.4,stroke:'#5a544d',z:1},
+      {n:1,  s:[1.0,1.6],  o:[0.03,0.06],blur:5.0,stroke:'#544e47',z:0},
     ] : [
       {n:26,s:[0.16,0.32],o:[0.05,0.10],blur:2.4,stroke:'#4a453f',z:0},
       {n:15,s:[0.34,0.6], o:[0.07,0.13],blur:1.4,stroke:'#5a544d',z:1},
@@ -8661,7 +8698,7 @@ function stopAuthThemeDemo(){
       stage.insertBefore(svg,stage.firstChild);
     });
     const frag=document.createDocumentFragment();
-    const liveCount = mob ? 2 : 6;
+    const liveCount = mob ? 1 : 6;
     for(let i=0;i<liveCount;i++){
       const div=document.createElement('div');
       div.className='cl-chain cl-chain-deco';
@@ -8681,6 +8718,17 @@ function stopAuthThemeDemo(){
   }
   function bootChainLogin(){
     const stage=document.querySelector('.cl-chainstage');
+    // 3.72.4: on mobile shorten the focus chain to 5 links so its glowing hot
+    // link (kept as the LAST label = "+ FORGE YOUR NEXT LINK") lands in the upper
+    // hero band above the form, not buried down in the input fields. Labels are
+    // still hardcoded here (TODO: feed from the user's real recent sessions).
+    if(window.innerWidth<=940){
+      const fc=document.querySelector('.cl-chain-focus');
+      if(fc){
+        fc.dataset.count='5';
+        fc.dataset.labels='R3 · CHEST|R3 · BACK|R3 · LEGS|R3 · PULL|+ FORGE YOUR NEXT LINK';
+      }
+    }
     if(stage && 'field' in stage.dataset) generateField(stage);
     document.querySelectorAll('.cl-chain[data-chain]').forEach(buildChain);
     startTicker();
