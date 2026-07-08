@@ -1871,17 +1871,22 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
   position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0.045;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'%3E%3Cg fill='none' stroke='%23d1442a' stroke-opacity='0.5' stroke-width='1'%3E%3Cpath d='M28 0 L56 16 L56 50 L28 66 L0 50 L0 16 Z'/%3E%3Cpath d='M28 50 L56 66 L56 100 L28 116 L0 100 L0 66 Z'/%3E%3C/g%3E%3C/svg%3E");
   background-size:56px 100px;
-  mask-image:radial-gradient(ellipse 90% 90% at 50% 45%, #000 25%, transparent 82%);
+  /* mask-image uses LUMINANCE masking on a plain gradient (white=show, black=hide) —
+     not alpha. #000 as the "visible" stop was backwards and made the mask fail open
+     (flat hard-edged rectangle instead of a soft feather — Niklas screenshot). */
+  -webkit-mask-image:radial-gradient(ellipse 90% 90% at 50% 45%, #fff 25%, transparent 82%);
+  mask-image:radial-gradient(ellipse 90% 90% at 50% 45%, #fff 25%, transparent 82%);
 }
 .cl-vignette{
   position:absolute;inset:0;z-index:6;pointer-events:none;
   background:radial-gradient(ellipse 82% 74% at 50% 46%, transparent 44%, rgba(0,0,0,0.62) 100%);
 }
 
-/* ---------- fade-to-black theme-demo transition (3.72.0) ----------
+/* ---------- fade-to-black theme-demo transition (3.72.1: slowed down —
+   Niklas feedback that 3.72.0 still felt rushed) ----------
    ONLY the decorative scene fades — the auth form (.cl-authwrap) is never
    tagged .cl-fade-layer, so it never disappears while themes rotate. */
-.cl-fade-layer{transition:opacity .7s ease;}
+.cl-fade-layer{transition:opacity 1.8s cubic-bezier(.4,0,.2,1);}
 .cl-fade-layer.cl-faded{opacity:0;}
 
 /* ---------- chain stage ---------- */
@@ -1892,13 +1897,14 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
   left:76%;margin-left:-75px;z-index:10;
   filter:drop-shadow(0 18px 30px rgba(0,0,0,0.6));
 }
-.cl-active-hot{animation:clHot 4.4s ease-in-out infinite;mix-blend-mode:screen;}
+.cl-active-hot{animation:clHot 5.5s ease-in-out infinite;mix-blend-mode:screen;}
 @keyframes clHot{0%,100%{opacity:0.3;}50%{opacity:0.92;}}
-.cl-chain-focus .cl-active{filter:drop-shadow(0 0 16px rgba(255,120,55,0.7));animation:clGlow 4.4s ease-in-out infinite;}
-@keyframes clGlow{
-  0%,100%{filter:drop-shadow(0 0 12px rgba(255,90,40,0.5));}
-  50%{filter:drop-shadow(0 0 30px rgba(255,150,70,0.8));}
-}
+/* 3.72.1: the old glow was filter:drop-shadow() on the link's rounded-RECT silhouette,
+   which blurs into a boxy halo (Niklas screenshot: "ful fyrkant"). Replaced with a
+   round radial-gradient bloom (.cl-hot-glow, an SVG circle behind the link — see
+   chain-login.js clDefs/buildChain) that reads as a natural soft ember glow instead. */
+.cl-hot-glow{mix-blend-mode:screen;pointer-events:none;animation:clGlow 5.5s ease-in-out infinite;}
+@keyframes clGlow{0%,100%{opacity:0.55;}50%{opacity:1;}}
 .cl-chain-deco{pointer-events:none;transform-origin:50% 0;}
 .cl-field-layer{position:absolute;top:0;left:0;width:100%;height:118%;pointer-events:none;display:block;}
 .cl-label{
@@ -1960,16 +1966,16 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
 .cl-aura{
   position:absolute;inset:-54px -44px;z-index:-1;
   background:radial-gradient(ellipse 72% 82% at 50% 50%, color-mix(in srgb, var(--bg-2) 82%, transparent) 0%, color-mix(in srgb, var(--bg-2) 50%, transparent) 46%, transparent 78%);
-  -webkit-mask-image:radial-gradient(ellipse 78% 86% at 50% 50%, #000 52%, transparent 100%);
-  mask-image:radial-gradient(ellipse 78% 86% at 50% 50%, #000 52%, transparent 100%);
+  -webkit-mask-image:radial-gradient(ellipse 78% 86% at 50% 50%, #fff 52%, transparent 100%);
+  mask-image:radial-gradient(ellipse 78% 86% at 50% 50%, #fff 52%, transparent 100%);
   box-shadow:0 0 90px 10px var(--glow-soft);
 }
 .cl-aura-hex{
   position:absolute;inset:-54px -44px;z-index:-1;opacity:0.14;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='42' height='74' viewBox='0 0 42 74'%3E%3Cg fill='none' stroke='%23e0663f' stroke-width='1'%3E%3Cpath d='M21 0 L42 12 L42 37 L21 49 L0 37 L0 12 Z'/%3E%3Cpath d='M21 37 L42 49 L42 74 L21 86 L0 74 L0 49 Z'/%3E%3C/g%3E%3C/svg%3E");
   background-size:42px 74px;
-  -webkit-mask-image:radial-gradient(ellipse 74% 84% at 50% 50%, transparent 42%, #000 66%, transparent 100%);
-  mask-image:radial-gradient(ellipse 74% 84% at 50% 50%, transparent 42%, #000 66%, transparent 100%);
+  -webkit-mask-image:radial-gradient(ellipse 74% 84% at 50% 50%, transparent 42%, #fff 66%, transparent 100%);
+  mask-image:radial-gradient(ellipse 74% 84% at 50% 50%, transparent 42%, #fff 66%, transparent 100%);
 }
 .cl-auth{position:relative;display:flex;flex-direction:column;width:100%;}
 .cl-oauth{
@@ -4146,7 +4152,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.72.0';
+const APP_VERSION = '3.72.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8408,7 +8414,7 @@ function initTheme(){
 
 // ── AUTH SCREEN THEME DEMO ──────────────────────────────────────
 // Login-skärmen startar alltid på Iron (default), roterar sedan slumpmässigt
-// genom alla teman var 7:e sekund som en passiv demo av temautbudet — även för
+// genom alla teman som en passiv demo av temautbudet — även för
 // återkommande användare. Byter ALDRIG state.theme/sparar — ren visuell loop,
 // stoppas så fort en session faktiskt loggar in (se handleSession).
 // 3.72.0: bytet göms bakom en mjuk fade — men ENDAST på .cl-fade-layer
@@ -8416,6 +8422,10 @@ function initTheme(){
 // (formuläret: inputs, glöm lösenord, sign up) är ALDRIG taggat .cl-fade-layer
 // och fadar därför aldrig bort — Niklas-feedback: 3.71.1s helskärms-ridå dolde
 // hela formuläret och lämnade användaren undrande "va fasen" mitt i inloggning.
+// 3.72.1: Niklas — även EFTER fixen kändes allt "rushat": rotationen var för
+// tät (7s) och fadet för snabbt (0.7s). Rotation → 16s, fade → 1.8s (CSS
+// .cl-fade-layer transition), + en kort paus i mörkret innan det fadar in
+// igen så bytet hinner andas istf kännas som ett snabbt flimmer.
 let _authThemeDemoTimer = null;
 function authThemeFadeSwap(nextId){
   const layers = document.querySelectorAll('.cl-fade-layer');
@@ -8423,8 +8433,8 @@ function authThemeFadeSwap(nextId){
   setTimeout(()=>{
     if(!_authThemeDemoTimer) return; // demo stoppad under fade → lämna orört
     setThemeVisual(nextId);
-    requestAnimationFrame(()=>layers.forEach(el=>el.classList.remove('cl-faded')));
-  }, 700);
+    setTimeout(()=>layers.forEach(el=>el.classList.remove('cl-faded')), 300);
+  }, 1800);
 }
 function startAuthThemeDemo(){
   stopAuthThemeDemo();
@@ -8434,7 +8444,7 @@ function startAuthThemeDemo(){
     const candidates = THEMES.filter(t=>t.id!==current.id);
     const next = candidates[Math.floor(Math.random()*candidates.length)];
     authThemeFadeSwap(next.id);
-  }, 7000);
+  }, 16000);
 }
 function stopAuthThemeDemo(){
   if(_authThemeDemoTimer){ clearInterval(_authThemeDemoTimer); _authThemeDemoTimer=null; }
@@ -8471,7 +8481,12 @@ function stopAuthThemeDemo(){
     [['0','#c4bbb0'],['0.35','#7d746b'],['0.7','#4c4640'],['1','#2c2825']].forEach(([o,c])=>steel.appendChild(el('stop',{offset:o,'stop-color':c})));
     const hot=el('linearGradient',{id:'clHot',x1:'0',y1:'0',x2:'0',y2:'1'});
     [['0','#fff3df'],['0.4','#ff9a4c'],['1','#b63a1e']].forEach(([o,c])=>hot.appendChild(el('stop',{offset:o,'stop-color':c})));
-    d.appendChild(steel); d.appendChild(hot);
+    // 3.72.1: round radial-gradient bloom for the hot link — see .cl-hot-glow.
+    // Replaces the old filter:drop-shadow(...) glow, which traces the link's
+    // rounded-RECT silhouette and reads as a boxy halo, not a natural ember glow.
+    const glow=el('radialGradient',{id:'clGlow',cx:'0.5',cy:'0.5',r:'0.5'});
+    [['0%','rgba(255,244,226,0.95)'],['35%','rgba(255,154,76,0.55)'],['100%','rgba(255,90,40,0)']].forEach(([o,c])=>glow.appendChild(el('stop',{offset:o,'stop-color':c})));
+    d.appendChild(steel); d.appendChild(hot); d.appendChild(glow);
     svg.appendChild(d);
   }
   const TICKERS=[];
@@ -8499,6 +8514,9 @@ function stopAuthThemeDemo(){
       const opacity=active?1:0.4+0.5*(i/(count-1));
       const link=makeLink(step/2,vertical,active?'url(#clHot)':'url(#clSteel)',active?11:9,opacity);
       if(active){
+        const glow=el('circle',{cx:'0',cy:String(step/2),r:'62',fill:'url(#clGlow)'});
+        glow.setAttribute('class','cl-hot-glow');
+        swayG.appendChild(glow);
         link.setAttribute('class','cl-active');
         swayG.appendChild(link);
         const hotOv=makeLink(step/2,vertical,'#fff4e2',5,1);
