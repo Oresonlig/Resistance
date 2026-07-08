@@ -460,6 +460,7 @@ body.theme-nightcity{
   --black:#08010f;
   --white:#f5f0ff;
   --red:#ffe600;        /* acid yellow primary */
+  --on-accent:var(--black); /* login primary button — yellow bg needs dark text, see .cl --on-accent */
   --gold:#ff2d78;       /* magenta accent */
   --green-bright:#00fff0; /* cyan tertiary */
   --gray-mid:#1a0830;
@@ -1388,6 +1389,7 @@ body.theme-ember .toast{
 ───────────────────────────────────────────────────────────── */
 body.theme-void{
   --black:#000000;--white:#ffffff;--red:#ffffff;
+  --on-accent:#000; /* login primary button — white accent needs dark text, see .cl --on-accent */
   --gold:#aaaaaa;--green-bright:#cccccc;
   --gray-mid:#111111;--gray-light:#666666;
   /* 3.34.11 — Tag tokens: alla varianter neutrala (Void = all tags look same) */
@@ -1444,6 +1446,7 @@ body.theme-void .chain-tab.adjacent .chain-tab-name-short{color:rgba(255,255,255
 ───────────────────────────────────────────────────────────── */
 body.theme-nanosuit{
   --black:#050810;--white:#e0faff;--red:#00d4ff;
+  --on-accent:var(--black); /* login primary button — cyan accent needs dark text, see .cl --on-accent */
   --gold:#00fff0;--green-bright:#50ff88;
   --gray-mid:#102030;--gray-light:#5a8899;
   /* PM22 surface-overrides — deep navy tactical */
@@ -1828,9 +1831,14 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
 #userScreen.hidden{display:none !important;}
 
 .cl{
-  --bg:        var(--black);
-  --bg-2:      var(--surface-deep, var(--black));
-  --panel:     var(--surface-elevated);
+  /* 3.72.2: bg/bg-2/panel LOCKED (not var()) — Niklas: the dark↔light theme
+     jump was too harsh, and even dark-to-dark swaps (esp. Void, pure #000)
+     changed the whole scene color too abruptly. One fixed background
+     (Cosmic Horror's tone) now, across every theme in the rotation —
+     only font/accent/chain-color/border-tint still vary per theme. */
+  --bg:        #03080a;
+  --bg-2:      #060f11;
+  --panel:     rgba(8,20,18,0.95);
   --line:      var(--border-subtle);
   --line-2:    var(--border-strong);
   --text:      var(--white);
@@ -1841,6 +1849,13 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
   --glow:      color-mix(in srgb, var(--red) 40%, transparent);
   --glow-soft: color-mix(in srgb, var(--red) 14%, transparent);
   --hot:       #ffd9a8;
+  /* on-accent: text color for the primary button (bg = var(--accent)).
+     Some themes' accent is itself near-white/bright (Void, Night City,
+     Nanosuit, Obsidian, Cosmic Horror — overridden in each theme's own
+     var() block below) — white text there was invisible on white/bright
+     (Niklas screenshot: Void's Log In button, a white blob with no text).
+     Default here covers Iron/Ember's darker red/orange accents. */
+  --on-accent: var(--white);
   --font-display: 'Archivo', system-ui, sans-serif;
   --font-serif:   'Cormorant Garamond', Georgia, serif;
   --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
@@ -2023,7 +2038,7 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
 }
 .cl-btn:active{transform:translateY(1px);}
 .cl-btn--primary{
-  color:#fff;background:var(--accent);
+  color:var(--on-accent);background:var(--accent);
   box-shadow:0 8px 30px -8px var(--glow), inset 0 1px 0 rgba(255,255,255,0.14);
 }
 .cl-btn--primary:hover{filter:brightness(1.1);box-shadow:0 12px 44px -6px var(--glow), 0 0 22px var(--glow-soft), inset 0 1px 0 rgba(255,255,255,0.2);}
@@ -2491,6 +2506,7 @@ body.theme-obsidian{
   --black:#0a0805;
   --white:#f0d99c;
   --red:#c9a35a;
+  --on-accent:#1a0e04; /* login primary button — gold accent needs dark text, see .cl --on-accent */
   --gold:#c9a35a;
   --green-bright:#9ab57a;
   --gray-mid:#2a2010;
@@ -2815,6 +2831,7 @@ body.theme-cosmic-horror{
   --black:#03080a;
   --white:#e8f7f0;
   --red:#7fc8b4;
+  --on-accent:#02151a; /* login primary button — teal accent needs dark text, see .cl --on-accent */
   --gold:#d8b878;
   --green-bright:#bedab0;
   --gray-mid:#2a4a44;
@@ -4152,7 +4169,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.72.1';
+const APP_VERSION = '3.72.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8426,6 +8443,11 @@ function initTheme(){
 // tät (7s) och fadet för snabbt (0.7s). Rotation → 16s, fade → 1.8s (CSS
 // .cl-fade-layer transition), + en kort paus i mörkret innan det fadar in
 // igen så bytet hinner andas istf kännas som ett snabbt flimmer.
+// 3.72.2: Niklas — dark→light var en för hård övergång (hela scenens
+// bakgrund hoppade från nästan svart till ljus). Demon roterar nu ENDAST
+// dark-kategorin (se THEMES cat:'dark') — de tre ljusa (Arctic/Undertow/
+// Overgrowth) visas aldrig i login-loopen. De väljs fortfarande normalt av
+// användaren i Settings efter inloggning, bara inte i denna demo.
 let _authThemeDemoTimer = null;
 function authThemeFadeSwap(nextId){
   const layers = document.querySelectorAll('.cl-fade-layer');
@@ -8441,7 +8463,7 @@ function startAuthThemeDemo(){
   setThemeVisual('iron');
   _authThemeDemoTimer = setInterval(()=>{
     const current = THEMES.find(t=>t.class && document.body.classList.contains(t.class)) || THEMES[0];
-    const candidates = THEMES.filter(t=>t.id!==current.id);
+    const candidates = THEMES.filter(t=>t.id!==current.id && t.cat==='dark');
     const next = candidates[Math.floor(Math.random()*candidates.length)];
     authThemeFadeSwap(next.id);
   }, 16000);
