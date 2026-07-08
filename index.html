@@ -292,19 +292,21 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .draft-notice{font-family:var(--mono);font-size:.5rem;color:#60aa60;text-align:center;padding:5px;border:1px solid #3a7a3a;margin-top:7px;}
 .cycle-done{padding:44px 20px;text-align:center;}
 .ob-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:65vh;padding:24px 20px 100px;max-width:440px;margin:0 auto;gap:0;}
-.ob-step{font-family:var(--mono);font-size:.48rem;color:#555;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
+/* 3.71.0 Fable-fynd #4 (PM22): tokeniserad — Rebuild Chain kör wizarden under
+   användarens aktiva tema, hardcoded mörk-hex blev oläslig på ljusa teman. */
+.ob-step{font-family:var(--mono);font-size:.48rem;color:var(--gray-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
 .ob-title{font-family:var(--display);font-size:2rem;letter-spacing:.06em;color:var(--white);margin-bottom:4px;text-align:center;}
-.ob-sub{font-family:var(--mono);font-size:.78rem;color:#888;text-align:center;line-height:1.7;margin-bottom:24px;}
+.ob-sub{font-family:var(--mono);font-size:.78rem;color:var(--gray-light);text-align:center;line-height:1.7;margin-bottom:24px;}
 .ob-options{display:grid;gap:8px;width:100%;margin-bottom:8px;}
 .ob-options.cols2{grid-template-columns:1fr 1fr;}
 .ob-options.cols3{grid-template-columns:1fr 1fr 1fr;}
-.ob-option{background:none;border:1px solid #333;color:var(--white);font-family:var(--display);font-size:1.1rem;letter-spacing:.06em;padding:16px 10px;cursor:pointer;transition:all .2s;position:relative;}
+.ob-option{background:none;border:1px solid var(--border-strong);color:var(--white);font-family:var(--display);font-size:1.1rem;letter-spacing:.06em;padding:16px 10px;cursor:pointer;transition:all .2s;position:relative;}
 .ob-option:hover{border-color:var(--red);}
-.ob-option.selected{border-color:var(--red);background:#1a0000;}
-.ob-option .ob-opt-label{display:block;font-family:var(--mono);font-size:.62rem;color:#888;margin-top:4px;font-weight:400;letter-spacing:.04em;text-transform:none;}
+.ob-option.selected{border-color:var(--red);background:color-mix(in srgb,var(--red) 10%,transparent);}
+.ob-option .ob-opt-label{display:block;font-family:var(--mono);font-size:.62rem;color:var(--gray-light);margin-top:4px;font-weight:400;letter-spacing:.04em;text-transform:none;}
 .ob-option .ob-checkmark{position:absolute;top:6px;right:8px;color:var(--red);font-size:.7rem;display:none;}
 .ob-option.selected .ob-checkmark{display:block;}
-.ob-note{font-family:var(--mono);font-size:.68rem;color:#444;text-align:center;line-height:1.7;margin-top:8px;}
+.ob-note{font-family:var(--mono);font-size:.68rem;color:var(--gray-mid);text-align:center;line-height:1.7;margin-top:8px;}
 .ob-next{width:auto;min-width:160px;margin-top:20px;padding:12px 32px;font-size:.85rem;flex:none;align-self:center;}
 @media(min-width:600px){
   .ob-next{min-width:200px;padding:14px 40px;font-size:.9rem;}
@@ -313,12 +315,12 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .drag-handle:active{cursor:grabbing;}
 .sortable-ghost{opacity:.35;}
 .ob-path-list{display:flex;flex-direction:column;gap:10px;width:100%;margin-top:8px;}
-.ob-path-btn{display:flex;flex-direction:column;align-items:flex-start;gap:4px;background:none;border:1px solid #333;color:var(--white);padding:16px 18px;cursor:pointer;transition:all .2s;text-align:left;}
-.ob-path-btn:hover{border-color:var(--red);background:rgba(199,64,53,0.04);}
+.ob-path-btn{display:flex;flex-direction:column;align-items:flex-start;gap:4px;background:none;border:1px solid var(--border-strong);color:var(--white);padding:16px 18px;cursor:pointer;transition:all .2s;text-align:left;}
+.ob-path-btn:hover{border-color:var(--red);background:color-mix(in srgb,var(--red) 4%,transparent);}
 .ob-path-title{font-family:var(--display);font-size:1rem;letter-spacing:.06em;color:var(--white);}
-.ob-path-desc{font-family:var(--mono);font-size:.72rem;color:#888;line-height:1.7;letter-spacing:.04em;}
-.ob-back{font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:18px 0 4px;transition:color .15s;}
-.ob-back:hover{color:#aaa;}
+.ob-path-desc{font-family:var(--mono);font-size:.72rem;color:var(--gray-light);line-height:1.7;letter-spacing:.04em;}
+.ob-back{font-family:var(--mono);font-size:.5rem;color:var(--gray-mid);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:18px 0 4px;transition:color .15s;}
+.ob-back:hover{color:var(--gray-light);}
 
 /* EDIT FLOW */
 .edit-page{padding:16px 14px 90px;max-width:560px;margin:0 auto;}.edit-title{font-family:var(--display);font-size:2rem;letter-spacing:.06em;margin-bottom:6px;}
@@ -3492,6 +3494,7 @@ async function handleSession(session){
     try{ stopAuthThemeDemo(); }catch(e){}
     try{ initTheme(); }catch(e){ console.error(e); }
     const hv=document.getElementById('headerVersion');if(hv)hv.textContent=APP_VERSION+' (failsafe)';
+    _onboardingActive = false;
     try{ if(state?.onboardingDone) renderChain(); }catch(e){ console.error('renderChain failsafe threw:', e); }
     try{ showToast && showToast('Login took too long — showing local data. Sync may not work.', 6000); }catch(e){}
   }, 8000);
@@ -3507,6 +3510,7 @@ async function handleSession(session){
     if(detectStorageQuotaIssue()) showPrivateModeBanner();
     refreshAmPill();
     requestNotificationPermission && requestNotificationPermission();
+    _onboardingActive = false; // 3.71.0 — stale flagga från övergiven wizard får inte blockera renderChain
     if(!state.onboardingDone){
       showOnboarding(currentUser.id, 0, {});
     } else {
@@ -3640,13 +3644,14 @@ function ensureStateDefaults(){
   }catch(e){ console.warn('extras id-migration', e); }
   if(typeof state.prCollapsed !== 'boolean') state.prCollapsed = true;
   if(typeof state.prOpenGroup !== 'string') state.prOpenGroup = null;
-  if(typeof state.restCount !== 'number') state.restCount = 1;
   if(!state.permanentSwaps) state.permanentSwaps = {};
   if(state.sessionOrder === undefined) state.sessionOrder = null;
   if(state.restSlots === undefined) state.restSlots = null;
   // 3.65.0 — whitelist istället för falsy-check: unitLabel() interpoleras rått i
   // dussintals innerHTML-strängar, så unit får aldrig vara en godtycklig sträng.
   if(state.unit!=='kg' && state.unit!=='lbs') state.unit = 'kg';
+  // 3.71.0 — temp-enhet (sauna): samma whitelist-princip, label interpoleras rått.
+  if(state.tempUnit!=='c' && state.tempUnit!=='f') state.tempUnit = 'c';
   if(!state.exerciseOverrides) state.exerciseOverrides = {};
   if(!state.sessionNameOverrides) state.sessionNameOverrides = {};
   if(typeof state.timerDefault !== 'number') state.timerDefault = 120;
@@ -3734,9 +3739,9 @@ function isFreshState(s){
 function freshState(){
   return {
     cycles:[newCycle()],
-    log:[], weightLog:[], draft:null, drafts:{}, restCount:1, prCollapsed:true, prOpenGroup:null,
+    log:[], weightLog:[], draft:null, drafts:{}, prCollapsed:true, prOpenGroup:null,
     permanentSwaps:{}, sessionOrder:null, restSlots:null,
-    unit:'kg', exerciseOverrides:{}, sessionNameOverrides:{},
+    unit:'kg', tempUnit:'c', exerciseOverrides:{}, sessionNameOverrides:{},
     timerDefault:120, timerEnabled:false, exerciseNotes:{},
     onboardingDone:false, theme:'iron',
     exerciseTagOverrides:{}, exerciseMeasureOverride:{}, exerciseSprintBase:{}, updatedAt:0,
@@ -4126,7 +4131,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.70.1';
+const APP_VERSION = '3.71.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4757,6 +4762,19 @@ function toKg(val){
   return val;
 }
 function unitLabel(){return state.unit||'kg';}
+// 3.71.0 — temp lagras ALLTID i °C internt (samma princip som kg för vikt).
+// Display/capture konverterar per state.tempUnit ('c'|'f').
+function tempToDisplay(c){
+  if(c===null||c===undefined)return null;
+  if(state.tempUnit==='f') return Math.round(c*9/5+32);
+  return Math.round(c*10)/10; // F→C-konverterade värden kan vara 89.999…
+}
+function tempToC(val){
+  if(val===null||val===undefined)return null;
+  if(state.tempUnit==='f') return (val-32)*5/9;
+  return val;
+}
+function tempUnitLabel(){return state.tempUnit==='f'?'°F':'°C';}
 
 // ── USER SELECT: replaced by Supabase Auth ─────────────────────
 // (selectUser/switchUser removed — auth screen handles all login)
@@ -5719,6 +5737,9 @@ function buildPassBodyHTML(pass,cycle,nextId){
 }
 
 function renderChain(){
+  // 3.71.0 Fable-fynd #5c: sync/failsafe-triggade omritningar får inte radera en
+  // pågående onboarding-wizard (view-chain delas). Wizardens egna exits nollar flaggan.
+  if(_onboardingActive) return;
   // 3.55.0 (#5B): bevara otippade set-inputs över omritningar (synk/timer/nav).
   try{ captureAllDraftInputs(); }catch(e){}
   refreshAmPill();
@@ -5961,9 +5982,11 @@ async function removeSessionFromChain(passId){
 
 
 // ── CHAIN GENERATOR ───────────────────────────────────────────
-// Generates a passOrder + restSlots based on onboarding answers
+// Generates a sessionOrder based on onboarding answers.
+// 3.71.0: restSlots-beräkningen borttagen (Fable-fynd #3) — rest days lämnade
+// onboardingen i 3.41.0, båda call-sites ignorerade returvärdet sedan dess.
 
-function generateChain(numSessions, focus, restCount){
+function generateChain(numSessions, focus){
   // HIT-aware session ordering. Same muscle group never trains back-to-back.
   // Available pass IDs: A=Chest+Tri, B=Back Heavy+Bi, C=Legs+Calfs, D=Shoulders+Traps,
   //                    E=Chest pt.2, F=Back pt.2, G=Arms, H=Full Body, I=Cardio,
@@ -6000,22 +6023,7 @@ function generateChain(numSessions, focus, restCount){
 
   const n = Math.max(3, Math.min(7, numSessions));
   const order = (POOLS[focus] || POOLS.full)[n].slice();
-
-  // Rest slot placement — HIT favors recovery, so spread rests evenly
-  // restCount = 1 → at end (day after last session)
-  // restCount = 2 → end + middle
-  // restCount = 3 → end + 1/3 + 2/3
-  // Slots represent positions BETWEEN sessions (1 = after first, n = after last)
-  const slots = new Set();
-  slots.add(order.length); // always after the final session
-  if(restCount >= 2) slots.add(Math.round(order.length / 2));
-  if(restCount >= 3){
-    slots.add(Math.round(order.length / 3));
-    slots.add(Math.round(order.length * 2 / 3));
-  }
-  const restSlots = [...slots].sort((a,b)=>a-b);
-
-  return { sessionOrder: order, restSlots };
+  return { sessionOrder: order };
 }
 
 // ── ONBOARDING WIZARD ─────────────────────────────────────────
@@ -6023,9 +6031,12 @@ function generateChain(numSessions, focus, restCount){
 
 let obUserId = '';
 let obAnswers = {};
+let _rebuildConfirmed = false; // 3.71.0 — startRebuildChain bekräftade redan; skippa finishOnboardings dubbel-confirm
+let _onboardingActive = false; // 3.71.0 — renderChain-guard: sync-omritning får inte radera wizarden
 
 function showOnboarding(userId, step, answers){
   obUserId = userId;
+  _onboardingActive = true;
   if(answers) obAnswers = answers;
   const el = document.getElementById('view-chain');
   const name = currentUser?.name || 'there';
@@ -6057,7 +6068,7 @@ function showOnboarding(userId, step, answers){
       <div class="ob-step">Step 1 of 4 — Units</div>
       <div class="ob-title">Weight unit</div>
       <div class="ob-sub">Pick what you train in.</div>
-      <div class="ob-options cols2">
+      <div class="ob-options cols2" style="margin-bottom:14px;">
         <button class="ob-option${a.unit==='kg'?' selected':''}" onclick="obPickUnit('kg')">
           KG <span class="ob-checkmark">✓</span>
           <span class="ob-opt-label">Kilograms</span>
@@ -6067,7 +6078,20 @@ function showOnboarding(userId, step, answers){
           <span class="ob-opt-label">Pounds</span>
         </button>
       </div>
-      <div class="ob-note">You can change this later in Settings.</div>
+      <div class="ob-title" style="font-size:1.4rem;margin-top:8px;">Temperature</div>
+      <div class="ob-sub">For sauna sessions.</div>
+      <div class="ob-options cols2">
+        <button class="ob-option${a.tempUnit==='c'?' selected':''}" onclick="obPickTempUnit('c')">
+          °C <span class="ob-checkmark">✓</span>
+          <span class="ob-opt-label">Celsius</span>
+        </button>
+        <button class="ob-option${a.tempUnit==='f'?' selected':''}" onclick="obPickTempUnit('f')">
+          °F <span class="ob-checkmark">✓</span>
+          <span class="ob-opt-label">Fahrenheit</span>
+        </button>
+      </div>
+      ${(a.unit && a.tempUnit) ? '<button class="btn-primary ob-next" onclick="showOnboarding(obUserId,2)">Next →</button>' : '<div class="ob-note">Pick both to continue.</div>'}
+      <div class="ob-note">You can change both later in Settings.</div>
       <div class="ob-back" onclick="showOnboarding(obUserId,0)">← Back</div>
     </div>`;
   }
@@ -6134,18 +6158,18 @@ function showOnboarding(userId, step, answers){
   else if(step === 4){
     let preview = '';
     if(a.numSessions && a.focus){
-      const gen = generateChain(a.numSessions, a.focus, 1);
+      const gen = generateChain(a.numSessions, a.focus);
       const allSessions = [...BASE_SESSIONS, ...SESSION_TEMPLATES.filter(t=>!BASE_SESSIONS.find(b=>b.id===t.id))];
       const items = [];
       gen.sessionOrder.forEach((pid,i)=>{
         const p = allSessions.find(x=>x.id===pid);
-        items.push(`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1a1a;font-family:var(--mono);font-size:.55rem;color:#aaa;">
+        items.push(`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border-subtle);font-family:var(--mono);font-size:.55rem;color:var(--gray-light);">
           <span style="color:var(--red);font-family:var(--display);font-size:.95rem;min-width:18px;">${'ABCDEFGHIJKLMN'[i]||pid}</span>
           <span style="flex:1;">${escapeHTML(p?.name||pid)}</span>
         </div>`);
       });
-      preview = `<div style="width:100%;margin:14px 0 4px;padding:10px 12px;background:var(--gray-mid);border:1px solid #2a2a2a;">
-        <div style="font-family:var(--mono);font-size:.46rem;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Preview your chain</div>
+      preview = `<div style="width:100%;margin:14px 0 4px;padding:10px 12px;background:var(--surface-elevated);border:1px solid var(--border-subtle);">
+        <div style="font-family:var(--mono);font-size:.46rem;color:var(--gray-light);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Preview your chain</div>
         ${items.join('')}
       </div>`;
     }
@@ -6176,14 +6200,26 @@ function obPickPath(path){
   } else if(path === 'import'){
     document.getElementById('obImportFile').click();
   } else if(path === 'skip'){
-    obAnswers = {unit:'kg', experience:'intermediate', numSessions:6, focus:'full', timerEnabled:true, timerDefault:120};
+    // 3.71.0 Fable-fynd #1: vid Rebuild Chain (onboardingDone=true) bevaras användarens
+    // unit/temp/timer — skip lovar bara ny kedjestruktur, inte inställningsreset.
+    obAnswers = state.onboardingDone
+      ? {unit:state.unit, tempUnit:state.tempUnit, experience:'intermediate', numSessions:6, focus:'full', timerEnabled:state.timerEnabled, timerDefault:state.timerDefault}
+      : {unit:'kg', tempUnit:'c', experience:'intermediate', numSessions:6, focus:'full', timerEnabled:true, timerDefault:120};
     finishOnboarding();
   }
 }
 
 function obPickUnit(unit){
   obAnswers.unit = unit;
-  setTimeout(()=>showOnboarding(obUserId, 2), 180);
+  // Vettig default: lbs-folk är sannolikt °F-folk. Följer vikt-valet tills användaren
+  // AKTIVT valt temp (_tempExplicit) — annars fastnar auto-defaulten vid ångrat vikt-val.
+  if(!obAnswers._tempExplicit) obAnswers.tempUnit = (unit==='lbs'?'f':'c');
+  setTimeout(()=>showOnboarding(obUserId, 1), 60);
+}
+function obPickTempUnit(tu){
+  obAnswers.tempUnit = tu;
+  obAnswers._tempExplicit = true;
+  setTimeout(()=>showOnboarding(obUserId, 1), 60);
 }
 function obPickExperience(level){
   obAnswers.experience = level;
@@ -6237,9 +6273,8 @@ async function obImportFromOnboarding(e){
     for(const ex of t.customExercises){
       if(!existingNames.has(ex.name.toLowerCase())) state.customExercises.push(ex);
     }
-    state.unit = 'kg';
-    state.timerEnabled = false;
-    state.timerDefault = 120;
+    // 3.71.0 Fable-fynd #1: unit/timer hårdkodades här → template-import via onboarding
+    // klobbrade lbs-användares inställningar. Fresh users täcks redan av freshState().
     state.onboardingDone = true;
     passOrder.forEach(pid=>{
       if(!BASE_SESSIONS.find(p=>p.id===pid)){
@@ -6254,6 +6289,7 @@ async function obImportFromOnboarding(e){
     initTheme();
     requestNotificationPermission();
     showToast('Program imported!');
+    _onboardingActive = false;
     renderChain();
   } catch(err){
     showToast('Error: invalid template file');
@@ -6263,12 +6299,15 @@ async function obImportFromOnboarding(e){
 async function finishOnboarding(){
   // Safety-net: if state already has real training data, confirm before
   // overwriting chain. Triggered if onboarding somehow runs on existing state.
-  if(!isFreshState(state)){
+  // 3.71.0: skippas när startRebuildChain redan bekräftat (annars dubbel-dialog).
+  const preConfirmed = _rebuildConfirmed; _rebuildConfirmed = false;
+  if(!preConfirmed && !isFreshState(state)){
     const ok = await askModalConfirm('Replace your chain?',
       'You already have training data. Continuing will replace your chain structure with a new generated one. Your training logs and custom exercises are kept, but session order, names, swaps and added/removed exercises will be reset.',
       {confirmLabel:'Replace chain', danger:true});
     if(!ok){
       // User cancelled — close onboarding without changes
+      _onboardingActive = false;
       const el=document.getElementById('view-chain');
       if(el) el.innerHTML='';
       renderChain();
@@ -6277,6 +6316,7 @@ async function finishOnboarding(){
   }
   const a = obAnswers;
   state.unit = a.unit || 'kg';
+  state.tempUnit = (a.tempUnit==='f') ? 'f' : 'c';
   state.timerEnabled = !!a.timerEnabled;
   state.timerDefault = a.timerDefault || 120;
   state.onboardingDone = true;
@@ -6286,10 +6326,13 @@ async function finishOnboarding(){
   state.addedExercises = {};
   state.removedExercises = {};
   state.exerciseOrder = {};
+  // 3.71.0 Fable-fynd #2: confirm-texten lovade swap-reset men swaps rensades aldrig —
+  // slot-nycklade swaps från gamla kedjan applicerades på fel övningar i den nya.
+  state.permanentSwaps = {};
 
   const numSessions = a.numSessions || 6;
   const focus = a.focus || 'full';
-  const generated = generateChain(numSessions, focus, 1);
+  const generated = generateChain(numSessions, focus);
   state.sessionOrder = generated.sessionOrder;
   state.restSlots = [];
 
@@ -6304,6 +6347,7 @@ async function finishOnboarding(){
   save();
   initTheme();
   requestNotificationPermission();
+  _onboardingActive = false;
   renderChain();
 }
 
@@ -6356,10 +6400,13 @@ function removeRestSlot(pos){
 async function startRebuildChain(){
   const ok = await askModalConfirm(
     'Rebuild Chain?',
-    'The setup wizard will generate a new training cycle.<br><br><strong>Replaced:</strong> session order, rest days, renamed sessions, added/removed exercises.<br><strong>Kept:</strong> training logs, custom exercises, weight history.',
+    'The setup wizard will generate a new training cycle.<br><br><strong>Replaced:</strong> session order, rest days, renamed sessions, swapped and added/removed exercises.<br><strong>Kept:</strong> training logs, custom exercises, weight history, settings.',
     {confirmLabel:'Rebuild Chain', danger:true}
   );
   if(!ok) return;
+  // 3.71.0 Fable-fynd #5a: utan flaggan bekräftade finishOnboardings isFreshState-guard
+  // EN GÅNG TILL (rebuild ⇒ aldrig fresh) — två dialoger i rad, värst via Skip-vägen.
+  _rebuildConfirmed = true;
   showOnboarding(currentUser.id, 0, {});
 }
 
@@ -7064,10 +7111,10 @@ function saveExercise(passId,exId){
       const minsVal=rRaw!=null?parseFloat(rRaw):null;
       base={sid, incline: incRaw!=null?(parseFloat(incRaw)||null):(b.incline??null), secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(b.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(b.dist??null), warmup};
     } else if(measure==='sauna'){
-      // Samma minuter-UX som cardio, temp i °C istf distans.
+      // Samma minuter-UX som cardio, temp istf distans. Input i tempUnit, lagras °C.
       const tRaw=dom('temp');const rRaw=dom('r');
       const minsVal=rRaw!=null?parseFloat(rRaw):null;
-      base={sid, temp: tRaw!=null?(parseFloat(tRaw)||null):(b.temp??null), secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(b.secs??null), warmup};
+      base={sid, temp: tRaw!=null?(tempToC(parseFloat(tRaw))||null):(b.temp??null), secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(b.secs??null), warmup};
     } else if(measure==='cardiosprint'){
       const sRaw=dom('spr');const sprints=sRaw!=null?_int(sRaw):(b.sprints??null);
       if(sprintBase==='dist'){const dRaw=dom('dist');base={sid, dist: dRaw!=null?(parseFloat(dRaw)||null):(b.dist??null), sprints, warmup};}
@@ -7397,7 +7444,9 @@ function measureCells(measure, sprintBase, exId, sid, savedSet, bufVal, dis, wCl
   const distmCell = `<div><input class="set-input${wCls}" type="number" id="distm-${exId}-${sid}" placeholder="—" value="${valNum('distm')}" min="0" step="1" ${dis}><div class="set-unit">m</div></div>`;
   const sprintsCell = `<div><input class="set-input${wCls}" type="number" id="spr-${exId}-${sid}" placeholder="—" value="${valNum('sprints')}" min="0" max="99" ${dis}><div class="set-unit">sprints</div></div>`;
   const inclineCell = `<div><input class="set-input${wCls}" type="number" id="inc-${exId}-${sid}" placeholder="—" value="${valNum('incline')}" min="0" max="40" step="0.5" ${dis}><div class="set-unit">%</div></div>`;
-  const tempCell = `<div><input class="set-input${wCls}" type="number" id="temp-${exId}-${sid}" placeholder="—" value="${valNum('temp')}" min="30" max="120" step="1" ${dis}><div class="set-unit">°C</div></div>`;
+  // Temp lagras i °C, visas/matas in i användarens tempUnit (°C/°F) — samma mönster som kg/lbs.
+  const tempDispVal = (()=>{ const c=valNum('temp'); return c!==''&&c!=null ? tempToDisplay(c) : ''; })();
+  const tempCell = `<div><input class="set-input${wCls}" type="number" id="temp-${exId}-${sid}" placeholder="—" value="${tempDispVal}" min="${state.tempUnit==='f'?'86':'30'}" max="${state.tempUnit==='f'?'250':'120'}" step="1" ${dis}><div class="set-unit">${tempUnitLabel()}</div></div>`;
   switch(measure){
     case 'bw':           return bwCell+repsCell+forcedCell;
     case 'bwreps':       return repsCell+forcedCell;
@@ -7663,7 +7712,7 @@ function captureInputsToSetsBuffer(exId,passId){
     } else if(measure==='sauna'){
       const tRaw=dom('temp');const rRaw=dom('r');
       const minsVal=rRaw!=null?parseFloat(rRaw):null;
-      rec={temp: tRaw!=null?(parseFloat(tRaw)||null):(p.temp??null), secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(p.secs??null)};
+      rec={temp: tRaw!=null?(tempToC(parseFloat(tRaw))||null):(p.temp??null), secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(p.secs??null)};
     } else if(measure==='cardiosprint'){
       const sRaw=dom('spr');const sprints=sRaw!=null?_int(sRaw):(p.sprints??null);
       if(sprintBase==='dist'){const dRaw=dom('dist');rec={dist: dRaw!=null?(parseFloat(dRaw)||null):(p.dist??null), sprints};}
@@ -7869,7 +7918,7 @@ function formatSetLine(set,u){
   if(set.sprints!=null)         str=(set.dist!=null?set.dist+'km':(set.secs!=null?set.secs+'s':''))+((set.dist!=null||set.secs!=null)?' · ':'')+set.sprints+' sprints';
   else if(set.distm!=null)      str=(set.weight!=null?toDisplay(set.weight)+' '+u:'')+' · '+set.distm+'m';
   else if(set.incline!=null)    str=set.incline+'%'+(set.dist!=null?' · '+set.dist+'km':'')+(set.secs!=null?' · '+Math.round(set.secs/60)+'min':'');
-  else if(set.temp!=null)       str=set.temp+'°C'+(set.secs!=null?' · '+Math.round(set.secs/60)+'min':'');
+  else if(set.temp!=null)       str=tempToDisplay(set.temp)+tempUnitLabel()+(set.secs!=null?' · '+Math.round(set.secs/60)+'min':'');
   else if(set.dist!=null)       str=set.dist+'km'+(set.secs!=null?' · '+Math.round(set.secs/60)+'min':'');
   else if(set.extra!=null&&set.secs!=null) str='BW + '+toDisplay(set.extra)+' '+u+' · '+set.secs+'s';
   else if(set.extra!=null)      str='BW + '+toDisplay(set.extra)+' '+u+' × '+fmtReps(set.reps)+'r';
@@ -9067,6 +9116,7 @@ function renderData(){
   const selFg = isVoid ? '#000' : isUndertow ? '#eaf2fb' : isUnderstory ? '#f3f8ea' : 'var(--white)';
   const selBorder = isVoid ? '#888' : 'var(--red)';
   const unitBtn=(u)=>`<button onclick="state.unit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.unit===u?selBg:'none'};border:1px solid ${state.unit===u?selBorder:'#2a2a2a'};color:${state.unit===u?selFg:'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u.toUpperCase()}</button>`;
+  const tempBtn=(u)=>`<button onclick="state.tempUnit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.tempUnit===u?selBg:'none'};border:1px solid ${state.tempUnit===u?selBorder:'#2a2a2a'};color:${state.tempUnit===u?selFg:'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u==='c'?'°C':'°F'}</button>`;
   // 3.67.1 — samma Done-huvud som Edit Program (btn-primary = temastylad i alla teman).
   // 3.67.2 — edit-title, INTE section-title: section-title har extrema tema-overrides
   // (Obsidian: Cinzel + .32em + uppercase → "APPEARANCE" tryckte Done utanför skärmen).
@@ -9106,6 +9156,9 @@ function renderData(){
   <div class="section-sub">Weight Unit</div>
   <div style="font-family:var(--mono);font-size:.54rem;color:var(--gray-light);margin-bottom:8px;">Currently: <strong style="color:var(--white)">${(state.unit||'kg').toUpperCase()}</strong></div>
   <div class="settings-panel" style="display:flex;gap:6px;margin-bottom:18px">${unitBtn('kg')}${unitBtn('lbs')}</div>
+  <div class="section-sub">Temperature Unit</div>
+  <div style="font-family:var(--mono);font-size:.54rem;color:var(--gray-light);margin-bottom:8px;">For sauna sessions. Currently: <strong style="color:var(--white)">${state.tempUnit==='f'?'°F':'°C'}</strong></div>
+  <div class="settings-panel" style="display:flex;gap:6px;margin-bottom:18px">${tempBtn('c')}${tempBtn('f')}</div>
   <div class="section-sub">Weight Step</div>
   <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;margin-bottom:18px;border-bottom:1px solid var(--gray-mid);">
     <div>
@@ -9609,6 +9662,7 @@ function sanitizeImportedState(d){
     });
   }
   if(d.unit!=='kg'&&d.unit!=='lbs') d.unit='kg';
+  if(d.tempUnit!=='c'&&d.tempUnit!=='f') d.tempUnit='c';
   // 3.68.1 — Fable-fynd #1: kedjestruktur-fälten nådde render RÅA från fil.
   // addedExercises/customExercises-id:n landar i onclick/id-attribut (JS-sträng-
   // kontext — samma vektor som 3.63.2 stängde för templates; backup-filer delas

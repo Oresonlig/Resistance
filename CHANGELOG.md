@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.71.0 — 2026-07-08
+**°F-stöd + Fable-granskning av onboardingen (6 fynd fixade).** **Fahrenheit:** ny `state.tempUnit` (`'c'|'f'`, whitelistad i ensureStateDefaults + importData). Temp lagras ALLTID i °C internt (samma princip som kg för vikt); `tempToDisplay`/`tempToC`/`tempUnitLabel` konverterar vid render/capture. Onboarding steg 1 har nu temp-frågan (°C/°F) på samma slide som kg/lbs (steg 3:s två-frågor+Next-mönster); lbs auto-defaultar °F tills användaren aktivt väljer. Settings → Training: ny "Temperature Unit"-toggle under Weight Unit. **Fable-granskningens fynd:** (1) KRITISK: Rebuild Chain → Skip/Import klobbrade tyst användarens unit/temp/timer till hårdkodade defaults (lbs-användare flippades till kg) — skip seedar nu från befintlig state vid rebuild, importens hårdkodning borttagen. (2) `finishOnboarding` rensar nu `permanentSwaps` (confirm-texten lovade det redan; slot-nycklade swaps från gamla kedjan applicerades annars på fel övningar i nya). (3) Dödkod bort: `generateChain`s restSlots-beräkning + `restCount`-param (ignorerad av båda call-sites sedan rest days lämnade onboardingen 3.41.0) + oläst `state.restCount`. (4) PM22: all onboarding-CSS tokeniserad (`--gray-mid/light`, `--border-strong`, `color-mix` med `--red`) — Rebuild Chain kör wizarden under aktivt tema och hardcoded hex var oläslig på ljusa teman; steg-4-previewens `var(--gray-mid)`-BAKGRUND (text-token!) → `--surface-elevated`. (5) Dubbel-confirm vid rebuild borta (`_rebuildConfirmed`-flagga). (6) Ny `_onboardingActive`-guard i `renderChain` — sync/failsafe-omritningar kunde radera wizarden mitt i ett steg; nollas vid alla wizard-exits + login. **Fable verifierade också:** rest days HELT borta ur wizard-UI:t, ingen väg lämnar tempUnit odefinierad, ingen XSS i wizarden.
+
+---
+
 ## 3.70.1 — 2026-07-08
 **Ny övning: Sauna (gymfeedback, live).** Nytt mätsätt `sauna` (`temp`/`secs`, PR=längsta tid) — samma sluten-enum-mönster som `inclinecardio`. Ny övning `Sauna` i EXERCISE_LIBRARY Cardio-sektionen (mellan Running och Sled Push). Grid delar layout med cardio/carry (2 fält: °C + min). Historik/copy visar `X°C · Ymin`. `src/measures.js` + index.html + 2 nya tester (152 totalt).
 
