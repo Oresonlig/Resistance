@@ -823,9 +823,6 @@ body.theme-nightcity .toast{
   box-shadow:0 0 24px rgba(255,230,0,0.3);
   text-shadow:0 0 6px rgba(255,230,0,0.6);
 }
-body.theme-nightcity .auth-btn-primary{background:#ffe600;color:#08010f;}
-body.theme-nightcity .auth-btn-primary:hover{background:#ffd000;color:#08010f;}
-
 /* ─────────────────────────────────────────────────────────────
    3. ARCTIC TERMINAL — Frozen lake · Liquid nitrogen · Glassmorphism
    Font: Rajdhani + DM Mono
@@ -911,8 +908,6 @@ body.theme-arctic .btn-primary:disabled{background:#c8dde5;color:#8aacb8;cursor:
 
 body.theme-arctic .ex-block{background:rgba(255,255,255,0.55);border:1px solid rgba(0,168,216,0.1);}body.theme-arctic .set-input{background:rgba(255,255,255,0.75);border-color:rgba(0,168,216,0.45);color:#1a2e3a;}
 body.theme-arctic .set-input:focus{border-color:var(--red);box-shadow:0 0 8px rgba(0,168,216,0.32);}body.theme-arctic .section-title{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.1em;color:#1a2e3a;}
-body.theme-arctic .auth-btn-primary{background:linear-gradient(135deg,#00a8d8 0%,#0088b8 100%);color:#fff;}
-body.theme-arctic .auth-btn-primary:hover{background:linear-gradient(135deg,#00c8e8 0%,#0099c8 100%);color:#fff;}
 body.theme-arctic .draft-notice{color:#1a8a8a;border-color:rgba(0,168,216,0.3);background:rgba(255,255,255,0.4);}
 body.theme-arctic .ex-note-banner{color:#6a4800;background:rgba(150,100,0,0.1);border-color:#7a5500;}
 body.theme-arctic .ex-note-save{background:rgba(255,255,255,0.7);border-color:#2a7a7a;color:#2a7a7a;}/* Auth-form inputs är tema-oberoende by design (se kommentar vid #auth-email-form
@@ -928,8 +923,6 @@ body.theme-arctic .chain-tab.active .chain-tab-name-full{color:#fff;background:r
 body.theme-arctic .chain-tab-name-short{color:rgba(26,46,58,0.75);background:rgba(180,220,240,0.52);}
 body.theme-arctic .chain-tab.adjacent .chain-tab-name-short{color:rgba(26,46,58,0.75);background:rgba(160,210,235,0.62);}
 
-/* Z-index: auth above frost layers. Header behåller base position:sticky */
-body.theme-arctic .auth-wrap{position:relative;z-index:2;}
 
 /* Edit-knapp: mörk text + tydlig border på ljust tema */
 body.theme-arctic .btn-chain-edit{border-color:rgba(0,168,216,0.4);color:#1a2e3a;}
@@ -983,22 +976,6 @@ body.theme-arctic .ex-note-input{background:rgba(255,255,255,0.82);border-color:
 /* Edit menu dropdown */
 body.theme-arctic .ex-edit-menu{background:rgba(255,255,255,0.95);border-color:rgba(0,168,216,0.3);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
 
-/* Auth-wrap stuff */
-body.theme-arctic #userScreen{background:#eaf4f8;}
-body.theme-arctic .auth-logo{color:#1a2e3a;}
-body.theme-arctic .auth-logo span{color:var(--red);}
-body.theme-arctic .auth-tagline{color:#5a7a88;}
-body.theme-arctic .auth-btn-google{background:rgba(255,255,255,0.82);border:1px solid rgba(0,168,216,0.3);color:#1a2e3a;}
-body.theme-arctic .auth-btn-google:hover{background:#ffffff;border-color:rgba(0,168,216,0.6);}
-body.theme-arctic .auth-divider{color:#5a7a88;}
-body.theme-arctic .auth-divider::before,
-body.theme-arctic .auth-divider::after{background:rgba(0,168,216,0.25);}
-body.theme-arctic .auth-checkbox-row{color:#5a7a88;}
-body.theme-arctic .auth-disclaimer{background:rgba(255,255,255,0.55);border-left-color:rgba(0,168,216,0.3);color:#5a7a88;}
-body.theme-arctic .auth-btn-secondary{background:none;border-color:rgba(0,168,216,0.3);color:#5a7a88;}
-body.theme-arctic .auth-btn-secondary:hover{border-color:var(--red);color:#1a2e3a;}
-body.theme-arctic .auth-footer a{color:#5a7a88;}
-body.theme-arctic .auth-footer a:hover{color:var(--red);}
 /* Section + chain intro subtitles */
 body.theme-arctic .section-sub,
 body.theme-arctic .chain-intro-sub{color:#5a7a88;}
@@ -1317,22 +1294,6 @@ body.theme-ember .ex-detail{
   font-size:.55rem;
 }
 body.theme-ember .ex-prev .last-val{color:#a0cc40;text-shadow:0 0 4px rgba(160,204,64,0.4);}
-/* AUTH SCREEN */
-body.theme-ember #userScreen{
-  background:radial-gradient(ellipse 80% 60% at 50% 80%,#2a1000 0%,#0c0600 60%);
-}
-body.theme-ember .auth-logo{
-  font-family:'Rajdhani',sans-serif;
-  text-shadow:
-    0 0 12px rgba(255,106,0,0.5),
-    0 0 30px rgba(255,106,0,0.3),
-    0 0 60px rgba(255,140,30,0.15);
-  animation:logo-heat 5s ease-in-out infinite;
-}
-body.theme-ember .auth-tagline{
-  color:#664422;
-  font-family:'DM Mono',monospace;
-}
 /* SECTION HEADERS */
 body.theme-ember .section-title{
   font-family:'Rajdhani',sans-serif;
@@ -1417,8 +1378,6 @@ body.theme-ember .toast{
   box-shadow:0 0 20px rgba(255,106,0,0.3);
   text-shadow:0 0 4px rgba(255,106,0,0.5);
 }
-body.theme-ember .auth-btn-primary{background:linear-gradient(180deg,#ff8c1a 0%,#cc3300 100%);color:#ffe8cc;}
-body.theme-ember .auth-btn-primary:hover{background:linear-gradient(180deg,#ff6a00 0%,#aa2200 100%);}
 
 
 /* ─────────────────────────────────────────────────────────────
@@ -1467,9 +1426,6 @@ body.theme-void .app-modal-btn-danger{background:transparent;border-color:#fff;c
 body.theme-void .app-modal-btn-danger:hover{background:#fff;color:#000;}
 body.theme-void .set-input:focus{border-color:#fff;}body.theme-void .section-title{font-family:'Playfair Display',serif;font-style:italic;}
 body.theme-void .sync-dot.ok{background:#888;}
-body.theme-void .auth-logo span{color:#aaa;}
-body.theme-void .auth-btn-primary{background:#fff;color:#000;}
-body.theme-void .auth-btn-primary:hover{background:#ddd;}
 body.theme-void .btn-primary:disabled{background:#1a1a1a;color:#444;}
 body.theme-void .chain-tab-letter{color:#bbb;background:rgba(255,255,255,0.18);}
 body.theme-void .chain-tab.adjacent .chain-tab-letter{color:#bbb;background:rgba(255,255,255,0.12);}
@@ -1824,8 +1780,6 @@ body.theme-nanosuit .wlog-list{
 body.theme-nanosuit::-webkit-scrollbar{width:6px;}
 body.theme-nanosuit::-webkit-scrollbar-track{background:#050810;}
 body.theme-nanosuit::-webkit-scrollbar-thumb{background:#1a3040;border:1px solid #00d4ff;}
-body.theme-nanosuit .auth-btn-primary{background:linear-gradient(135deg,#00d4ff 0%,#0099cc 100%);color:#050810;}
-body.theme-nanosuit .auth-btn-primary:hover{background:linear-gradient(135deg,#00fff0 0%,#00d4ff 100%);}
 
 /* ── NANOSUIT 2.0 — energised motion ───────────────────────────
    Heavy moving backdrop = #nanosuit-bg canvas (mountNanosuitBg, JS, inline-styled).
@@ -1861,175 +1815,244 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
 }
 
 
-/* ── AUTH SCREEN ──────────────────────────────────────────────
-   Iron-themed login screen with subtle hexagon fade
+/* ── AUTH SCREEN — "basement forge" login (3.72.0, Claude Design handoff,
+   theme/login/README.md). Tokenized onto the app's existing per-theme vars
+   (--black/--white/--red/--surface-elevated/--border-*) so it reskins across
+   all 10 themes automatically — see README "Theming" section. Two things are
+   DELIBERATELY left as fixed forge constants (not tokenized), per Niklas:
+   the hot chain-link/spark color and the atmospheric scene washes
+   (vignette/heat/spine/hex) — same reasoning as the chain steel gradient,
+   which the original design already keeps theme-independent.
 ─────────────────────────────────────────────────────────────── */
-#userScreen{
-  position:fixed;inset:0;
-  background:var(--black);
-  display:flex;align-items:center;justify-content:center;
-  padding:24px;z-index:100;overflow:hidden;
+#userScreen{position:fixed;inset:0;z-index:100;overflow:hidden;}
+#userScreen.hidden{display:none !important;}
+
+.cl{
+  --bg:        var(--black);
+  --bg-2:      var(--surface-deep, var(--black));
+  --panel:     var(--surface-elevated);
+  --line:      var(--border-subtle);
+  --line-2:    var(--border-strong);
+  --text:      var(--white);
+  --text-2:    color-mix(in srgb, var(--white) 72%, transparent);
+  --mute:      color-mix(in srgb, var(--white) 42%, transparent);
+  --accent:    var(--red);
+  --accent-2:  color-mix(in srgb, var(--red) 78%, white 22%);
+  --glow:      color-mix(in srgb, var(--red) 40%, transparent);
+  --glow-soft: color-mix(in srgb, var(--red) 14%, transparent);
+  --hot:       #ffd9a8;
+  --font-display: 'Archivo', system-ui, sans-serif;
+  --font-serif:   'Cormorant Garamond', Georgia, serif;
+  --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
+
+  position:relative; min-height:100vh; width:100%;
+  background: radial-gradient(ellipse 90% 70% at 50% 30%, color-mix(in srgb, var(--bg) 92%, black 8%) 0%, var(--bg) 62%);
+  color:var(--text); font-family:var(--font-display);
+  overflow:hidden; isolation:isolate; -webkit-font-smoothing:antialiased;
 }
-.auth-bg{
-  position:absolute;inset:0;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='48' viewBox='0 0 84 48'%3E%3Cg fill='none' stroke='%23a02020' stroke-width='1' stroke-opacity='0.18'%3E%3Cpath d='M14 24L0 16L0 0L14 -8L28 0L28 16L14 24L14 48'/%3E%3Cpath d='M14 0L14 16L0 24L0 40L14 48L28 40L28 24L14 16'/%3E%3Cpath d='M70 24L56 16L56 0L70 -8L84 0L84 16L70 24L70 48'/%3E%3Cpath d='M42 8L28 0L28 -16L42 -24L56 -16L56 0L42 8L42 32'/%3E%3Cpath d='M42 56L28 48L28 32L42 24L56 32L56 48L42 56'/%3E%3C/g%3E%3C/svg%3E");
-  /* Fade hexagons at edges, full opacity in middle */
-  -webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 50%,black 30%,transparent 90%);
-  mask-image:radial-gradient(ellipse 70% 60% at 50% 50%,black 30%,transparent 90%);
-  pointer-events:none;
+.cl, .cl *{box-sizing:border-box;}
+
+/* ---------- ambient layers (fixed forge constants — see note above) ---------- */
+.cl-ember{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;}
+.cl-heat{
+  position:absolute;left:50%;bottom:-22%;transform:translateX(-50%);
+  width:130%;height:66%;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse 44% 100% at 50% 100%, rgba(255,110,50,0.4) 0%, rgba(209,68,42,0.16) 36%, transparent 66%);
+  animation:clBreath 6s ease-in-out infinite;
 }
-.auth-wrap{
-  position:relative;z-index:2;
-  width:100%;max-width:380px;
-  display:flex;flex-direction:column;align-items:center;
+.cl-spine{
+  position:absolute;left:50%;top:-6%;transform:translateX(-50%);
+  width:340px;height:112%;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse 40% 60% at 50% 42%, rgba(255,120,55,0.16) 0%, rgba(209,68,42,0.06) 40%, transparent 72%);
+  filter:blur(8px);
 }
-.auth-logo{
-  font-family:var(--display);
-  font-size:2.6rem;
-  letter-spacing:.18em;
-  color:var(--white);
-  margin-bottom:4px;
+@keyframes clBreath{0%,100%{opacity:0.72;}50%{opacity:1;}}
+.cl-hex{
+  position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0.045;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'%3E%3Cg fill='none' stroke='%23d1442a' stroke-opacity='0.5' stroke-width='1'%3E%3Cpath d='M28 0 L56 16 L56 50 L28 66 L0 50 L0 16 Z'/%3E%3Cpath d='M28 50 L56 66 L56 100 L28 116 L0 100 L0 66 Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size:56px 100px;
+  mask-image:radial-gradient(ellipse 90% 90% at 50% 45%, #000 25%, transparent 82%);
 }
-.auth-logo span{color:var(--red);}
-.auth-tagline{
-  font-family:var(--mono);
-  font-size:.55rem;
-  color:#666;
-  letter-spacing:.25em;
-  text-transform:uppercase;
-  margin-bottom:48px;
+.cl-vignette{
+  position:absolute;inset:0;z-index:6;pointer-events:none;
+  background:radial-gradient(ellipse 82% 74% at 50% 46%, transparent 44%, rgba(0,0,0,0.62) 100%);
 }
-.auth-btn-google{
-  width:100%;
-  background:var(--surface-elevated);
-  border:1px solid var(--border-subtle);
-  color:var(--white);
-  font-family:var(--sans);
-  font-size:.85rem;
-  font-weight:500;
-  padding:12px 16px;
-  cursor:pointer;
-  transition:all .15s;
-  display:flex;align-items:center;justify-content:center;
+
+/* ---------- fade-to-black theme-demo transition (3.72.0) ----------
+   ONLY the decorative scene fades — the auth form (.cl-authwrap) is never
+   tagged .cl-fade-layer, so it never disappears while themes rotate. */
+.cl-fade-layer{transition:opacity .7s ease;}
+.cl-fade-layer.cl-faded{opacity:0;}
+
+/* ---------- chain stage ---------- */
+.cl-chainstage{position:absolute;inset:0;z-index:2;pointer-events:none;}
+.cl-chain{position:absolute;top:-18px;transform-origin:50% 8px;}
+.cl-chain-svg{display:block;}
+.cl-chain-focus{
+  left:76%;margin-left:-75px;z-index:10;
+  filter:drop-shadow(0 18px 30px rgba(0,0,0,0.6));
 }
-.auth-btn-google:hover{background:#222;border-color:#3a3a3a;}
-.auth-divider{
-  display:flex;align-items:center;
-  width:100%;margin:0 0 20px;
-  color:#444;font-family:var(--mono);font-size:.5rem;
-  letter-spacing:.2em;text-transform:uppercase;
+.cl-active-hot{animation:clHot 4.4s ease-in-out infinite;mix-blend-mode:screen;}
+@keyframes clHot{0%,100%{opacity:0.3;}50%{opacity:0.92;}}
+.cl-chain-focus .cl-active{filter:drop-shadow(0 0 16px rgba(255,120,55,0.7));animation:clGlow 4.4s ease-in-out infinite;}
+@keyframes clGlow{
+  0%,100%{filter:drop-shadow(0 0 12px rgba(255,90,40,0.5));}
+  50%{filter:drop-shadow(0 0 30px rgba(255,150,70,0.8));}
 }
-.auth-divider::before,.auth-divider::after{
-  content:'';flex:1;height:1px;background:#222;
+.cl-chain-deco{pointer-events:none;transform-origin:50% 0;}
+.cl-field-layer{position:absolute;top:0;left:0;width:100%;height:118%;pointer-events:none;display:block;}
+.cl-label{
+  position:absolute;left:0;transform:translate(calc(-100% - 24px), -50%);
+  display:flex;align-items:center;gap:12px;white-space:nowrap;
+  flex-direction:row-reverse;opacity:0.9;
 }
-.auth-divider span{padding:0 12px;}
-/* Auth-inputs är MEDVETET tema-oberoende (fasta värden, inga var()) — inloggningsskärmen
-   roterar genom teman som demo (startAuthThemeDemo), inputfälten ska alltid vara läsbara
-   och identiska oavsett vilket tema som visas bakom dem. Rör inte till var()-baserad styling. */
-#auth-email-form input[type="email"],
-#auth-email-form input[type="password"],
-#reset-password-form input[type="password"]{
-  width:100%;
-  background:#0a0a0a;
-  border:1px solid #2a2a2a;
-  color:#f5f0e8;
-  font-family:'DM Mono',monospace;
-  font-size:.9rem;
-  padding:11px 14px;
-  margin-bottom:10px;
-  box-sizing:border-box;
+.cl-label .tick{width:28px;height:1.5px;background:linear-gradient(270deg, transparent, var(--accent-2));box-shadow:0 0 6px var(--glow);}
+.cl-label .txt{
+  font-family:var(--font-mono);font-size:10.5px;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--accent-2);text-shadow:0 0 9px var(--glow);
 }
-#auth-email-form input:focus,
-#reset-password-form input:focus{
-  outline:none;
-  border-color:#c0392b;
-  box-shadow:0 0 0 1px #c0392b;
-}#auth-signup-fields{
-  width:100%;
-  animation:slideDown .25s ease-out;
+.cl-label.active .tick{background:linear-gradient(270deg, transparent, var(--accent));height:2px;box-shadow:0 0 9px var(--glow);}
+.cl-label.active .txt{color:var(--accent-2);text-shadow:0 0 14px var(--glow);font-weight:500;}
+.cl-label:first-child{opacity:0.55;}
+.cl-spark{
+  position:absolute;width:3px;height:3px;border-radius:50%;background:var(--hot);
+  box-shadow:0 0 6px 2px rgba(255,180,90,0.85);z-index:5;pointer-events:none;
 }
-@keyframes slideDown{
-  from{opacity:0;transform:translateY(-8px);}
-  to{opacity:1;transform:translateY(0);}
+
+/* ---------- masthead ---------- */
+.cl-masthead{
+  position:absolute;top:30px;left:46px;right:46px;z-index:6;
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--font-mono);font-size:11px;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--mute);white-space:nowrap;gap:18px;
+  padding-bottom:15px;border-bottom:1px solid var(--line);
 }
-#auth-signup-fields input[type="text"]{
-  width:100%;
-  background:#0a0a0a;
-  border:1px solid #2a2a2a;
-  color:#f5f0e8;
-  font-family:'DM Mono',monospace;
-  font-size:.9rem;
-  padding:11px 14px;
-  margin-bottom:10px;
-  box-sizing:border-box;
+.cl-masthead .est{color:var(--text-2);}
+.cl-masthead .est b{color:var(--accent-2);font-weight:400;}
+.cl-masthead .dot{color:var(--accent);}
+
+/* ---------- content column ---------- */
+.cl-grid{
+  position:relative;z-index:5;min-height:100vh;
+  max-width:1240px;margin:0 auto;padding:120px 56px 60px;
+  display:flex;align-items:center;justify-content:flex-start;
 }
-#auth-signup-fields input[type="text"]:focus{
-  outline:none;
-  border-color:#c0392b;
-  box-shadow:0 0 0 1px #c0392b;
+.cl-col{width:380px;display:flex;flex-direction:column;gap:40px;}
+.cl-hero{max-width:400px;}
+.cl-mark{
+  font-family:var(--font-display);font-weight:800;text-transform:uppercase;
+  letter-spacing:0.2em;line-height:0.92;font-size:62px;
 }
+.cl-mark .t{color:var(--text);display:block;}
+.cl-mark .c{color:var(--accent);display:block;}
+.cl-tag{
+  font-family:var(--font-mono);letter-spacing:0.4em;text-transform:uppercase;
+  color:var(--mute);font-size:11px;margin-top:18px;
+}
+.cl-serif{
+  font-family:var(--font-serif);font-style:italic;font-size:26px;color:var(--text-2);
+  line-height:1.24;margin-top:30px;max-width:15ch;
+}
+.cl-serif .em{color:var(--text);font-style:normal;}
+
+/* ---------- auth: edgeless, dissolves into the scene ---------- */
+.cl-authwrap{position:relative;width:360px;}
+.cl-aura{
+  position:absolute;inset:-54px -44px;z-index:-1;
+  background:radial-gradient(ellipse 72% 82% at 50% 50%, color-mix(in srgb, var(--bg-2) 82%, transparent) 0%, color-mix(in srgb, var(--bg-2) 50%, transparent) 46%, transparent 78%);
+  -webkit-mask-image:radial-gradient(ellipse 78% 86% at 50% 50%, #000 52%, transparent 100%);
+  mask-image:radial-gradient(ellipse 78% 86% at 50% 50%, #000 52%, transparent 100%);
+  box-shadow:0 0 90px 10px var(--glow-soft);
+}
+.cl-aura-hex{
+  position:absolute;inset:-54px -44px;z-index:-1;opacity:0.14;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='42' height='74' viewBox='0 0 42 74'%3E%3Cg fill='none' stroke='%23e0663f' stroke-width='1'%3E%3Cpath d='M21 0 L42 12 L42 37 L21 49 L0 37 L0 12 Z'/%3E%3Cpath d='M21 37 L42 49 L42 74 L21 86 L0 74 L0 49 Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size:42px 74px;
+  -webkit-mask-image:radial-gradient(ellipse 74% 84% at 50% 50%, transparent 42%, #000 66%, transparent 100%);
+  mask-image:radial-gradient(ellipse 74% 84% at 50% 50%, transparent 42%, #000 66%, transparent 100%);
+}
+.cl-auth{position:relative;display:flex;flex-direction:column;width:100%;}
+.cl-oauth{
+  height:48px;border:1px solid var(--line-2);background:color-mix(in srgb, var(--panel) 60%, transparent);color:var(--text);
+  font-family:var(--font-display);font-size:14px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  cursor:pointer;transition:border-color .18s, background .18s, transform .06s;backdrop-filter:blur(3px);
+}
+.cl-oauth:hover{background:color-mix(in srgb, var(--panel) 78%, transparent);}
+.cl-oauth:active{transform:translateY(1px);}
+.cl-or, .auth-divider{
+  display:flex;align-items:center;gap:14px;margin:16px 0;
+  font-family:var(--font-mono);font-size:10px;letter-spacing:0.24em;color:var(--mute);text-transform:uppercase;
+}
+.cl-or::before, .cl-or::after, .auth-divider::before, .auth-divider::after{
+  content:'';height:1px;flex:1;background:linear-gradient(90deg, transparent, var(--line), transparent);
+}
+.cl-field{
+  height:48px;border:1px solid var(--line);background:color-mix(in srgb, var(--bg) 32%, transparent);color:var(--text);
+  font-family:var(--font-mono);font-size:14px;padding:0 15px;margin-bottom:10px;width:100%;
+  transition:border-color .18s, box-shadow .18s;backdrop-filter:blur(2px);
+}
+.cl-field::placeholder{color:var(--mute);}
+.cl-field:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--glow-soft);}
+#auth-signup-fields{width:100%;animation:clSlideDown .25s ease-out;}
+@keyframes clSlideDown{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
 .auth-checkbox-row{
-  display:flex;align-items:flex-start;gap:8px;
-  margin:6px 0 14px;cursor:pointer;
-  font-family:var(--mono);font-size:.55rem;color:#888;
-  letter-spacing:.05em;line-height:1.5;
-  user-select:none;
+  display:flex;align-items:flex-start;gap:8px;margin:6px 0 14px;cursor:pointer;
+  font-family:var(--font-mono);font-size:10px;color:var(--mute);
+  letter-spacing:0.05em;line-height:1.5;user-select:none;
 }
-.auth-checkbox-row input{
-  width:14px;height:14px;cursor:pointer;
-  accent-color:var(--red);
-  margin-top:2px;flex-shrink:0;
-}
+.auth-checkbox-row input{width:14px;height:14px;cursor:pointer;accent-color:var(--accent);margin-top:2px;flex-shrink:0;}
 .auth-disclaimer{
-  font-family:var(--mono);
-  font-size:.5rem;
-  color:#555;
-  line-height:1.6;
-  letter-spacing:.02em;
-  padding:10px 12px;
-  border-left:2px solid #2a2a2a;
-  background:rgba(255,255,255,0.02);
+  font-family:var(--font-mono);font-size:9.5px;color:var(--mute);
+  line-height:1.6;letter-spacing:0.02em;padding:10px 12px;
+  border-left:2px solid var(--line);background:color-mix(in srgb, var(--text) 4%, transparent);
   margin-bottom:14px;
 }
+.cl-btns{display:flex;gap:10px;margin-top:4px;}
+.cl-btn{
+  flex:1;height:48px;border:1px solid transparent;cursor:pointer;
+  font-family:var(--font-display);font-size:13px;font-weight:700;letter-spacing:0.18em;
+  text-transform:uppercase;display:flex;align-items:center;justify-content:center;
+  transition:transform .06s, filter .18s, background .18s, border-color .18s, box-shadow .3s;
+}
+.cl-btn:active{transform:translateY(1px);}
+.cl-btn--primary{
+  color:#fff;background:var(--accent);
+  box-shadow:0 8px 30px -8px var(--glow), inset 0 1px 0 rgba(255,255,255,0.14);
+}
+.cl-btn--primary:hover{filter:brightness(1.1);box-shadow:0 12px 44px -6px var(--glow), 0 0 22px var(--glow-soft), inset 0 1px 0 rgba(255,255,255,0.2);}
+.cl-btn--ghost{color:var(--text);background:color-mix(in srgb, var(--bg) 20%, transparent);border-color:var(--line-2);}
+.cl-btn--ghost:hover{border-color:var(--accent);color:var(--accent-2);}
+#auth-message, #reset-message{margin-top:14px;font-family:var(--font-mono);font-size:11px;text-align:center;letter-spacing:.05em;min-height:14px;}
+#auth-message.error, #reset-message.error{color:#e06060;}
+#auth-message.success, #reset-message.success{color:#60c060;}
+.cl-foot, .auth-footer{
+  margin-top:20px;display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--mute);
+}
+.cl-foot a, .auth-footer a{color:var(--text-2);text-decoration:none;}
+.cl-foot a:hover, .auth-footer a:hover{color:var(--accent-2);}
+.cl-signup-hint{cursor:pointer;}
+.cl-signup-hint:hover{color:var(--accent-2);}
+.cl-reset-title{font-family:var(--font-display);font-size:16px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text);margin-bottom:16px;}
 
-.auth-btn-row{
-  display:flex;gap:8px;width:100%;
+/* ---------- responsive ---------- */
+@media (max-width:940px){
+  .cl-grid{justify-content:center;padding:108px 24px 56px;}
+  .cl-col{width:100%;max-width:400px;align-items:center;text-align:center;gap:32px;}
+  .cl-hero{max-width:460px;}
+  .cl-mark{font-size:46px;}
+  .cl-mark .t, .cl-mark .c{display:inline;}
+  .cl-serif{margin-left:auto;margin-right:auto;}
+  .cl-authwrap{width:100%;max-width:360px;}
+  .cl-chain-focus{left:50%;margin-left:-75px;opacity:0.5;}
+  .cl-chain-focus .cl-label{display:none;}
+  .cl-masthead{font-size:9.5px;letter-spacing:0.14em;left:20px;right:20px;}
+  .cl-masthead .brand-min{display:none;}
 }
-.auth-btn-primary{
-  flex:1;background:var(--red);border:none;color:var(--white);
-  font-family:var(--display);font-size:.95rem;
-  letter-spacing:.12em;padding:11px;cursor:pointer;
-  transition:background .15s;
+@media (max-width:560px){
+  .cl-masthead .est span.long{display:none;}
 }
-.auth-btn-primary:hover{background:#c02525;}
-.auth-btn-secondary{
-  flex:1;background:transparent;border:1px solid #3a3a3a;color:#bbb;
-  font-family:var(--display);font-size:.95rem;
-  letter-spacing:.12em;padding:11px;cursor:pointer;
-  transition:all .15s;
-}
-.auth-btn-secondary:hover{border-color:#555;color:#fff;}
-#auth-message{
-  margin-top:14px;
-  font-family:var(--mono);font-size:.6rem;
-  text-align:center;letter-spacing:.05em;
-  min-height:14px;
-}
-#auth-message.error{color:#e06060;}
-#auth-message.success{color:#60c060;}
-.auth-footer{
-  margin-top:24px;text-align:center;
-  font-family:var(--mono);font-size:.55rem;
-  letter-spacing:.1em;
-}
-.auth-footer a{
-  color:#666;text-decoration:none;
-  text-transform:uppercase;
-}
-.auth-footer a:hover{color:var(--red);}
-
-/* Hide auth screen when authenticated */
-#userScreen.hidden{display:none !important;}
 
 /* Logout button (replaces switchUser) */
 .header-logout{
@@ -2311,14 +2334,6 @@ body.theme-undertow .app-modal-input,body.theme-undertow .app-modal-select{backg
 body.theme-undertow .app-modal-btn{border:1px solid rgba(18,48,90,0.22);color:#2b4450;background:rgba(255,255,255,0.5);}
 body.theme-undertow .app-modal-btn-primary{background:linear-gradient(180deg,#214b86,#163763);color:#fff;border:1px solid #163763;}
 body.theme-undertow .app-modal-btn-danger{background:linear-gradient(180deg,#b84040,#8a2828);color:#fff;border:none;}
-body.theme-undertow #userScreen{background:radial-gradient(ellipse 120% 60% at 50% -8%,#f6fbfd 0%,rgba(246,251,253,0) 46%),linear-gradient(180deg,#e9f3f7 0%,#d4e4ea 42%,#b7ccd5 78%,#a3bcc7 100%);background-attachment:fixed;}
-body.theme-undertow .auth-logo{color:#102430;font-family:'Archivo',sans-serif;}
-body.theme-undertow .auth-tagline,body.theme-undertow .auth-divider,body.theme-undertow .auth-disclaimer,body.theme-undertow .auth-footer a{color:#6f8c98;}
-body.theme-undertow .auth-btn-primary{background:linear-gradient(180deg,#214b86 0%,#163763 100%);color:#eaf2fb;box-shadow:0 8px 18px -8px rgba(22,55,99,0.65);border:1px solid #163763;}
-body.theme-undertow .auth-btn-primary:hover{background:linear-gradient(180deg,#2a5a9e 0%,#1e4577 100%);}
-body.theme-undertow .auth-btn-secondary{border-color:rgba(18,48,90,0.28);color:#2b4450;background:rgba(255,255,255,0.5);}
-body.theme-undertow .auth-btn-secondary:hover{border-color:#163763;color:#163763;}
-body.theme-undertow .auth-btn-google{background:rgba(255,255,255,0.72);border:1px solid rgba(18,48,90,0.22);color:#102430;}
 /* Kontrast-pass (3.48.0): default set-unit/add-knappar föll tillbaka till grått
    (#888/#666) → oläsligt mot Undertows nästan vita bakgrund. Mörkare slate. */
 body.theme-undertow .set-unit{color:#2f4b57;}
@@ -2438,14 +2453,6 @@ body.theme-understory .app-modal-input,body.theme-understory .app-modal-select{b
 body.theme-understory .app-modal-btn{border:1px solid rgba(31,66,38,0.22);color:#2b4a30;background:rgba(255,255,255,0.5);}
 body.theme-understory .app-modal-btn-primary{background:linear-gradient(180deg,#2f5e37,#1c3c22);color:#fff;border:1px solid #1c3c22;}
 body.theme-understory .app-modal-btn-danger{background:linear-gradient(180deg,#b84040,#8a2828);color:#fff;border:none;}
-body.theme-understory #userScreen{background:radial-gradient(ellipse 120% 58% at 50% -8%,#f8fcef 0%,rgba(248,252,239,0) 48%),linear-gradient(180deg,#e9f2db 0%,#d3e4c3 40%,#bcd6a9 74%,#a6c690 100%);background-attachment:fixed;}
-body.theme-understory .auth-logo{color:#143018;font-family:'Bricolage Grotesque',sans-serif;}
-body.theme-understory .auth-tagline,body.theme-understory .auth-divider,body.theme-understory .auth-disclaimer,body.theme-understory .auth-footer a{color:#6f8a69;}
-body.theme-understory .auth-btn-primary{background:linear-gradient(180deg,#2f5e37 0%,#1c3c22 100%);color:#eef5e4;box-shadow:0 8px 18px -8px rgba(28,60,34,0.65);border:1px solid #1c3c22;}
-body.theme-understory .auth-btn-primary:hover{background:linear-gradient(180deg,#3a7044 0%,#254d2a 100%);}
-body.theme-understory .auth-btn-secondary{border-color:rgba(31,66,38,0.28);color:#2b4a30;background:rgba(255,255,255,0.5);}
-body.theme-understory .auth-btn-secondary:hover{border-color:#1f4226;color:#1f4226;}
-body.theme-understory .auth-btn-google{background:rgba(255,255,255,0.72);border:1px solid rgba(31,66,38,0.22);color:#143018;}
 /* selFg fix — toast + add-ex-confirm use var(--red) bg + need light text */
 body.theme-understory .toast{color:#f3f8ea;}
 body.theme-understory .add-ex-confirm{color:#f3f8ea;}
@@ -2753,17 +2760,6 @@ body.theme-obsidian .btn-primary{background:linear-gradient(180deg,#c9a35a 0%,#8
 body.theme-obsidian .btn-primary:hover{background:linear-gradient(180deg,#f0d99c 0%,#c9a35a 100%);}
 body.theme-obsidian .btn-primary:disabled{background:#2a2010;color:#5a4a28;box-shadow:none;}
 
-/* Auth */
-body.theme-obsidian #userScreen{background:#0a0805;}
-body.theme-obsidian .auth-logo{font-family:'Cinzel',serif;color:#c9a35a;letter-spacing:.34em;}
-body.theme-obsidian .auth-logo span{color:#f0d99c;}
-body.theme-obsidian .auth-tagline{color:#7a6a48;font-family:'Cardo',serif;font-style:italic;}
-body.theme-obsidian .auth-divider{color:#5a4a28;}
-body.theme-obsidian .auth-divider::before,
-body.theme-obsidian .auth-divider::after{background:#2a2010;}
-body.theme-obsidian .auth-btn-primary{background:linear-gradient(180deg,#c9a35a 0%,#8a6d30 100%);color:#1a0e04;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.24em;}
-body.theme-obsidian .auth-btn-google{background:rgba(40,28,12,0.5);border:1px solid #4a3a18;color:#c9a35a;font-family:'Cinzel',serif;}
-
 /* Progress / PR / History */
 body.theme-obsidian .stat-box{background:rgba(40,28,12,0.5);border:1px solid #2a2010;}
 body.theme-obsidian .stat-num{color:#c9a35a;font-family:'Cinzel',serif;}
@@ -3036,17 +3032,6 @@ body.theme-cosmic-horror .btn-primary{background:linear-gradient(180deg,#7fc8b4 
 body.theme-cosmic-horror .btn-primary:hover{background:linear-gradient(180deg,#aedcd0 0%,#5a9088 100%);}
 body.theme-cosmic-horror .btn-primary:disabled{background:rgba(20,40,38,0.5);color:#4f6a64;box-shadow:none;}
 
-/* Auth */
-body.theme-cosmic-horror #userScreen{background:#03080a;}
-body.theme-cosmic-horror .auth-logo{font-family:'Cormorant SC',serif;color:#aedcd0;letter-spacing:.38em;font-weight:500;}
-body.theme-cosmic-horror .auth-logo span{color:#aedcd0;}
-body.theme-cosmic-horror .auth-tagline{color:#7a948c;font-family:'Cormorant Garamond',serif;font-style:italic;}
-body.theme-cosmic-horror .auth-divider{color:#4f6a64;}
-body.theme-cosmic-horror .auth-divider::before,
-body.theme-cosmic-horror .auth-divider::after{background:rgba(127,200,180,0.18);}
-body.theme-cosmic-horror .auth-btn-primary{background:linear-gradient(180deg,#7fc8b4 0%,#3a7068 100%);color:#02151a;font-family:'IBM Plex Mono',monospace;font-weight:500;letter-spacing:.18em;border-radius:16px 4px 18px 4px;}
-body.theme-cosmic-horror .auth-btn-google{background:rgba(10,30,28,0.5);border:1px solid rgba(127,200,180,0.22);color:#aedcd0;font-family:'IBM Plex Mono',monospace;border-radius:10px 4px 10px 4px;}
-
 /* Progress / PR / History */
 body.theme-cosmic-horror .stat-box{background:rgba(10,30,28,0.5);border:1px solid rgba(127,200,180,0.22);border-radius:24px 6px 28px 8px / 16px 22px 12px 24px;}
 body.theme-cosmic-horror .stat-num{color:#7fc8b4;font-family:'Cormorant SC',serif;}
@@ -3275,62 +3260,92 @@ body.theme-cosmic-horror .set-logged-indicator{
 </head>
 <body>
 <div id="userScreen">
-  <div class="auth-bg"></div>
-  <div class="auth-wrap">
-    <div class="auth-logo">THE <span>CHAIN</span></div>
-    <div class="auth-tagline">RESISTANCE TRAINING</div>
+  <!-- 3.72.0 — Claude Design "basement forge"-login (handoff i theme/login/).
+       Funktionella id:n (btn-google, auth-email m.fl.) oförändrade — auth-JS är id-driven.
+       .cl-fade-layer = det som fadar vid tema-demons byten; auth-formuläret består ALLTID. -->
+  <div class="cl">
+    <div class="cl-hex cl-fade-layer"></div>
+    <div class="cl-spine cl-fade-layer"></div>
+    <div class="cl-heat cl-fade-layer"></div>
+    <div class="cl-chainstage cl-fade-layer" data-field>
+      <div class="cl-chain cl-chain-focus" data-chain data-count="8" data-phase="0" data-speed="1"
+           data-labels="R3 · CHEST|R3 · BACK|R3 · LEGS|R3 · PUSH|R3 · PULL|R3 · CHEST|R3 · BACK|+ FORGE YOUR NEXT LINK"></div>
+    </div>
+    <canvas class="cl-ember cl-fade-layer" data-density="72" data-heat="0.9" data-hue="24"></canvas>
 
-    <div id="auth-google-wrap" style="margin-bottom:20px;">
-      <button id="btn-google" class="auth-btn-google">
-        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" style="margin-right:10px;vertical-align:middle;">
-          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-          <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.836.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
-          <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
-        </svg>
-        Continue with Google
-      </button>
+    <div class="cl-masthead cl-fade-layer">
+      <span class="brand-min">The Chain</span>
+      <span class="est"><span class="long">Resistance Training&nbsp;&nbsp;·&nbsp;&nbsp;</span><b>Est. in the basement</b></span>
+      <span><span class="dot">●</span>&nbsp; V<span id="authVersionLabel">—</span> · Sync</span>
     </div>
 
-    <div class="auth-divider"><span>or</span></div>
+    <div class="cl-grid">
+      <div class="cl-col">
+        <div class="cl-hero cl-fade-layer">
+          <div class="cl-mark"><span class="t">The</span><span class="c">Chain</span></div>
+          <div class="cl-tag">Resistance Training</div>
+          <div class="cl-serif">Pick up <span class="em">where the chain left off.</span></div>
+        </div>
 
-    <div id="auth-email-form">
-      <input id="auth-email" type="email" placeholder="email" autocomplete="email">
-      <input id="auth-password" type="password" placeholder="password (min 8)" autocomplete="current-password">
-      
-      <!-- Signup-only fields, hidden by default -->
-      <div id="auth-signup-fields" style="display:none;">
-        <input id="auth-displayname" type="text" placeholder="display name (optional)" autocomplete="nickname" maxlength="40">
-        <label class="auth-checkbox-row">
-          <input type="checkbox" id="auth-emailupdates">
-          <span>Email me about updates and new features</span>
-        </label>
-        <div class="auth-disclaimer">
-          By signing up you accept that The Chain is in active development. Use at your own risk. Always consult a qualified trainer or doctor before changing your training. We're not responsible for injuries or health outcomes.
+        <div class="cl-authwrap">
+          <div class="cl-aura"></div>
+          <div class="cl-aura-hex cl-fade-layer"></div>
+          <div class="cl-auth">
+            <div id="auth-google-wrap">
+              <button id="btn-google" class="cl-oauth">
+                <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+                  <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.836.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+                  <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                  <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+                </svg>
+                Continue with Google
+              </button>
+            </div>
+            <div class="cl-or auth-divider">OR</div>
+            <div id="auth-email-form">
+              <input id="auth-email" class="cl-field" type="email" placeholder="email" autocomplete="email">
+              <input id="auth-password" class="cl-field" type="password" placeholder="password (min 8)" autocomplete="current-password">
+
+              <!-- Signup-only fields, hidden by default -->
+              <div id="auth-signup-fields" style="display:none;">
+                <input id="auth-displayname" class="cl-field" type="text" placeholder="display name (optional)" autocomplete="nickname" maxlength="40">
+                <label class="auth-checkbox-row">
+                  <input type="checkbox" id="auth-emailupdates">
+                  <span>Email me about updates and new features</span>
+                </label>
+                <div class="auth-disclaimer">
+                  By signing up you accept that The Chain is in active development. Use at your own risk. Always consult a qualified trainer or doctor before changing your training. We're not responsible for injuries or health outcomes.
+                </div>
+              </div>
+
+              <div class="cl-btns">
+                <button id="btn-login" class="cl-btn cl-btn--primary">Log In</button>
+                <button id="btn-signup" class="cl-btn cl-btn--ghost">Sign Up</button>
+              </div>
+              <div id="auth-message"></div>
+            </div>
+
+            <div class="cl-foot auth-footer">
+              <a href="#" id="auth-forgot">Forgot password?</a>
+              <span class="cl-signup-hint" onclick="document.getElementById('btn-signup')?.click()">New here? Sign up →</span>
+            </div>
+
+            <div id="reset-password-form" style="display:none;width:100%;">
+              <div class="cl-reset-title">Set New Password</div>
+              <input id="reset-new-password" class="cl-field" type="password" placeholder="new password (min 8)" autocomplete="new-password">
+              <input id="reset-confirm-password" class="cl-field" type="password" placeholder="confirm new password" autocomplete="new-password">
+              <div class="cl-btns">
+                <button onclick="doResetPassword()" class="cl-btn cl-btn--primary">Set Password</button>
+              </div>
+              <div id="reset-message"></div>
+            </div>
+          </div>
         </div>
       </div>
-      
-      <div class="auth-btn-row">
-        <button id="btn-login" class="auth-btn-primary">Log in</button>
-        <button id="btn-signup" class="auth-btn-secondary">Sign up</button>
-      </div>
-      <div id="auth-message"></div>
     </div>
 
-    <div class="auth-footer">
-      <a href="#" id="auth-forgot">Forgot password?</a>
-    </div>
-    <div id="auth-version" style="margin-top:18px;text-align:center;font-family:var(--mono);font-size:.55rem;color:#555;letter-spacing:.12em;">v<span id="authVersionLabel">—</span></div>
-
-    <div id="reset-password-form" style="display:none;width:100%;">
-      <div style="font-family:var(--mono);font-size:.62rem;color:var(--gray-light);letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px;text-align:center;">Set New Password</div>
-      <input id="reset-new-password" type="password" placeholder="new password (min 8)" autocomplete="new-password">
-      <input id="reset-confirm-password" type="password" placeholder="confirm new password" autocomplete="new-password">
-      <div class="auth-btn-row" style="margin-top:4px;">
-        <button onclick="doResetPassword()" class="auth-btn-primary">Set Password</button>
-      </div>
-      <div id="reset-message" style="font-family:var(--mono);font-size:.6rem;margin-top:10px;min-height:1.2em;text-align:center;"></div>
-    </div>
+    <div class="cl-vignette cl-fade-layer"></div>
   </div>
 </div><div id="appShell" style="display:none">
   <header>
@@ -4131,7 +4146,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.71.1';
+const APP_VERSION = '3.72.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8396,22 +8411,20 @@ function initTheme(){
 // genom alla teman var 7:e sekund som en passiv demo av temautbudet — även för
 // återkommande användare. Byter ALDRIG state.theme/sparar — ren visuell loop,
 // stoppas så fort en session faktiskt loggar in (se handleSession).
-// 3.71.1: dip-to-black-övergång — två teman kan inte korsfadas (body-klass +
-// canvas-lager), så bytet göms bakom en mjuk svart ridå istället för hårt hopp.
-let _authThemeDemoTimer = null, _authFadeEl = null;
+// 3.72.0: bytet göms bakom en mjuk fade — men ENDAST på .cl-fade-layer
+// (den dekorativa scenen: kedjor, embers, hero, hex, vinjett). .cl-authwrap
+// (formuläret: inputs, glöm lösenord, sign up) är ALDRIG taggat .cl-fade-layer
+// och fadar därför aldrig bort — Niklas-feedback: 3.71.1s helskärms-ridå dolde
+// hela formuläret och lämnade användaren undrande "va fasen" mitt i inloggning.
+let _authThemeDemoTimer = null;
 function authThemeFadeSwap(nextId){
-  if(!_authFadeEl){
-    _authFadeEl = document.createElement('div');
-    _authFadeEl.style.cssText = 'position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:9999;transition:opacity .7s ease;';
-    document.body.appendChild(_authFadeEl);
-  }
-  const el = _authFadeEl;
-  el.style.opacity = '1';
+  const layers = document.querySelectorAll('.cl-fade-layer');
+  layers.forEach(el=>el.classList.add('cl-faded'));
   setTimeout(()=>{
-    if(!_authThemeDemoTimer){ el.style.opacity='0'; return; } // demo stoppad under fade → byt inte
+    if(!_authThemeDemoTimer) return; // demo stoppad under fade → lämna orört
     setThemeVisual(nextId);
-    setTimeout(()=>{ el.style.opacity = '0'; }, 150); // låt nya temat måla klart bakom ridån
-  }, 750);
+    requestAnimationFrame(()=>layers.forEach(el=>el.classList.remove('cl-faded')));
+  }, 700);
 }
 function startAuthThemeDemo(){
   stopAuthThemeDemo();
@@ -8425,9 +8438,266 @@ function startAuthThemeDemo(){
 }
 function stopAuthThemeDemo(){
   if(_authThemeDemoTimer){ clearInterval(_authThemeDemoTimer); _authThemeDemoTimer=null; }
-  // Städa ridån direkt — får inte ligga kvar över appen efter login
-  if(_authFadeEl){ _authFadeEl.remove(); _authFadeEl=null; }
+  // Om demon stoppas mitt i en fade (t.ex. lyckad inloggning) ska scenen inte
+  // lämnas osynlig — men skärmen döljs ändå direkt av showAppShell().
+  document.querySelectorAll('.cl-fade-layer.cl-faded').forEach(el=>el.classList.remove('cl-faded'));
 }
+
+// ── LOGIN CHAIN SYSTEM ───────────────────────────────────────────
+// Port av theme/login/chain-login.js (Claude Design-handoff, 3.72.0).
+// buildChain: interlockande stål-kedja, varje länk svänger fysik-riktigt om
+// länken ovanför (traveling wave, inte en stel skylt). Understa länken glöder
+// (forge-hot, tema-oberoende konstant — se Niklas beslut ovan). generateField:
+// ett djupt fält av statiska+animerade bakgrundskedjor ("din kedja är en av
+// tusentals") — pre-blurrade lager, EN rAF för hela scenen (perf). attachSparks:
+// gnistregn från den glödheta länken vid hover på Log In.
+(function(){
+  const SVGNS='http://www.w3.org/2000/svg';
+  function el(tag,attrs){ const n=document.createElementNS(SVGNS,tag); for(const k in attrs) n.setAttribute(k,attrs[k]); return n; }
+
+  function makeLink(cy,vertical,stroke,sw,opacity){
+    const w=vertical?44:92, h=vertical?92:44;
+    const g=el('g',{opacity:String(opacity)});
+    g.appendChild(el('rect',{x:-w/2,y:cy-h/2+2.5,width:w,height:h,rx:22,ry:22,fill:'none',stroke:'#000','stroke-opacity':'0.5','stroke-width':sw+2}));
+    const body=el('rect',{x:-w/2,y:cy-h/2,width:w,height:h,rx:22,ry:22,fill:'none',stroke,'stroke-width':sw});
+    g.appendChild(body);
+    g.appendChild(el('rect',{x:-w/2+3,y:cy-h/2+3,width:w-6,height:h-6,rx:19,ry:19,fill:'none',stroke:'rgba(255,246,235,0.16)','stroke-width':1}));
+    g._body=body;
+    return g;
+  }
+  function clDefs(svg){
+    const d=el('defs',{});
+    const steel=el('linearGradient',{id:'clSteel',x1:'0',y1:'0',x2:'0.5',y2:'1'});
+    [['0','#c4bbb0'],['0.35','#7d746b'],['0.7','#4c4640'],['1','#2c2825']].forEach(([o,c])=>steel.appendChild(el('stop',{offset:o,'stop-color':c})));
+    const hot=el('linearGradient',{id:'clHot',x1:'0',y1:'0',x2:'0',y2:'1'});
+    [['0','#fff3df'],['0.4','#ff9a4c'],['1','#b63a1e']].forEach(([o,c])=>hot.appendChild(el('stop',{offset:o,'stop-color':c})));
+    d.appendChild(steel); d.appendChild(hot);
+    svg.appendChild(d);
+  }
+  const TICKERS=[];
+  let tickerStarted=false;
+  function startTicker(){
+    if(tickerStarted) return; tickerStarted=true;
+    const start=performance.now();
+    function loop(now){ const t=(now-start)/1000; for(let i=0;i<TICKERS.length;i++) TICKERS[i](t); requestAnimationFrame(loop); }
+    requestAnimationFrame(loop);
+  }
+  function buildChain(host){
+    const count=parseInt(host.dataset.count||'8',10);
+    const step=60, swayGain=parseFloat(host.dataset.swaygain||'1');
+    const speed=parseFloat(host.dataset.speed||'1'), phase=parseFloat(host.dataset.phase||'0');
+    const W=150, topY=26, H=topY+step*count+40, cx=W/2;
+    const svg=el('svg',{width:W,height:H,viewBox:`0 0 ${W} ${H}`,fill:'none',class:'cl-chain-svg',preserveAspectRatio:'xMidYMin meet'});
+    clDefs(svg);
+    svg.appendChild(el('path',{d:`M${cx-16} 8 h32 M${cx} 8 v${topY-8}`,stroke:'#5a534c','stroke-width':3,'stroke-linecap':'round'}));
+    const labels=(host.dataset.labels||'').split('|').filter(Boolean);
+    const segs=[]; let parent=svg;
+    for(let i=0;i<count;i++){
+      const posG=el('g',{transform:i===0?`translate(${cx} ${topY})`:`translate(0 ${step})`});
+      const swayG=el('g',{});
+      const vertical=i%2===0, active=i===count-1;
+      const opacity=active?1:0.4+0.5*(i/(count-1));
+      const link=makeLink(step/2,vertical,active?'url(#clHot)':'url(#clSteel)',active?11:9,opacity);
+      if(active){
+        link.setAttribute('class','cl-active');
+        swayG.appendChild(link);
+        const hotOv=makeLink(step/2,vertical,'#fff4e2',5,1);
+        hotOv.setAttribute('class','cl-active-hot');
+        swayG.appendChild(hotOv);
+      } else { swayG.appendChild(link); }
+      posG.appendChild(swayG); parent.appendChild(posG); parent=swayG;
+      segs.push({swayG,body:link._body,active});
+    }
+    host.appendChild(svg);
+    const labelEls=labels.map((txt,i)=>{
+      const active=i===count-1;
+      const row=document.createElement('div');
+      row.className='cl-label'+(active?' active':'');
+      row.innerHTML='<span class="tick"></span><span class="txt"></span>';
+      row.querySelector('.txt').textContent=txt;
+      host.appendChild(row);
+      return row;
+    });
+    const A=0.85*swayGain, w1=0.55, w2=0.83, lag=0.42, nSeg=segs.length, hasLabels=labelEls.length>0;
+    function update(t){
+      const tt=t*speed+phase;
+      const gust=0.6+0.4*Math.sin(tt*0.21+phase);
+      for(let i=0;i<nSeg;i++){
+        const amp=A*(0.45+0.9*(i/(nSeg-1||1)));
+        const theta=amp*gust*Math.sin(w1*tt-i*lag)+amp*0.4*Math.sin(w2*tt-i*lag*1.6+1.1);
+        segs[i].swayG.setAttribute('transform',`rotate(${theta.toFixed(3)})`);
+      }
+      if(hasLabels){
+        const hr=host.getBoundingClientRect();
+        for(let i=0;i<labelEls.length&&i<nSeg;i++){
+          const b=segs[i].body.getBoundingClientRect();
+          labelEls[i].style.left=(b.left-hr.left+b.width/2)+'px';
+          labelEls[i].style.top=(b.top-hr.top+b.height/2)+'px';
+        }
+      }
+    }
+    const animate=host.classList.contains('cl-chain-focus')||'motion' in host.dataset;
+    if(animate) TICKERS.push(update); else update(0);
+    host._segs=segs;
+  }
+  function attachSparks(btn){
+    const stage=document.querySelector('.cl-chainstage');
+    const host=document.querySelector('.cl-chain-focus');
+    if(!stage||!host) return;
+    btn.addEventListener('mouseenter',()=>{
+      const seg=(host._segs||[]).find(s=>s.active);
+      const sr=stage.getBoundingClientRect();
+      let ox,oy;
+      if(seg){ const b=seg.body.getBoundingClientRect(); ox=b.left-sr.left+b.width/2; oy=b.top-sr.top+b.height/2; }
+      else { const r=host.getBoundingClientRect(); ox=r.left-sr.left+r.width/2; oy=r.top-sr.top+r.height-40; }
+      for(let i=0;i<16;i++){
+        const s=document.createElement('span');
+        s.className='cl-spark';
+        stage.appendChild(s);
+        const ang=-Math.PI/2+(Math.random()-0.5)*2.4, dist=40+Math.random()*140;
+        const dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist;
+        s.style.left=ox+'px'; s.style.top=oy+'px';
+        s.animate([
+          {transform:'translate(-50%,-50%)',opacity:1},
+          {transform:`translate(-50%,-50%) translate(${dx}px,${dy}px) scale(0.2)`,opacity:0},
+        ],{duration:500+Math.random()*550,easing:'cubic-bezier(.2,.6,.3,1)'}).onfinish=()=>s.remove();
+      }
+    });
+  }
+  function staticChainGroup(cx,topY,scale,opacity,count,stroke){
+    const step=60;
+    const g=el('g',{transform:`translate(${cx} ${topY}) scale(${scale})`,opacity:String(opacity)});
+    g.appendChild(el('path',{d:`M-16 -18 h32 M0 -18 v18`,stroke:'#5a534c','stroke-width':3,'stroke-linecap':'round'}));
+    for(let i=0;i<count;i++){
+      const cy=i*step+step/2, vertical=i%2===0;
+      const w=vertical?44:92, h=vertical?92:44;
+      g.appendChild(el('rect',{x:-w/2,y:cy-h/2+2.5,width:w,height:h,rx:22,ry:22,fill:'none',stroke:'#000','stroke-opacity':'0.5','stroke-width':11}));
+      g.appendChild(el('rect',{x:-w/2,y:cy-h/2,width:w,height:h,rx:22,ry:22,fill:'none',stroke,'stroke-width':9}));
+    }
+    return g;
+  }
+  function generateField(stage){
+    const rand=(a,b)=>a+Math.random()*(b-a);
+    const VW=1600, VH=1100;
+    const layers=[
+      {n:26,s:[0.16,0.32],o:[0.05,0.10],blur:2.4,stroke:'#4a453f',z:0},
+      {n:15,s:[0.34,0.6], o:[0.07,0.13],blur:1.4,stroke:'#5a544d',z:1},
+      {n:5, s:[1.0,1.8],  o:[0.05,0.09],blur:5.0,stroke:'#544e47',z:0},
+    ];
+    layers.forEach((L)=>{
+      const svg=el('svg',{viewBox:`0 0 ${VW} ${VH}`,preserveAspectRatio:'xMidYMin slice',class:'cl-field-layer'});
+      svg.style.filter=`blur(${L.blur}px) saturate(0.5)`;
+      svg.style.zIndex=String(L.z);
+      for(let i=0;i<L.n;i++){
+        const cx=rand(-40,VW+40), topY=rand(-120,40);
+        svg.appendChild(staticChainGroup(cx,topY,rand(L.s[0],L.s[1]),rand(L.o[0],L.o[1]),Math.round(rand(5,11)),L.stroke));
+      }
+      stage.insertBefore(svg,stage.firstChild);
+    });
+    const frag=document.createDocumentFragment();
+    for(let i=0;i<6;i++){
+      const div=document.createElement('div');
+      div.className='cl-chain cl-chain-deco';
+      const left=rand(10,98);
+      div.style.left=left+'%';
+      div.style.top=rand(-90,-20)+'px';
+      div.style.transform=`translateX(-50%) scale(${rand(0.55,0.95).toFixed(3)})`;
+      div.style.opacity=(rand(0.1,0.16)*(left<34?0.7:1)).toFixed(3);
+      div.style.filter='blur(0.5px) saturate(0.6)';
+      div.style.zIndex='4';
+      div.dataset.chain=''; div.dataset.count=String(Math.round(rand(6,10)));
+      div.dataset.swaygain='1.4'; div.dataset.phase=rand(0,6.28).toFixed(2);
+      div.dataset.speed=rand(0.7,1.2).toFixed(2); div.dataset.motion='1';
+      frag.appendChild(div);
+    }
+    stage.insertBefore(frag,stage.firstChild);
+  }
+  function bootChainLogin(){
+    const stage=document.querySelector('.cl-chainstage');
+    if(stage && 'field' in stage.dataset) generateField(stage);
+    document.querySelectorAll('.cl-chain[data-chain]').forEach(buildChain);
+    startTicker();
+    document.querySelectorAll('.cl-btn--primary').forEach(attachSparks);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootChainLogin);
+  else bootChainLogin();
+})();
+
+// ── LOGIN EMBERS ──────────────────────────────────────────────────
+// Port av theme/login/embers.js — uniform forge-partikelsystem för
+// .cl-ember-canvas i alla teman (samma "konstant forge-atmosfär"-beslut
+// som den glödheta länken, se ovan). Tunat via data-density/heat/hue.
+(function(){
+  function rand(a,b){ return a+Math.random()*(b-a); }
+  function initEmber(canvas){
+    const ctx=canvas.getContext('2d');
+    if(!ctx) return; // jsdom test harness stubs getContext to null — no ambient canvas there
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    const NUM=parseInt(canvas.dataset.density||'40',10);
+    const HEAT=parseFloat(canvas.dataset.heat||'0');
+    const HUE=parseFloat(canvas.dataset.hue||'22');
+    let w=0,h=0;
+    function resize(){
+      const rect=canvas.getBoundingClientRect();
+      w=canvas.clientWidth||Math.round(rect.width)||canvas.offsetWidth;
+      h=canvas.clientHeight||Math.round(rect.height)||canvas.offsetHeight;
+      canvas.width=Math.max(1,w*dpr); canvas.height=Math.max(1,h*dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    resize();
+    let tries=0;
+    (function ensureSized(){ if((w<2||h<2)&&tries++<120){ resize(); requestAnimationFrame(ensureSized); } })();
+    window.addEventListener('load',resize);
+    new ResizeObserver(resize).observe(canvas);
+    const embers=[];
+    function spawn(initial){
+      return {
+        x:rand(0,w||400), y:initial?rand(0,h||800):(h||800)+rand(0,60),
+        r:rand(0.6,2.4), vy:rand(0.12,0.5), vx:rand(-0.08,0.08),
+        swayPhase:rand(0,Math.PI*2), swaySpeed:rand(0.005,0.018), swayAmp:rand(0.15,0.55),
+        life:0, maxLife:rand(600,1500), hue:HUE+rand(-4,14), sat:rand(72,96), light:rand(48,66),
+        baseAlpha:rand(0.22,0.8),
+      };
+    }
+    for(let i=0;i<NUM;i++) embers.push(spawn(true));
+    let t=0, seeded=w>2&&h>2;
+    function tick(){
+      t++;
+      if(!seeded && w>2 && h>2){ embers.length=0; for(let i=0;i<NUM;i++) embers.push(spawn(true)); seeded=true; }
+      ctx.clearRect(0,0,w,h);
+      if(HEAT>0 && h){
+        const pulse=0.82+0.18*Math.sin(t*0.012);
+        const gy=ctx.createLinearGradient(0,h,0,h*0.42);
+        gy.addColorStop(0,`hsla(${HUE+4},90%,52%,${0.16*HEAT*pulse})`);
+        gy.addColorStop(1,`hsla(${HUE},90%,50%,0)`);
+        ctx.fillStyle=gy; ctx.fillRect(0,h*0.42,w,h*0.58);
+      }
+      for(let i=0;i<embers.length;i++){
+        const e=embers[i];
+        e.life++; e.swayPhase+=e.swaySpeed;
+        e.x+=e.vx+Math.sin(e.swayPhase)*e.swayAmp; e.y-=e.vy;
+        let lifeT=e.life/e.maxLife, alpha;
+        if(lifeT<0.15) alpha=lifeT/0.15;
+        else if(lifeT>0.7) alpha=Math.max(0,1-(lifeT-0.7)/0.3);
+        else alpha=1;
+        alpha*=e.baseAlpha*(0.7+0.3*Math.sin(t*0.04+e.swayPhase));
+        if(e.y<-20||e.life>e.maxLife){ embers[i]=spawn(false); continue; }
+        const grad=ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r*6);
+        grad.addColorStop(0,`hsla(${e.hue},${e.sat}%,${e.light}%,${alpha})`);
+        grad.addColorStop(0.4,`hsla(${e.hue},${e.sat}%,${e.light-10}%,${alpha*0.45})`);
+        grad.addColorStop(1,`hsla(${e.hue},${e.sat}%,${e.light-20}%,0)`);
+        ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(e.x,e.y,e.r*6,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle=`hsla(${e.hue+8},100%,82%,${alpha})`;
+        ctx.beginPath(); ctx.arc(e.x,e.y,e.r*0.6,0,Math.PI*2); ctx.fill();
+      }
+      requestAnimationFrame(tick);
+    }
+    tick();
+  }
+  function bootEmbers(){ document.querySelectorAll('canvas.cl-ember').forEach(initEmber); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootEmbers);
+  else bootEmbers();
+})();
 
 // ── OBSIDIAN EMBERS ─────────────────────────────────────────────
 // Vanilla JS port av ObsidianEmbers (från designens React-component).
