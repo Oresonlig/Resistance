@@ -1831,11 +1831,16 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
 #userScreen.hidden{display:none !important;}
 
 .cl{
-  /* 3.72.2: bg/bg-2/panel LOCKED (not var()) — Niklas: the dark↔light theme
-     jump was too harsh, and even dark-to-dark swaps (esp. Void, pure #000)
-     changed the whole scene color too abruptly. One fixed background
-     (Cosmic Horror's tone) now, across every theme in the rotation —
-     only font/accent/chain-color/border-tint still vary per theme. */
+  /* 3.72.2: bg/bg-2/panel kept LOCKED (not var()) as a dark base — the dark↔light
+     jump was too harsh and even dark→dark (esp. Void #000) shifted too abruptly.
+     3.72.3: but the SCENE background is now transparent (see `background:` below):
+     3.72.2 made everything but the accent constant → Niklas "4 colors rotating,
+     nothing distinct; Cosmic veins / Nanosuit pulse never shine through." Root
+     cause: setThemeVisual() DOES mount each theme's ambient (hex pulse / veins /
+     embers) during the rotation, but at body z-index:0 — hidden behind this
+     z-index:100 opaque scene. Fix: transparent scene reveals the ambient behind,
+     + theme-derived font (--font-display) + theme-tinted heat/spine glow below.
+     --bg/--bg-2 stay locked because the form aura still uses them as its backing. */
   --bg:        #03080a;
   --bg-2:      #060f11;
   --panel:     rgba(8,20,18,0.95);
@@ -1856,29 +1861,41 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
      (Niklas screenshot: Void's Log In button, a white blob with no text).
      Default here covers Iron/Ember's darker red/orange accents. */
   --on-accent: var(--white);
-  --font-display: 'Archivo', system-ui, sans-serif;
+  /* 3.72.3: wordmark font follows the ACTIVE theme (Bebas/Orbitron/Rajdhani/
+     Playfair/Cinzel/Cormorant SC) so "THE CHAIN" reads distinctly per theme
+     instead of always-Archivo. Serif line + mono labels stay constant for
+     the italic elegance + label legibility. */
+  --font-display: var(--display);
   --font-serif:   'Cormorant Garamond', Georgia, serif;
   --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
 
   position:relative; min-height:100vh; width:100%;
-  background: radial-gradient(ellipse 90% 70% at 50% 30%, color-mix(in srgb, var(--bg) 92%, black 8%) 0%, var(--bg) 62%);
+  /* transparent — the active theme's ambient (mounted at body z-index:0) shows
+     THROUGH here; body's themed --black is the base, .cl-vignette darkens edges.
+     Was an opaque locked gradient (3.72.2) which hid every theme's ambient. */
+  background: transparent;
   color:var(--text); font-family:var(--font-display);
   overflow:hidden; isolation:isolate; -webkit-font-smoothing:antialiased;
 }
 .cl, .cl *{box-sizing:border-box;}
 
-/* ---------- ambient layers (fixed forge constants — see note above) ---------- */
+/* ---------- ambient layers ----------
+   3.72.3: the heat + spine GLOW now follow the theme accent (was hardcoded
+   forge-orange = "the glow never changes regardless of theme"). The rising
+   ember particles (.cl-ember) + the hot chain link stay forge-orange — those
+   are the deliberate "you are forging your next link" beat (Niklas's earlier
+   explicit choice), a warm constant against whatever theme world is behind. */
 .cl-ember{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;}
 .cl-heat{
   position:absolute;left:50%;bottom:-22%;transform:translateX(-50%);
   width:130%;height:66%;z-index:1;pointer-events:none;
-  background:radial-gradient(ellipse 44% 100% at 50% 100%, rgba(255,110,50,0.4) 0%, rgba(209,68,42,0.16) 36%, transparent 66%);
+  background:radial-gradient(ellipse 44% 100% at 50% 100%, color-mix(in srgb, var(--accent) 55%, transparent) 0%, color-mix(in srgb, var(--accent) 20%, transparent) 36%, transparent 66%);
   animation:clBreath 6s ease-in-out infinite;
 }
 .cl-spine{
   position:absolute;left:50%;top:-6%;transform:translateX(-50%);
   width:340px;height:112%;z-index:1;pointer-events:none;
-  background:radial-gradient(ellipse 40% 60% at 50% 42%, rgba(255,120,55,0.16) 0%, rgba(209,68,42,0.06) 40%, transparent 72%);
+  background:radial-gradient(ellipse 40% 60% at 50% 42%, color-mix(in srgb, var(--accent) 22%, transparent) 0%, color-mix(in srgb, var(--accent) 8%, transparent) 40%, transparent 72%);
   filter:blur(8px);
 }
 @keyframes clBreath{0%,100%{opacity:0.72;}50%{opacity:1;}}
@@ -4169,7 +4186,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.72.2';
+const APP_VERSION = '3.72.3';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8619,7 +8636,16 @@ function stopAuthThemeDemo(){
   function generateField(stage){
     const rand=(a,b)=>a+Math.random()*(b-a);
     const VW=1600, VH=1100;
-    const layers=[
+    // 3.72.3: on a narrow viewport the 1600-wide field gets "slice"-zoomed to the
+    // centre, so the same chain count reads as a dense clutter that drowns the
+    // focus chain (Niklas mobile feedback: "chains all over that say nothing").
+    // Cut the background density hard on mobile — it's atmosphere, not the point.
+    const mob = window.innerWidth <= 700;
+    const layers = mob ? [
+      {n:6,  s:[0.16,0.30],o:[0.04,0.08],blur:2.4,stroke:'#4a453f',z:0},
+      {n:4,  s:[0.34,0.55],o:[0.05,0.10],blur:1.4,stroke:'#5a544d',z:1},
+      {n:2,  s:[1.0,1.6],  o:[0.04,0.07],blur:5.0,stroke:'#544e47',z:0},
+    ] : [
       {n:26,s:[0.16,0.32],o:[0.05,0.10],blur:2.4,stroke:'#4a453f',z:0},
       {n:15,s:[0.34,0.6], o:[0.07,0.13],blur:1.4,stroke:'#5a544d',z:1},
       {n:5, s:[1.0,1.8],  o:[0.05,0.09],blur:5.0,stroke:'#544e47',z:0},
@@ -8635,7 +8661,8 @@ function stopAuthThemeDemo(){
       stage.insertBefore(svg,stage.firstChild);
     });
     const frag=document.createDocumentFragment();
-    for(let i=0;i<6;i++){
+    const liveCount = mob ? 2 : 6;
+    for(let i=0;i<liveCount;i++){
       const div=document.createElement('div');
       div.className='cl-chain cl-chain-deco';
       const left=rand(10,98);
