@@ -4131,7 +4131,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.71.0';
+const APP_VERSION = '3.71.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8396,7 +8396,23 @@ function initTheme(){
 // genom alla teman var 7:e sekund som en passiv demo av temautbudet — även för
 // återkommande användare. Byter ALDRIG state.theme/sparar — ren visuell loop,
 // stoppas så fort en session faktiskt loggar in (se handleSession).
-let _authThemeDemoTimer = null;
+// 3.71.1: dip-to-black-övergång — två teman kan inte korsfadas (body-klass +
+// canvas-lager), så bytet göms bakom en mjuk svart ridå istället för hårt hopp.
+let _authThemeDemoTimer = null, _authFadeEl = null;
+function authThemeFadeSwap(nextId){
+  if(!_authFadeEl){
+    _authFadeEl = document.createElement('div');
+    _authFadeEl.style.cssText = 'position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:9999;transition:opacity .7s ease;';
+    document.body.appendChild(_authFadeEl);
+  }
+  const el = _authFadeEl;
+  el.style.opacity = '1';
+  setTimeout(()=>{
+    if(!_authThemeDemoTimer){ el.style.opacity='0'; return; } // demo stoppad under fade → byt inte
+    setThemeVisual(nextId);
+    setTimeout(()=>{ el.style.opacity = '0'; }, 150); // låt nya temat måla klart bakom ridån
+  }, 750);
+}
 function startAuthThemeDemo(){
   stopAuthThemeDemo();
   setThemeVisual('iron');
@@ -8404,11 +8420,13 @@ function startAuthThemeDemo(){
     const current = THEMES.find(t=>t.class && document.body.classList.contains(t.class)) || THEMES[0];
     const candidates = THEMES.filter(t=>t.id!==current.id);
     const next = candidates[Math.floor(Math.random()*candidates.length)];
-    setThemeVisual(next.id);
+    authThemeFadeSwap(next.id);
   }, 7000);
 }
 function stopAuthThemeDemo(){
   if(_authThemeDemoTimer){ clearInterval(_authThemeDemoTimer); _authThemeDemoTimer=null; }
+  // Städa ridån direkt — får inte ligga kvar över appen efter login
+  if(_authFadeEl){ _authFadeEl.remove(); _authFadeEl=null; }
 }
 
 // ── OBSIDIAN EMBERS ─────────────────────────────────────────────
