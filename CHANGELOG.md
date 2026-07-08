@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.70.1 — 2026-07-08
+**Ny övning: Sauna (gymfeedback, live).** Nytt mätsätt `sauna` (`temp`/`secs`, PR=längsta tid) — samma sluten-enum-mönster som `inclinecardio`. Ny övning `Sauna` i EXERCISE_LIBRARY Cardio-sektionen (mellan Running och Sled Push). Grid delar layout med cardio/carry (2 fält: °C + min). Historik/copy visar `X°C · Ymin`. `src/measures.js` + index.html + 2 nya tester (152 totalt).
+
+---
+
 ## 3.70.0 — 2026-07-08
 **Nytt mätsätt: Incline cardio (gymfeedback, live).** Incline Walk saknade lutningsgrad — bara tid+km loggades, trots att graden är den viktigaste variabeln på ett lutningspass. Nytt `inclinecardio`-mätsätt i registret (`incline`/`secs`/`dist`, PR=dist) enligt sluten-enum-arkitekturen — ingen per-övning-specialkod. `Incline Walk` i EXERCISE_LIBRARY bytt från `cardio`→`inclinecardio`. Ny grid-layout (3 fält: %, min, km). Valbar för valfri övning via mätsätt-väljaren i tag-editorn (samma generiska override-mekanism som alla andra mätsätt). Historik/copy visar `X% · Ykm · Zmin` via `formatSetLine`. Gammal historik för Incline Walk (loggad som `cardio`, utan grad) visas oförändrad utan grad — ingen migration, per Niklas ok. `src/measures.js` + index.html + 1 nytt test (151 totalt).
 

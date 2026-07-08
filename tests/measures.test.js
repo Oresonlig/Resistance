@@ -9,8 +9,8 @@ import {
 } from '../src/measures.js';
 
 describe('MEASURES registry', () => {
-  it('har 8 mätsätt', () => {
-    expect(MEASURE_KEYS).toEqual(['weight','bw','bwreps','timed','cardio','cardiosprint','carry','inclinecardio']);
+  it('har 9 mätsätt', () => {
+    expect(MEASURE_KEYS).toEqual(['weight','bw','bwreps','timed','cardio','cardiosprint','carry','inclinecardio','sauna']);
   });
   it('varje measure har fields + pr', () => {
     for (const k of MEASURE_KEYS) {
@@ -56,6 +56,7 @@ describe('prValue — PR-metrik per measure', () => {
   it('cardiosprint → sprints', () => expect(prValue('cardiosprint', { secs: 600, sprints: 12 })).toBe(12));
   it('carry → vikt', () => expect(prValue('carry', { weight: 80, distm: 40 })).toBe(80));
   it('inclinecardio → dist', () => expect(prValue('inclinecardio', { incline: 12, secs: 1800, dist: 3.2 })).toBe(3.2));
+  it('sauna → secs', () => expect(prValue('sauna', { temp: 90, secs: 900 })).toBe(900));
   it('fail räknas ej', () => expect(prValue('weight', { weight: 100, fail: true })).toBe(null));
   it('tomt fält → null', () => expect(prValue('bwreps', {})).toBe(null));
 });
