@@ -16,6 +16,7 @@ export const MEASURES = {
   cardio:       { fields: ['secs', 'dist'],     pr: 'dist',    forced: false, bw: false },
   cardiosprint: { fields: ['base', 'sprints'],  pr: 'sprints', forced: false, bw: false },
   carry:        { fields: ['weight', 'distm'],  pr: 'weight',  forced: false, bw: false },
+  inclinecardio:{ fields: ['incline', 'secs', 'dist'], pr: 'dist', forced: false, bw: false },
 };
 
 export const MEASURE_KEYS = Object.keys(MEASURES);

@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.70.0 — 2026-07-08
+**Nytt mätsätt: Incline cardio (gymfeedback, live).** Incline Walk saknade lutningsgrad — bara tid+km loggades, trots att graden är den viktigaste variabeln på ett lutningspass. Nytt `inclinecardio`-mätsätt i registret (`incline`/`secs`/`dist`, PR=dist) enligt sluten-enum-arkitekturen — ingen per-övning-specialkod. `Incline Walk` i EXERCISE_LIBRARY bytt från `cardio`→`inclinecardio`. Ny grid-layout (3 fält: %, min, km). Valbar för valfri övning via mätsätt-väljaren i tag-editorn (samma generiska override-mekanism som alla andra mätsätt). Historik/copy visar `X% · Ykm · Zmin` via `formatSetLine`. Gammal historik för Incline Walk (loggad som `cardio`, utan grad) visas oförändrad utan grad — ingen migration, per Niklas ok. `src/measures.js` + index.html + 1 nytt test (151 totalt).
+
+---
+
 ## 3.69.0 — 2026-07-08
 **Gymbugg + login-tema-demo.** **Bugg (gymfeedback, Cosmic Horror-skärmdump):** intilliggande avklarade pass ("adjacent.done") såg upplysta/olåsta ut i Obsidian och Cosmic Horror — 3.46.4:s "container bär formen"-omdesign gav `.adjacent`-blobben en egen ljus bakgrund/kant utan motsvarande `.adjacent.done`-dämpning (bara bokstavs-badgen dämpades, inte containern). Fix: `.chain-tab.adjacent.done` tillagd för båda teman. **Login-tema-demo (Niklas idé):** inloggningsskärmen startar alltid på Iron, roterar sedan slumpmässigt genom alla 10 teman var 7:e sekund (`startAuthThemeDemo`/`stopAuthThemeDemo`) — fungerar som passiv demo av temautbudet, även för vana användare. Stoppas så fort en session faktiskt loggar in. `applyTheme`/`initTheme` delar nu logik via ny `setThemeVisual()` (DRY, ingen beteendeändring). **Input-fälten är nu medvetet tema-oberoende** (fasta färger, inga `var()`) så de förblir läsbara oavsett vilket tema som roterar bakom dem — samtliga per-tema auth-input-overrides (Arctic/Undertow/Understory/Obsidian/Cosmic Horror) borttagna. **Bonus-fynd:** Undertow och Understorys auth-bakgrunder riktade sig mot `#auth-screen`, ett element som inte finns (rätt id är `#userScreen`) — död CSS sedan de lades till, bakgrunderna visades aldrig. Fixat i samma veva.
 

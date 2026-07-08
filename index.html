@@ -226,6 +226,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .set-row.m-weight,.set-row.m-bw{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
 .set-row.m-bwreps,.set-row.m-timed{grid-template-columns:24px 1fr 48px 36px 28px;}
 .set-row.m-cardio,.set-row.m-cardiosprint,.set-row.m-carry{grid-template-columns:24px 1fr 1fr 36px 28px;}
+.set-row.m-inclinecardio{grid-template-columns:24px 1fr 1fr 1fr 36px 28px;}
 .set-row.m-weight.uni,.set-row.m-bw.uni{grid-template-columns:24px 1fr 1fr 48px 28px 36px 28px;}
 .set-row.m-bwreps.uni{grid-template-columns:24px 1fr 48px 28px 36px 28px;}
 /* STANDARD set-label size — crosses ALL themes (matches .set-unit KG/REPS at .82rem).
@@ -4013,7 +4014,7 @@ const EXERCISE_LIBRARY = [
   {name:'Bike Cardio', cat:'Cardio', measure:'cardio', tip:'20 min steady state'},
   {name:'Dead Hang', cat:'Cardio', measure:'timed', tip:'Supinated or neutral'},
   {name:'Farmers Walk', cat:'Cardio', measure:'carry'},
-  {name:'Incline Walk', cat:'Cardio', measure:'cardio', tip:'Treadmill incline'},
+  {name:'Incline Walk', cat:'Cardio', measure:'inclinecardio', tip:'Treadmill incline'},
   {name:'Running', cat:'Cardio', measure:'cardio'},
   {name:'Sled Push', cat:'Cardio', measure:'carry'},
   {name:'Walk', cat:'Cardio', measure:'cardio'},
@@ -4124,7 +4125,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.69.0';
+const APP_VERSION = '3.70.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4261,6 +4262,7 @@ const MEASURES = {
   cardio:       { fields:['secs','dist'],     pr:'dist',    forced:false, bw:false },
   cardiosprint: { fields:['base','sprints'],  pr:'sprints', forced:false, bw:false },
   carry:        { fields:['weight','distm'],  pr:'weight',  forced:false, bw:false },
+  inclinecardio:{ fields:['incline','secs','dist'], pr:'dist', forced:false, bw:false },
 };
 function measureFromFlags(ex){
   if(!ex) return 'weight';
@@ -5450,7 +5452,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
         const isBW = mdef.bw;
         const isTimed = measure==='timed';
 
-        let tags='';if(isRampEx)tags+=`<span class="ex-tag ramp">Ramp</span>`;if(isSingles)tags+=`<span class="ex-tag singles">Singles</span>`;if(isBW){const bwDisp=todayWkg?`${toDisplay(todayWkg)} ${unitLabel()}`:'';tags+=`<span class="ex-tag bw">BW${bwDisp?' '+bwDisp:''}</span>`;}if(isUni)tags+=`<span class="ex-tag uni">Unilateral</span>`;if(isTimed)tags+=`<span class="ex-tag timed">Timed</span>`;if(measure==='bwreps')tags+=`<span class="ex-tag">Reps</span>`;if(measure==='cardio')tags+=`<span class="ex-tag">Cardio</span>`;if(measure==='cardiosprint')tags+=`<span class="ex-tag">Sprint</span>`;if(measure==='carry')tags+=`<span class="ex-tag">Carry</span>`;
+        let tags='';if(isRampEx)tags+=`<span class="ex-tag ramp">Ramp</span>`;if(isSingles)tags+=`<span class="ex-tag singles">Singles</span>`;if(isBW){const bwDisp=todayWkg?`${toDisplay(todayWkg)} ${unitLabel()}`:'';tags+=`<span class="ex-tag bw">BW${bwDisp?' '+bwDisp:''}</span>`;}if(isUni)tags+=`<span class="ex-tag uni">Unilateral</span>`;if(isTimed)tags+=`<span class="ex-tag timed">Timed</span>`;if(measure==='bwreps')tags+=`<span class="ex-tag">Reps</span>`;if(measure==='cardio')tags+=`<span class="ex-tag">Cardio</span>`;if(measure==='cardiosprint')tags+=`<span class="ex-tag">Sprint</span>`;if(measure==='carry')tags+=`<span class="ex-tag">Carry</span>`;if(measure==='inclinecardio')tags+=`<span class="ex-tag">Incline</span>`;
         const lastSession=getLastSession(_exId);
         let prevText='';
         if(lastSession){
@@ -6839,7 +6841,7 @@ function buildTagEditorHTML(ex, passId){
   // 3.56.0 — Mätsätt (measure): single-select, nyckel = kanoniskt exId (följer rörelsen).
   const canonId = ex.extra?extraExId(ex.name):(getRenderExId(ex.id)||ex.id);
   const curMeasure = getMeasure(canonId, ex);
-  const MEASURE_OPTS=[['weight','Weight × reps'],['bw','Bodyweight + load'],['bwreps','Reps only'],['timed','Timed (sec)'],['cardio','Cardio (time + km)'],['cardiosprint','Cardio sprints'],['carry','Loaded carry (kg + m)']];
+  const MEASURE_OPTS=[['weight','Weight × reps'],['bw','Bodyweight + load'],['bwreps','Reps only'],['timed','Timed (sec)'],['cardio','Cardio (time + km)'],['cardiosprint','Cardio sprints'],['carry','Loaded carry (kg + m)'],['inclinecardio','Incline cardio (grade + time + km)']];
   const measureSel='<select onchange="setExerciseMeasure(\''+eid+'\',\''+pid+'\',this.value)" style="font-family:var(--mono);font-size:.5rem;padding:4px 6px;background:var(--surface-input);color:var(--white);border:1px solid var(--border-subtle);">'+MEASURE_OPTS.map(function(o){return '<option value="'+o[0]+'"'+(o[0]===curMeasure?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>';
   let sprintSel='';
   if(curMeasure==='cardiosprint'){
@@ -7054,6 +7056,11 @@ function saveExercise(passId,exId){
       const rRaw=dom('r');const dRaw=dom('dist');
       const minsVal=rRaw!=null?parseFloat(rRaw):null;
       base={sid, secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(b.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(b.dist??null), warmup};
+    } else if(measure==='inclinecardio'){
+      // Samma minuter-UX som cardio + inclinegrad i %.
+      const incRaw=dom('inc');const rRaw=dom('r');const dRaw=dom('dist');
+      const minsVal=rRaw!=null?parseFloat(rRaw):null;
+      base={sid, incline: incRaw!=null?(parseFloat(incRaw)||null):(b.incline??null), secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(b.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(b.dist??null), warmup};
     } else if(measure==='cardiosprint'){
       const sRaw=dom('spr');const sprints=sRaw!=null?_int(sRaw):(b.sprints??null);
       if(sprintBase==='dist'){const dRaw=dom('dist');base={sid, dist: dRaw!=null?(parseFloat(dRaw)||null):(b.dist??null), sprints, warmup};}
@@ -7382,6 +7389,7 @@ function measureCells(measure, sprintBase, exId, sid, savedSet, bufVal, dis, wCl
   const distCell = `<div><input class="set-input${wCls}" type="number" id="dist-${exId}-${sid}" placeholder="—" value="${valNum('dist')}" min="0" step="0.1" ${dis}><div class="set-unit">km</div></div>`;
   const distmCell = `<div><input class="set-input${wCls}" type="number" id="distm-${exId}-${sid}" placeholder="—" value="${valNum('distm')}" min="0" step="1" ${dis}><div class="set-unit">m</div></div>`;
   const sprintsCell = `<div><input class="set-input${wCls}" type="number" id="spr-${exId}-${sid}" placeholder="—" value="${valNum('sprints')}" min="0" max="99" ${dis}><div class="set-unit">sprints</div></div>`;
+  const inclineCell = `<div><input class="set-input${wCls}" type="number" id="inc-${exId}-${sid}" placeholder="—" value="${valNum('incline')}" min="0" max="40" step="0.5" ${dis}><div class="set-unit">%</div></div>`;
   switch(measure){
     case 'bw':           return bwCell+repsCell+forcedCell;
     case 'bwreps':       return repsCell+forcedCell;
@@ -7389,6 +7397,7 @@ function measureCells(measure, sprintBase, exId, sid, savedSet, bufVal, dis, wCl
     case 'cardio':       return cardioTimeCell+distCell;
     case 'cardiosprint': return (sprintBase==='dist'?distCell:secsCell)+sprintsCell;
     case 'carry':        return weightCell+distmCell;
+    case 'inclinecardio':return inclineCell+cardioTimeCell+distCell;
     case 'weight':
     default:             return weightCell+repsCell+forcedCell;
   }
@@ -7483,6 +7492,7 @@ function getPrimaryTag(ex){
 const MEASURE_SET_DEFAULTS = {
   weight:{warmup:2,work:1}, bw:{warmup:0,work:3}, bwreps:{warmup:0,work:3},
   timed:{warmup:0,work:1}, cardio:{warmup:0,work:1}, cardiosprint:{warmup:0,work:1}, carry:{warmup:0,work:3},
+  inclinecardio:{warmup:0,work:1},
 };
 function getTagDefaults(ex, measure){
   const pt = getPrimaryTag(ex);
@@ -7637,6 +7647,10 @@ function captureInputsToSetsBuffer(exId,passId){
       const rRaw=dom('r');const dRaw=dom('dist');
       const minsVal=rRaw!=null?parseFloat(rRaw):null;
       rec={secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(p.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(p.dist??null)};
+    } else if(measure==='inclinecardio'){
+      const incRaw=dom('inc');const rRaw=dom('r');const dRaw=dom('dist');
+      const minsVal=rRaw!=null?parseFloat(rRaw):null;
+      rec={incline: incRaw!=null?(parseFloat(incRaw)||null):(p.incline??null), secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(p.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(p.dist??null)};
     } else if(measure==='cardiosprint'){
       const sRaw=dom('spr');const sprints=sRaw!=null?_int(sRaw):(p.sprints??null);
       if(sprintBase==='dist'){const dRaw=dom('dist');rec={dist: dRaw!=null?(parseFloat(dRaw)||null):(p.dist??null), sprints};}
@@ -7841,6 +7855,7 @@ function formatSetLine(set,u){
   let str;
   if(set.sprints!=null)         str=(set.dist!=null?set.dist+'km':(set.secs!=null?set.secs+'s':''))+((set.dist!=null||set.secs!=null)?' · ':'')+set.sprints+' sprints';
   else if(set.distm!=null)      str=(set.weight!=null?toDisplay(set.weight)+' '+u:'')+' · '+set.distm+'m';
+  else if(set.incline!=null)    str=set.incline+'%'+(set.dist!=null?' · '+set.dist+'km':'')+(set.secs!=null?' · '+Math.round(set.secs/60)+'min':'');
   else if(set.dist!=null)       str=set.dist+'km'+(set.secs!=null?' · '+Math.round(set.secs/60)+'min':'');
   else if(set.extra!=null&&set.secs!=null) str='BW + '+toDisplay(set.extra)+' '+u+' · '+set.secs+'s';
   else if(set.extra!=null)      str='BW + '+toDisplay(set.extra)+' '+u+' × '+fmtReps(set.reps)+'r';
@@ -8992,7 +9007,7 @@ const HELP_TOPICS=[
     <p>Changes apply to you only and follow the exercise, not the session slot.</p>`},
   {id:'measures',title:'Measurement types',body:`
     <p>Every exercise has a <strong>measurement type</strong> that decides which input fields you get and how PRs are counted. Change it in the tag editor if an exercise measures the wrong thing.</p>
-    <p><strong>Weight × reps</strong> — the standard. <strong>BW + load</strong> — chins, dips. <strong>Reps only</strong> — ab wheel, core. <strong>Timed</strong> — planks, dead hangs (seconds). <strong>Cardio</strong> — time in minutes + distance. <strong>Sprint</strong> — intervals + sprint count. <strong>Carry</strong> — weight + distance in meters.</p>`},
+    <p><strong>Weight × reps</strong> — the standard. <strong>BW + load</strong> — chins, dips. <strong>Reps only</strong> — ab wheel, core. <strong>Timed</strong> — planks, dead hangs (seconds). <strong>Cardio</strong> — time in minutes + distance. <strong>Sprint</strong> — intervals + sprint count. <strong>Carry</strong> — weight + distance in meters. <strong>Incline cardio</strong> — grade % + time + distance (treadmill incline walks).</p>`},
   {id:'swap',title:'Swapping exercises',body:`
     <p>Edit ▾ → Swap on any exercise. <strong>This session</strong> = temporary: "the machine is taken today" — your program is unchanged and the original is back next time. <strong>Permanently</strong> = the exercise is replaced in your program until you swap it back.</p>
     <p>History, PRs and reminders follow the <em>exercise</em>, not the slot — swap back and forth and nothing is lost or mixed up. <em>+ Custom</em> lets you create your own exercises.</p>`},
