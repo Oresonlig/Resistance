@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.69.0 — 2026-07-08
+**Gymbugg + login-tema-demo.** **Bugg (gymfeedback, Cosmic Horror-skärmdump):** intilliggande avklarade pass ("adjacent.done") såg upplysta/olåsta ut i Obsidian och Cosmic Horror — 3.46.4:s "container bär formen"-omdesign gav `.adjacent`-blobben en egen ljus bakgrund/kant utan motsvarande `.adjacent.done`-dämpning (bara bokstavs-badgen dämpades, inte containern). Fix: `.chain-tab.adjacent.done` tillagd för båda teman. **Login-tema-demo (Niklas idé):** inloggningsskärmen startar alltid på Iron, roterar sedan slumpmässigt genom alla 10 teman var 7:e sekund (`startAuthThemeDemo`/`stopAuthThemeDemo`) — fungerar som passiv demo av temautbudet, även för vana användare. Stoppas så fort en session faktiskt loggar in. `applyTheme`/`initTheme` delar nu logik via ny `setThemeVisual()` (DRY, ingen beteendeändring). **Input-fälten är nu medvetet tema-oberoende** (fasta färger, inga `var()`) så de förblir läsbara oavsett vilket tema som roterar bakom dem — samtliga per-tema auth-input-overrides (Arctic/Undertow/Understory/Obsidian/Cosmic Horror) borttagna. **Bonus-fynd:** Undertow och Understorys auth-bakgrunder riktade sig mot `#auth-screen`, ett element som inte finns (rätt id är `#userScreen`) — död CSS sedan de lades till, bakgrunderna visades aldrig. Fixat i samma veva.
+
+---
+
 ## 3.68.2 — 2026-07-07
 **Sista svenska övningsnamnen bort: "Vader (seated/standing)" mergade in i Seated/Standing Calf Raise.** Vader = svenska för calves — låg som dubbletter i Legs bredvid de engelska posterna. Engångsmigration `vaderCalfMerge_v1` flödar ev. Vader-historik/notes/set-counts in i Calf Raise-posterna. Rename-motorn utbruten till `applyExerciseRenames()` (delad av 3.68.0-migrationen + denna, istället för kopierad). Flaggan tillagd i importens migrations-whitelist. Övriga biblioteket genomsökt: inga fler svenska namn.
 

@@ -912,27 +912,8 @@ body.theme-arctic .auth-btn-primary{background:linear-gradient(135deg,#00a8d8 0%
 body.theme-arctic .auth-btn-primary:hover{background:linear-gradient(135deg,#00c8e8 0%,#0099c8 100%);color:#fff;}
 body.theme-arctic .draft-notice{color:#1a8a8a;border-color:rgba(0,168,216,0.3);background:rgba(255,255,255,0.4);}
 body.theme-arctic .ex-note-banner{color:#6a4800;background:rgba(150,100,0,0.1);border-color:#7a5500;}
-body.theme-arctic .ex-note-save{background:rgba(255,255,255,0.7);border-color:#2a7a7a;color:#2a7a7a;}/* Arctic — auth-form inputs (matcha email/password till ljus tema, default är mörk #0a0a0a) */
-body.theme-arctic #auth-email-form input,
-body.theme-arctic #auth-signup-fields input,
-body.theme-arctic #reset-password-form input{
-  background:#ffffff;
-  border:1px solid rgba(0,168,216,0.3);
-  color:#1a2e3a;
-}
-body.theme-arctic #auth-email-form input:focus,
-body.theme-arctic #auth-signup-fields input:focus,
-body.theme-arctic #reset-password-form input:focus{
-  border-color:var(--red);
-  box-shadow:0 0 0 1px var(--red);
-}
-body.theme-arctic #auth-email-form input:-webkit-autofill,
-body.theme-arctic #auth-signup-fields input:-webkit-autofill,
-body.theme-arctic #reset-password-form input:-webkit-autofill{
-  -webkit-box-shadow:0 0 0 1000px #ffffff inset !important;
-  -webkit-text-fill-color:#1a2e3a !important;
-  caret-color:#1a2e3a;
-}
+body.theme-arctic .ex-note-save{background:rgba(255,255,255,0.7);border-color:#2a7a7a;color:#2a7a7a;}/* Auth-form inputs är tema-oberoende by design (se kommentar vid #auth-email-form
+   input i basstilen) — ingen Arctic-override här längre. */
 
 /* Chain strip — frosted ice hexagons */
 body.theme-arctic .chain-tab-letter{color:#3a5a68;background:rgba(180,220,240,0.78);}
@@ -1939,14 +1920,17 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
   content:'';flex:1;height:1px;background:#222;
 }
 .auth-divider span{padding:0 12px;}
+/* Auth-inputs är MEDVETET tema-oberoende (fasta värden, inga var()) — inloggningsskärmen
+   roterar genom teman som demo (startAuthThemeDemo), inputfälten ska alltid vara läsbara
+   och identiska oavsett vilket tema som visas bakom dem. Rör inte till var()-baserad styling. */
 #auth-email-form input[type="email"],
 #auth-email-form input[type="password"],
 #reset-password-form input[type="password"]{
   width:100%;
-  background:var(--surface-input);
-  border:1px solid var(--border-subtle);
-  color:var(--white);
-  font-family:var(--mono);
+  background:#0a0a0a;
+  border:1px solid #2a2a2a;
+  color:#f5f0e8;
+  font-family:'DM Mono',monospace;
   font-size:.9rem;
   padding:11px 14px;
   margin-bottom:10px;
@@ -1955,8 +1939,8 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
 #auth-email-form input:focus,
 #reset-password-form input:focus{
   outline:none;
-  border-color:var(--red);
-  box-shadow:0 0 0 1px var(--red);
+  border-color:#c0392b;
+  box-shadow:0 0 0 1px #c0392b;
 }#auth-signup-fields{
   width:100%;
   animation:slideDown .25s ease-out;
@@ -1969,8 +1953,8 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
   width:100%;
   background:#0a0a0a;
   border:1px solid #2a2a2a;
-  color:var(--white);
-  font-family:var(--mono);
+  color:#f5f0e8;
+  font-family:'DM Mono',monospace;
   font-size:.9rem;
   padding:11px 14px;
   margin-bottom:10px;
@@ -1978,8 +1962,8 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
 }
 #auth-signup-fields input[type="text"]:focus{
   outline:none;
-  border-color:var(--red);
-  box-shadow:0 0 0 1px var(--red);
+  border-color:#c0392b;
+  box-shadow:0 0 0 1px #c0392b;
 }
 .auth-checkbox-row{
   display:flex;align-items:flex-start;gap:8px;
@@ -2324,7 +2308,7 @@ body.theme-undertow .app-modal-input,body.theme-undertow .app-modal-select{backg
 body.theme-undertow .app-modal-btn{border:1px solid rgba(18,48,90,0.22);color:#2b4450;background:rgba(255,255,255,0.5);}
 body.theme-undertow .app-modal-btn-primary{background:linear-gradient(180deg,#214b86,#163763);color:#fff;border:1px solid #163763;}
 body.theme-undertow .app-modal-btn-danger{background:linear-gradient(180deg,#b84040,#8a2828);color:#fff;border:none;}
-body.theme-undertow #auth-screen{background:radial-gradient(ellipse 120% 60% at 50% -8%,#f6fbfd 0%,rgba(246,251,253,0) 46%),linear-gradient(180deg,#e9f3f7 0%,#d4e4ea 42%,#b7ccd5 78%,#a3bcc7 100%);background-attachment:fixed;}
+body.theme-undertow #userScreen{background:radial-gradient(ellipse 120% 60% at 50% -8%,#f6fbfd 0%,rgba(246,251,253,0) 46%),linear-gradient(180deg,#e9f3f7 0%,#d4e4ea 42%,#b7ccd5 78%,#a3bcc7 100%);background-attachment:fixed;}
 body.theme-undertow .auth-logo{color:#102430;font-family:'Archivo',sans-serif;}
 body.theme-undertow .auth-tagline,body.theme-undertow .auth-divider,body.theme-undertow .auth-disclaimer,body.theme-undertow .auth-footer a{color:#6f8c98;}
 body.theme-undertow .auth-btn-primary{background:linear-gradient(180deg,#214b86 0%,#163763 100%);color:#eaf2fb;box-shadow:0 8px 18px -8px rgba(22,55,99,0.65);border:1px solid #163763;}
@@ -2332,9 +2316,6 @@ body.theme-undertow .auth-btn-primary:hover{background:linear-gradient(180deg,#2
 body.theme-undertow .auth-btn-secondary{border-color:rgba(18,48,90,0.28);color:#2b4450;background:rgba(255,255,255,0.5);}
 body.theme-undertow .auth-btn-secondary:hover{border-color:#163763;color:#163763;}
 body.theme-undertow .auth-btn-google{background:rgba(255,255,255,0.72);border:1px solid rgba(18,48,90,0.22);color:#102430;}
-body.theme-undertow #auth-email-form input,body.theme-undertow #auth-signup-fields input,body.theme-undertow #reset-password-form input{background:#fff;border:1px solid rgba(18,48,90,0.22);color:#102430;}
-body.theme-undertow #auth-email-form input:focus,body.theme-undertow #auth-signup-fields input:focus,body.theme-undertow #reset-password-form input:focus{border-color:#163763;box-shadow:0 0 0 1px #163763;}
-body.theme-undertow #auth-email-form input:-webkit-autofill,body.theme-undertow #auth-signup-fields input:-webkit-autofill,body.theme-undertow #reset-password-form input:-webkit-autofill{-webkit-box-shadow:0 0 0 1000px #fff inset !important;-webkit-text-fill-color:#102430 !important;caret-color:#102430;}
 /* Kontrast-pass (3.48.0): default set-unit/add-knappar föll tillbaka till grått
    (#888/#666) → oläsligt mot Undertows nästan vita bakgrund. Mörkare slate. */
 body.theme-undertow .set-unit{color:#2f4b57;}
@@ -2454,7 +2435,7 @@ body.theme-understory .app-modal-input,body.theme-understory .app-modal-select{b
 body.theme-understory .app-modal-btn{border:1px solid rgba(31,66,38,0.22);color:#2b4a30;background:rgba(255,255,255,0.5);}
 body.theme-understory .app-modal-btn-primary{background:linear-gradient(180deg,#2f5e37,#1c3c22);color:#fff;border:1px solid #1c3c22;}
 body.theme-understory .app-modal-btn-danger{background:linear-gradient(180deg,#b84040,#8a2828);color:#fff;border:none;}
-body.theme-understory #auth-screen{background:radial-gradient(ellipse 120% 58% at 50% -8%,#f8fcef 0%,rgba(248,252,239,0) 48%),linear-gradient(180deg,#e9f2db 0%,#d3e4c3 40%,#bcd6a9 74%,#a6c690 100%);background-attachment:fixed;}
+body.theme-understory #userScreen{background:radial-gradient(ellipse 120% 58% at 50% -8%,#f8fcef 0%,rgba(248,252,239,0) 48%),linear-gradient(180deg,#e9f2db 0%,#d3e4c3 40%,#bcd6a9 74%,#a6c690 100%);background-attachment:fixed;}
 body.theme-understory .auth-logo{color:#143018;font-family:'Bricolage Grotesque',sans-serif;}
 body.theme-understory .auth-tagline,body.theme-understory .auth-divider,body.theme-understory .auth-disclaimer,body.theme-understory .auth-footer a{color:#6f8a69;}
 body.theme-understory .auth-btn-primary{background:linear-gradient(180deg,#2f5e37 0%,#1c3c22 100%);color:#eef5e4;box-shadow:0 8px 18px -8px rgba(28,60,34,0.65);border:1px solid #1c3c22;}
@@ -2462,9 +2443,6 @@ body.theme-understory .auth-btn-primary:hover{background:linear-gradient(180deg,
 body.theme-understory .auth-btn-secondary{border-color:rgba(31,66,38,0.28);color:#2b4a30;background:rgba(255,255,255,0.5);}
 body.theme-understory .auth-btn-secondary:hover{border-color:#1f4226;color:#1f4226;}
 body.theme-understory .auth-btn-google{background:rgba(255,255,255,0.72);border:1px solid rgba(31,66,38,0.22);color:#143018;}
-body.theme-understory #auth-email-form input,body.theme-understory #auth-signup-fields input,body.theme-understory #reset-password-form input{background:#fff;border:1px solid rgba(31,66,38,0.22);color:#143018;}
-body.theme-understory #auth-email-form input:focus,body.theme-understory #auth-signup-fields input:focus,body.theme-understory #reset-password-form input:focus{border-color:#1f4226;box-shadow:0 0 0 1px #1f4226;}
-body.theme-understory #auth-email-form input:-webkit-autofill,body.theme-understory #auth-signup-fields input:-webkit-autofill,body.theme-understory #reset-password-form input:-webkit-autofill{-webkit-box-shadow:0 0 0 1000px #fff inset !important;-webkit-text-fill-color:#143018 !important;caret-color:#143018;}
 /* selFg fix — toast + add-ex-confirm use var(--red) bg + need light text */
 body.theme-understory .toast{color:#f3f8ea;}
 body.theme-understory .add-ex-confirm{color:#f3f8ea;}
@@ -2608,6 +2586,8 @@ body.theme-obsidian .chain-tab .chain-tab-letter{
 }
 body.theme-obsidian .chain-tab.adjacent .chain-tab-letter{color:#e0c078;background:none;border:none;width:24px;}
 body.theme-obsidian .chain-tab.done .chain-tab-letter{color:#2a2010;background:rgba(15,10,4,0.4);border-color:#1a140a;opacity:0.5;filter:saturate(0.3);}
+/* 3.69.0: adjacent.done container ärvde bara .adjacent-blobbens ljusa bakgrund (letter dimmades, containern inte) — done-pass bredvid aktiv såg "på glänt/upplyst" ut trots att den var klar */
+body.theme-obsidian .chain-tab.adjacent.done{background:rgba(15,10,4,0.4);border-color:#1a140a;}
 body.theme-obsidian .chain-tab-name-full{font-family:'Cinzel',serif;color:#d4b878;background:rgba(40,28,12,0.5);letter-spacing:.2em;font-weight:600;}
 body.theme-obsidian .chain-tab-name-short{color:#7a6a48;background:rgba(40,28,12,0.4);font-family:'Cinzel',serif;font-weight:600;}
 /* Aktiv: ersätt hexagon-clip med rounded rektangel + diamonds på sidorna */
@@ -2775,12 +2755,6 @@ body.theme-obsidian #userScreen{background:#0a0805;}
 body.theme-obsidian .auth-logo{font-family:'Cinzel',serif;color:#c9a35a;letter-spacing:.34em;}
 body.theme-obsidian .auth-logo span{color:#f0d99c;}
 body.theme-obsidian .auth-tagline{color:#7a6a48;font-family:'Cardo',serif;font-style:italic;}
-body.theme-obsidian #auth-email-form input,
-body.theme-obsidian #auth-signup-fields input,
-body.theme-obsidian #reset-password-form input{background:rgba(15,10,4,0.7);border-color:#2a2010;color:#f0d99c;font-family:'Cinzel',serif;}
-body.theme-obsidian #auth-email-form input:focus,
-body.theme-obsidian #auth-signup-fields input:focus,
-body.theme-obsidian #reset-password-form input:focus{border-color:#c9a35a;box-shadow:0 0 0 1px #c9a35a;}
 body.theme-obsidian .auth-divider{color:#5a4a28;}
 body.theme-obsidian .auth-divider::before,
 body.theme-obsidian .auth-divider::after{background:#2a2010;}
@@ -2953,6 +2927,8 @@ body.theme-cosmic-horror .chain-tab .chain-tab-letter{
 body.theme-cosmic-horror .chain-tab:nth-child(odd) .chain-tab-letter{border-radius:60% 40% 38% 62% / 38% 58% 42% 60%;}
 body.theme-cosmic-horror .chain-tab.adjacent .chain-tab-letter{color:#cce8de;background:none;border:none;width:24px;}
 body.theme-cosmic-horror .chain-tab.done .chain-tab-letter{color:#1a3a34;background:rgba(6,12,14,0.45);border-color:rgba(127,200,180,0.05);opacity:0.5;filter:saturate(0.3);}
+/* 3.69.0: samma adjacent.done-container-fix som Obsidian, se dess kommentar */
+body.theme-cosmic-horror .chain-tab.adjacent.done{background:rgba(6,12,14,0.45);border-color:rgba(127,200,180,0.08);}
 body.theme-cosmic-horror .chain-tab-name-full{font-family:'Cormorant SC',serif;color:#aedcd0;background:rgba(20,50,46,0.5);letter-spacing:.2em;font-weight:500;}
 body.theme-cosmic-horror .chain-tab.active{
   clip-path:none !important;
@@ -3062,12 +3038,6 @@ body.theme-cosmic-horror #userScreen{background:#03080a;}
 body.theme-cosmic-horror .auth-logo{font-family:'Cormorant SC',serif;color:#aedcd0;letter-spacing:.38em;font-weight:500;}
 body.theme-cosmic-horror .auth-logo span{color:#aedcd0;}
 body.theme-cosmic-horror .auth-tagline{color:#7a948c;font-family:'Cormorant Garamond',serif;font-style:italic;}
-body.theme-cosmic-horror #auth-email-form input,
-body.theme-cosmic-horror #auth-signup-fields input,
-body.theme-cosmic-horror #reset-password-form input{background:rgba(4,14,16,0.7);border-color:rgba(127,200,180,0.22);color:#e6f0ea;font-family:'IBM Plex Mono',monospace;border-radius:8px 2px 8px 2px;}
-body.theme-cosmic-horror #auth-email-form input:focus,
-body.theme-cosmic-horror #auth-signup-fields input:focus,
-body.theme-cosmic-horror #reset-password-form input:focus{border-color:#7fc8b4;box-shadow:0 0 0 1px #7fc8b4;}
 body.theme-cosmic-horror .auth-divider{color:#4f6a64;}
 body.theme-cosmic-horror .auth-divider::before,
 body.theme-cosmic-horror .auth-divider::after{background:rgba(127,200,180,0.18);}
@@ -3448,6 +3418,7 @@ function showAuthScreen(){
   document.getElementById('appShell').style.display='none';
   // Clear any user state
   if(__periodicSyncTimer){ clearInterval(__periodicSyncTimer); __periodicSyncTimer=null; }
+  startAuthThemeDemo();
 }
 function showAppShell(){
   document.getElementById('userScreen').classList.add('hidden');
@@ -3517,6 +3488,7 @@ async function handleSession(session){
       currentUser = { id: session.user.id, name: email.split('@')[0] || 'User' };
     }
     try{ showAppShell(); }catch(e){ console.error(e); }
+    try{ stopAuthThemeDemo(); }catch(e){}
     try{ initTheme(); }catch(e){ console.error(e); }
     const hv=document.getElementById('headerVersion');if(hv)hv.textContent=APP_VERSION+' (failsafe)';
     try{ if(state?.onboardingDone) renderChain(); }catch(e){ console.error('renderChain failsafe threw:', e); }
@@ -3527,6 +3499,7 @@ async function handleSession(session){
     cleanLegacyLocalStorage();
     await loadStateForUser();
     showAppShell();
+    stopAuthThemeDemo();
     initTheme();
     const hv=document.getElementById('headerVersion');if(hv)hv.textContent=APP_VERSION;
     // PM12: varna om Private Browsing efter app-shell renderats
@@ -4151,7 +4124,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.68.2';
+const APP_VERSION = '3.69.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8306,43 +8279,58 @@ const THEMES = [
   {id:'understory',    name:'Overgrowth',    cat:'light', desc:'Canopy closes in · Deep sap green · Creeping vines over the field of view', class:'theme-understory'},
 ];
 
-function applyTheme(themeId){
+// Ren visual-apply: byter body-klass + mount/unmount ambient-lager. Ingen state/save.
+// Delad av applyTheme (persisterar), initTheme (boot, oförändrat state) och
+// startAuthThemeDemo (roterar login-skärmen, persisterar ALDRIG).
+function setThemeVisual(themeId){
   const theme = THEMES.find(t=>t.id===themeId) || THEMES[0];
   THEMES.forEach(t=>{ if(t.class) document.body.classList.remove(t.class); });
   if(theme.class) document.body.classList.add(theme.class);
+  if(themeId==='obsidian' && state.ambientEffects!==false) startObsidianEmbers();
+  else stopObsidianEmbers();
+  if(themeId==='cosmic-horror' && state.ambientEffects!==false) startCosmicHorrorVeins();
+  else stopCosmicHorrorVeins();
+  if(themeId==='undertow') mountUndertowBg();
+  else unmountUndertowBg();
+  if(themeId==='understory') mountUnderstoryBg();
+  else unmountUnderstoryBg();
+  if(themeId==='nanosuit') mountNanosuitBg();
+  else unmountNanosuitBg();
+}
+
+function applyTheme(themeId){
+  setThemeVisual(themeId);
   // Only save if the theme actually CHANGED — prevents bumping
   // updatedAt on init when applyTheme is called with current value
   const wasChange = state.theme !== themeId;
   state.theme = themeId;
   if(currentUser && wasChange) save();
-  // Obsidian: mount/unmount ember canvas
-  if(themeId==='obsidian' && state.ambientEffects!==false) startObsidianEmbers();
-  else stopObsidianEmbers();
-  // Cosmic Horror: mount/unmount vein SVG
-  if(themeId==='cosmic-horror' && state.ambientEffects!==false) startCosmicHorrorVeins();
-  else stopCosmicHorrorVeins();
-  // Undertow: mount/unmount caustic+waterline+bubbles
-  if(themeId==='undertow') mountUndertowBg();
-  else unmountUndertowBg();
-  // Understory: mount/unmount canopy+vines
-  if(themeId==='understory') mountUnderstoryBg();
-  else unmountUnderstoryBg();
-  // Nanosuit 2.0: mount/unmount energising hex-weave backdrop
-  if(themeId==='nanosuit') mountNanosuitBg();
-  else unmountNanosuitBg();
 }
 
 function initTheme(){
   // Apply visual theme without triggering save (we're just rendering current state)
   if(!state.theme) state.theme = 'iron';
-  const theme = THEMES.find(t=>t.id===state.theme) || THEMES[0];
-  THEMES.forEach(t=>{ if(t.class) document.body.classList.remove(t.class); });
-  if(theme.class) document.body.classList.add(theme.class);
-  if(state.theme==='obsidian' && state.ambientEffects!==false) startObsidianEmbers();
-  if(state.theme==='cosmic-horror' && state.ambientEffects!==false) startCosmicHorrorVeins();
-  if(state.theme==='undertow') mountUndertowBg();
-  if(state.theme==='understory') mountUnderstoryBg();
-  if(state.theme==='nanosuit') mountNanosuitBg();
+  setThemeVisual(state.theme);
+}
+
+// ── AUTH SCREEN THEME DEMO ──────────────────────────────────────
+// Login-skärmen startar alltid på Iron (default), roterar sedan slumpmässigt
+// genom alla teman var 7:e sekund som en passiv demo av temautbudet — även för
+// återkommande användare. Byter ALDRIG state.theme/sparar — ren visuell loop,
+// stoppas så fort en session faktiskt loggar in (se handleSession).
+let _authThemeDemoTimer = null;
+function startAuthThemeDemo(){
+  stopAuthThemeDemo();
+  setThemeVisual('iron');
+  _authThemeDemoTimer = setInterval(()=>{
+    const current = THEMES.find(t=>t.class && document.body.classList.contains(t.class)) || THEMES[0];
+    const candidates = THEMES.filter(t=>t.id!==current.id);
+    const next = candidates[Math.floor(Math.random()*candidates.length)];
+    setThemeVisual(next.id);
+  }, 7000);
+}
+function stopAuthThemeDemo(){
+  if(_authThemeDemoTimer){ clearInterval(_authThemeDemoTimer); _authThemeDemoTimer=null; }
 }
 
 // ── OBSIDIAN EMBERS ─────────────────────────────────────────────
