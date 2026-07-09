@@ -4185,16 +4185,16 @@ function buildEffectiveChain(sessionOrder, restSlots){
     result.splice(clampedPos, 0, {id:restId, name:'Forced Rest', rest:true, exercises:[], restSlotPos:pos});
     restIdx++;
   }
-  // Assign display letters A-Z to workout passes, and V/V2/V3... to rest days
+  // Assign display letters A-Z to workout passes. EVERY rest day displays as a
+  // plain 'V' (Niklas: no VB/VC or V1/V2 numbering — "one round or forty, a rest
+  // day is just V"). The underlying pass.id stays unique (V/VB/VC, set above) so
+  // a round with several rest days still tracks them separately in cycle.done —
+  // only the LABEL is collapsed, not the identity.
   let letterIdx = 0;
-  let restNum = 0;
-  const totalRests = result.filter(p=>p.rest).length;
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   return result.map((p,i) => {
     if(p.rest){
-      restNum++;
-      const displayLetter = totalRests>1 ? 'V'+restNum : 'V';
-      return {...p, displayLetter, displayId:'V'};
+      return {...p, displayLetter:'V', displayId:'V'};
     }
     const letter = letters[letterIdx++];
     return {...p, displayLetter: letter};
@@ -4233,7 +4233,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.72.6';
+const APP_VERSION = '3.72.7';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5504,7 +5504,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
   else if(inProgress)statusBadge=`<span class="session-ex-status progress">Draft</span>`;
   else if(isNext)statusBadge=`<span class="session-ex-status next-up">Next up</span>`;
 
-  let html=`<div class="pass-ex-header${isRest?' rest-day':''}"><div class="pass-ex-letter">${displayLetter}</div><div class="pass-ex-name">${escapeHTML(getSessionName(pass.id))}</div>${statusBadge}</div>`;
+  let html=`<div class="pass-ex-header${isRest?' rest-day':''}"><div class="pass-ex-letter">${displayLetter}</div><div class="pass-ex-name">${escapeHTML(isRest?'Forced Rest':getSessionName(pass.id))}</div>${statusBadge}</div>`;
 
     if(isRest){
       html+=`<div class="rest-content">Active rest. Light walk or dead hang at home.<br>No heavy lifting — recovery IS training.</div><div class="pass-actions">${isDone?`<button class="btn-ghost" onclick="undoSession('${passId}')">↩ Undo</button>`:`<button class="btn-ghost" onclick="doneRest('${passId}')">Mark Rest Done →</button>`}</div>`;
@@ -5878,8 +5878,10 @@ function renderChain(){
     const isSelected=passId===_chainSelectedId;
     const distance=Math.abs(chainIdx-activeIdx);
     const displayLetter=pass.displayLetter||(isRest?'V':passId);
-    const sessName=getSessionName(pass.id);
-    const shortName=sessName.replace(/[^A-Za-z]/g,'').substring(0,3).toUpperCase();
+    // Rest days: name is the descriptive 'Forced Rest' (never the raw id V/VB/VC),
+    // and no 3-letter hint — the plain 'V' glyph carries it.
+    const sessName=isRest?'Forced Rest':getSessionName(pass.id);
+    const shortName=isRest?'':sessName.replace(/[^A-Za-z]/g,'').substring(0,3).toUpperCase();
     let tabCls='chain-tab';
     if(isSelected)tabCls+=' active';
     else if(distance===1)tabCls+=' adjacent';
