@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.72.8 — 2026-07-09
+**Ny övning: Incline Bench Cable Pullover (Back).** Stretch-biased lat-isolation på incline-bänk med cable overhead (Eric Janicki — samma källa som Unilateral Row (Cable)). Tillagd i `EXERCISE_LIBRARY` Back-sektionen, alfabetiskt mellan Deadlift och Jefferson Deadlift. Standard vikt+reps (ingen `measure`-override → default weight), som grannarna. 152 tester gröna.
+
+---
+
 ## 3.72.7 — 2026-07-09
 **Forced Rest visas åter som ett enkelt "V" — inga VB/VC eller V1/V2 (Niklas återställer en tidigare ask som blivit ogjord).** Niklas vill att VARJE vilodag visas som ett rent "V", oavsett om en runda har en eller flera. Kedje-striparna och pass-headern läckte två split-varianter: displayLetter numrerade (`V1`/`V2` när `totalRests>1`) och det råa interna id:t (`V`/`VB`/`VC`) läckte in som NAMN via `getSessionName(restId)` (ingen override + ingen BASE_SESSIONS-match → returnerar id:t self). Fix: (1) `displayLetter` är alltid `'V'` för rest (numreringen + dödkoden `restNum`/`totalRests` borttagen). (2) Rest-dagens namn är nu alltid den beskrivande "Forced Rest" (aldrig råa id:t) i både chain-tab och pass-header, och tab:ens 3-boksstavs-hint tas bort för rest (rena "V"-glyfen räcker). **VIKTIGT — identiteten är oförändrad:** det interna `pass.id` förblir unikt (`V`/`VB`/`VC`) så att en runda med flera vilodagar fortfarande spårar dem separat i `cycle.done` OCH så att 3.72.6:s rest-i-History listar varje vilodag som egen daterad rad. Bara ETIKETTEN kollapsas, inte identiteten — `displayLetter` används enbart i render (aldrig som nyckel/lookup), verifierat. 152 tester gröna. **EJ browser-verifierat.**
 
