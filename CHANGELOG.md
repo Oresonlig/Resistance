@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.73.0 — 2026-07-09
+**Preacher Curl splittad i (BB) + (DB, unilateral).** Den generiska `Preacher Curl` (biblioteket, Arms — tvetydig men i praktiken stång) ersatt av två varianter: `Preacher Curl (BB)` och `Preacher Curl (DB)` med `uni:true` (single-arm, Niklas kör DB en arm i taget). Uni-flaggan propagerar automatiskt vid tillägg: add-flödet skickar biblioteksposten som `tags` till `addExerciseToSession` (rad 6835-6837 → `if(tags.uni) ex.uni=true`), så DB-varianten blir unilateral direkt (2 warm + 1 work per sida, "One side at a time"-hint, per-sida-loggning). Ingen migration: `Preacher Curl` fanns bara i biblioteket (ej i BASE_SESSIONS), så befintliga tillagda "Preacher Curl" behåller sitt namn + historik intakt — de mappar bara inte automatiskt till en variant (kan swappas manuellt). 152 tester gröna.
+
+---
+
 ## 3.72.9 — 2026-07-09
 **Incline Bench Cable Pullover får ett teknik-tips ("Deep lat stretch — full ROM, no triceps or grip").** Niklas ville ha en beskrivning som FÖLJER MED vid swap. Löst via `tip`-fältet (INTE en tagg): tipset ligger som data på övningen och resolvas via kanoniskt namn (`getExerciseTip` → `libraryTipMap`), så det överlever swap — till skillnad från den gamla slot-bundna `detail`-texten som blev stale (fixat 3.57.0). Renderas som egen kursiv `.ex-tip`-rad under namnet, skild från den tagg-drivna beskrivningsraden. Bekräftat: ingen "Stretch"-tagg finns (taggar = ramp/bw/uni/timed/singles); en stretch-cue är teknik, inte set-schema → hör hemma i `tip`. 152 tester gröna.
 

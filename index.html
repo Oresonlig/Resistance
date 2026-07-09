@@ -4085,7 +4085,8 @@ const EXERCISE_LIBRARY = [
   {name:'Hammer Curl', cat:'Arms'},
   {name:'Incline Biceps Curl (DB)', cat:'Arms'},
   {name:'Overhead Tricep Extension', cat:'Arms'},
-  {name:'Preacher Curl', cat:'Arms'},
+  {name:'Preacher Curl (BB)', cat:'Arms'},
+  {name:'Preacher Curl (DB)', cat:'Arms', uni:true},
   {name:'Skull Crushers', cat:'Arms'},
   {name:'Spider Curl', cat:'Arms'},
   {name:'Tricep Dips', cat:'Arms', measure:'bw'},
@@ -4234,7 +4235,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.72.9';
+const APP_VERSION = '3.73.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
