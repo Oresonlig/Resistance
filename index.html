@@ -362,6 +362,13 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .hist-pass{font-family:var(--mono);font-size:.5rem;color:#e05040;text-transform:uppercase;letter-spacing:.08em;margin-top:1px;}
 .hist-body{display:none;border-top:1px solid #252525;padding:0 11px 10px;}
 .hist-entry.open .hist-body{display:block;}
+/* 3.72.6 — completed Forced Rest day in History (display-only, gold like the
+   chain's rest days). No body, no toggle, no copy — it's just a dated marker so
+   Niklas can see he actually took the rest. */
+.hist-entry.rest-hist{border-left:2px solid var(--gold);opacity:.9;}
+.hist-entry.rest-hist .hist-header{cursor:default;}
+.hist-entry.rest-hist .hist-pass{color:var(--gold);}
+.rest-hist-badge{font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);padding:5px 10px;white-space:nowrap;opacity:.85;}
 .hist-ex{font-family:var(--mono);font-size:.58rem;padding:5px 0;border-bottom:1px solid #131313;}
 .hist-ex:last-child{border-bottom:none;}
 .hist-ex-header{display:flex;justify-content:space-between;color:var(--gray-light);}
@@ -4226,7 +4233,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.72.5';
+const APP_VERSION = '3.72.6';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -7972,7 +7979,7 @@ function removeExtra(passId,extraId){
 }
 
 // ── PASS MANAGEMENT ───────────────────────────────────────────
-function doneRest(passId){const today=fmtDate(Date.now());curCycle().done[passId]={date:today,exercises:[]};save();showToast('Rest logged ✓');renderChain();}
+function doneRest(passId){const now=Date.now();curCycle().done[passId]={date:fmtDate(now),timestamp:now,rest:true,exercises:[]};save();showToast('Rest logged ✓');renderChain();}
 function undoSession(passId){
   const completed=curCycle().done[passId];
   curCycle().done[passId]=null;
@@ -8353,7 +8360,32 @@ function renderProgress(){
     }
   }
   html+=`<div class="section-sub">History</div>`;
-  [...state.log].reverse().forEach((entry,i)=>{const idx=state.log.length-1-i;const cnt=(entry.exercises||[]).filter(e=>!e.skipped).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;let _hw=0,_hs=0;const sh=(ex.sets||[]).map(s=>{const _lbl=s.warmup?'W'+(++_hw):'S'+(++_hs);return `<div class="hist-set">${_lbl}: ${escapeHTML(formatSetLine(s,unitLabel()))}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;}).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
+  // 3.72.6 — interleave completed Forced Rest days into History (DISPLAY ONLY).
+  // Rests deliberately stay OUT of state.log, so PRs and the "Sessions" count are
+  // untouched (Niklas: "not on PR of course, just sitting there among the sessions,
+  // with a date" — he cheats on his own forced-rest days and wants to see if he
+  // actually takes them). Rests live in each cycle's done map as
+  // {date,timestamp,rest:true,exercises:[]}; gather across ALL rounds and sort with
+  // the sessions by timestamp. Old rests (pre-3.72.6) lack a timestamp — best-effort
+  // parse of their display date so they still land roughly in order.
+  const histItems=[];
+  state.log.forEach((entry,idx)=>histItems.push({kind:'session', ts:entry.timestamp||0, entry, idx}));
+  const _parseRestTs=(s)=>{ if(!s) return 0; const c=String(s).replace(/^[A-Za-z]{3,}\s+/,''); const y=new Date().getFullYear(); let t=Date.parse(c+' '+y); if(isNaN(t)) return 0; if(t>Date.now()+86400000) t=Date.parse(c+' '+(y-1)); return isNaN(t)?0:t; };
+  (state.cycles||[]).forEach(cycle=>{
+    Object.values(cycle.done||{}).forEach(snap=>{
+      if(!snap) return;
+      const isRest = snap.rest===true || (!snap.timestamp && (!snap.exercises || !snap.exercises.length));
+      if(!isRest) return;
+      histItems.push({kind:'rest', ts:(snap.timestamp || _parseRestTs(snap.date)), snap});
+    });
+  });
+  histItems.sort((a,b)=>b.ts-a.ts);
+  histItems.forEach(item=>{
+    if(item.kind==='rest'){
+      html+=`<div class="hist-entry rest-hist"><div class="hist-header"><div><div class="hist-date">${escapeHTML(item.snap.date||fmtDate(item.ts))}</div><div class="hist-pass">Forced Rest</div></div><span class="rest-hist-badge">✓ Rest</span></div></div>`;
+      return;
+    }
+    const entry=item.entry, idx=item.idx;const cnt=(entry.exercises||[]).filter(e=>!e.skipped).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;let _hw=0,_hs=0;const sh=(ex.sets||[]).map(s=>{const _lbl=s.warmup?'W'+(++_hw):'S'+(++_hs);return `<div class="hist-set">${_lbl}: ${escapeHTML(formatSetLine(s,unitLabel()))}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;}).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
   el.innerHTML=html;
 }
 
