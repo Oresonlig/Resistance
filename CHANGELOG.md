@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.74.2 — 2026-07-09
+**Login mobil-hoppet — ROTFIXAT den här gången (Niklas: "gång 2? gång 3?").** 3.73.5 och 3.74.1 patchade padding/top-värden mot ett rörligt mål utan att hitta den faktiska orsaken — därav att hoppet kvarstod. Verklig rotorsak: bas-`.cl-grid` har `align-items:center`; eftersom `.cl-grid` är en flex-ROW centrerar det VERTIKALT `.cl-col` baserat på dess EGEN renderade höjd. Olika temans typsnitt har olika default line-height-metrik vid SAMMA font-size (wordmark, tag, oauth-label, båda inputs, båda knappar, footer-länkar — många rader). Dessa små per-rad-skillnader summerar till en verklig höjdskillnad → den "centrerade" kolumnen hamnade på olika Y beroende på tema. Fix: `align-items:flex-start` på mobil → `.cl-col`s position styrs nu ENDAST av `padding-top` (200px), noll beroende av något temas fontmetrik. Detta är den strukturella fixen — ingen mer flyttande-mål-patchning. 152 tester gröna. **EJ browser-verifierat.**
+
+---
+
 ## 3.74.1 — 2026-07-09
 **Login mobil-finjustering (Niklas live).** Fokuskedjans TOP-label (R3·CHEST) krockade med masthead-raden ("EST. IN THE BASEMENT / V…· SYNC"). Fix: kedjan sänkt mer (`top` -6→34px) så övre labeln klarar masthead-linjen, + allt innehåll nedskjutet (`padding-top` 170→200px). Google-knappen större igen (`height` 54→58 + `padding:0 18px`) så texten inte trängs mot ramen. Positionsvärden fortsatt itererade mot Niklas skärmdumpar. 152 tester gröna.
 

@@ -2140,7 +2140,17 @@ body[class*="theme-"] .cl-aura-hex{ display:none; }
        "Iron/Bebas sits lower than Obsidian/Cinzel");
      - ALL per-link labels restored (session names above "+ Forge your next link"),
        like desktop — they explain the chain visually. */
-  .cl-grid{justify-content:flex-start;padding:200px 24px 52px;}
+  /* 3.74.2 — ROOT CAUSE of the theme-swap jump: base .cl-grid has
+     align-items:center (a flex ROW, so this VERTICALLY centres .cl-col based on
+     its OWN rendered height). Different theme fonts have different default
+     line-height metrics at the same font-size — across the wordmark, tag, oauth
+     label, both inputs, both buttons and the footer links, those per-line deltas
+     add up into a real height difference, so the "centred" block sits at a
+     different Y per theme. 3.73.5 and 3.74.1 patched padding/top against this
+     MOVING target instead of removing what moves it. Fix: align-items:flex-start
+     on mobile — .cl-col's position is now fixed by padding-top alone, with zero
+     dependency on any theme's font metrics. This is the structural fix. */
+  .cl-grid{align-items:flex-start;justify-content:flex-start;padding:200px 24px 52px;}
   .cl-col{width:100%;max-width:400px;align-items:center;text-align:center;gap:24px;}
   .cl-hero{max-width:460px;}
   .cl-mark{font-size:44px;line-height:46px;height:46px;}
@@ -4262,7 +4272,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.74.1';
+const APP_VERSION = '3.74.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
