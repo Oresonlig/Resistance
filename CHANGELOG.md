@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.74.0 — 2026-07-09
+**Admin-analytics-flik i appen (Settings → Admin), bara för Niklas.** "Hur många använder appen egentligen." Läser server-RPC:n `admin_stats()` (security-definer, gated på `auth.jwt()` email i Supabase — andra användare får "not authorized"). Klient-sidan: `currentUser` bär nu `email` (buildCurrentUser + failsafe-fallback); `isAdmin()` = email === niklgron@gmail.com döljer/visar fliken; `loadAdminStats()` anropar `sb.rpc('admin_stats')` async, med loading/error-states + Refresh-knapp. Renderar en summary-grid (registrerade / aktiva 7d / aktiva 30d / totalt loggade pass) + per-användare-lista (namn, email, pass totalt, pass/30d, senast aktiv + "Xd ago", senaste pass, app-version, tema), sorterad på senast aktiv (server-side). Sessions = loggade pass (vilodagar exkluderade). RPC:n verifierad skapad i Supabase (SQL-editorn gav förväntat "not authorized" eftersom den saknar auth-user — gaten funkar; appen skickar Niklas JWT). 152 tester gröna. **EJ browser-verifierat.**
+
+---
+
 ## 3.73.5 — 2026-07-09
 **Login mobil-omtag (Niklas live-feedback på 3.73.4).** **(1) Tema-byte-hoppet + "default lägre":** wordmarken använder per-tema-font (`--font-brand`) och olika fonter har olika höjd → den vertikalt centrerade kolumnen ändrade höjd → allt hoppade ett snäpp vid temabyte, och Iron (Bebas) hamnade lägre än t.ex. Obsidian (Cinzel). Fix: `.cl-mark` får FAST höjd (46px) så fontbytet inte kan ändra kolumnhöjden, + kolumnen TOP-ankrad (`justify-content:flex-start`) istället för centrerad → ingen om-centrering vid byte. **(2) Allt sänkt** (`padding-top` 100→170px) för att ge fokuskedjan en egen band upptill. **(3) Kedjan sänkt** något (`top:-6px`) så övre länkarna klarar toppkanten och länk 4 kommer fram. **(4) Sessions-labels tillbaka på alla länkar** (Chest/Back/… ovanför "+ Forge your next link"), som på desktop — de förklarar kedjan visuellt (3.72.5 gömde dem för declutter, Niklas ändrade sig). Liten font (8.5px) så de ryms åt vänster från höger-kedjan. **(5) Google-knappen större** (`.cl-oauth` height 48→54) så texten inte trängs mot ramen. 152 tester gröna. **EJ browser-verifierat — positionsvärden är första-gissning, itereras mot Niklas nästa skärmdump.**
 

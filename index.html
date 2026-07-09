@@ -3538,7 +3538,7 @@ async function buildCurrentUser(session){
   }catch(e){ console.warn('[auth] profiles fetch threw:', e); }
   const email = u.email || '';
   const name = displayName || email.split('@')[0] || 'User';
-  return { id: u.id, name: name };
+  return { id: u.id, name: name, email: email };
 }
 
 // Show / hide auth screen vs app
@@ -3614,7 +3614,7 @@ async function handleSession(session){
     // Build minimal currentUser om buildCurrentUser inte hunnit
     if(!currentUser && session?.user){
       const email = session.user.email || '';
-      currentUser = { id: session.user.id, name: email.split('@')[0] || 'User' };
+      currentUser = { id: session.user.id, name: email.split('@')[0] || 'User', email: email };
     }
     try{ showAppShell(); }catch(e){ console.error(e); }
     try{ stopAuthThemeDemo(); }catch(e){}
@@ -4260,7 +4260,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.73.5';
+const APP_VERSION = '3.74.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -9578,7 +9578,29 @@ function toggleHelpTopic(id){ _helpOpenTopic = _helpOpenTopic===id ? null : id; 
 // Nav-fliken nollställer alltid till hubben; header-sync-pricken deep-linkar
 // till 'data' (Data & Sync). Device-lokal — medvetet INTE i state.
 let _settingsPage = null;
-function openSettingsPage(p){ _settingsPage = p; renderData(); try{ window.scrollTo(0,0); }catch(e){} }
+// ── ADMIN ANALYTICS ──────────────────────────────────────────────
+// In-app admin tab (Settings → Admin), visible ONLY to this account. Reads the
+// server-side security-definer RPC admin_stats() (created in Supabase; guards on
+// auth.jwt() email → other users get "not authorized"). The email check here just
+// hides the tab; the real boundary is the RPC's own guard.
+const ADMIN_EMAIL = 'niklgron@gmail.com';
+let _adminStats=null, _adminLoading=false, _adminError=null;
+function isAdmin(){ return (currentUser?.email||'').toLowerCase() === ADMIN_EMAIL; }
+function loadAdminStats(force){
+  if(_adminLoading) return;
+  if(_adminStats && !force) return;
+  _adminLoading=true; _adminError=null;
+  Promise.resolve(window.sb && window.sb.rpc('admin_stats'))
+    .then(res=>{
+      _adminLoading=false;
+      if(!res){ _adminError='Supabase not ready'; }
+      else if(res.error){ _adminError = res.error.message || String(res.error); }
+      else { _adminStats = res.data; }
+      if(_settingsPage==='admin') renderData();
+    })
+    .catch(e=>{ _adminLoading=false; _adminError = (e&&e.message)||String(e); if(_settingsPage==='admin') renderData(); });
+}
+function openSettingsPage(p){ _settingsPage = p; if(p==='admin' && isAdmin()) loadAdminStats(); renderData(); try{ window.scrollTo(0,0); }catch(e){} }
 function closeSettingsPage(){ _settingsPage = null; renderData(); try{ window.scrollTo(0,0); }catch(e){} }
 function renderData(){
   const el=document.getElementById('view-data');
@@ -9781,6 +9803,41 @@ function renderData(){
     return;
   }
 
+  if(_settingsPage==='admin' && isAdmin()){
+    let body;
+    if(_adminError){
+      body=`<div class="empty-state" style="color:var(--red);">${escapeHTML(_adminError)}</div>`;
+    } else if(!_adminStats){
+      body=`<div class="empty-state">Loading…</div>`;
+    } else {
+      const s=_adminStats.summary||{};
+      const users=Array.isArray(_adminStats.users)?_adminStats.users:[];
+      const fmtDT=(iso)=>{ if(!iso) return '—'; const d=new Date(iso); return isNaN(d)?'—':d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'}); };
+      const ago=(iso)=>{ if(!iso) return ''; const d=new Date(iso); if(isNaN(d)) return ''; const n=Math.floor((Date.now()-d.getTime())/86400000); return n<=0?'today':n+'d ago'; };
+      const num=(v)=>(v==null?'—':v);
+      body=`<div class="stats-grid">
+        <div class="stat-box"><div class="stat-num">${num(s.total_registered)}</div><div class="stat-desc">Registered</div></div>
+        <div class="stat-box"><div class="stat-num">${num(s.active_7d)}</div><div class="stat-desc">Active 7d</div></div>
+        <div class="stat-box"><div class="stat-num">${num(s.active_30d)}</div><div class="stat-desc">Active 30d</div></div>
+        <div class="stat-box"><div class="stat-num">${num(s.total_sessions)}</div><div class="stat-desc">Total sessions</div></div>
+      </div>
+      <div class="section-sub">Users · ${users.length}</div>
+      ${users.map(u=>`<div class="hist-entry" style="padding:10px 11px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
+          <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(u.name||u.email||'—')}</div>
+          <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);flex-shrink:0;white-space:nowrap;">${u.sessions||0} sess · ${u.sessions_30d||0}/30d</div>
+        </div>
+        ${u.email?`<div style="font-family:var(--mono);font-size:.5rem;color:#666;margin-top:3px;letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(u.email)}</div>`:''}
+        <div style="font-family:var(--mono);font-size:.5rem;color:#666;margin-top:2px;line-height:1.6;">active ${fmtDT(u.last_active)}${ago(u.last_active)?' · '+ago(u.last_active):''} · last workout ${fmtDT(u.last_workout)} · v${escapeHTML(String(u.app_version||'?'))}${u.theme?' · '+escapeHTML(String(u.theme)):''}</div>
+      </div>`).join('')}`;
+    }
+    el.innerHTML=`${subHead('Admin · Analytics')}
+    <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);line-height:1.7;margin-bottom:12px;">Who actually uses the app. Sessions = logged workouts (rest days excluded).
+      <button onclick="loadAdminStats(true)" style="background:none;border:1px solid var(--gray-mid);color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;margin-left:6px;">↻ Refresh</button></div>
+    ${body}`;
+    return;
+  }
+
   // ── Hubben (default) ──────────────────────────────────────────
   const row=(page,label,desc)=>`<button class="settings-panel" onclick="openSettingsPage('${page}')" style="display:flex;align-items:center;justify-content:space-between;width:100%;border:1px solid var(--gray-mid);padding:16px 14px;margin-bottom:8px;cursor:pointer;text-align:left;">
     <div>
@@ -9796,7 +9853,8 @@ function renderData(){
   ${row('appearance','Appearance','Themes · ambient effects')}
   ${row('data','Data & Sync','Sync status · program sharing · backup · reset')}
   ${row('help','Help','How the chain, tags, PRs and sync work')}
-  ${row('support','Support','Report a bug · send feedback · debug tools')}`;
+  ${row('support','Support','Report a bug · send feedback · debug tools')}
+  ${isAdmin()?row('admin','Admin · Analytics','Who actually uses the app — active users, sessions, versions'):''}`;
 }
 function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`thechain-${currentUser?.id}-${todayStr()}.json`;a.click();showToast('Export done!');}
 
