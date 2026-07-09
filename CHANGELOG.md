@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.73.5 — 2026-07-09
+**Login mobil-omtag (Niklas live-feedback på 3.73.4).** **(1) Tema-byte-hoppet + "default lägre":** wordmarken använder per-tema-font (`--font-brand`) och olika fonter har olika höjd → den vertikalt centrerade kolumnen ändrade höjd → allt hoppade ett snäpp vid temabyte, och Iron (Bebas) hamnade lägre än t.ex. Obsidian (Cinzel). Fix: `.cl-mark` får FAST höjd (46px) så fontbytet inte kan ändra kolumnhöjden, + kolumnen TOP-ankrad (`justify-content:flex-start`) istället för centrerad → ingen om-centrering vid byte. **(2) Allt sänkt** (`padding-top` 100→170px) för att ge fokuskedjan en egen band upptill. **(3) Kedjan sänkt** något (`top:-6px`) så övre länkarna klarar toppkanten och länk 4 kommer fram. **(4) Sessions-labels tillbaka på alla länkar** (Chest/Back/… ovanför "+ Forge your next link"), som på desktop — de förklarar kedjan visuellt (3.72.5 gömde dem för declutter, Niklas ändrade sig). Liten font (8.5px) så de ryms åt vänster från höger-kedjan. **(5) Google-knappen större** (`.cl-oauth` height 48→54) så texten inte trängs mot ramen. 152 tester gröna. **EJ browser-verifierat — positionsvärden är första-gissning, itereras mot Niklas nästa skärmdump.**
+
+---
+
 ## 3.73.4 — 2026-07-09
 **Login: embers (`.cl-ember`) också Iron-only — inte bara heat/hex.** Niklas: uppstigande glöden fortfarande på alla teman efter 3.73.3. Rotorsak: 3.73.3 gatade heat/spine/hex/aura-hex men INTE ember-partiklarna (`.cl-ember`, ett eget canvas-lager) — de steg fortfarande på alla teman och lästes som "glöden". Nu inlagt i samma `body[class*="theme-"]`-hide-regel → hela forge-atmosfären (heat + spine + hex + form-ring + embers) är Iron/default-only. Heta forge-länken + dess glöd + kedjan kvar på alla teman (brandet). (Delförklaring till Niklas obs: hans skärmdumpar var V3.73.1 — heat-gaten landade först i 3.73.3, kräver hard-refresh.) 152 tester gröna.
 

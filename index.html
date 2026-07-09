@@ -2132,28 +2132,30 @@ body[class*="theme-"] .cl-aura-hex{ display:none; }
 
 /* ---------- responsive ---------- */
 @media (max-width:940px){
-  .cl-grid{justify-content:center;padding:100px 24px 52px;}
-  .cl-col{width:100%;max-width:400px;align-items:center;text-align:center;gap:26px;}
+  /* 3.73.5 — mobile hero re-layout (Niklas, live):
+     - column TOP-ANCHORED (was centre) + content lowered → no re-centre jump on a
+       theme swap, and a taller band up top for the chain;
+     - .cl-mark gets a FIXED height so the per-theme wordmark FONT can no longer
+       change the column height (killed "everything jumps a notch on theme swap" +
+       "Iron/Bebas sits lower than Obsidian/Cinzel");
+     - ALL per-link labels restored (session names above "+ Forge your next link"),
+       like desktop — they explain the chain visually. */
+  .cl-grid{justify-content:flex-start;padding:170px 24px 52px;}
+  .cl-col{width:100%;max-width:400px;align-items:center;text-align:center;gap:24px;}
   .cl-hero{max-width:460px;}
-  .cl-mark{font-size:44px;}
+  .cl-mark{font-size:44px;line-height:46px;height:46px;}
   .cl-mark .t, .cl-mark .c{display:inline;}
-  /* 3.72.4: serif poem hidden on mobile — Niklas: too much text, too packed;
-     it also frees the vertical band the focus chain now owns as the hero. */
+  /* 3.72.4: serif poem hidden on mobile — Niklas: too much text, too packed. */
   .cl-serif{display:none;}
   .cl-authwrap{width:100%;max-width:360px;}
-  /* 3.72.5: on mobile the focus chain WAS centred (left:50%) at near-full size —
-     the glowing hot link sat right over the Google button and blocked the login
-     (Niklas). Now it mirrors desktop: tucked to the RIGHT (left:76%) and scaled
-     MUCH smaller (0.56) so it's a small forge accent in the upper-right hero band,
-     clear of the form. Only the hot link keeps its label ("+ FORGE YOUR NEXT
-     LINK"), extending LEFT from the chain (desktop behaviour) — the narrow chain
-     leaves room for it. Scale is on the SVG only (not the host) so the label,
-     a sibling of the SVG, stays full-size + JS-positioned against the unscaled host. */
-  .cl-chain-focus{left:76%;margin-left:-75px;opacity:0.85;}
+  /* bigger oauth box so the label isn't cramped against the border (Niklas) */
+  .cl-oauth{height:54px;}
+  /* focus chain: right side, scaled down, lowered a touch (top) so the upper links
+     clear the top edge and link 4 comes into view. Scale is on the SVG only so the
+     labels (siblings) stay full size + JS-positioned against the unscaled host. */
+  .cl-chain-focus{left:76%;margin-left:-75px;top:-6px;opacity:0.85;}
   .cl-chain-focus .cl-chain-svg{transform:scale(0.56);transform-origin:top center;}
-  .cl-chain-focus .cl-label{display:none;}
-  .cl-chain-focus .cl-label.active{display:flex;}
-  .cl-chain-focus .cl-label.active .txt{font-size:9.5px;letter-spacing:0.14em;}
+  .cl-chain-focus .cl-label .txt{font-size:8.5px;letter-spacing:0.08em;}
   .cl-masthead{font-size:9.5px;letter-spacing:0.14em;left:20px;right:20px;}
   .cl-masthead .brand-min{display:none;}
 }
@@ -4258,7 +4260,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.73.4';
+const APP_VERSION = '3.73.5';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
