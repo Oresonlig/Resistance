@@ -2150,7 +2150,14 @@ body[class*="theme-"] .cl-aura-hex{ display:none; }
      MOVING target instead of removing what moves it. Fix: align-items:flex-start
      on mobile — .cl-col's position is now fixed by padding-top alone, with zero
      dependency on any theme's font metrics. This is the structural fix. */
-  .cl-grid{align-items:flex-start;justify-content:flex-start;padding:200px 24px 52px;}
+  /* 3.74.3 — collision fix: removing the centring (3.74.2) also removed the extra
+     downward push that used to keep the wordmark clear of the chain's last link
+     ("+ FORGE YOUR NEXT LINK" was overlapping "THE CHAIN"). Both the chain's
+     vertical position (top:34px, below) and this padding-top are now FIXED
+     constants (that's what 3.74.2 achieved) anchored to the same coordinate
+     space (.cl) — so this is a one-time calibration of two fixed numbers against
+     each other, not a per-theme guess. Holds for every theme from here on. */
+  .cl-grid{align-items:flex-start;justify-content:flex-start;padding:260px 24px 52px;}
   .cl-col{width:100%;max-width:400px;align-items:center;text-align:center;gap:24px;}
   .cl-hero{max-width:460px;}
   .cl-mark{font-size:44px;line-height:46px;height:46px;}
@@ -4272,7 +4279,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.74.2';
+const APP_VERSION = '3.74.3';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

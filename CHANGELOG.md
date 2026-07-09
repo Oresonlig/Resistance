@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.74.3 — 2026-07-09
+**Login mobil: "THE CHAIN" krockade med kedjans sista länk/label (direkt konsekvens av 3.74.2).** Att ta bort `align-items:center` (3.74.2, rätt fix för hoppet) tog också bort den extra nedåt-push som tidigare höll wordmarken fri från kedjan — "+ FORGE YOUR NEXT LINK" hamnade rakt ovanpå "THE CHAIN". Fix: `.cl-grid` padding-top 200→260px. Både kedjans position (`top:34px`) och denna padding är nu FASTA konstanter (poängen med 3.74.2) ankrade i samma koordinatrum (`.cl`) — detta är en engångskalibrering av två fasta tal mot varandra, inte en per-tema-gissning. Håller för alla teman permanent. 152 tester gröna. **EJ browser-verifierat.**
+
+---
+
 ## 3.74.2 — 2026-07-09
 **Login mobil-hoppet — ROTFIXAT den här gången (Niklas: "gång 2? gång 3?").** 3.73.5 och 3.74.1 patchade padding/top-värden mot ett rörligt mål utan att hitta den faktiska orsaken — därav att hoppet kvarstod. Verklig rotorsak: bas-`.cl-grid` har `align-items:center`; eftersom `.cl-grid` är en flex-ROW centrerar det VERTIKALT `.cl-col` baserat på dess EGEN renderade höjd. Olika temans typsnitt har olika default line-height-metrik vid SAMMA font-size (wordmark, tag, oauth-label, båda inputs, båda knappar, footer-länkar — många rader). Dessa små per-rad-skillnader summerar till en verklig höjdskillnad → den "centrerade" kolumnen hamnade på olika Y beroende på tema. Fix: `align-items:flex-start` på mobil → `.cl-col`s position styrs nu ENDAST av `padding-top` (200px), noll beroende av något temas fontmetrik. Detta är den strukturella fixen — ingen mer flyttande-mål-patchning. 152 tester gröna. **EJ browser-verifierat.**
 
