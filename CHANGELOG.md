@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.73.2 — 2026-07-09
+**Rest-day-guld på session-slidern — enhetligt över ALLA teman (Niklas).** Bas-CSS:en färgade redan vilodags-flikarna (`.chain-tab.rest-day`) i guld via `var(--gold)`, MEN per-tema `.chain-tab-letter`-overrides (högre specificitet via `body.theme-X`) vann och tryckte bort guldet på i princip alla teman (inkl. Cosmic i Niklas skärmdump). Dessutom hade flera teman döpt om `--gold` till en icke-guld-accent (Night City magenta, Nanosuit cyan) → `var(--gold)` var opålitligt som "guld". Fix: ny fast token `--rest-gold:#c9a35a` (ETT ställe i `:root`, aldrig per-tema-overridad) + `!important` på rest-flikarnas färg/bakgrund (samma recurrence-proof-mönster som header-hörns-låset 3.59.6) så tema-overrides inte kan suppressa dem. Vilodagar läser nu som SAMMA guld på alla teman, i både chain-strippen och History-listan (3.72.6-raderna flyttade till samma token, inkl. `!important` på border-left som tema-`.hist-entry` annars vann). Font/former orörda (Niklas: bara guldfärgen). 152 tester gröna.
+
+---
+
 ## 3.73.1 — 2026-07-09
 **Preacher (BB)→(EZ) + migration, ny Incline Biceps Curl (Cable), stretch-tips på incline-curlarna.** **(1)** `Preacher Curl (BB)` omdöpt till `Preacher Curl (EZ)` — preacher körs i praktiken på EZ-stång, och EZ ≠ rak barbell internationellt (Niklas fångade det). Ny `migratePreacherEZ` (delade `applyExerciseRenames`-motorn, guardad) migrerar befintliga `Preacher Curl` OCH den kortlivade `Preacher Curl (BB)` → `(EZ)` i logg/cykler/overrides/swaps/added/drafts + rekeyar exId-maps (notes tombstonas). `(DB)` unilateral kvar oförändrad. **(2)** Ny `Incline Biceps Curl (Cable)` (Arms) — cable-varianten av Israstels incline-stretch-curl. **(3)** Båda incline-curlarna (Cable + DB) fick teknik-tips "Deep biceps stretch — let the arms hang back" (följer med vid swap via namn-resolvat `tip`). 152 tester gröna.
 

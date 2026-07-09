@@ -22,6 +22,11 @@
 :root{
   --black:#0a0a0a;--white:#f5f0e8;--red:#c0392b;
   --gold:#b8922a;--green-bright:#3a9a5a;
+  /* 3.73.2 — rest-day gold: ONE fixed gold for the "Forced Rest" marker (chain
+     strip + History), uniform across ALL themes (Niklas wants it consistent).
+     Deliberately NOT var(--gold) — some themes repurpose --gold as a non-gold
+     accent (Night City magenta, Nanosuit cyan), which would break the gold look. */
+  --rest-gold:#c9a35a;
   --gray-mid:#666;--gray-light:#999;
   --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Bebas Neue',sans-serif;
   --ui-mono:'IBM Plex Mono',monospace; /* 3.59.4 — LÅST hörn-font (Cosmic-standard), frikopplad från titel-fonten --display. Teman ska INTE override:a (sätt aldrig egen font-family/font-size på header-user/sync/logout/btn-chain-edit/am-pill). */
@@ -113,9 +118,12 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .chain-tab-letter{font-family:var(--mono);font-weight:700;color:var(--red);width:42px;display:flex;align-items:center;justify-content:center;font-size:1.32rem;flex-shrink:0;background:color-mix(in srgb,var(--red) 26%,transparent);border:none;transition:background .22s,color .22s,opacity .22s;opacity:.92;}
 .chain-tab.adjacent .chain-tab-letter{opacity:.92;background:color-mix(in srgb,var(--red) 24%,transparent);}
 .chain-tab.active .chain-tab-letter{opacity:1;background:color-mix(in srgb,var(--red) 52%,transparent);}
-.chain-tab.rest-day .chain-tab-letter{color:color-mix(in srgb,var(--gold) 50%,#666);background:color-mix(in srgb,var(--gold) 6%,transparent);}
-.chain-tab.adjacent.rest-day .chain-tab-letter{color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent);}
-.chain-tab.active.rest-day .chain-tab-letter{color:var(--gold);background:color-mix(in srgb,var(--gold) 32%,transparent);}
+/* 3.73.2 — rest-day gold locked with !important so per-theme .chain-tab-letter
+   overrides (higher specificity via body.theme-X) can't suppress it. Uses the
+   fixed --rest-gold so every theme's rest tabs read as the SAME gold. */
+.chain-tab.rest-day .chain-tab-letter{color:color-mix(in srgb,var(--rest-gold) 50%,#666)!important;background:color-mix(in srgb,var(--rest-gold) 6%,transparent)!important;}
+.chain-tab.adjacent.rest-day .chain-tab-letter{color:var(--rest-gold)!important;background:color-mix(in srgb,var(--rest-gold) 16%,transparent)!important;}
+.chain-tab.active.rest-day .chain-tab-letter{color:var(--rest-gold)!important;background:color-mix(in srgb,var(--rest-gold) 32%,transparent)!important;}
 .chain-tab.done .chain-tab-letter{opacity:.15;background:color-mix(in srgb,var(--red) 3%,transparent);filter:saturate(0.4);}
 .chain-tab.adjacent.done .chain-tab-name-short{opacity:.22;}
 .chain-tab-name-full,.chain-tab-name-short{font-family:var(--mono);font-weight:600;color:var(--white);max-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;opacity:0;letter-spacing:.05em;transition:max-width .25s ease-out,opacity .2s,padding .25s ease-out;padding:0;text-transform:uppercase;display:flex;align-items:center;background:color-mix(in srgb,var(--red) 18%,transparent);}
@@ -123,8 +131,8 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .chain-tab-name-short{color:color-mix(in srgb,var(--white) 60%,transparent);font-size:.52rem;font-weight:500;background:color-mix(in srgb,var(--red) 10%,transparent);}
 .chain-tab.active .chain-tab-name-full{max-width:130px;opacity:1;padding:0 12px 0 9px;}
 .chain-tab.adjacent .chain-tab-name-short{max-width:40px;opacity:.85;padding:0 9px 0 7px;}
-.chain-tab.active.rest-day .chain-tab-name-full{color:var(--gold);background:color-mix(in srgb,var(--gold) 18%,transparent);}
-.chain-tab.adjacent.rest-day .chain-tab-name-short{color:color-mix(in srgb,var(--gold) 70%,transparent);background:color-mix(in srgb,var(--gold) 9%,transparent);}
+.chain-tab.active.rest-day .chain-tab-name-full{color:var(--rest-gold)!important;background:color-mix(in srgb,var(--rest-gold) 18%,transparent)!important;}
+.chain-tab.adjacent.rest-day .chain-tab-name-short{color:color-mix(in srgb,var(--rest-gold) 70%,transparent)!important;background:color-mix(in srgb,var(--rest-gold) 9%,transparent)!important;}
 @media(max-width:480px){
   .chain-tab.active .chain-tab-name-full{max-width:110px;}
   .chain-tab-letter{width:38px;font-size:1.16rem;}
@@ -365,10 +373,10 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 /* 3.72.6 — completed Forced Rest day in History (display-only, gold like the
    chain's rest days). No body, no toggle, no copy — it's just a dated marker so
    Niklas can see he actually took the rest. */
-.hist-entry.rest-hist{border-left:2px solid var(--gold);opacity:.9;}
+.hist-entry.rest-hist{border-left:2px solid var(--rest-gold)!important;opacity:.9;}
 .hist-entry.rest-hist .hist-header{cursor:default;}
-.hist-entry.rest-hist .hist-pass{color:var(--gold);}
-.rest-hist-badge{font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);padding:5px 10px;white-space:nowrap;opacity:.85;}
+.hist-entry.rest-hist .hist-pass{color:var(--rest-gold);}
+.rest-hist-badge{font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:var(--rest-gold);border:1px solid var(--rest-gold);padding:5px 10px;white-space:nowrap;opacity:.85;}
 .hist-ex{font-family:var(--mono);font-size:.58rem;padding:5px 0;border-bottom:1px solid #131313;}
 .hist-ex:last-child{border-bottom:none;}
 .hist-ex-header{display:flex;justify-content:space-between;color:var(--gray-light);}
@@ -4236,7 +4244,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.73.1';
+const APP_VERSION = '3.73.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
