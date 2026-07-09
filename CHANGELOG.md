@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.73.1 — 2026-07-09
+**Preacher (BB)→(EZ) + migration, ny Incline Biceps Curl (Cable), stretch-tips på incline-curlarna.** **(1)** `Preacher Curl (BB)` omdöpt till `Preacher Curl (EZ)` — preacher körs i praktiken på EZ-stång, och EZ ≠ rak barbell internationellt (Niklas fångade det). Ny `migratePreacherEZ` (delade `applyExerciseRenames`-motorn, guardad) migrerar befintliga `Preacher Curl` OCH den kortlivade `Preacher Curl (BB)` → `(EZ)` i logg/cykler/overrides/swaps/added/drafts + rekeyar exId-maps (notes tombstonas). `(DB)` unilateral kvar oförändrad. **(2)** Ny `Incline Biceps Curl (Cable)` (Arms) — cable-varianten av Israstels incline-stretch-curl. **(3)** Båda incline-curlarna (Cable + DB) fick teknik-tips "Deep biceps stretch — let the arms hang back" (följer med vid swap via namn-resolvat `tip`). 152 tester gröna.
+
+---
+
 ## 3.73.0 — 2026-07-09
 **Preacher Curl splittad i (BB) + (DB, unilateral).** Den generiska `Preacher Curl` (biblioteket, Arms — tvetydig men i praktiken stång) ersatt av två varianter: `Preacher Curl (BB)` och `Preacher Curl (DB)` med `uni:true` (single-arm, Niklas kör DB en arm i taget). Uni-flaggan propagerar automatiskt vid tillägg: add-flödet skickar biblioteksposten som `tags` till `addExerciseToSession` (rad 6835-6837 → `if(tags.uni) ex.uni=true`), så DB-varianten blir unilateral direkt (2 warm + 1 work per sida, "One side at a time"-hint, per-sida-loggning). Ingen migration: `Preacher Curl` fanns bara i biblioteket (ej i BASE_SESSIONS), så befintliga tillagda "Preacher Curl" behåller sitt namn + historik intakt — de mappar bara inte automatiskt till en variant (kan swappas manuellt). 152 tester gröna.
 
