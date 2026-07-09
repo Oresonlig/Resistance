@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.72.9 — 2026-07-09
+**Incline Bench Cable Pullover får ett teknik-tips ("Deep lat stretch — full ROM, no triceps or grip").** Niklas ville ha en beskrivning som FÖLJER MED vid swap. Löst via `tip`-fältet (INTE en tagg): tipset ligger som data på övningen och resolvas via kanoniskt namn (`getExerciseTip` → `libraryTipMap`), så det överlever swap — till skillnad från den gamla slot-bundna `detail`-texten som blev stale (fixat 3.57.0). Renderas som egen kursiv `.ex-tip`-rad under namnet, skild från den tagg-drivna beskrivningsraden. Bekräftat: ingen "Stretch"-tagg finns (taggar = ramp/bw/uni/timed/singles); en stretch-cue är teknik, inte set-schema → hör hemma i `tip`. 152 tester gröna.
+
+---
+
 ## 3.72.8 — 2026-07-09
 **Ny övning: Incline Bench Cable Pullover (Back).** Stretch-biased lat-isolation på incline-bänk med cable overhead (Eric Janicki — samma källa som Unilateral Row (Cable)). Tillagd i `EXERCISE_LIBRARY` Back-sektionen, alfabetiskt mellan Deadlift och Jefferson Deadlift. Standard vikt+reps (ingen `measure`-override → default weight), som grannarna. 152 tester gröna.
 
