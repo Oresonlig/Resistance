@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.73.3 — 2026-07-09
+**Login: forge-atmosfären (uppstigande glöd + hex) är nu ENDAST på Iron/default (Niklas skärmdumpar Night City + Cosmic).** Feedback: den uppstigande värme-glöden (`.cl-heat`/`.cl-spine`) låg på ALLA teman — ska bara vara Irons signatur; Obsidian har sin egna glöd, Nanosuit sin puls, Cosmic sina ådror ("ådrorna ersätter"). Även hex-fältet (`.cl-hex`) kapades skarpt/fult i botten, ändrade inte färg tydligt, och borde inte finnas på ådertema. Fix: forge-lagren (`.cl-heat`, `.cl-spine`, `.cl-hex`, form-ringen `.cl-aura-hex`) döljs på alla teman UTOM Iron. Iron är det KLASSLÖSA default-temat (`THEMES`-entry `class:''`, `body.theme-iron` matchar aldrig — verifierat, jfr rad 3296) → forge visas by default och döljs via `body[class*="theme-"]` (matchar varje icke-Iron-tema + framtida teman automatiskt). Övriga temans egna ambient (monteras på body z-index:0 av `setThemeVisual`) syns nu genom transparenta `.cl` istället. Hex-fadet också mjukat (större/högre-centrerad radial) så det löses upp mot botten istället för hård kant — syns bara på Iron nu. Embers + kedjan + heta forge-länken kvar på alla teman (brandet). 152 tester gröna. **EJ browser-verifierat.**
+
+---
+
 ## 3.73.2 — 2026-07-09
 **Rest-day-guld på session-slidern — enhetligt över ALLA teman (Niklas).** Bas-CSS:en färgade redan vilodags-flikarna (`.chain-tab.rest-day`) i guld via `var(--gold)`, MEN per-tema `.chain-tab-letter`-overrides (högre specificitet via `body.theme-X`) vann och tryckte bort guldet på i princip alla teman (inkl. Cosmic i Niklas skärmdump). Dessutom hade flera teman döpt om `--gold` till en icke-guld-accent (Night City magenta, Nanosuit cyan) → `var(--gold)` var opålitligt som "guld". Fix: ny fast token `--rest-gold:#c9a35a` (ETT ställe i `:root`, aldrig per-tema-overridad) + `!important` på rest-flikarnas färg/bakgrund (samma recurrence-proof-mönster som header-hörns-låset 3.59.6) så tema-overrides inte kan suppressa dem. Vilodagar läser nu som SAMMA guld på alla teman, i både chain-strippen och History-listan (3.72.6-raderna flyttade till samma token, inkl. `!important` på border-left som tema-`.hist-entry` annars vann). Font/former orörda (Niklas: bara guldfärgen). 152 tester gröna.
 

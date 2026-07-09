@@ -1927,7 +1927,9 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
      fade that dissolves them into the scene with no hard edge or square boundary. */
   background:var(--accent);
   --cl-hexmask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1'%3E%3Cpath d='M28 0 L56 16 L56 50 L28 66 L0 50 L0 16 Z'/%3E%3Cpath d='M28 50 L56 66 L56 100 L28 116 L0 100 L0 66 Z'/%3E%3C/g%3E%3C/svg%3E");
-  --cl-hexfade:radial-gradient(ellipse 104% 82% at 48% 38%, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 52%, transparent 84%);
+  /* 3.73.3 — softer, taller fade centred higher so the hex field DISSOLVES toward
+     the bottom instead of the hard horizontal cut Niklas saw. */
+  --cl-hexfade:radial-gradient(ellipse 118% 104% at 50% 28%, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.2) 48%, transparent 92%);
   -webkit-mask-image:var(--cl-hexmask), var(--cl-hexfade);
   -webkit-mask-size:56px 100px, 100% 100%;
   -webkit-mask-repeat:repeat, no-repeat;
@@ -1943,6 +1945,17 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
   position:absolute;inset:0;z-index:6;pointer-events:none;
   background:radial-gradient(ellipse 82% 74% at 50% 46%, transparent 44%, rgba(0,0,0,0.62) 100%);
 }
+/* 3.73.3 — the forge atmosphere (rising heat glow + spine + hex field + form hex
+   ring) belongs to Iron/default ONLY. Iron is the CLASSLESS default (THEMES entry
+   class:''), so the forge shows by default and we HIDE it on any body that carries
+   a theme class — [class*="theme-"] matches every non-Iron theme and is auto-applied
+   to future themes too. Those themes bring their OWN ambient (mounted at body
+   z-index:0 by setThemeVisual — Cosmic veins, Nanosuit hex-pulse, Obsidian glow)
+   which shows through the transparent .cl instead, so the forge never doubles up. */
+body[class*="theme-"] .cl-heat,
+body[class*="theme-"] .cl-spine,
+body[class*="theme-"] .cl-hex,
+body[class*="theme-"] .cl-aura-hex{ display:none; }
 
 /* ---------- fade-to-black theme-demo transition (3.72.1: slowed down —
    Niklas feedback that 3.72.0 still felt rushed) ----------
@@ -4244,7 +4257,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.73.2';
+const APP_VERSION = '3.73.3';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
