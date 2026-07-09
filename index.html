@@ -2140,7 +2140,7 @@ body[class*="theme-"] .cl-aura-hex{ display:none; }
        "Iron/Bebas sits lower than Obsidian/Cinzel");
      - ALL per-link labels restored (session names above "+ Forge your next link"),
        like desktop — they explain the chain visually. */
-  .cl-grid{justify-content:flex-start;padding:170px 24px 52px;}
+  .cl-grid{justify-content:flex-start;padding:200px 24px 52px;}
   .cl-col{width:100%;max-width:400px;align-items:center;text-align:center;gap:24px;}
   .cl-hero{max-width:460px;}
   .cl-mark{font-size:44px;line-height:46px;height:46px;}
@@ -2148,12 +2148,14 @@ body[class*="theme-"] .cl-aura-hex{ display:none; }
   /* 3.72.4: serif poem hidden on mobile — Niklas: too much text, too packed. */
   .cl-serif{display:none;}
   .cl-authwrap{width:100%;max-width:360px;}
-  /* bigger oauth box so the label isn't cramped against the border (Niklas) */
-  .cl-oauth{height:54px;}
+  /* bigger oauth box + inner padding so the label isn't cramped against the border (Niklas, 2x) */
+  .cl-oauth{height:58px;padding:0 18px;}
   /* focus chain: right side, scaled down, lowered a touch (top) so the upper links
      clear the top edge and link 4 comes into view. Scale is on the SVG only so the
      labels (siblings) stay full size + JS-positioned against the unscaled host. */
-  .cl-chain-focus{left:76%;margin-left:-75px;top:-6px;opacity:0.85;}
+  /* 3.74.1 — chain lowered further (top) so its TOP label (R3·CHEST) clears the
+     masthead line instead of colliding with "EST. IN THE BASEMENT / V…· SYNC". */
+  .cl-chain-focus{left:76%;margin-left:-75px;top:34px;opacity:0.85;}
   .cl-chain-focus .cl-chain-svg{transform:scale(0.56);transform-origin:top center;}
   .cl-chain-focus .cl-label .txt{font-size:8.5px;letter-spacing:0.08em;}
   .cl-masthead{font-size:9.5px;letter-spacing:0.14em;left:20px;right:20px;}
@@ -4260,7 +4262,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.74.0';
+const APP_VERSION = '3.74.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

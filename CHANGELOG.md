@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.74.1 — 2026-07-09
+**Login mobil-finjustering (Niklas live).** Fokuskedjans TOP-label (R3·CHEST) krockade med masthead-raden ("EST. IN THE BASEMENT / V…· SYNC"). Fix: kedjan sänkt mer (`top` -6→34px) så övre labeln klarar masthead-linjen, + allt innehåll nedskjutet (`padding-top` 170→200px). Google-knappen större igen (`height` 54→58 + `padding:0 18px`) så texten inte trängs mot ramen. Positionsvärden fortsatt itererade mot Niklas skärmdumpar. 152 tester gröna.
+
+---
+
 ## 3.74.0 — 2026-07-09
 **Admin-analytics-flik i appen (Settings → Admin), bara för Niklas.** "Hur många använder appen egentligen." Läser server-RPC:n `admin_stats()` (security-definer, gated på `auth.jwt()` email i Supabase — andra användare får "not authorized"). Klient-sidan: `currentUser` bär nu `email` (buildCurrentUser + failsafe-fallback); `isAdmin()` = email === niklgron@gmail.com döljer/visar fliken; `loadAdminStats()` anropar `sb.rpc('admin_stats')` async, med loading/error-states + Refresh-knapp. Renderar en summary-grid (registrerade / aktiva 7d / aktiva 30d / totalt loggade pass) + per-användare-lista (namn, email, pass totalt, pass/30d, senast aktiv + "Xd ago", senaste pass, app-version, tema), sorterad på senast aktiv (server-side). Sessions = loggade pass (vilodagar exkluderade). RPC:n verifierad skapad i Supabase (SQL-editorn gav förväntat "not authorized" eftersom den saknar auth-user — gaten funkar; appen skickar Niklas JWT). 152 tester gröna. **EJ browser-verifierat.**
 
