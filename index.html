@@ -1945,8 +1945,8 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
   position:absolute;inset:0;z-index:6;pointer-events:none;
   background:radial-gradient(ellipse 82% 74% at 50% 46%, transparent 44%, rgba(0,0,0,0.62) 100%);
 }
-/* 3.73.3 — the forge atmosphere (rising heat glow + spine + hex field + form hex
-   ring) belongs to Iron/default ONLY. Iron is the CLASSLESS default (THEMES entry
+/* 3.73.3/3.73.4 — the forge atmosphere (rising heat glow + spine + hex field +
+   form hex ring + rising embers) belongs to Iron/default ONLY. Iron is the CLASSLESS default (THEMES entry
    class:''), so the forge shows by default and we HIDE it on any body that carries
    a theme class — [class*="theme-"] matches every non-Iron theme and is auto-applied
    to future themes too. Those themes bring their OWN ambient (mounted at body
@@ -1955,6 +1955,7 @@ body.theme-nanosuit .chain-tab.active.rest-day .chain-tab-letter{box-shadow:0 0 
 body[class*="theme-"] .cl-heat,
 body[class*="theme-"] .cl-spine,
 body[class*="theme-"] .cl-hex,
+body[class*="theme-"] .cl-ember,
 body[class*="theme-"] .cl-aura-hex{ display:none; }
 
 /* ---------- fade-to-black theme-demo transition (3.72.1: slowed down —
@@ -4257,7 +4258,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.73.3';
+const APP_VERSION = '3.73.4';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

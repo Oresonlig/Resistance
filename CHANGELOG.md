@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.73.4 — 2026-07-09
+**Login: embers (`.cl-ember`) också Iron-only — inte bara heat/hex.** Niklas: uppstigande glöden fortfarande på alla teman efter 3.73.3. Rotorsak: 3.73.3 gatade heat/spine/hex/aura-hex men INTE ember-partiklarna (`.cl-ember`, ett eget canvas-lager) — de steg fortfarande på alla teman och lästes som "glöden". Nu inlagt i samma `body[class*="theme-"]`-hide-regel → hela forge-atmosfären (heat + spine + hex + form-ring + embers) är Iron/default-only. Heta forge-länken + dess glöd + kedjan kvar på alla teman (brandet). (Delförklaring till Niklas obs: hans skärmdumpar var V3.73.1 — heat-gaten landade först i 3.73.3, kräver hard-refresh.) 152 tester gröna.
+
+---
+
 ## 3.73.3 — 2026-07-09
 **Login: forge-atmosfären (uppstigande glöd + hex) är nu ENDAST på Iron/default (Niklas skärmdumpar Night City + Cosmic).** Feedback: den uppstigande värme-glöden (`.cl-heat`/`.cl-spine`) låg på ALLA teman — ska bara vara Irons signatur; Obsidian har sin egna glöd, Nanosuit sin puls, Cosmic sina ådror ("ådrorna ersätter"). Även hex-fältet (`.cl-hex`) kapades skarpt/fult i botten, ändrade inte färg tydligt, och borde inte finnas på ådertema. Fix: forge-lagren (`.cl-heat`, `.cl-spine`, `.cl-hex`, form-ringen `.cl-aura-hex`) döljs på alla teman UTOM Iron. Iron är det KLASSLÖSA default-temat (`THEMES`-entry `class:''`, `body.theme-iron` matchar aldrig — verifierat, jfr rad 3296) → forge visas by default och döljs via `body[class*="theme-"]` (matchar varje icke-Iron-tema + framtida teman automatiskt). Övriga temans egna ambient (monteras på body z-index:0 av `setThemeVisual`) syns nu genom transparenta `.cl` istället. Hex-fadet också mjukat (större/högre-centrerad radial) så det löses upp mot botten istället för hård kant — syns bara på Iron nu. Embers + kedjan + heta forge-länken kvar på alla teman (brandet). 152 tester gröna. **EJ browser-verifierat.**
 
