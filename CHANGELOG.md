@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.75.1 — 2026-07-14
+**Tre nya Chest-övningar (Niklas gym-önskemål, live).** `Standing Flyes (Cable)`, `Seated Flyes (Cable)` samt `Flyes (DB)` (platt bänk-DB-flyes — "Flat Flyes" är inte etablerat engelskt namn, DB-varianten följer bibliotekets konvention à la Bench Press (DB), tip om att inte lasta för tungt). Alfabetiskt insorterade i EXERCISE_LIBRARY, measure = weight (default). Inga dubbletter — generiska `Flyes (Cable)` + Incline/Decline/Single-Arm fanns sedan innan, stående/sittande/DB-platt saknades helt (aldrig raderade, har aldrig funnits). 159 tester gröna.
+
+---
+
 ## 3.75.0 — 2026-07-14
 **Ramp-vanish-buggen (Niklas gym-rapport, bröst 07-12 + rygg 07-13, diagnos via två copy-draft-dumpar).** Warmup-set (och deras buffer/loggade data) försvann i samma ögonblick man tryckte "+ Work Set" på en ramp-taggad övning. Rotorsak: fas 1/fas 2-motsägelse i set-modellen — `getSetTargets` returnerade MEDVETET warmup-carry-forward även för ramp ("strippas av reconcileSets oavsett") och fräsch skapelse (`getDefaultSets`/fas 1) strippar inte → en nyligen ramp-taggad övning med `lastSessionWarmupCount>0` FÖDDES med warmup-rader på skärmen, som nästa `ensureExtraSets`-anrop (= "+ Work Set"-tappen via captureAllDraftInputs-kedjan) åt upp — ovillkorligt förbi `setEdited`-låset, inkl. radering av inputBuffer/loggedSets, helt TYST (incidents-instrumenteringen loggade bara padding, aldrig removals). Incidentens trigger: `ramp:true`-override på B3 Unilateral Row (uni:false+ramp:true = feltryck i tag-editorn någon gång — enda skrivvägen är toggleExTag). **Fyra fixar:** (1) ROTFIX: `getSetTargets` är ramp-medveten — primary tag ramp → `warm:0`, fräsch lista och reconcile-target alltid överens; (2) skyddsnät: `reconcileSets` får `keepSids` (= loggade sids) som ALDRIG strippas — "loggad data är helig"-invarianten gäller nu även ramp-strippen (speglad i src/set-reconcile.js); (3) `toggleExTag` respekterar `setEdited` — en manuellt formad set-lista wipeas inte längre av tag-toggle på ologgad övning; (4) instrumentering: `SET_STRIPPED@ramp` i debug-ringbufferten så framtida strip-removals syns i copy-draftens `incidents[]`. +7 tester (4 reconcile-spegel + 3 end-to-end på riktiga koden, inkl. exakt incident-scenario). 159 tester gröna.
 

@@ -4076,13 +4076,16 @@ const EXERCISE_LIBRARY = [
   {name:'Decline Press (DB)', cat:'Chest'},
   {name:'Decline Press (Smith)', cat:'Chest'},
   {name:'Flyes (Cable)', cat:'Chest', tip:'Full ROM - Deep stretch'},
+  {name:'Flyes (DB)', cat:'Chest', tip:'Flat bench - Deep stretch, don\'t overload'},
   {name:'Hammer Strength Press', cat:'Chest'},
   {name:'Incline Flyes (Cable)', cat:'Chest'},
   {name:'Incline Press (BB)', cat:'Chest'},
   {name:'Incline Press (DB)', cat:'Chest'},
   {name:'Incline Press (Smith)', cat:'Chest'},
   {name:'Pec Deck', cat:'Chest'},
+  {name:'Seated Flyes (Cable)', cat:'Chest'},
   {name:'Single-Arm Flyes (Cable)', cat:'Chest'},
+  {name:'Standing Flyes (Cable)', cat:'Chest'},
   // BACK
   {name:'Back Extension', cat:'Back', measure:'bw'},
   {name:'Bentover Row', cat:'Back'},
@@ -4279,7 +4282,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.75.0';
+const APP_VERSION = '3.75.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
