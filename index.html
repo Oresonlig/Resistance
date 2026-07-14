@@ -4279,7 +4279,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.74.3';
+const APP_VERSION = '3.75.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -7122,9 +7122,12 @@ function toggleExTag(exId, passId, tagKey){
   if(primaryAfter !== primaryBefore && ex){
     const hasLogged = !!state.draft?.loggedSets?.[exId] && Object.keys(state.draft.loggedSets[exId]).length > 0;
     const hasSaved  = !!state.draft?.savedExercises?.[exId];
+    // 3.75.0: setEdited räknas också — en manuellt formad set-lista (add/remove)
+    // ska överleva en tag-toggle, inte wipeas av auto-apply.
+    const hasEdited = !!state.draft?.setEdited?.[exId];
     // Fresh övning → reset extraSets så nya defaults appliceras vid rerender.
-    // Logged/saved → behåll struktur, användaren får +/− set manuellt.
-    if(!hasLogged && !hasSaved && state.draft?.extraSets){
+    // Logged/saved/edited → behåll struktur, användaren får +/− set manuellt.
+    if(!hasLogged && !hasSaved && !hasEdited && state.draft?.extraSets){
       delete state.draft.extraSets[exId];
     }
   }
@@ -7735,8 +7738,13 @@ function getSetTargets(ex){
   const def = getTagDefaults(ex, measure);
   const lastWork = Math.min(state.lastSessionSetCount?.[_exId] ?? state.lastSessionSetCount?.[ex.id] ?? 0, 8);
   const work = lastWork || def.work;
+  // 3.75.0: ramp = ALDRIG warmups, inte ens carry-forward. Förut föddes en nyligen
+  // ramp-taggad övning med förra passets warmups (fas 1/getDefaultSets strippar inte)
+  // som reconcile sedan åt upp vid NÄSTA anrop — inkl. buffer + loggat (vanish-buggen
+  // 2026-07-12/13, B3 Unilateral Row). Nu är fräsch lista och reconcile-target alltid
+  // överens, så strippen i reconcileSets blir en ren självläknings-fallback.
+  if(getPrimaryTag(ex)==='ramp') return { warm: 0, work };
   // 3.57.0 #3: warmup-antalet följer med från förra passet om det finns, annars default.
-  // Ramp påverkas inte — dess warmups strippas av reconcileSets oavsett.
   const lastWarm = state.lastSessionWarmupCount?.[_exId] ?? state.lastSessionWarmupCount?.[ex.id];
   const warm = (lastWarm!=null) ? Math.min(lastWarm, 8) : def.warmup;
   return { warm, work };
@@ -7748,13 +7756,16 @@ function getDefaultSets(ex){
 // 3.59.0 — speglad från src/set-reconcile.js (testad där, 14 fall). EN symmetrisk
 // regel för warmup+work; ersätter det gamla work-only-lapptäcket. ÄNDRA BÅDA.
 function reconcileSets(opts){
-  const { current, targetWarm=0, targetWork=0, isRamp=false, locked=false, mintSid } = opts||{};
+  const { current, targetWarm=0, targetWork=0, isRamp=false, locked=false, mintSid, keepSids } = opts||{};
   let sets = Array.isArray(current) ? current.slice() : [];
   const removed = [];
   const padded = { warm:0, work:0 };
   if(isRamp){
-    for(const s of sets) if(s&&s.warmup) removed.push(s.sid);
-    sets = sets.filter(s=>s&&!s.warmup);
+    // 3.75.0: warmups med sid i keepSids (= loggade) strippas ALDRIG — loggad data
+    // är helig. Strippen tar bara ologgade warmups (självläkning av äldre drafts).
+    const keep = keepSids || new Set();
+    for(const s of sets) if(s&&s.warmup&&!keep.has(s.sid)) removed.push(s.sid);
+    sets = sets.filter(s=>s&&(!s.warmup||keep.has(s.sid)));
   }
   if(!locked){
     const want = { warmup: isRamp?0:targetWarm, work: targetWork };
@@ -7791,14 +7802,21 @@ function ensureExtraSets(exId, passId){
   const isRamp = exTagOvr.ramp!==undefined ? exTagOvr.ramp : !!ex.ramp;
   const locked = !!state.draft.setEdited?.[exId] || !!state.draft.savedExercises?.[exId];
   const t = getSetTargets(ex);
+  // 3.75.0: loggade sids skyddas från ramp-strippen (reconcileSets keepSids).
+  const keepSids = new Set(Object.keys(state.draft.loggedSets?.[exId]||{}));
   const { sets, removed, padded } = reconcileSets({
     current: state.draft.extraSets[exId],
-    targetWarm: t.warm, targetWork: t.work, isRamp, locked, mintSid: nextSid,
+    targetWarm: t.warm, targetWork: t.work, isRamp, locked, mintSid: nextSid, keepSids,
   });
   state.draft.extraSets[exId]=sets;
   for(const sid of removed){
     if(state.draft.loggedSets?.[exId]) delete state.draft.loggedSets[exId][sid];
     if(state.draft.inputBuffer?.[exId]) delete state.draft.inputBuffer[exId][sid];
+  }
+  // INSTRUMENT (3.75.0): strip-removals var TYSTA — vanish-dumparna 2026-07-12/13
+  // hade incidents:[] trots att ramp-strippen ätit warmups. Logga varje removal.
+  if(removed.length>0){
+    _dbgPush({type:'SET_STRIPPED@ramp', exId, removed, locked});
   }
   // INSTRUMENT: en BEFINTLIG draft som måste paddas = något hade tappat ett set
   // (vanish). Logga det så copy-draftens incidents[] visar mekanismen nästa pass.

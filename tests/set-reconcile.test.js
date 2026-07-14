@@ -106,6 +106,45 @@ describe('reconcileSets — RAMP strippar warmups', () => {
   });
 });
 
+describe('reconcileSets — keepSids skyddar loggade set (3.75.0, vanish-incidenten)', () => {
+  it('loggad warmup (keepSids) överlever ramp-strippen', () => {
+    // B3-incidenten 2026-07-13: warmup född via carry-forward, användaren loggar
+    // den, trycker "+ Work Set" → strippen får INTE äta det loggade setet.
+    const { sets, removed } = reconcileSets({
+      current: list('wwk'), targetWork: 1, isRamp: true, locked: true,
+      mintSid: mkMint(), keepSids: new Set(['wu1']),
+    });
+    expect(sets.some(s => s.sid === 'wu1')).toBe(true);   // loggad → kvar
+    expect(sets.some(s => s.sid === 'wu0')).toBe(false);  // ologgad → strippad
+    expect(removed).toEqual(['wu0']);
+  });
+
+  it('alla warmups loggade → removed tom, inget strippas', () => {
+    const { sets, removed } = reconcileSets({
+      current: list('wwk'), targetWork: 1, isRamp: true, locked: true,
+      mintSid: mkMint(), keepSids: new Set(['wu0', 'wu1']),
+    });
+    expect(counts(sets)).toEqual({ warm: 2, work: 1 });
+    expect(removed).toEqual([]);
+  });
+
+  it('keepSids utelämnad → gammalt beteende (alla warmups strippas)', () => {
+    const { removed } = reconcileSets({
+      current: list('wwk'), targetWork: 1, isRamp: true, mintSid: mkMint(),
+    });
+    expect(removed.sort()).toEqual(['wu0', 'wu1']);
+  });
+
+  it('keepSids påverkar inte icke-ramp (inget strippas ändå)', () => {
+    const { sets, removed } = reconcileSets({
+      current: list('wk'), targetWarm: 1, targetWork: 1,
+      mintSid: mkMint(), keepSids: new Set(['wu0']),
+    });
+    expect(counts(sets)).toEqual({ warm: 1, work: 1 });
+    expect(removed).toEqual([]);
+  });
+});
+
 describe('reconcileSets — data-integritet', () => {
   it('befintliga (loggade) set bevaras alltid vid icke-ramp', () => {
     const cur = list('wk');

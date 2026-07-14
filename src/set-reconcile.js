@@ -14,7 +14,13 @@
 //   antal warmup-set = targetWarm  (0 om ramp)
 //   antal work-set   = targetWork
 // Padding lägger BARA till saknade slots upp till target. Befintliga set tas
-// aldrig bort (utom ramp: ramping ogiltigförklarar warmups) → loggad data är helig.
+// aldrig bort (utom ramp: ramping ogiltigförklarar OLOGGADE warmups) → loggad
+// data är helig — 3.75.0: sids i keepSids (= loggade) överlever även ramp-strippen.
+// Före 3.75.0 strippade ramp ÄVEN loggade warmups; kombinerat med att fräsch
+// skapelse (getDefaultSets) INTE strippade föddes en nyramp-taggad övning med
+// carry-forward-warmups som nästa reconcile åt upp inkl. loggad data (vanish-
+// incidenten 2026-07-12/13). Rotfixen bor i getSetTargets (index.html): ramp →
+// warm=0 redan i target. keepSids här är skyddsnätet.
 // `locked` (setEdited || saved) fryser formen: användarens egna add/remove vinner.
 //
 // Varför pad-mot-target är säkert (ingen oönskad "resurrection"): den fräscha
@@ -30,17 +36,20 @@ export function reconcileSets(opts) {
     isRamp = false,
     locked = false,     // setEdited || saved → reshapa inte
     mintSid,            // () => unik sid för paddade set
+    keepSids,           // Set<sid> som ALDRIG strippas (= loggade set), 3.75.0
   } = opts || {};
 
   let sets = Array.isArray(current) ? current.slice() : [];
   const removed = [];
   const padded = { warm: 0, work: 0 };
 
-  // RAMP: ingen warmup. Strip ALLA warmups (även loggade) — ramping ogiltigförklarar
-  // dem. Körs FÖRE locked-checken (en swap/tag→ramp ska rensa även en låst övning).
+  // RAMP: ingen warmup. Strip OLOGGADE warmups — ramping ogiltigförklarar dem,
+  // men ett loggat set (sid i keepSids) är användardata och rörs aldrig.
+  // Körs FÖRE locked-checken (en swap/tag→ramp ska rensa även en låst övning).
   if (isRamp) {
-    for (const s of sets) if (s && s.warmup) removed.push(s.sid);
-    sets = sets.filter(s => s && !s.warmup);
+    const keep = keepSids || new Set();
+    for (const s of sets) if (s && s.warmup && !keep.has(s.sid)) removed.push(s.sid);
+    sets = sets.filter(s => s && (!s.warmup || keep.has(s.sid)));
   }
 
   // Pad båda kolumner mot target. Hoppas helt om låst (manuellt antal vinner).

@@ -373,3 +373,59 @@ describe('importTemplate (template-fil, 3.63.2-saneringen på riktiga flödet)',
     }
   });
 });
+
+describe('ramp-vanish-incidenten 2026-07-12/13 (3.75.0)', () => {
+  // B3 = Unilateral Row (Cable). Med ramp-override + warmup-carry-forward föddes
+  // övningen med warmups som nästa ensureExtraSets åt upp (inkl. buffer/loggat).
+
+  it('rotfix: ramp-taggad övning föds UTAN warmups trots warmup-carry-forward', () => {
+    const exId = window.getRenderExId('B3') || 'B3';
+    T.state.exerciseTagOverrides = { B3: { uni: false, ramp: true } };
+    T.state.lastSessionSetCount = { [exId]: 1 };
+    T.state.lastSessionWarmupCount = { [exId]: 1 }; // exakt incident-datat
+
+    window.ensureExtraSets('B3', 'B');
+
+    const sets = T.state.draft.extraSets['B3'];
+    expect(sets.some(s => s.warmup)).toBe(false); // ingen warmup född
+    expect(sets.filter(s => !s.warmup).length).toBe(1);
+    // Andra anropet (= "+ Work Set"-ögonblicket) ändrar ingenting — ingen strip kvar att göra
+    const before = sets.map(s => s.sid);
+    window.ensureExtraSets('B3', 'B');
+    expect(T.state.draft.extraSets['B3'].map(s => s.sid)).toEqual(before);
+  });
+
+  it('skyddsnät: loggad warmup överlever ramp-strippen, ologgad strippas', () => {
+    T.state.exerciseTagOverrides = { B3: { uni: false, ramp: true } };
+    window.ensureDraft('B');
+    // Pre-fix-draft: warmups födda före fixen, wu0 hann loggas
+    T.state.draft.extraSets['B3'] = [
+      { sid: 'wu0', warmup: true }, { sid: 'wu1', warmup: true }, { sid: 'wk0', warmup: false },
+    ];
+    T.state.draft.loggedSets = { B3: { wu0: { weight: 40, reps: 10 } } };
+    T.state.draft.inputBuffer = { B3: { wu0: { weight: 40 }, wu1: { weight: 35 } } };
+
+    window.ensureExtraSets('B3', 'B');
+
+    const sids = T.state.draft.extraSets['B3'].map(s => s.sid);
+    expect(sids).toContain('wu0');       // loggad → helig
+    expect(sids).not.toContain('wu1');   // ologgad → strippad (självläkning)
+    expect(sids).toContain('wk0');
+    expect(T.state.draft.loggedSets.B3.wu0).toEqual({ weight: 40, reps: 10 }); // data intakt
+    expect(T.state.draft.inputBuffer.B3.wu1).toBeUndefined(); // strippad sid städad
+  });
+
+  it('toggleExTag wipear INTE en manuellt formad (setEdited) set-lista', () => {
+    window.ensureDraft('B');
+    window.ensureExtraSets('B3', 'B');
+    // Användaren lägger till ett set manuellt → setEdited (addWorkSet-formen)
+    T.state.draft.extraSets['B3'].push({ sid: 's_manual', warmup: false });
+    T.state.draft.setEdited = { B3: true };
+    const before = T.state.draft.extraSets['B3'].map(s => s.sid);
+
+    window.toggleExTag('B3', 'B', 'bw'); // primary ändras (uni → bw) — förr: extraSets raderades
+
+    expect(T.state.draft.extraSets['B3']).toBeDefined();
+    expect(T.state.draft.extraSets['B3'].map(s => s.sid)).toEqual(before);
+  });
+});
