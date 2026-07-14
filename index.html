@@ -4282,7 +4282,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.75.1';
+const APP_VERSION = '3.76.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4713,6 +4713,33 @@ function migrateRotatorCuffMerge(){
   state.migrations.rotatorCuffMerge_v1=Date.now();
 }
 
+// 3.76.0 — Tag-overrides nycklas om från slot-id (A1…F4/added_*) till kanoniskt exId
+// så taggar följer ÖVNINGEN genom swaps (rotorsak: inswappad övning ärvde slottens
+// gamla ramp/bw + overrides spökade kvar på slotten). extra_* behålls (session-scope),
+// ex_/custom_-nycklar är redan kanoniska. Slot→exId resolvas UTAN draft-temp-swaps
+// (slotKeyToExId) så en pågående temp-swap inte kidnappar overriden; added_* via
+// getRenderExId. Okända nycklar (borttagna added_, gamla template-slots) lämnas orörda.
+// Idempotent — anropas även efter template-import (importerade filer har slot-nycklar).
+function rekeyTagOverridesToExId(){
+  const m = state?.exerciseTagOverrides;
+  if(!m || typeof m!=='object') return;
+  for(const k of Object.keys(m)){
+    if(k.startsWith('extra_')||k.startsWith('ex_')||k.startsWith('custom_')) continue;
+    const nk = slotKeyToExId(state, k) || getRenderExId(k);
+    if(!nk || nk===k) continue;
+    // Per-nyckel-merge; redan-kanonisk override vinner över migrerad slot-rest.
+    m[nk] = Object.assign({}, m[k], m[nk]);
+    delete m[k];
+  }
+}
+function migrateTagOverridesToExId(){
+  if(!state) return;
+  state.migrations = state.migrations || {};
+  if(state.migrations.tagOverridesExId_v1) return;
+  rekeyTagOverridesToExId();
+  state.migrations.tagOverridesExId_v1=Date.now();
+}
+
 // 3.68.0/3.68.2 — Delad rename/merge-motor. Skriver om name (exakt match mot
 // rename-mappen) + exId (gammal slug → ny slug) i logg/cykler/overrides/swaps/
 // added/drafts, och flyttar exId-nycklade maps till nya nycklar. exId skrivs
@@ -4867,6 +4894,8 @@ function runSchemaMigrations(){
   try{ migrateVaderCalfMerge(); }catch(e){ console.error('vaderCalfMerge failed', e); }
   try{ migratePreacherEZ(); }catch(e){ console.error('preacherEZ migration failed', e); }
   try{ migrateRemovedThemes(); }catch(e){ console.error('removedThemes migration failed', e); }
+  // 3.76.0 — körs efter rename-migrationerna så namnen redan är kanoniserade
+  try{ migrateTagOverridesToExId(); }catch(e){ console.error('tagOverridesExId failed', e); }
 }
 
 function newCycle(){
@@ -5624,12 +5653,12 @@ function buildPassBodyHTML(pass,cycle,nextId){
           ? state.customExercises?.find(c => c.name === (sessionSwap || permSwap))
           : null;
         const effEx = swappedCustom || ex;
-        // Tag overrides per user (from Edit > Tags) — applied last, highest priority
-        const tagOvr = state.exerciseTagOverrides?.[ex.id] || {};
-        const isRamp = tagOvr.ramp!==undefined ? tagOvr.ramp : !!effEx.ramp;
+        // 3.76.0 — swap-medveten tagg-resolution (kanoniskt nycklad override +
+        // inswappad övnings flaggor) via delad getTagActive-resolver.
+        const isRamp = getTagActive(ex, 'ramp');
         const isRampEx = isRamp; // alias for compatibility
-        const isUni  = tagOvr.uni!==undefined    ? tagOvr.uni  : !!effEx.uni;
-        const isSingles = tagOvr.singles!==undefined ? tagOvr.singles : !!effEx.singles;
+        const isUni  = getTagActive(ex, 'uni');
+        const isSingles = getTagActive(ex, 'singles');
         // 3.56.0 — mätsätt (measure) styr input-form + PR, separerat från set-schema-taggarna.
         // Extras: kanoniskt exId via namn (funkar även i done-state utan draft).
         const _exId = ex.extra ? extraExId(ex.name) : (getRenderExId(ex.id) || ex.id);
@@ -6437,6 +6466,9 @@ async function obImportFromOnboarding(e){
     state.permanentSwaps = t.permanentSwaps;
     state.exerciseTagOverrides = t.exerciseTagOverrides;
     state.exerciseOverrides = t.exerciseOverrides;
+    // 3.76.0 — pre-3.76-templates har slot-nycklade tag-overrides; rekeya mot
+    // importens swaps (nu satta). Idempotent.
+    rekeyTagOverridesToExId();
     state.importedPRs = t.prs;
     const existingNames = new Set((state.customExercises||[]).map(x=>x.name.toLowerCase()));
     for(const ex of t.customExercises){
@@ -6730,9 +6762,12 @@ async function saveExtraToProgram(passId, extraId){
     if(state.draft.inputBuffer?.[extraId]){
       state.draft.inputBuffer[newId] = state.draft.inputBuffer[extraId];
     }
-    // Tags satta under passet följer med till det permanenta id:t
+    // Tags satta under passet följer med — 3.76.0: till den permanenta övningens
+    // KANONISKA exId (tag-overrides är exId-nycklade nu). Session-taggarna vinner
+    // över ev. befintlig override (nyast avsikt).
     if(state.exerciseTagOverrides?.[extraId]){
-      state.exerciseTagOverrides[newId] = state.exerciseTagOverrides[extraId];
+      const _nk = getRenderExId(newId) || newId;
+      state.exerciseTagOverrides[_nk] = Object.assign({}, state.exerciseTagOverrides[_nk], state.exerciseTagOverrides[extraId]);
     }
     // Manuellt justerat set-antal följer med (annars pad:ar ensureExtraSets tillbaka)
     if(state.draft.setEdited?.[extraId]) state.draft.setEdited[newId] = true;
@@ -7028,7 +7063,6 @@ function toggleSide(exId, sid){
   // fångas via DOM-läsning i captureInputsToSetsBuffer vid Log/Save/pagehide.
 }
 function buildTagEditorHTML(ex, passId){
-  const tagOvr = state.exerciseTagOverrides?.[ex.id]||{};
   const TAGS = [
     {key:'ramp',    label:'Ramp',       desc:'Increase weight each set (ramping up)',     color:'#d4a030', bg:'#1a1000'},
     {key:'bw',      label:'BW+',        desc:'Bodyweight + added load (e.g. weight belt)', color:'#5aaa5a', bg:'#0a140a'},
@@ -7038,9 +7072,8 @@ function buildTagEditorHTML(ex, passId){
   ];
   const eid=ex.id, pid=passId;
   const btnHtml = TAGS.map(function(t){
-    const base=!!ex[t.key];
-    const ovr=tagOvr[t.key];
-    const active=ovr!==undefined?ovr:base;
+    // 3.76.0 — samma swap-medvetna resolver som render/reconcile
+    const active=getTagActive(ex, t.key);
     const bg=active?t.bg:'none';
     const bc=active?t.color:'#333';
     const tc=active?t.color:'#555';
@@ -7108,19 +7141,19 @@ function toggleTagEditor(exId){
 
 function toggleExTag(exId, passId, tagKey){
   if(!state.exerciseTagOverrides)state.exerciseTagOverrides={};
-  if(!state.exerciseTagOverrides[exId])state.exerciseTagOverrides[exId]={};
-  // Get current effective value
   const chain=getEffectiveChain();
   const pass=chain.find(p=>p.id===passId);
   const ex=pass?.exercises.find(e=>e.id===exId)
     || (exId.startsWith('extra_') ? makeExtraEx(state.draft?.extras?.find(e=>e.id===exId)) : null);
-  const baseVal=!!ex?.[tagKey];
-  const curOvr=state.exerciseTagOverrides[exId][tagKey];
-  const curVal=curOvr!==undefined?curOvr:baseVal;
+  // 3.76.0 — override skrivs på kanoniskt exId (följer övningen genom swaps),
+  // effektivt nuvärde via samma swap-medvetna resolver som render/reconcile.
+  const ovrKey = ex ? tagOverrideKeyFor(ex) : exId;
+  if(!state.exerciseTagOverrides[ovrKey])state.exerciseTagOverrides[ovrKey]={};
+  const curVal = ex ? getTagActive(ex, tagKey) : !!state.exerciseTagOverrides[ovrKey][tagKey];
   // 3.34.0 — Auto-apply tag-defaults om primary tag ÄNDRAS och övningen är fresh.
   const primaryBefore = ex ? getPrimaryTag(ex) : null;
   // Toggle
-  state.exerciseTagOverrides[exId][tagKey]=!curVal;
+  state.exerciseTagOverrides[ovrKey][tagKey]=!curVal;
   const primaryAfter = ex ? getPrimaryTag(ex) : null;
   if(primaryAfter !== primaryBefore && ex){
     const hasLogged = !!state.draft?.loggedSets?.[exId] && Object.keys(state.draft.loggedSets[exId]).length > 0;
@@ -7709,13 +7742,39 @@ const TAG_DEFAULTS = {
   _none:   { warmup: 2, work: 1 },  // HIT default — Niklas: "standard är HIT"
 };
 const TAG_ORDER = ['ramp','bw','uni','timed','singles'];
+// 3.76.0 — Taggar är DATA på övningen (som measure/tips, 3.56.0/3.57.0), inte på slotten.
+// Förut lästes bas-flaggor från SLOT-objektet (bortswappad övning) och overrides
+// nycklades på slot-id → en inswappad övning ärvde gamla slottens ramp/bw (rotorsaken
+// till "Internal Rotator Cuff blev bodyweight", 2026-07-14) och en override satt för
+// övning X spökade kvar på slotten till nästa övning. Nu: EN resolver, swap-medveten.
+// _tagFlagSource: källan för bas-flaggor = den FAKTISKT tränade övningen.
+function _tagFlagSource(ex){
+  if(!ex || ex.extra) return ex; // extras: makeExtraEx ärver redan custom-flaggor
+  const swapName = state.draft?.swaps?.[ex.id] || state.permanentSwaps?.[ex.id];
+  if(!swapName || swapName===ex.name) return ex;
+  const cust = state.customExercises?.find(c=>c.name===swapName);
+  if(cust) return cust;
+  // Bibliotek-övning: dess (oftast tomma) flaggor gäller — slottens ärvs INTE.
+  return EXERCISE_LIBRARY.find(e=>e.name===swapName) || ex;
+}
+// Override-nyckel: kanoniskt exId (följer övningen genom swaps, samma princip som
+// exerciseMeasureOverride). Extras behåller sitt session-scopade extra_-id (städas
+// vid session-slut, promoveras av saveExtraToProgram).
+function tagOverrideKeyFor(ex){
+  if(!ex) return null;
+  if(String(ex.id||'').startsWith('extra_')) return ex.id;
+  return getRenderExId(ex.id) || ex.id;
+}
+// Effektivt tagg-värde: override (kanoniskt exId) > inswappad övnings flaggor > slot-flaggor.
+function getTagActive(ex, key){
+  if(!ex) return false;
+  const ovr = state.exerciseTagOverrides?.[tagOverrideKeyFor(ex)];
+  if(ovr && ovr[key]!==undefined) return !!ovr[key];
+  return !!(_tagFlagSource(ex)?.[key]);
+}
 function getPrimaryTag(ex){
   if(!ex) return null;
-  const ovr = state.exerciseTagOverrides?.[ex.id] || {};
-  for(const key of TAG_ORDER){
-    const active = ovr[key]!==undefined ? ovr[key] : !!ex[key];
-    if(active) return key;
-  }
+  for(const key of TAG_ORDER){ if(getTagActive(ex, key)) return key; }
   return null;
 }
 // 3.56.0 — default set-antal per mätsätt (när inget set-schema-tag är aktivt).
@@ -7801,8 +7860,8 @@ function ensureExtraSets(exId, passId){
   // försvinnande set), loggade set bevaras, ramp strippar warmups, setEdited/saved
   // låser formen. Slut på lapptäcket (3.39/3.44/3.49/3.52/3.55) där warmups saknade
   // skyddsnät → Unilateral Row tappade en uppvärmning permanent.
-  const exTagOvr=state.exerciseTagOverrides?.[exId]||{};
-  const isRamp = exTagOvr.ramp!==undefined ? exTagOvr.ramp : !!ex.ramp;
+  // 3.76.0 — swap-medveten ramp-resolution via delad getTagActive-resolver.
+  const isRamp = getTagActive(ex, 'ramp');
   const locked = !!state.draft.setEdited?.[exId] || !!state.draft.savedExercises?.[exId];
   const t = getSetTargets(ex);
   // 3.75.0: loggade sids skyddas från ramp-strippen (reconcileSets keepSids).
@@ -10115,6 +10174,9 @@ async function importTemplate(e){
       state.permanentSwaps=permanentSwaps;
       state.exerciseTagOverrides=exerciseTagOverrides;
       state.exerciseOverrides=exerciseOverrides;
+      // 3.76.0 — importerade filer (och alla pre-3.76-templates) har slot-nycklade
+      // tag-overrides; rekeya mot importens swaps (nu satta). Idempotent.
+      rekeyTagOverridesToExId();
       // Merge custom exercises (skip duplicates by name)
       const existingNames=new Set((state.customExercises||[]).map(e=>e.name.toLowerCase()));
       for(const ex of t.customExercises){

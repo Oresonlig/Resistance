@@ -380,7 +380,7 @@ describe('ramp-vanish-incidenten 2026-07-12/13 (3.75.0)', () => {
 
   it('rotfix: ramp-taggad övning föds UTAN warmups trots warmup-carry-forward', () => {
     const exId = window.getRenderExId('B3') || 'B3';
-    T.state.exerciseTagOverrides = { B3: { uni: false, ramp: true } };
+    T.state.exerciseTagOverrides = { [exId]: { uni: false, ramp: true } }; // 3.76.0: kanoniskt nycklad
     T.state.lastSessionSetCount = { [exId]: 1 };
     T.state.lastSessionWarmupCount = { [exId]: 1 }; // exakt incident-datat
 
@@ -396,7 +396,8 @@ describe('ramp-vanish-incidenten 2026-07-12/13 (3.75.0)', () => {
   });
 
   it('skyddsnät: loggad warmup överlever ramp-strippen, ologgad strippas', () => {
-    T.state.exerciseTagOverrides = { B3: { uni: false, ramp: true } };
+    const exId = window.getRenderExId('B3') || 'B3';
+    T.state.exerciseTagOverrides = { [exId]: { uni: false, ramp: true } }; // 3.76.0: kanoniskt nycklad
     window.ensureDraft('B');
     // Pre-fix-draft: warmups födda före fixen, wu0 hann loggas
     T.state.draft.extraSets['B3'] = [
@@ -427,5 +428,54 @@ describe('ramp-vanish-incidenten 2026-07-12/13 (3.75.0)', () => {
 
     expect(T.state.draft.extraSets['B3']).toBeDefined();
     expect(T.state.draft.extraSets['B3'].map(s => s.sid)).toEqual(before);
+  });
+});
+
+describe('tagg-arkitekturen 3.76.0 — taggar följer övningen, inte slotten', () => {
+  it('inswappad bibliotek-övning ärver INTE slottens ramp/bw-flaggor', () => {
+    // A1 bas = Bench Press (BB) med ramp:true i programmet. Perm-swap till
+    // Cable Crossover (bibliotek, inga flaggor) → ramp ska INTE ärvas.
+    T.state.permanentSwaps = { A1: 'Cable Crossover' };
+    const ex = window.getEffectiveChain().find(p => p.id === 'A').exercises.find(e => e.id === 'A1');
+    expect(!!ex.ramp).toBe(true);                     // slotten HAR flaggan...
+    expect(window.getTagActive(ex, 'ramp')).toBe(false); // ...men den tränade övningen ärver inte
+    expect(window.getPrimaryTag(ex)).toBe(null);
+  });
+
+  it('utan swap gäller slottens flaggor precis som förut', () => {
+    const ex = window.getEffectiveChain().find(p => p.id === 'A').exercises.find(e => e.id === 'A1');
+    expect(window.getTagActive(ex, 'ramp')).toBe(true);
+    expect(window.getPrimaryTag(ex)).toBe('ramp');
+  });
+
+  it('toggleExTag skriver på kanoniskt exId — overriden följer övningen', () => {
+    T.state.permanentSwaps = { A1: 'Cable Crossover' };
+    window.ensureDraft('A');
+    window.toggleExTag('A1', 'A', 'uni');
+    expect(T.state.exerciseTagOverrides.A1).toBeUndefined();      // INTE slot-nycklad
+    const canon = window.getRenderExId('A1');
+    expect(T.state.exerciseTagOverrides[canon]?.uni).toBe(true);  // kanoniskt nycklad
+    // Samma övning inswappad i ANNAN slot ser samma override
+    T.state.permanentSwaps.E1 = 'Cable Crossover';
+    const exE1 = window.getEffectiveChain().find(p => p.id === 'E').exercises.find(e => e.id === 'E1');
+    expect(window.getTagActive(exE1, 'uni')).toBe(true);
+  });
+
+  it('rekeyTagOverridesToExId: slot-nycklar migreras till kanoniskt exId, extra_ lämnas', () => {
+    T.state.permanentSwaps = { A1: 'Cable Crossover' };
+    T.state.exerciseTagOverrides = {
+      A1: { ramp: false, bw: true },        // slot med swap → ex_cable_crossover
+      B3: { uni: false },                    // slot utan swap → ex_unilateral_row_cable
+      extra_A_0: { timed: true },            // session-scope → orörd
+      ex_deadlift: { singles: true },        // redan kanonisk → orörd
+    };
+    window.rekeyTagOverridesToExId();
+    const m = T.state.exerciseTagOverrides;
+    expect(m.A1).toBeUndefined();
+    expect(m.B3).toBeUndefined();
+    expect(m.ex_cable_crossover).toEqual({ ramp: false, bw: true });
+    expect(m.ex_unilateral_row_cable).toEqual({ uni: false });
+    expect(m.extra_A_0).toEqual({ timed: true });
+    expect(m.ex_deadlift).toEqual({ singles: true });
   });
 });
