@@ -794,6 +794,14 @@ body.theme-nightcity .pr-value{
   font-weight:900;
   text-shadow:0 0 12px rgba(255,230,0,0.6);
 }
+/* PR muscle-group accordion — 3.77.2: panelen föll på bas-CSS (#0d0d0d, osynlig
+   mot city-bakgrunden) och --gray-light-heads var för dova. Stat-box-receptet. */
+body.theme-nightcity .pr-groups{
+  background:linear-gradient(135deg,rgba(20,5,40,0.5) 0%,rgba(8,1,15,0.8) 100%);
+  border:1px solid rgba(255,45,120,0.25);
+}
+body.theme-nightcity .pr-group-head{color:#a884cc;}
+body.theme-nightcity .pr-group-head:hover{color:var(--gold);}
 
 /* HISTORY ENTRIES */
 body.theme-nightcity .hist-entry{
@@ -1003,6 +1011,10 @@ body.theme-arctic .stat-desc{color:#5a7a88;}
 body.theme-arctic .pr-card{background:rgba(255,255,255,0.65);border:1px solid rgba(0,168,216,0.18);}
 body.theme-arctic .pr-card::before{background:rgba(220,240,235,0.85);color:var(--gold);}
 body.theme-arctic .pr-value{color:var(--red);font-weight:700;}
+/* PR muscle-group accordion — 3.77.2: bas-.open använde --gold (#5ac8e8 cyan)
+   = nästan osynligt på vitt; var(--red) matchar hist-pass/stat-num. */
+body.theme-arctic .pr-groups{background:rgba(255,255,255,0.65);border:1px solid rgba(0,168,216,0.18);}
+body.theme-arctic .pr-group-head.open{color:var(--red);}
 body.theme-arctic .hist-entry{background:rgba(255,255,255,0.65);border-left:2px solid var(--red);}
 body.theme-arctic .hist-date{color:#1a2e3a;font-weight:600;}
 body.theme-arctic .hist-pass{color:var(--red);font-weight:600;}
@@ -1354,6 +1366,13 @@ body.theme-ember .pr-value{
   font-weight:900;
   text-shadow:0 0 10px rgba(255,204,0,0.5);
 }
+/* PR muscle-group accordion — 3.77.2: stat-box-receptet + ljusare heads. */
+body.theme-ember .pr-groups{
+  background:linear-gradient(135deg,#150a02 0%,#0c0600 100%);
+  border:1px solid #2a1800;
+}
+body.theme-ember .pr-group-head{color:#c08a50;}
+body.theme-ember .pr-group-head:hover{color:var(--red);}
 
 /* HISTORY ENTRIES */
 body.theme-ember .hist-entry{
@@ -1452,6 +1471,8 @@ body.theme-void .chain-tab-name-full{color:#fff;background:rgba(255,255,255,0.08
 body.theme-void .chain-tab.active .chain-tab-name-full{color:#000;background:rgba(255,255,255,0.88);}
 body.theme-void .chain-tab-name-short{color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.05);}
 body.theme-void .chain-tab.adjacent .chain-tab-name-short{color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.07);}
+/* PR muscle-group accordion — 3.77.2: öppen grupp vit (matchar nav-active-mönstret). */
+body.theme-void .pr-group-head.open{color:#fff;}
 
 
 
@@ -2896,6 +2917,10 @@ body.theme-obsidian .stat-desc{color:#8a7a58;font-family:'Cardo',serif;font-styl
 body.theme-obsidian .pr-card{background:rgba(40,28,12,0.5);border:1px solid #2a2010;}
 body.theme-obsidian .pr-card::before{background:rgba(40,30,0,0.7);color:#d4a030;font-family:'Cinzel',serif;}
 body.theme-obsidian .pr-value{color:#f0d99c;font-family:'Cinzel',serif;font-weight:700;}
+/* PR muscle-group accordion — 3.77.2: stat-box-receptet + ljusare heads. */
+body.theme-obsidian .pr-groups{background:rgba(40,28,12,0.5);border:1px solid #2a2010;}
+body.theme-obsidian .pr-group-head{color:#a89468;}
+body.theme-obsidian .pr-group-head.open{color:#c9a35a;}
 body.theme-obsidian .hist-entry{background:rgba(40,28,12,0.4);border-left:2px solid #c9a35a;}
 body.theme-obsidian .hist-date{color:#c9a35a;font-family:'Cinzel',serif;font-weight:600;}
 body.theme-obsidian .hist-pass{color:#f0d99c;font-family:'Cinzel',serif;font-weight:600;}
@@ -3169,6 +3194,10 @@ body.theme-cosmic-horror .stat-desc{color:#7a948c;font-family:'IBM Plex Mono',mo
 body.theme-cosmic-horror .pr-card{background:rgba(10,30,28,0.5);border:1px solid rgba(127,200,180,0.22);border-radius:24px 6px 28px 8px / 16px 22px 12px 24px;}
 body.theme-cosmic-horror .pr-card::before{background:rgba(40,30,15,0.7);color:#d8b878;font-family:'IBM Plex Mono',monospace;}
 body.theme-cosmic-horror .pr-value{color:#e8f7f0;font-family:'Cormorant SC',serif;font-weight:600;}
+/* PR muscle-group accordion — 3.77.2: panel-receptet + ljusare heads (organisk radie, mildare än korten). */
+body.theme-cosmic-horror .pr-groups{background:rgba(10,30,28,0.5);border:1px solid rgba(127,200,180,0.22);border-radius:16px 4px 16px 4px;}
+body.theme-cosmic-horror .pr-group-head{color:#9ec0b4;}
+body.theme-cosmic-horror .pr-group-head.open{color:#e8f7f0;}
 body.theme-cosmic-horror .hist-entry{background:rgba(10,30,28,0.4);border-left:2px solid #7fc8b4;}
 body.theme-cosmic-horror .hist-date{color:#aedcd0;font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;}
 body.theme-cosmic-horror .hist-pass{color:#e8f7f0;font-family:'IBM Plex Mono',monospace;font-weight:500;letter-spacing:.18em;}
@@ -4283,7 +4312,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.77.1';
+const APP_VERSION = '3.77.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

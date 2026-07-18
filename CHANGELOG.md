@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.77.2 — 2026-07-18
+**PR-sektionens muskelgrupps-accordion: tema-audit (Niklas: "grupperingarna syns knappt").** Bara Nanosuit hade explicit `.pr-groups`/`.pr-group-head`-styling (3.58.11) — övriga nio teman föll på bas-CSS:ens `--surface-base`/`--gray-light`/`--gold` med blandat resultat. Fixat per tema med respektive temas ETABLERADE panel-recept (stat-box/hist-entry), inga nya designval: **Night City** panel-gradient + magenta-border, heads #a884cc (var #7a55a0, dovt lila på svart); **Ember** forge-gradient + ember-border, heads #c08a50; **Arctic** frostat panel + `.open` → var(--red) — bas-`.open` använde --gold=#5ac8e8 cyan-på-vitt ≈ osynligt (klassiska light-fällan, jfr 3.72.0); **Void** `.open` → vit (nav-active-mönstret); **Obsidian** panel rgba(40,28,12) + heads #a89468/#c9a35a; **Cosmic Horror** panel + organisk radie + heads #9ec0b4/#e8f7f0. Iron (bas), Undertow, Overgrowth OK som de var (semantiska tokens ger korrekt kontrast). Ren CSS — inga JS-ändringar. 174 tester gröna.
+
+---
+
 ## 3.77.1 — 2026-07-18
 **Historik-delete + log-tombstones (rotfix för undo-dubbletten).** Niklas gym-rapport: undo på avslutat pass → loggade ett set till → Finish igen → passet dubbelt i History. Rotorsak: `undoSession` spliceade loggposten LOKALT men `mergeLogEntries` hade inget tombstone-filter → cloud-kopian resurrectade posten vid nästa merge, och re-finishen skapade en ny post med ny timestamp (samma P4-klass som exerciseNotes-fixen 3.38.0 — "auto-delete av synkade fält MÅSTE skriva tombstone"). **Fix:** (1) `state.deletions.log` (nyckel `passId|timestamp`, samma som merge-nyckeln, 30d-TTL som övriga tombstones); (2) `mergeLogEntries` tar tombstones-param och filtrerar BÅDA sidor — union lokal ∪ cloud av log-tombstones beräknas FÖRE mergen (speglad i src/merge-helpers.js); (3) `undoSession` skriver tombstone för den urplockade posten; (4) NY: `deleteLogEntry` + ✕-knapp bredvid Copy på varje historik-post, med are-you-sure-modal (askModalConfirm, danger) — raderar posten + tombstone så deleten når alla enheter; rör INTE cycle.done (kedjans done-status är Undos jobb). +7 tester (2 merge-unit, 2 sync-e2e inkl. delete-på-andra-enheten, 3 flows: undo-tombstone + re-finish ger EN post, bekräftad delete, avböjd = no-op). 174 tester gröna.
 
