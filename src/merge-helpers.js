@@ -8,12 +8,17 @@
 // deletes kan återuppstå om denna enhet hade gamla data — bättre än att
 // tappa creates.
 
-function mergeLogEntries(localLog, cloudLog){
+// 3.77.1 — tombstones (nyckel passId|timestamp) filtrerar bort medvetet raderade
+// loggposter så cloud-mergen inte resurrectar dem (undo-dubblett-buggen).
+function mergeLogEntries(localLog, cloudLog, tombstones){
   const seen = new Map();
   for(const e of localLog||[]) seen.set(`${e.passId}|${e.timestamp}`, e);
   for(const e of cloudLog||[]){
     const k = `${e.passId}|${e.timestamp}`;
     if(!seen.has(k)) seen.set(k, e);
+  }
+  if(tombstones && typeof tombstones === 'object'){
+    for(const k of Object.keys(tombstones)) seen.delete(k);
   }
   return Array.from(seen.values()).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));
 }

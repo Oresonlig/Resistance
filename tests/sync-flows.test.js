@@ -108,6 +108,35 @@ describe('syncFromCloud (pull)', () => {
     expect(T.state.deletions.exerciseNotes['bench-press']).toBeTruthy(); // tombstonen kvar
   });
 
+  it('log-tombstone 3.77.1: undo/delete-raderad loggpost återuppstår INTE från molnet', async () => {
+    // Scenario 2026-07-18: undo på avslutat pass → splice lokalt, molnet har kvar
+    // posten → utan tombstone resurrectade mergen den = dubblett efter re-finish.
+    const removed = logEntry('F', 1000);
+    const kept = logEntry('F', 2000); // re-finish, ny timestamp
+    T.state.log = [kept];
+    T.state.deletions = { customExercises: {}, exerciseNotes: {}, log: { 'F|1000': Date.now() } };
+    const iso = new Date(Date.now() + 5000).toISOString();
+    installCloud({ data: cloudState({ log: [removed, kept], onboardingDone: true }), updated_at: iso });
+
+    await window.syncFromCloud(UID);
+
+    const keys = T.state.log.map(e => e.passId + '|' + e.timestamp);
+    expect(keys).toEqual(['F|2000']); // dubbletten borta, nya posten kvar
+    expect(T.state.deletions.log['F|1000']).toBeTruthy(); // tombstonen överlever mergen
+  });
+
+  it('log-tombstone från MOLNET raderar lokal kopia (delete på andra enheten)', async () => {
+    T.state.log = [logEntry('F', 1000), logEntry('A', 3000)];
+    const iso = new Date(Date.now() + 5000).toISOString();
+    installCloud({ data: cloudState({ log: [logEntry('A', 3000)], onboardingDone: true,
+      deletions: { customExercises: {}, exerciseNotes: {}, log: { 'F|1000': Date.now() } } }), updated_at: iso });
+
+    await window.syncFromCloud(UID);
+
+    const keys = T.state.log.map(e => e.passId + '|' + e.timestamp);
+    expect(keys).toEqual(['A|3000']);
+  });
+
   it('device-lokala drafts överlever cloud-replace (SL6)', async () => {
     window.ensureDraft('A');
     T.state.draft.savedExercises['A1'] = { id: 'A1', name: 'x', sets: [{ weight: 1, reps: 1 }] };

@@ -46,6 +46,20 @@ describe('mergeLogEntries', () => {
     const out = mergeLogEntries(local, cloud);
     expect(out).toHaveLength(2);
   });
+
+  // 3.77.1 — tombstones (undo-dubblett-rotfixen)
+  it('tombstones filter entries from BOTH sides (passId|timestamp key)', () => {
+    const local = [{passId:'F', timestamp:1000}, {passId:'F', timestamp:2000}];
+    const cloud = [{passId:'F', timestamp:1000}, {passId:'A', timestamp:3000}];
+    const out = mergeLogEntries(local, cloud, {'F|1000': Date.now()});
+    expect(out.map(e=>`${e.passId}|${e.timestamp}`)).toEqual(['F|2000','A|3000']);
+  });
+
+  it('no tombstones param behaves as before (bakåtkompat)', () => {
+    const local = [{passId:'A', timestamp:100}];
+    expect(mergeLogEntries(local, [], undefined)).toHaveLength(1);
+    expect(mergeLogEntries(local, [], {})).toHaveLength(1);
+  });
 });
 
 // ── mergeWeightEntries ───────────────────────────────────────

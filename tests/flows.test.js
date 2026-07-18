@@ -182,6 +182,52 @@ describe('measure följer swappad övning 3.77.0 (getEffectiveEx delad resolver)
   });
 });
 
+describe('undoSession/deleteLogEntry tombstones 3.77.1 (undo-dubblett-rotfixen)', () => {
+  function finishFullSession(passId){
+    window.ensureDraft(passId);
+    const pass = window.getEffectiveChain().find(p => p.id === passId);
+    pass.exercises.forEach(ex => saveDone(ex, [ {...WORK} ]));
+    window.finishSession(passId);
+  }
+
+  it('undoSession skriver tombstone för den urplockade loggposten', () => {
+    finishFullSession('A');
+    const ts = T.state.log[0].timestamp;
+
+    window.undoSession('A');
+
+    expect(T.state.log.length).toBe(0);
+    expect(T.state.deletions.log[`A|${ts}`]).toBeTruthy();
+    // re-finish ger EN post (draften återställdes i done-state)
+    window.finishSession('A');
+    expect(T.state.log.length).toBe(1);
+    expect(T.state.log[0].timestamp).not.toBe(ts);
+  });
+
+  it('deleteLogEntry: bekräftad delete tar bort posten + skriver tombstone', async () => {
+    finishFullSession('A');
+    const ts = T.state.log[0].timestamp;
+    const orig = window.askModalConfirm;
+    window.askModalConfirm = async () => true;
+    try { await window.deleteLogEntry(0); }
+    finally { window.askModalConfirm = orig; }
+
+    expect(T.state.log.length).toBe(0);
+    expect(T.state.deletions.log[`A|${ts}`]).toBeTruthy();
+  });
+
+  it('deleteLogEntry: avböjd bekräftelse är no-op', async () => {
+    finishFullSession('A');
+    const orig = window.askModalConfirm;
+    window.askModalConfirm = async () => false;
+    try { await window.deleteLogEntry(0); }
+    finally { window.askModalConfirm = orig; }
+
+    expect(T.state.log.length).toBe(1);
+    expect(Object.keys(T.state.deletions.log||{}).length).toBe(0);
+  });
+});
+
 describe('importData (backup-fil, 3.65.0-saneringen på riktiga flödet)', () => {
   // 3.68.1 — importData kräver numera bekräftelse (Fable-fynd #2); stubba som doSwap-testerna
   let origConfirm;

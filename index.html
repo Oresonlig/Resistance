@@ -3844,6 +3844,7 @@ function ensureStateDefaults(){
   if(!state.deletions || typeof state.deletions !== 'object') state.deletions = {};
   if(!state.deletions.customExercises) state.deletions.customExercises = {};
   if(!state.deletions.exerciseNotes) state.deletions.exerciseNotes = {};
+  if(!state.deletions.log) state.deletions.log = {}; // 3.77.1 — nyckel: passId|timestamp
   // TTL cleanup: ta bort tombstones äldre än 30 dagar
   const TOMBSTONE_TTL = 30 * 24 * 60 * 60 * 1000;
   const now = Date.now();
@@ -4282,7 +4283,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.77.0';
+const APP_VERSION = '3.77.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4998,12 +4999,18 @@ function setSyncDot(cls){
 // PM1: Merge log-entries från två källor (lokal + cloud) utan dataförlust.
 // Dedup-nyckel = passId|timestamp (en användare loggar inte två pass av
 // samma typ vid exakt samma millisekund). Lokala värden vinner vid kollision.
-function mergeLogEntries(localLog, cloudLog){
+// 3.77.1 — tombstones: utan filter resurrectade cloud-mergen loggposter som
+// undoSession/deleteLogEntry raderat lokalt (Niklas dubblett-pass 2026-07-18,
+// samma P4-klass som exerciseNotes 3.38.0). Nyckel = passId|timestamp.
+function mergeLogEntries(localLog, cloudLog, tombstones){
   const seen = new Map();
   for(const e of localLog||[]) seen.set(`${e.passId}|${e.timestamp}`, e);
   for(const e of cloudLog||[]){
     const k = `${e.passId}|${e.timestamp}`;
     if(!seen.has(k)) seen.set(k, e);
+  }
+  if(tombstones && typeof tombstones === 'object'){
+    for(const k of Object.keys(tombstones)) seen.delete(k);
   }
   return Array.from(seen.values()).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));
 }
@@ -5093,7 +5100,10 @@ async function _syncFromCloudInner(userId){
       const lastSyncedTime = state.lastSyncedCloudTime || 0;
       const cloudHasNewerState = cloudServerTime > lastSyncedTime;
 
-      const mergedLog = mergeLogEntries(state.log, cloud.log);
+      // 3.77.1 — log-tombstones (lokal ∪ cloud) filtrerar mergen så en delete/undo
+      // på endera enheten inte resurrectas av den andras log-kopia.
+      const _logTombs = mergeKeyedMap(state.deletions?.log, cloud.deletions?.log);
+      const mergedLog = mergeLogEntries(state.log, cloud.log, _logTombs);
       const mergedWeight = mergeWeightEntries(state.weightLog, cloud.weightLog);
       const logsChanged = mergedLog.length !== (state.log||[]).length
                        || mergedWeight.length !== (state.weightLog||[]).length;
@@ -5136,6 +5146,7 @@ async function _syncFromCloudInner(userId){
         state.deletions = {
           customExercises: mergeKeyedMap(_ld.customExercises, _cd.customExercises),
           exerciseNotes: mergeKeyedMap(_ld.exerciseNotes, _cd.exerciseNotes),
+          log: _logTombs, // 3.77.1 — redan mergad (lokal ∪ cloud) ovan
         };
 
         // SL2: merga in lokala fält. Cloud vinner per id/key vid konflikt, men lokala
@@ -8126,7 +8137,18 @@ function doneRest(passId){const now=Date.now();curCycle().done[passId]={date:fmt
 function undoSession(passId){
   const completed=curCycle().done[passId];
   curCycle().done[passId]=null;
-  for(let i=state.log.length-1;i>=0;i--){if(state.log[i].passId===passId){state.log.splice(i,1);break;}}
+  for(let i=state.log.length-1;i>=0;i--){
+    if(state.log[i].passId===passId){
+      // 3.77.1 — tombstone: utan den resurrectade cloud-mergen den urplockade
+      // loggposten → dubblett-pass när sessionen avslutades på nytt (2026-07-18).
+      const _rm=state.log[i];
+      if(!state.deletions) state.deletions={};
+      if(!state.deletions.log) state.deletions.log={};
+      state.deletions.log[`${_rm.passId}|${_rm.timestamp}`]=Date.now();
+      state.log.splice(i,1);
+      break;
+    }
+  }
   if(completed&&(completed.exercises||[]).length>0){
     // Finished session undo — restore exercises as an editable draft (all in "✓ Done" state)
     const savedExercises={},extras=[],extraSets={};
@@ -8265,6 +8287,23 @@ function copyLogEntryToClipboard(idx){
   const entry=state.log[idx];if(!entry)return;
   const lines = buildCopyLines(entry.passName||entry.passId, fmtDate(entry.timestamp), entry.timestamp, entry.exercises, unitLabel(), entry.duration);
   writeClipboard(lines.join('\n'));
+}
+// 3.77.1 — radera en historik-post (Niklas: undo-dubbletten). Skriver tombstone
+// (passId|timestamp) så cloud-mergen inte resurrectar den från andra enheter.
+// Rör INTE cycle.done — kedjans done-status är en separat fråga (Undo finns för den).
+async function deleteLogEntry(idx){
+  const entry=state.log[idx];if(!entry)return;
+  const ok=await askModalConfirm('Delete session?',
+    `<strong>${fmtDate(entry.timestamp)} — Session ${escapeHTML(entry.passId)}</strong> will be permanently removed from history on all devices. PRs are recalculated without it. This cannot be undone.`,
+    {confirmLabel:'Delete', danger:true});
+  if(!ok) return;
+  if(!state.deletions) state.deletions={};
+  if(!state.deletions.log) state.deletions.log={};
+  state.deletions.log[`${entry.passId}|${entry.timestamp}`]=Date.now();
+  state.log.splice(idx,1);
+  save();
+  renderProgress();
+  showToast('Session deleted');
 }
 function doNewCycle(){
   // Ensure new cycle has all current chain keys
@@ -8528,7 +8567,7 @@ function renderProgress(){
       html+=`<div class="hist-entry rest-hist"><div class="hist-header"><div><div class="hist-date">${escapeHTML(item.snap.date||fmtDate(item.ts))}</div><div class="hist-pass">Forced Rest</div></div><span class="rest-hist-badge">✓ Rest</span></div></div>`;
       return;
     }
-    const entry=item.entry, idx=item.idx;const cnt=(entry.exercises||[]).filter(e=>!e.skipped).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;let _hw=0,_hs=0;const sh=(ex.sets||[]).map(s=>{const _lbl=s.warmup?'W'+(++_hw):'S'+(++_hs);return `<div class="hist-set">${_lbl}: ${escapeHTML(formatSetLine(s,unitLabel()))}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;}).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
+    const entry=item.entry, idx=item.idx;const cnt=(entry.exercises||[]).filter(e=>!e.skipped).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button><button onclick="event.stopPropagation();deleteLogEntry(${idx})" title="Delete session" aria-label="Delete session" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 10px;cursor:pointer;white-space:nowrap;">✕</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;let _hw=0,_hs=0;const sh=(ex.sets||[]).map(s=>{const _lbl=s.warmup?'W'+(++_hw):'S'+(++_hs);return `<div class="hist-set">${_lbl}: ${escapeHTML(formatSetLine(s,unitLabel()))}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;}).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
   el.innerHTML=html;
 }
 
