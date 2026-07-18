@@ -139,6 +139,49 @@ describe('doSwap (temp/perm)', () => {
   });
 });
 
+describe('measure följer swappad övning 3.77.0 (getEffectiveEx delad resolver)', () => {
+  // Rotorsak gymnotes 2026-07-18: effEx kollade bara customExercises → inswappad
+  // BIBLIOTEKS-övning föll tillbaka till slottens ex och ärvde dess bw-flagga.
+  it('biblioteksövning inswappad i BW-slot får measure=weight, inte bw', async () => {
+    window.ensureDraft('F');
+    const f1 = window.getEffectiveChain().find(p => p.id === 'F').exercises[0]; // Pull-ups, bw:true
+    expect(f1.bw).toBe(true);
+    await window.doSwap(f1.id, 'Seated Row (Cable)', 'F');
+
+    const effEx = window.getEffectiveEx(f1);
+    expect(effEx.name).toBe('Seated Row (Cable)');
+    expect(!!effEx.bw).toBe(false); // slottens bw-flagga ärvs INTE
+    const exId = window.getRenderExId(f1.id);
+    expect(window.getMeasure(exId, effEx)).toBe('weight');
+  });
+
+  it('biblioteksövning med explicit measure inswappad → dess measure vinner', async () => {
+    window.ensureDraft('F');
+    const f2 = window.getEffectiveChain().find(p => p.id === 'F').exercises[1]; // Unilateral Row, ej bw
+    await window.doSwap(f2.id, 'Chins (supinated)', 'F'); // library: measure:'bw'
+
+    const exId = window.getRenderExId(f2.id);
+    expect(window.getMeasure(exId, window.getEffectiveEx(f2))).toBe('bw');
+  });
+
+  it('custom-övnings flaggor vinner fortfarande vid swap (regression 3.54.0)', async () => {
+    window.ensureDraft('F');
+    T.state.customExercises = [{ id:'c1', name:'My Timed Thing', timed:true, cat:'Other' }];
+    const f3 = window.getEffectiveChain().find(p => p.id === 'F').exercises[2];
+    await window.doSwap(f3.id, 'My Timed Thing', 'F');
+
+    const exId = window.getRenderExId(f3.id);
+    expect(window.getMeasure(exId, window.getEffectiveEx(f3))).toBe('timed');
+  });
+
+  it('oswappad slot behåller sin egen flagga (Pull-ups förblir bw)', () => {
+    window.ensureDraft('F');
+    const f1 = window.getEffectiveChain().find(p => p.id === 'F').exercises[0];
+    const exId = window.getRenderExId(f1.id) || f1.id;
+    expect(window.getMeasure(exId, window.getEffectiveEx(f1))).toBe('bw');
+  });
+});
+
 describe('importData (backup-fil, 3.65.0-saneringen på riktiga flödet)', () => {
   // 3.68.1 — importData kräver numera bekräftelse (Fable-fynd #2); stubba som doSwap-testerna
   let origConfirm;

@@ -4282,7 +4282,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.76.0';
+const APP_VERSION = '3.77.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5648,11 +5648,9 @@ function buildPassBodyHTML(pass,cycle,nextId){
         const sessionSwap = draftSwaps[ex.id];
         const permSwap = state.permanentSwaps && state.permanentSwaps[ex.id];
         const customName = (isDone&&savedData?.name)||sessionSwap||permSwap||globalOverride||ex.name;
-        // If a custom exercise is swapped in, its flags override the original ex
-        const swappedCustom = (sessionSwap || permSwap)
-          ? state.customExercises?.find(c => c.name === (sessionSwap || permSwap))
-          : null;
-        const effEx = swappedCustom || ex;
+        // 3.77.0 — effEx via delad getEffectiveEx (custom OCH bibliotek). Förut kollades
+        // bara customExercises → inswappad biblioteksövning ärvde slottens bw/timed.
+        const effEx = getEffectiveEx(ex);
         // 3.76.0 — swap-medveten tagg-resolution (kanoniskt nycklad override +
         // inswappad övnings flaggor) via delad getTagActive-resolver.
         const isRamp = getTagActive(ex, 'ramp');
@@ -7091,12 +7089,12 @@ function buildTagEditorHTML(ex, passId){
   }).join('');
   // 3.56.0 — Mätsätt (measure): single-select, nyckel = kanoniskt exId (följer rörelsen).
   const canonId = ex.extra?extraExId(ex.name):(getRenderExId(ex.id)||ex.id);
-  const curMeasure = getMeasure(canonId, ex);
+  const curMeasure = getMeasure(canonId, getEffectiveEx(ex)); // 3.77.0 — swap-medveten
   const MEASURE_OPTS=[['weight','Weight × reps'],['bw','Bodyweight + load'],['bwreps','Reps only'],['timed','Timed (sec)'],['cardio','Cardio (time + km)'],['cardiosprint','Cardio sprints'],['carry','Loaded carry (kg + m)'],['inclinecardio','Incline cardio (grade + time + km)'],['sauna','Sauna (temp + time)']];
   const measureSel='<select onchange="setExerciseMeasure(\''+eid+'\',\''+pid+'\',this.value)" style="font-family:var(--mono);font-size:.5rem;padding:4px 6px;background:var(--surface-input);color:var(--white);border:1px solid var(--border-subtle);">'+MEASURE_OPTS.map(function(o){return '<option value="'+o[0]+'"'+(o[0]===curMeasure?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>';
   let sprintSel='';
   if(curMeasure==='cardiosprint'){
-    const cb=getSprintBase(canonId, ex);
+    const cb=getSprintBase(canonId, getEffectiveEx(ex));
     sprintSel='<div style="display:flex;gap:6px;align-items:center;margin-top:6px;"><span style="font-family:var(--mono);font-size:.46rem;color:#888;">Base:</span>'+['time','dist'].map(function(v){const a=cb===v;return '<button onclick="setSprintBase(\''+eid+'\',\''+pid+'\',\''+v+'\')" style="font-family:var(--mono);font-size:.46rem;padding:3px 8px;cursor:pointer;background:'+(a?'#08101a':'none')+';border:1px solid '+(a?'#7ab':'#333')+';color:'+(a?'#7ab':'#555')+';">'+(v==='time'?'Time':'Distance')+'</button>';}).join('')+'</div>';
   }
   const measureBlock='<div style="margin-bottom:10px;padding-top:8px;border-top:1px solid var(--border-subtle);"><div style="font-family:var(--mono);font-size:.48rem;color:#7ab;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Logged as</div>'+measureSel+sprintSel+'</div>';
@@ -7265,11 +7263,9 @@ function saveExercise(passId,exId){
   const isExtra=exId.startsWith('extra_');
   const ex=isExtra?makeExtraEx(state.draft?.extras?.find(e=>e.id===exId)):pass.exercises.find(e=>e.id===exId);
   if(!ex)return;
-  // 3.54.0: effEx speglar render-prioriteten (inswappad custom-övnings flaggor vinner
-  // över slottens) — samma diskrepans-klass som 3.52.3 fixade för tagOvr-lagret.
-  const _swapNameS=isExtra?null:(state.draft?.swaps?.[exId]||state.permanentSwaps?.[exId]);
-  const _swapCustomS=_swapNameS?state.customExercises?.find(c=>c.name===_swapNameS):null;
-  const effExS=_swapCustomS||ex;
+  // 3.77.0 — effEx via delad getEffectiveEx (custom OCH bibliotek), samma resolver
+  // som render. Extras hanteras internt (ex.extra → return ex).
+  const effExS=getEffectiveEx(ex);
   // 3.56.0 — measure-driven sparning (ersätter isBW/isTimed-grenarna).
   const _canonS=isExtra?extraExId(ex.name):(getRenderExId(exId)||exId);
   const measure=getMeasure(_canonS, effExS);
@@ -7747,8 +7743,12 @@ const TAG_ORDER = ['ramp','bw','uni','timed','singles'];
 // nycklades på slot-id → en inswappad övning ärvde gamla slottens ramp/bw (rotorsaken
 // till "Internal Rotator Cuff blev bodyweight", 2026-07-14) och en override satt för
 // övning X spökade kvar på slotten till nästa övning. Nu: EN resolver, swap-medveten.
-// _tagFlagSource: källan för bas-flaggor = den FAKTISKT tränade övningen.
-function _tagFlagSource(ex){
+// getEffectiveEx: den FAKTISKT tränade övningen — källan för bas-flaggor OCH measure.
+// 3.77.0 — delad av taggar (getTagActive) och measure-resolution (render/save/capture/
+// getSetTargets/tag-editor). Tidigare kollade measure-sidans effEx bara customExercises →
+// inswappad BIBLIOTEKS-övning föll tillbaka till slottens ex och ärvde dess bw/timed-
+// flaggor via measureFromFlags ("allt swappat blev BW", gymnotes 2026-07-18).
+function getEffectiveEx(ex){
   if(!ex || ex.extra) return ex; // extras: makeExtraEx ärver redan custom-flaggor
   const swapName = state.draft?.swaps?.[ex.id] || state.permanentSwaps?.[ex.id];
   if(!swapName || swapName===ex.name) return ex;
@@ -7770,7 +7770,7 @@ function getTagActive(ex, key){
   if(!ex) return false;
   const ovr = state.exerciseTagOverrides?.[tagOverrideKeyFor(ex)];
   if(ovr && ovr[key]!==undefined) return !!ovr[key];
-  return !!(_tagFlagSource(ex)?.[key]);
+  return !!(getEffectiveEx(ex)?.[key]);
 }
 function getPrimaryTag(ex){
   if(!ex) return null;
@@ -7796,7 +7796,7 @@ function getSetTargets(ex){
   // Carry forward från förra avslutade passet (cap 8). 3.40.0: keyat på exId
   // (följer övningen) med slot-fallback för pre-migration-data.
   const _exId = getRenderExId(ex.id) || ex.id;
-  const measure = getMeasure(_exId, ex);
+  const measure = getMeasure(_exId, getEffectiveEx(ex)); // 3.77.0 — swap-medveten
   const def = getTagDefaults(ex, measure);
   const lastWork = Math.min(state.lastSessionSetCount?.[_exId] ?? state.lastSessionSetCount?.[ex.id] ?? 0, 8);
   const work = lastWork || def.work;
@@ -7918,9 +7918,8 @@ function captureInputsToSetsBuffer(exId,passId){
   const pass=chain.find(p=>p.id===passId);
   // 3.54.0: extras får syntetiskt ex + samma effEx-resolution som render/save
   const ex=isExtra?makeExtraEx(state.draft?.extras?.find(e=>e.id===exId)):pass?.exercises.find(e=>e.id===exId);
-  const _swapNameC=isExtra?null:(state.draft?.swaps?.[exId]||state.permanentSwaps?.[exId]);
-  const _swapCustomC=_swapNameC?state.customExercises?.find(c=>c.name===_swapNameC):null;
-  const effExC=_swapCustomC||ex;
+  // 3.77.0 — effEx via delad getEffectiveEx (custom OCH bibliotek), samma resolver som render/save.
+  const effExC=getEffectiveEx(ex);
   // 3.56.0 — measure-driven inläsning (ersätter isBW/isTimed-grenarna).
   const _canonC=isExtra?extraExId(ex?.name):(getRenderExId(exId)||exId);
   const measure=getMeasure(_canonC, effExC);
