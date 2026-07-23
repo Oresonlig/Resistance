@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.78.3 — 2026-07-23
+**PR-graf gym-feedback #3 (Niklas, efter 3.78.2 "ser nästan helt 100% nu"): datumtexten under grafen otydlig.** X-axel-datumen använde samma dova `#333` som y-axelns kg-rutnät — svårläst. Fix: `dateColor` läses från `--gray-light` (samma body-lookup-mönster som `goldColor`, 3.78.2) — redan appens etablerade tema-inverterade "sekundärtext"-token (69 andra användningar i index.html, semantiskt korrekt mörk-på-ljust för Arctic/Undertow/Overgrowth, ljus-på-mörkt för övriga). PR-punkternas datum highlightas i samma guldfärg som PR-punkten + fetstil — samma "det här var ett rekord"-signal på punkt OCH datum, Niklas önskemål. 174 tester gröna.
+
+---
+
 ## 3.78.2 — 2026-07-23
 **PR-graf gym-feedback #2 (Niklas mobilskärmdump, Nanosuit): legend-färg matchade inte grafens PR-punkt + expand-hint olästbar.** **Rotorsaksfynd:** `drawPRChart`s `goldColor`-lookup läste `getComputedStyle(document.documentElement)` — document.documentElement ÄR `<html>`, en FÖRÄLDER till `<body>`. Temats `--gold`-override sitter på `body.theme-nanosuit{...}` (ett body-BARN); CSS-kaskaden går uppifrån-ned, så html ser bara `:root`s defaultvärde oavsett aktivt tema. Legendens CSS `var(--gold)` kaskaderar korrekt (ren stylesheet-cascade, ingen JS-lookup inblandad) → cyan i Nanosuit. Canvas-punkten föll tillbaka på ett gult default → synlig färgskillnad. Fix: läs av `document.body` istf `document.documentElement` — body BÄR temaklassen. Samma bugg fanns latent i Weight Curve-grafen (`--green-bright`-mållinjen + `--gold`-trendlinjen), fixad i samma svep eftersom mekanismen är identisk. **Expand-hint:** "▸ Progression" i `#3a3a3a` var i praktiken oläsbar mot Nanosuits mörka bakgrund → bytt till tydlig `color:var(--gold)` + explicit text "▸ Tap for graph" / "▾ Tap to collapse" (Niklas önskemål, samma chevron-vokabulär som resten av appen). 174 tester gröna.
 
