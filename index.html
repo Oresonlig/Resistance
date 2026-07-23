@@ -365,9 +365,15 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .pr-ex-name{font-size:.72rem;font-weight:500;margin-bottom:2px;margin-right:18px;}
 .pr-value{font-family:var(--display);font-size:1.4rem;color:var(--gold);line-height:1;}
 .pr-sub{font-family:var(--mono);font-size:.46rem;color:#4a4a4a;margin-top:2px;}
-/* 3.78.0 — tap-to-expand progressionsgraf i PR-kortet */
+/* 3.78.0 — tap-to-expand progressionsgraf i PR-kortet. 3.78.1: expand-hint + legend
+   (gym-feedback: tap-affordansen och guld-punktens betydelse var otydliga). */
+.pr-expand-hint{font-family:var(--mono);font-size:.42rem;color:#3a3a3a;text-transform:uppercase;letter-spacing:.06em;margin-top:6px;}
 .pr-chart-wrap{margin-top:9px;padding-top:9px;border-top:1px solid var(--border-subtle);cursor:default;}
 .pr-chart-empty{font-family:var(--mono);font-size:.5rem;color:#4a4a4a;text-align:center;padding:16px 0;}
+.pr-chart-legend{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.44rem;color:#5a5a5a;text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px;}
+.pr-legend-dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+.pr-legend-dot.pr-legend-pr{background:var(--gold);border:1px solid #000;}
+.pr-legend-dot.pr-legend-best{background:#c0392b;}
 canvas.pr-chart-canvas{width:100%!important;display:block;}
 .hist-entry{border:1px solid var(--border-subtle);background:var(--surface-base);margin-bottom:6px;}
 .hist-header{padding:9px 11px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
@@ -4317,7 +4323,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.78.0';
+const APP_VERSION = '3.78.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8602,10 +8608,16 @@ function prCardHTML(pr, isOpen, points){
       const msg=(!points||!points.length)?'No session history yet.':'Only one session logged — keep training to see progression.';
       chartHTML=`<div class="pr-chart-wrap"><div class="pr-chart-empty">${msg}</div></div>`;
     } else {
-      chartHTML=`<div class="pr-chart-wrap"><canvas class="pr-chart-canvas" id="prchart-${escapeHTML(pr.exId)}" height="150"></canvas></div>`;
+      // 3.78.1 — legend (gym-feedback: guld-punkten var självförklarande för mig, inte
+      // för gemene man). Färgerna är literal-matchade mot drawPRChart (CSS var(--gold)
+      // = samma lookup som JS:en gör, röd hardcoded som i canvas-linjen).
+      chartHTML=`<div class="pr-chart-wrap"><div class="pr-chart-legend"><span class="pr-legend-dot pr-legend-pr"></span>PR<span class="pr-legend-dot pr-legend-best"></span>Best set</div><canvas class="pr-chart-canvas" id="prchart-${escapeHTML(pr.exId)}" height="150"></canvas></div>`;
     }
   }
-  return `<div class="pr-card${isOpen?' open':''}" onclick="togglePRChart(${escapeHTML(jsExId)})"><button class="pr-delete" onclick="event.stopPropagation();ignorePR(${escapeHTML(jsName)})" title="Remove this PR" aria-label="Remove ${safeName}">✕</button><div class="pr-ex-name">${safeName}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div>${chartHTML}</div>`;
+  // 3.78.1 — "▸/▾ Progression"-rad (gym-feedback: tap-to-expand var osynligt för gemene
+  // man). Samma chevron-språk som muskelgrupp-accordionen/kollapsade rader använder.
+  const expandHint=`<div class="pr-expand-hint">${isOpen?'▾':'▸'} Progression</div>`;
+  return `<div class="pr-card${isOpen?' open':''}" onclick="togglePRChart(${escapeHTML(jsExId)})"><button class="pr-delete" onclick="event.stopPropagation();ignorePR(${escapeHTML(jsName)})" title="Remove this PR" aria-label="Remove ${safeName}">✕</button><div class="pr-ex-name">${safeName}</div><div class="pr-value">${val}</div><div class="pr-sub">${sub}</div>${expandHint}${chartHTML}</div>`;
 }
 function renderProgress(){
   const el=document.getElementById('view-progress');

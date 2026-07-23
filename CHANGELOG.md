@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.78.1 — 2026-07-23
+**PR-graf gym-feedback (Niklas mobilskärmdump, Nanosuit): tap-affordans + legend var otydliga.** (1) "▸ Progression" / "▾ Progression"-rad tillagd på varje PR-kort, alltid synlig — samma chevron-vokabulär som muskelgrupp-accordionen och kollapsade övningsrader använder på andra ställen i appen, så det inte krävs att veta i förväg att kortet är tappbart. (2) Legend ovanför grafen (guld-prick "PR" · röd-prick "Best set") när grafen visas — färgerna literal-matchade mot `drawPRChart`s faktiska punktfärger (`var(--gold)` samma CSS-lookup som JS:en gör, röd hardcoded som canvas-linjen). Ren markup/CSS, ingen logikändring. 174 tester gröna.
+
+---
+
 ## 3.78.0 — 2026-07-23
 **PR-progressionsgraf (ny feature, backlog sedan 3.77.0).** Tap på ett PR-kort expanderar en canvas-linjegraf (`drawPRChart`, samma recept som Weight Curve) som visar bästa set per LOGGAD SESSION över tid för den övningen — så en platå (samma vikt i flera månader) syns lika tydligt som progression. Punkter som var en ny all-time-high när de sattes får en guld-markör istf den vanliga röda punkten, så PR-ögonblicken syns i samma graf (Niklas valde "en graf, PR markerat" över två separata grafer). Ny `getExerciseProgression(exId, measure)` speglar `getAllPRs`s `prValue`/`prTiebreak`-logik men en punkt per session; `progressionUnit`/`progressionDisplay` härleder enhet/kg-konvertering generiskt från measure-formen (`m.pr`), ingen per-övnings-specialkod. Kortets öppna/stängda-läge är transient (`_prChartOpenId`, inte i `state`) — en ren visuell toggle ska inte trigga en sync-skrivning. Öppet kort spänner hela grid-raden (`.pr-card.open{grid-column:1/-1}`) så grafen får full bredd. Scope: bara övningar med aktuellt PR (samma set som redan visas i PR-gridden). 174 tester gröna (ingen ny testfil denna gång — ren UI/rendering, ej browser-verifierad).
 
