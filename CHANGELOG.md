@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.78.2 — 2026-07-23
+**PR-graf gym-feedback #2 (Niklas mobilskärmdump, Nanosuit): legend-färg matchade inte grafens PR-punkt + expand-hint olästbar.** **Rotorsaksfynd:** `drawPRChart`s `goldColor`-lookup läste `getComputedStyle(document.documentElement)` — document.documentElement ÄR `<html>`, en FÖRÄLDER till `<body>`. Temats `--gold`-override sitter på `body.theme-nanosuit{...}` (ett body-BARN); CSS-kaskaden går uppifrån-ned, så html ser bara `:root`s defaultvärde oavsett aktivt tema. Legendens CSS `var(--gold)` kaskaderar korrekt (ren stylesheet-cascade, ingen JS-lookup inblandad) → cyan i Nanosuit. Canvas-punkten föll tillbaka på ett gult default → synlig färgskillnad. Fix: läs av `document.body` istf `document.documentElement` — body BÄR temaklassen. Samma bugg fanns latent i Weight Curve-grafen (`--green-bright`-mållinjen + `--gold`-trendlinjen), fixad i samma svep eftersom mekanismen är identisk. **Expand-hint:** "▸ Progression" i `#3a3a3a` var i praktiken oläsbar mot Nanosuits mörka bakgrund → bytt till tydlig `color:var(--gold)` + explicit text "▸ Tap for graph" / "▾ Tap to collapse" (Niklas önskemål, samma chevron-vokabulär som resten av appen). 174 tester gröna.
+
+---
+
 ## 3.78.1 — 2026-07-23
 **PR-graf gym-feedback (Niklas mobilskärmdump, Nanosuit): tap-affordans + legend var otydliga.** (1) "▸ Progression" / "▾ Progression"-rad tillagd på varje PR-kort, alltid synlig — samma chevron-vokabulär som muskelgrupp-accordionen och kollapsade övningsrader använder på andra ställen i appen, så det inte krävs att veta i förväg att kortet är tappbart. (2) Legend ovanför grafen (guld-prick "PR" · röd-prick "Best set") när grafen visas — färgerna literal-matchade mot `drawPRChart`s faktiska punktfärger (`var(--gold)` samma CSS-lookup som JS:en gör, röd hardcoded som canvas-linjen). Ren markup/CSS, ingen logikändring. 174 tester gröna.
 
