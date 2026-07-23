@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.78.0 — 2026-07-23
+**PR-progressionsgraf (ny feature, backlog sedan 3.77.0).** Tap på ett PR-kort expanderar en canvas-linjegraf (`drawPRChart`, samma recept som Weight Curve) som visar bästa set per LOGGAD SESSION över tid för den övningen — så en platå (samma vikt i flera månader) syns lika tydligt som progression. Punkter som var en ny all-time-high när de sattes får en guld-markör istf den vanliga röda punkten, så PR-ögonblicken syns i samma graf (Niklas valde "en graf, PR markerat" över två separata grafer). Ny `getExerciseProgression(exId, measure)` speglar `getAllPRs`s `prValue`/`prTiebreak`-logik men en punkt per session; `progressionUnit`/`progressionDisplay` härleder enhet/kg-konvertering generiskt från measure-formen (`m.pr`), ingen per-övnings-specialkod. Kortets öppna/stängda-läge är transient (`_prChartOpenId`, inte i `state`) — en ren visuell toggle ska inte trigga en sync-skrivning. Öppet kort spänner hela grid-raden (`.pr-card.open{grid-column:1/-1}`) så grafen får full bredd. Scope: bara övningar med aktuellt PR (samma set som redan visas i PR-gridden). 174 tester gröna (ingen ny testfil denna gång — ren UI/rendering, ej browser-verifierad).
+
+---
+
 ## 3.77.2 — 2026-07-18
 **PR-sektionens muskelgrupps-accordion: tema-audit (Niklas: "grupperingarna syns knappt").** Bara Nanosuit hade explicit `.pr-groups`/`.pr-group-head`-styling (3.58.11) — övriga nio teman föll på bas-CSS:ens `--surface-base`/`--gray-light`/`--gold` med blandat resultat. Fixat per tema med respektive temas ETABLERADE panel-recept (stat-box/hist-entry), inga nya designval: **Night City** panel-gradient + magenta-border, heads #a884cc (var #7a55a0, dovt lila på svart); **Ember** forge-gradient + ember-border, heads #c08a50; **Arctic** frostat panel + `.open` → var(--red) — bas-`.open` använde --gold=#5ac8e8 cyan-på-vitt ≈ osynligt (klassiska light-fällan, jfr 3.72.0); **Void** `.open` → vit (nav-active-mönstret); **Obsidian** panel rgba(40,28,12) + heads #a89468/#c9a35a; **Cosmic Horror** panel + organisk radie + heads #9ec0b4/#e8f7f0. Iron (bas), Undertow, Overgrowth OK som de var (semantiska tokens ger korrekt kontrast). Ren CSS — inga JS-ändringar. 174 tester gröna.
 
