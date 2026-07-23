@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.78.4 — 2026-07-23
+**Cross-theme-audit (Niklas begärde en dubbelkoll): Arctic hade osynlig PR-highlight.** Grepp genom alla 10 temans `--gold`-värden visade att Arctic overridar `--gold` till `#5ac8e8` (ljus cyan) — samma "cyan-på-vitt ≈ osynligt"-fälla som redan tvingat fram `var(--red)`-overrides för `.pr-value`/`.pr-group-head.open` (3.77.2). Min nya guld-highlight (legend, "Tap for graph"-hint, PR-punkt+datum på canvasen) hade ärvt samma osynlighet på Arctic. Fix: ny CSS-token `--pr-highlight` (default `var(--gold)`, deklarerad på `body`-selektorn ISTF `:root` så var()-referensen re-evalueras mot varje temas EGNA `--gold` istället för att frysa vid `:root`s default) — `body.theme-arctic{--pr-highlight:var(--red)}` overridar till Arctics redan etablerade "syns-på-vitt"-blå (`#00a8d8`). Canvasens `prColor`-lookup läser nu `--pr-highlight` istf rå `--gold`, så legend/hint/graf matchar i alla 10 teman. Verifierat via grep av samtliga temans `--gold`/`--red`-värden (ingen browser tillgänglig i sandboxen — Niklas bör ändå browser-testa Arctic specifikt, det enda temat som faktiskt ändrade färg denna version). 174 tester gröna.
+
+---
+
 ## 3.78.3 — 2026-07-23
 **PR-graf gym-feedback #3 (Niklas, efter 3.78.2 "ser nästan helt 100% nu"): datumtexten under grafen otydlig.** X-axel-datumen använde samma dova `#333` som y-axelns kg-rutnät — svårläst. Fix: `dateColor` läses från `--gray-light` (samma body-lookup-mönster som `goldColor`, 3.78.2) — redan appens etablerade tema-inverterade "sekundärtext"-token (69 andra användningar i index.html, semantiskt korrekt mörk-på-ljust för Arctic/Undertow/Overgrowth, ljus-på-mörkt för övriga). PR-punkternas datum highlightas i samma guldfärg som PR-punkten + fetstil — samma "det här var ett rekord"-signal på punkt OCH datum, Niklas önskemål. 174 tester gröna.
 
