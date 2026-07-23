@@ -233,8 +233,10 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .set-row{display:grid;align-items:start;gap:4px;margin-bottom:4px;}.set-row.uni-set{grid-template-columns:24px 1fr 1fr 48px 28px 36px 28px;}/* 3.56.0 — measure-drivna grid-layouter (olika fält-antal per mätsätt) */
 .set-row.m-weight,.set-row.m-bw{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
 .set-row.m-bwreps,.set-row.m-timed{grid-template-columns:24px 1fr 48px 36px 28px;}
-.set-row.m-cardio,.set-row.m-cardiosprint,.set-row.m-carry,.set-row.m-sauna{grid-template-columns:24px 1fr 1fr 36px 28px;}
-.set-row.m-inclinecardio{grid-template-columns:24px 1fr 1fr 1fr 36px 28px;}
+.set-row.m-cardio,.set-row.m-carry,.set-row.m-sauna{grid-template-columns:24px 1fr 1fr 36px 28px;}
+/* 3.78.7 — cardiosprint fick ett tredje fält (tid+km+antal, ingen sprintBase-toggle
+   längre) — flyttad hit från 2-fälts-gruppen ovan, samma bredd som inclinecardio. */
+.set-row.m-inclinecardio,.set-row.m-cardiosprint{grid-template-columns:24px 1fr 1fr 1fr 36px 28px;}
 .set-row.m-weight.uni,.set-row.m-bw.uni{grid-template-columns:24px 1fr 1fr 48px 28px 36px 28px;}
 .set-row.m-bwreps.uni{grid-template-columns:24px 1fr 48px 28px 36px 28px;}
 /* STANDARD set-label size — crosses ALL themes (matches .set-unit KG/REPS at .82rem).
@@ -3861,7 +3863,6 @@ function ensureStateDefaults(){
   if(!state.theme) state.theme = 'iron';
   if(!state.exerciseTagOverrides) state.exerciseTagOverrides = {};
   if(!state.exerciseMeasureOverride) state.exerciseMeasureOverride = {};
-  if(!state.exerciseSprintBase) state.exerciseSprintBase = {};
   if(!state.removedExercises) state.removedExercises = {};
   if(!state.weightStep) state.weightStep = 2.5;
   if(!state.addedExercises) state.addedExercises = {};
@@ -3943,7 +3944,7 @@ function freshState(){
     unit:'kg', tempUnit:'c', exerciseOverrides:{}, sessionNameOverrides:{},
     timerDefault:120, timerEnabled:false, exerciseNotes:{},
     onboardingDone:false, theme:'iron',
-    exerciseTagOverrides:{}, exerciseMeasureOverride:{}, exerciseSprintBase:{}, updatedAt:0,
+    exerciseTagOverrides:{}, exerciseMeasureOverride:{}, updatedAt:0,
     customExercises:[], appVersion:APP_VERSION,
     removedExercises:{}, weightStep:2.5,
     addedExercises:{}, hiddenRemoved:{},
@@ -4220,7 +4221,7 @@ const EXERCISE_LIBRARY = [
   {name:'Plank', cat:'Core', measure:'timed'},
   {name:'Sit-ups', cat:'Core', measure:'bwreps'},
   // CARDIO / CONDITIONING
-  {name:'Assault Bike', cat:'Cardio', measure:'cardiosprint', sprintBase:'time'},
+  {name:'Assault Bike', cat:'Cardio', measure:'cardiosprint'},
   {name:'Bike Cardio', cat:'Cardio', measure:'cardio', tip:'20 min steady state'},
   {name:'Dead Hang', cat:'Cardio', measure:'timed', tip:'Supinated or neutral'},
   {name:'Farmers Walk', cat:'Cardio', measure:'carry'},
@@ -4336,7 +4337,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.78.6';
+const APP_VERSION = '3.78.7';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4471,7 +4472,10 @@ const MEASURES = {
   bwreps:       { fields:['reps'],            pr:'reps',    forced:true,  bw:false },
   timed:        { fields:['secs'],            pr:'secs',    forced:true,  bw:false },
   cardio:       { fields:['secs','dist'],     pr:'dist',    forced:false, bw:false },
-  cardiosprint: { fields:['base','sprints'],  pr:'sprints', forced:false, bw:false },
+  // 3.78.7 — time+dist visas nu BÅDA alltid (Niklas: ville se km, inte bara tid+antal),
+  // samma "alla fält på en gång"-mönster som inclinecardio. sprintBase-togglen (time
+  // ELLER dist) borttagen i samma svep — se getSprintBase/setSprintBase (raderade).
+  cardiosprint: { fields:['secs','dist','sprints'], pr:'sprints', forced:false, bw:false },
   carry:        { fields:['weight','distm'],  pr:'weight',  forced:false, bw:false },
   inclinecardio:{ fields:['incline','secs','dist'], pr:'dist', forced:false, bw:false },
   sauna:        { fields:['temp','secs'],     pr:'secs',    forced:false, bw:false },
@@ -4482,13 +4486,13 @@ function measureFromFlags(ex){
   if(ex.bw) return 'bw';
   return 'weight';
 }
-// Map kanoniskt exId → {measure, sprintBase} byggd från EXERCISE_LIBRARY (lazy).
+// Map kanoniskt exId → {measure} byggd från EXERCISE_LIBRARY (lazy).
 let _libraryMeasureCache = null;
 function libraryMeasureMap(){
   if(_libraryMeasureCache) return _libraryMeasureCache;
   const m = {};
   for(const e of EXERCISE_LIBRARY){
-    if(e.measure) m[slugifyExId(e.name)] = {measure:e.measure, sprintBase:e.sprintBase||null};
+    if(e.measure) m[slugifyExId(e.name)] = {measure:e.measure};
   }
   _libraryMeasureCache = m;
   return m;
@@ -4538,17 +4542,6 @@ function getMeasure(exId, ex){
   // missar. Matcha bibliotekets measure på namn-slug så Bike Cardio m.fl. får rätt form.
   if(ex?.name){ const byName=libraryMeasureMap()[slugifyExId(ex.name)]; if(byName) return byName.measure; }
   return measureFromFlags(ex);
-}
-// Bas-enhet för cardiosprint: 'time' (sek) eller 'dist' (km). Override > library > 'time'.
-function getSprintBase(exId, ex){
-  if(exId){
-    const ovb = state.exerciseSprintBase?.[exId];
-    if(ovb==='time'||ovb==='dist') return ovb;
-    const lib = libraryMeasureMap()[exId];
-    if(lib?.sprintBase) return lib.sprintBase;
-  }
-  if(ex?.name){ const byName=libraryMeasureMap()[slugifyExId(ex.name)]; if(byName?.sprintBase) return byName.sprintBase; }
-  return (ex?.sprintBase==='dist'?'dist':'time');
 }
 function prValue(measure, set){
   if(!set || set.fail) return null;
@@ -4831,7 +4824,6 @@ function applyExerciseRenames(RENAMES){
   rekey(state.lastSessionSetCount);
   rekey(state.lastSessionWarmupCount);
   rekey(state.exerciseMeasureOverride);
-  rekey(state.exerciseSprintBase);
   // Notes har tombstone-infrastruktur — tombstona flyttade gamla nycklar så
   // cloud-merge inte resurrectar dem (P4-lärdomen, 3.38.0).
   if(state.exerciseNotes){
@@ -5176,7 +5168,6 @@ async function _syncFromCloudInner(userId){
           exerciseNotes: state.exerciseNotes,
           exerciseTagOverrides: state.exerciseTagOverrides,
           exerciseMeasureOverride: state.exerciseMeasureOverride,
-          exerciseSprintBase: state.exerciseSprintBase,
           permanentSwaps: state.permanentSwaps,
           exerciseOrder: state.exerciseOrder,
           ignoredPRs: state.ignoredPRs,
@@ -5214,7 +5205,6 @@ async function _syncFromCloudInner(userId){
         state.exerciseNotes = mergeKeyedMap(_local.exerciseNotes, state.exerciseNotes, state.deletions.exerciseNotes);
         state.exerciseTagOverrides = mergeKeyedMap(_local.exerciseTagOverrides, state.exerciseTagOverrides);
         state.exerciseMeasureOverride = mergeKeyedMap(_local.exerciseMeasureOverride, state.exerciseMeasureOverride);
-        state.exerciseSprintBase = mergeKeyedMap(_local.exerciseSprintBase, state.exerciseSprintBase);
         state.permanentSwaps = mergeKeyedMap(_local.permanentSwaps, state.permanentSwaps);
         state.exerciseOrder = mergeKeyedMap(_local.exerciseOrder, state.exerciseOrder);
         state.ignoredPRs = mergeArrayUnion(_local.ignoredPRs, state.ignoredPRs);
@@ -5725,7 +5715,6 @@ function buildPassBodyHTML(pass,cycle,nextId){
         // Extras: kanoniskt exId via namn (funkar även i done-state utan draft).
         const _exId = ex.extra ? extraExId(ex.name) : (getRenderExId(ex.id) || ex.id);
         const measure = getMeasure(_exId, effEx);
-        const sprintBase = getSprintBase(_exId, effEx);
         const mdef = MEASURES[measure] || MEASURES.weight;
         const isBW = mdef.bw;
         const isTimed = measure==='timed';
@@ -5956,7 +5945,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
             const canDel = !isDone && !isSaved && rawSets.length > 1;
             // 3.56.0 — enhetlig measure-driven set-rad. measureCells bygger fält-cellerna;
             // grid-kolumnerna styrs av .m-${measure}-klassen (olika fält-antal per mätsätt).
-            const cells = measureCells(measure, sprintBase, ex.id, sid, savedSet, bufVal, dis, wCls, unitL);
+            const cells = measureCells(measure, ex.id, sid, savedSet, bufVal, dis, wCls, unitL);
             // side: whitelist L/R (renderas oescapad) + mappa till CSS-klasserna
             // .left/.right — förut sattes class="L"/"R" som aldrig matchade CSS:en,
             // så en sparad side-knapp tappade sin färg vid varje omrendering.
@@ -7154,14 +7143,9 @@ function buildTagEditorHTML(ex, passId){
   // 3.56.0 — Mätsätt (measure): single-select, nyckel = kanoniskt exId (följer rörelsen).
   const canonId = ex.extra?extraExId(ex.name):(getRenderExId(ex.id)||ex.id);
   const curMeasure = getMeasure(canonId, getEffectiveEx(ex)); // 3.77.0 — swap-medveten
-  const MEASURE_OPTS=[['weight','Weight × reps'],['bw','Bodyweight + load'],['bwreps','Reps only'],['timed','Timed (sec)'],['cardio','Cardio (time + km)'],['cardiosprint','Cardio sprints'],['carry','Loaded carry (kg + m)'],['inclinecardio','Incline cardio (grade + time + km)'],['sauna','Sauna (temp + time)']];
+  const MEASURE_OPTS=[['weight','Weight × reps'],['bw','Bodyweight + load'],['bwreps','Reps only'],['timed','Timed (sec)'],['cardio','Cardio (time + km)'],['cardiosprint','Cardio sprints (time + km + count)'],['carry','Loaded carry (kg + m)'],['inclinecardio','Incline cardio (grade + time + km)'],['sauna','Sauna (temp + time)']];
   const measureSel='<select onchange="setExerciseMeasure(\''+eid+'\',\''+pid+'\',this.value)" style="font-family:var(--mono);font-size:.5rem;padding:4px 6px;background:var(--surface-input);color:var(--white);border:1px solid var(--border-subtle);">'+MEASURE_OPTS.map(function(o){return '<option value="'+o[0]+'"'+(o[0]===curMeasure?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>';
-  let sprintSel='';
-  if(curMeasure==='cardiosprint'){
-    const cb=getSprintBase(canonId, getEffectiveEx(ex));
-    sprintSel='<div style="display:flex;gap:6px;align-items:center;margin-top:6px;"><span style="font-family:var(--mono);font-size:.46rem;color:#888;">Base:</span>'+['time','dist'].map(function(v){const a=cb===v;return '<button onclick="setSprintBase(\''+eid+'\',\''+pid+'\',\''+v+'\')" style="font-family:var(--mono);font-size:.46rem;padding:3px 8px;cursor:pointer;background:'+(a?'#08101a':'none')+';border:1px solid '+(a?'#7ab':'#333')+';color:'+(a?'#7ab':'#555')+';">'+(v==='time'?'Time':'Distance')+'</button>';}).join('')+'</div>';
-  }
-  const measureBlock='<div style="margin-bottom:10px;padding-top:8px;border-top:1px solid var(--border-subtle);"><div style="font-family:var(--mono);font-size:.48rem;color:#7ab;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Logged as</div>'+measureSel+sprintSel+'</div>';
+  const measureBlock='<div style="margin-bottom:10px;padding-top:8px;border-top:1px solid var(--border-subtle);"><div style="font-family:var(--mono);font-size:.48rem;color:#7ab;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Logged as</div>'+measureSel+'</div>';
   const user=escapeHTML(currentUser?.name||'you');
   return ['<div id="tagwrap-',eid,'" style="display:none;margin:6px 0;padding:8px;border:1px solid var(--border-subtle);background:var(--surface-elevated);">',
     '<div style="font-family:var(--mono);font-size:.48rem;color:#7ab;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Exercise Tags</div>',
@@ -7182,16 +7166,6 @@ function setExerciseMeasure(exId, passId, value){
   const hasLogged=!!state.draft?.loggedSets?.[exId]&&Object.keys(state.draft.loggedSets[exId]).length>0;
   const hasSaved=!!state.draft?.savedExercises?.[exId];
   if(!hasLogged&&!hasSaved&&state.draft?.extraSets){delete state.draft.extraSets[exId];if(state.draft.inputBuffer)delete state.draft.inputBuffer[exId];}
-  save();rerenderSession(passId);
-  setTimeout(()=>{const w=document.getElementById('tagwrap-'+exId);if(w)w.style.display='block';},20);
-}
-function setSprintBase(exId, passId, value){
-  const chain=getEffectiveChain();const pass=chain.find(p=>p.id===passId);
-  const ex=pass?.exercises.find(e=>e.id===exId)||(exId.startsWith('extra_')?makeExtraEx(state.draft?.extras?.find(e=>e.id===exId)):null);
-  const canonId=exId.startsWith('extra_')?extraExId(ex?.name):(getRenderExId(exId)||exId);
-  if(!canonId)return;
-  if(!state.exerciseSprintBase)state.exerciseSprintBase={};
-  state.exerciseSprintBase[canonId]=(value==='dist')?'dist':'time';
   save();rerenderSession(passId);
   setTimeout(()=>{const w=document.getElementById('tagwrap-'+exId);if(w)w.style.display='block';},20);
 }
@@ -7333,7 +7307,6 @@ function saveExercise(passId,exId){
   // 3.56.0 — measure-driven sparning (ersätter isBW/isTimed-grenarna).
   const _canonS=isExtra?extraExId(ex.name):(getRenderExId(exId)||exId);
   const measure=getMeasure(_canonS, effExS);
-  const sprintBase=getSprintBase(_canonS, effExS);
   const isBW=MEASURES[measure]?.bw||false;
   const isTimed=measure==='timed';
   const todayWkg=getTodayWeight();
@@ -7381,9 +7354,10 @@ function saveExercise(passId,exId){
       const minsVal=rRaw!=null?parseFloat(rRaw):null;
       base={sid, temp: tRaw!=null?(tempToC(parseFloat(tRaw))||null):(b.temp??null), secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(b.secs??null), warmup};
     } else if(measure==='cardiosprint'){
+      // 3.78.7 — tid OCH km fångas alltid båda (ingen sprintBase-toggle längre).
       const sRaw=dom('spr');const sprints=sRaw!=null?_int(sRaw):(b.sprints??null);
-      if(sprintBase==='dist'){const dRaw=dom('dist');base={sid, dist: dRaw!=null?(parseFloat(dRaw)||null):(b.dist??null), sprints, warmup};}
-      else {const rRaw=dom('r');base={sid, secs: rRaw!=null?_int(rRaw):(b.secs??null), sprints, warmup};}
+      const rRaw=dom('r');const dRaw=dom('dist');
+      base={sid, secs: rRaw!=null?_int(rRaw):(b.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(b.dist??null), sprints, warmup};
     } else if(measure==='carry'){
       const wRaw=dom('w');const dmRaw=dom('distm');
       base={sid, weight: wRaw!=null?toKg(parseFloat(wRaw)):(b.weight??null), distm: dmRaw!=null?_int(dmRaw):(b.distm??null), warmup};
@@ -7694,7 +7668,7 @@ function sortSetsForDisplay(sets){
 }
 // 3.56.0 — bygg input-cellerna (mellan set-num och log/delete) för ett set givet measure.
 // DOM-id:n: w-(vikt) bw-(BW extra) r-(reps ELLER secs) f-(forced) dist-(km) distm-(m) spr-(sprintar).
-function measureCells(measure, sprintBase, exId, sid, savedSet, bufVal, dis, wCls, unitL){
+function measureCells(measure, exId, sid, savedSet, bufVal, dis, wCls, unitL){
   const valNum  = (k)=> savedSet?.[k]!=null ? savedSet[k] : (bufVal?.[k]!=null ? bufVal[k] : '');
   const valDisp = (k)=> savedSet?.[k]!=null ? toDisplay(savedSet[k]) : (bufVal?.[k]!=null ? toDisplay(bufVal[k]) : '');
   const weightCell = `<div><input class="set-input${wCls}" type="number" id="w-${exId}-${sid}" placeholder="—" value="${valDisp('weight')}" min="0" step="${unitL==='lbs'?'5':'2.5'}" ${dis} oninput="updateLogBtnState('${exId}','${sid}')"><div class="set-unit">${unitL}</div></div>`;
@@ -7717,7 +7691,11 @@ function measureCells(measure, sprintBase, exId, sid, savedSet, bufVal, dis, wCl
     case 'bwreps':       return repsCell+forcedCell;
     case 'timed':        return secsCell+forcedCell;
     case 'cardio':       return cardioTimeCell+distCell;
-    case 'cardiosprint': return (sprintBase==='dist'?distCell:secsCell)+sprintsCell;
+    // 3.78.7 — tid OCH km alltid båda synliga (Niklas: ville se km, inte bara tid+antal
+    // sprintar). secsCell (rå sekunder) hålls kvar, INTE cardioTimeCell (minuter) —
+    // befintligt sparat sprint-secs-data är redan i rå sekunder, ett minut-fält skulle
+    // visa gamla värden 60x för litet.
+    case 'cardiosprint': return secsCell+distCell+sprintsCell;
     case 'carry':        return weightCell+distmCell;
     case 'inclinecardio':return inclineCell+cardioTimeCell+distCell;
     case 'sauna':        return tempCell+cardioTimeCell;
@@ -7730,7 +7708,7 @@ function measureHasValue(measure, savedSet, bufVal){
   if(savedSet) return true;
   const m = MEASURES[measure] || MEASURES.weight;
   const src = bufVal || {};
-  return m.fields.some(f=> f==='base' ? (src.secs!=null||src.dist!=null) : src[f]!=null);
+  return m.fields.some(f=>src[f]!=null);
 }
 // Migrera en draft från positionell modell → sid-modell. Idempotent: rör bara
 // sets utan sid. Remappar inputBuffer (array→obj) + loggedSets (numkey→sidkey)
@@ -7987,7 +7965,6 @@ function captureInputsToSetsBuffer(exId,passId){
   // 3.56.0 — measure-driven inläsning (ersätter isBW/isTimed-grenarna).
   const _canonC=isExtra?extraExId(ex?.name):(getRenderExId(exId)||exId);
   const measure=getMeasure(_canonC, effExC);
-  const sprintBase=getSprintBase(_canonC, effExC);
   const rawSets=ensureSetIds(state.draft.extraSets[exId]);
   state.draft.extraSets[exId]=rawSets;
   if(!state.draft.inputBuffer)state.draft.inputBuffer={};
@@ -8024,8 +8001,8 @@ function captureInputsToSetsBuffer(exId,passId){
       rec={temp: tRaw!=null?(tempToC(parseFloat(tRaw))||null):(p.temp??null), secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(p.secs??null)};
     } else if(measure==='cardiosprint'){
       const sRaw=dom('spr');const sprints=sRaw!=null?_int(sRaw):(p.sprints??null);
-      if(sprintBase==='dist'){const dRaw=dom('dist');rec={dist: dRaw!=null?(parseFloat(dRaw)||null):(p.dist??null), sprints};}
-      else {const rRaw=dom('r');rec={secs: rRaw!=null?_int(rRaw):(p.secs??null), sprints};}
+      const rRaw=dom('r');const dRaw=dom('dist');
+      rec={secs: rRaw!=null?_int(rRaw):(p.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(p.dist??null), sprints};
     } else if(measure==='carry'){
       const wRaw=dom('w');const dmRaw=dom('distm');
       rec={weight: wRaw!=null?toKg(parseFloat(wRaw)):(p.weight??null), distm: dmRaw!=null?_int(dmRaw):(p.distm??null)};
@@ -8235,7 +8212,12 @@ function undoSession(passId){
 function fmtReps(reps){ return reps!=null ? reps : '?'; }
 function formatSetLine(set,u){
   let str;
-  if(set.sprints!=null)         str=(set.dist!=null?set.dist+'km':(set.secs!=null?set.secs+'s':''))+((set.dist!=null||set.secs!=null)?' · ':'')+set.sprints+' sprints';
+  if(set.sprints!=null){
+    // 3.78.7 — dist OCH secs kan nu båda vara satta samtidigt (ingen sprintBase-toggle
+    // längre) — visa båda om båda finns, istf att dist tyst vann över secs.
+    const sp=[];if(set.dist!=null)sp.push(set.dist+'km');if(set.secs!=null)sp.push(set.secs+'s');
+    str=(sp.length?sp.join(' · ')+' · ':'')+set.sprints+' sprints';
+  }
   else if(set.distm!=null)      str=(set.weight!=null?toDisplay(set.weight)+' '+u:'')+' · '+set.distm+'m';
   else if(set.incline!=null)    str=set.incline+'%'+(set.dist!=null?' · '+set.dist+'km':'')+(set.secs!=null?' · '+Math.round(set.secs/60)+'min':'');
   else if(set.temp!=null)       str=tempToDisplay(set.temp)+tempUnitLabel()+(set.secs!=null?' · '+Math.round(set.secs/60)+'min':'');
@@ -8623,7 +8605,14 @@ function prCardHTML(pr, isOpen, points){
   else if(m==='bwreps'){val=`${fmtReps(pr.reps)} reps`;sub='bodyweight';}
   else if(m==='timed'){val=`${pr.secs!=null?pr.secs:'?'}s`;sub=pr.bw?`BW ${toDisplay(pr.bwSnap)||0}${u}`:(pr.weight?`at ${toDisplay(pr.weight)}${u}`:'');}
   else if(m==='cardio'){val=`${pr.dist!=null?pr.dist:'?'} km`;sub=pr.secs?`${Math.round(pr.secs/60)} min`:'';}
-  else if(m==='cardiosprint'){val=`${pr.sprints!=null?pr.sprints:'?'} sprints`;sub=pr.dist!=null?`${pr.dist} km`:(pr.secs?`${Math.round(pr.secs/60)} min`:'');}
+  else if(m==='cardiosprint'){
+    // 3.78.7 — dist OCH secs kan nu båda finnas (ingen sprintBase-toggle längre); visa
+    // båda om båda finns. secs i RÅ SEKUNDER (inte /60→min — en sprint är kort, den
+    // gamla min-avrundningen visade "0 min" för korta sprintar).
+    val=`${pr.sprints!=null?pr.sprints:'?'} sprints`;
+    const subParts=[];if(pr.dist!=null)subParts.push(`${pr.dist} km`);if(pr.secs!=null)subParts.push(`${pr.secs}s`);
+    sub=subParts.join(' · ');
+  }
   else if(m==='carry'){val=`${toDisplay(pr.weight)||'?'}${u}`;sub=pr.distm!=null?`${pr.distm} m`:'';}
   else{val=`${toDisplay(pr.weight)}${u}`;sub=`${fmtReps(pr.reps)} reps`;}
   const safeName=escapeHTML(pr.name);const jsName=JSON.stringify(pr.name);
@@ -8732,16 +8721,21 @@ function drawPRChart(containerId, points, measure){
   const vals=points.map(p=>progressionDisplay(measure,p.value));
   const mn=Math.min(...vals);const mx=Math.max(...vals);
   const pad=(mx-mn)*0.1||1;const loY=mn-pad,hiY=mx+pad;
-  const p={t:14,r:12,b:26,l:38};const cw=W-p.l-p.r;const ch=H-p.t-p.b;
+  // 3.78.7 — bottenmarginalen (p.b) höjd 26→34 för att ge plats åt tvåradiga
+  // datum-etiketter (dag ovanför, månad under — se punkterna nedan).
+  const p={t:14,r:12,b:34,l:38};const cw=W-p.l-p.r;const ch=H-p.t-p.b;
   const yFor=(v)=>p.t+ch*(1-(v-loY)/(hiY-loY));
   const pts=points.map((pt,i)=>({x:p.l+cw*(i/(points.length-1)),y:yFor(vals[i]),pr:pt.isPR,ts:pt.ts}));
   let svg=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="width:100%;height:${H}px;display:block;">`;
   for(let i=0;i<=3;i++){
     const y=p.t+ch*(i/3);
     svg+=`<line x1="${p.l}" y1="${y}" x2="${p.l+cw}" y2="${y}" stroke="#1a1a1a"/>`;
-    svg+=`<text x="${p.l-3}" y="${y+3}" font-size="9" font-family="DM Mono,monospace" fill="#333" text-anchor="end">${(hiY-(hiY-loY)*(i/3)).toFixed(1)}</text>`;
+    // 3.78.7 — gym-feedback: y-axel-siffrorna (#333, samma dova ton som rutnätslinjerna)
+    // var för mörka för att skilja t.ex. 100 från 95 kg. var(--gray-light) = redan
+    // etablerad tema-inverterad "läsbar sekundärtext"-token (samma fix som datumen fick i 3.78.3).
+    svg+=`<text x="${p.l-3}" y="${y+3}" font-size="9" font-family="DM Mono,monospace" style="fill:var(--gray-light)" text-anchor="end">${(hiY-(hiY-loY)*(i/3)).toFixed(1)}</text>`;
   }
-  svg+=`<text x="${p.l}" y="10" font-size="8" font-family="DM Mono,monospace" fill="#555">${escapeHTML(unit)}</text>`;
+  svg+=`<text x="${p.l}" y="10" font-size="8" font-family="DM Mono,monospace" style="fill:var(--gray-light)">${escapeHTML(unit)}</text>`;
   let areaPath=`M${pts[0].x} ${p.t+ch} `;pts.forEach(pt=>areaPath+=`L${pt.x} ${pt.y} `);areaPath+=`L${pts[pts.length-1].x} ${p.t+ch}Z`;
   svg+=`<path d="${areaPath}" fill="rgba(192,57,43,.12)"/>`;
   let linePath=`M${pts[0].x} ${pts[0].y} `;pts.slice(1).forEach(pt=>linePath+=`L${pt.x} ${pt.y} `);
@@ -8752,10 +8746,16 @@ function drawPRChart(containerId, points, measure){
       ? `<circle cx="${pt.x}" cy="${pt.y}" r="4" style="fill:var(--chart-highlight)" stroke="#000"/>`
       : `<circle cx="${pt.x}" cy="${pt.y}" r="2.5" fill="#c0392b"/>`;
     if(showAll||i%everyN===0||pt.pr){
-      const label=escapeHTML(fmtDate(pt.ts).slice(4,11));
-      svg+=pt.pr
-        ? `<text x="${pt.x}" y="${H-p.b+11}" font-size="8" font-weight="700" font-family="DM Mono,monospace" style="fill:var(--chart-highlight)" text-anchor="middle">${label}</text>`
-        : `<text x="${pt.x}" y="${H-p.b+11}" font-size="8" font-family="DM Mono,monospace" style="fill:var(--gray-light)" text-anchor="middle">${label}</text>`;
+      // 3.78.7 — gym-feedback: "29 Apr 19 May 25 May 1 Jun 8 Jun..." på EN rad blev
+      // grötigt/överlappande med många punkter. Tvåradigt (dag ovanför, månad under)
+      // halverar bredden varje etikett tar — och gör det lättare att se vilken månad
+      // ett kluster av pass tillhör.
+      const dm=fmtDate(pt.ts).slice(4,11).split(' ');
+      const day=escapeHTML(dm[0]||''),mon=escapeHTML(dm[1]||'');
+      const fill=pt.pr?'var(--chart-highlight)':'var(--gray-light)';
+      const weight=pt.pr?'700':'400';
+      svg+=`<text x="${pt.x}" y="${H-p.b+11}" font-size="8" font-weight="${weight}" font-family="DM Mono,monospace" style="fill:${fill}" text-anchor="middle">${day}</text>`;
+      svg+=`<text x="${pt.x}" y="${H-p.b+20}" font-size="8" font-weight="${weight}" font-family="DM Mono,monospace" style="fill:${fill}" text-anchor="middle">${mon}</text>`;
     }
   });
   svg+='</svg>';
@@ -8820,7 +8820,8 @@ function drawChart(data, goalDisp){
   for(let i=0;i<=4;i++){
     const y=p.t+ch*(i/4);
     svg+=`<line x1="${p.l}" y1="${y}" x2="${p.l+cw}" y2="${y}" stroke="#1a1a1a"/>`;
-    svg+=`<text x="${p.l-3}" y="${y+3}" font-size="9" font-family="DM Mono,monospace" fill="#333" text-anchor="end">${(mx-(mx-mn)*(i/4)).toFixed(1)}</text>`;
+    // 3.78.7 — samma gray-light-fix som PR-grafen (gym-feedback: värdena för mörka).
+    svg+=`<text x="${p.l-3}" y="${y+3}" font-size="9" font-family="DM Mono,monospace" style="fill:var(--gray-light)" text-anchor="end">${(mx-(mx-mn)*(i/4)).toFixed(1)}</text>`;
   }
   if(goalDisp!=null){
     const gy=yFor(goalDisp);
@@ -8840,7 +8841,7 @@ function drawChart(data, goalDisp){
   pts.forEach((pt,i)=>{
     svg+=`<circle cx="${pt.x}" cy="${pt.y}" r="2.5" fill="#c0392b"/>`;
     if(data.length<=8||i%(Math.ceil(data.length/6))===0){
-      svg+=`<text x="${pt.x}" y="${H-p.b+12}" font-size="9" font-family="DM Mono,monospace" fill="#333" text-anchor="middle">${escapeHTML(labels[i])}</text>`;
+      svg+=`<text x="${pt.x}" y="${H-p.b+12}" font-size="9" font-family="DM Mono,monospace" style="fill:var(--gray-light)" text-anchor="middle">${escapeHTML(labels[i])}</text>`;
     }
   });
   // 14-dagars rullande trend ovanpå rådata — jämnar ut dagsbrus (vatten/mat) utan att dölja punkterna.
@@ -10574,7 +10575,6 @@ function sanitizeImportedState(d){
   d.lastSessionSetCount=cleanKeys(d.lastSessionSetCount,Number.isFinite);
   d.lastSessionWarmupCount=cleanKeys(d.lastSessionWarmupCount,Number.isFinite);
   d.exerciseMeasureOverride=cleanKeys(d.exerciseMeasureOverride,v=>!!MEASURES[v]);
-  d.exerciseSprintBase=cleanKeys(d.exerciseSprintBase,v=>v==='time'||v==='dist');
   d.deletions={
     customExercises:cleanKeys(d.deletions&&d.deletions.customExercises,Number.isFinite),
     exerciseNotes:cleanKeys(d.deletions&&d.deletions.exerciseNotes,Number.isFinite),

@@ -7,14 +7,16 @@
 
 // Varje measure: vilka logiska fält som loggas + vilket fält som är PR-metrik.
 // `forced` = om +f (failure-reps) är meningsfullt. `bw` = bodyweight-layout.
-// För `cardiosprint` är `base` antingen secs eller dist beroende på sprintBase.
+// 3.78.7: `cardiosprint` visar nu secs OCH dist alltid båda (ingen sprintBase-toggle
+// längre — Niklas ville se km utöver tid+antal). Samma "alla fält samtidigt"-mönster
+// som inclinecardio.
 export const MEASURES = {
   weight:       { fields: ['weight', 'reps'],   pr: 'weight',  forced: true,  bw: false },
   bw:           { fields: ['extra', 'reps'],    pr: 'extra',   forced: true,  bw: true  },
   bwreps:       { fields: ['reps'],             pr: 'reps',    forced: true,  bw: false },
   timed:        { fields: ['secs'],             pr: 'secs',    forced: true,  bw: false },
   cardio:       { fields: ['secs', 'dist'],     pr: 'dist',    forced: false, bw: false },
-  cardiosprint: { fields: ['base', 'sprints'],  pr: 'sprints', forced: false, bw: false },
+  cardiosprint: { fields: ['secs', 'dist', 'sprints'], pr: 'sprints', forced: false, bw: false },
   carry:        { fields: ['weight', 'distm'],  pr: 'weight',  forced: false, bw: false },
   inclinecardio:{ fields: ['incline', 'secs', 'dist'], pr: 'dist', forced: false, bw: false },
   sauna:        { fields: ['temp', 'secs'],     pr: 'secs',    forced: false, bw: false },

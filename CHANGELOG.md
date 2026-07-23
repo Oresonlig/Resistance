@@ -6,6 +6,17 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.78.7 — 2026-07-23
+**Tre gym-feedback-punkter: graf-kontrast, graf-datumlayout, sprint-distans.**
+
+**Graf-värden för mörka.** Y-axelns siffror (kg-skalan på båda graferna) och PR-grafens x-axel-datum använde `fill="#333"` — samma dova ton som rutnätslinjerna, svårt att skilja t.ex. 100 från 95 kg. Fix: `style="fill:var(--gray-light)"` (samma tema-inverterade token som redan fixade datum-kontrasten i 3.78.3).
+
+**PR-grafens datum grötiga vid många punkter.** "29 Apr 19 May 25 May 1 Jun 8 Jun…" på en rad överlappade. Fix: tvåradiga etiketter (dag ovanför, månad under) — halverar bredden varje etikett tar och gör det tydligare vilken månad ett kluster av punkter tillhör (Niklas önskemål).
+
+**Cardio sprints (Assault Bike m.fl.) saknade distans.** Mätsättet hade en `sprintBase`-toggle (tid ELLER distans, aldrig båda). Fix: `cardiosprint` visar nu tid OCH km OCH antal sprintar samtidigt — samma "alla fält alltid synliga"-mönster som `inclinecardio` redan använder. Hela `sprintBase`-konceptet (state-fält, getSprintBase/setSprintBase, sync/merge/rekey-wiring, tag-editor-toggle, sanitizer) borttaget som en enhet eftersom det blev överflödigt (rensa dead code direkt, inte senare). `measureCells`/capture-koden (båda ställena) mirrorar nu `inclinecardio`s mönster. `formatSetLine` + PR-kortets sub-rad visar båda fälten när båda finns (tidigare visade dist alltid över secs, tyst). Bonusfix: PR-kortets sprint-sekunder visades i avrundade minuter (`Math.round(secs/60)` → "0 min" för en 20-sekunders sprint) — nu rå sekunder, matchar historikraden. CSS-grid för `.set-row.m-cardiosprint` flyttad till 3-kolumnsgruppen. `src/measures.js`-spegeln uppdaterad i samma svep. 174 tester gröna — canvas/SVG/UI-rendering saknar testtäckning, kräver browser-verifiering (särskilt: logga ett cardiosprint-set med både tid och km ifyllt, kontrollera historik + PR-kort).
+
+---
+
 ## 3.78.6 — 2026-07-23
 **Bollplank-beslut med Niklas: canvas → SVG-omskrivning av BÅDA graferna + BW-mätsätt räknar bara tillagd vikt.** Efter 3.78.5s dpr-fix var texten fortfarande mjukare än DOM-texten runt om — canvas-text renderas alltid av canvasens egen (svagare) rasteriserare, oavsett upplösning; ett strukturellt problem, inte ett tal att finjustera. **Rotfix:** `drawPRChart` + `drawChart` bygger nu SVG-markup (`<line>`/`<path>`/`<circle>`/`<text>`) och injicerar den i en div istf att rita på en `<canvas>`. SVG-`<text>` ÄR riktig text — samma renderingsmotor som all annan DOM-text, alltid knivskarp oavsett skärm/dpr, noll skalningskod. Bonus: SVG-element deltar i CSS-kaskaden, så temafärger sätts direkt via `style="fill:var(--chart-highlight)"` — **ingen JS `getComputedStyle`-uppslagning behövs längre**, vilket gör hela 3.78.2/3.78.4-bugklassen (fel DOM-nod, fel färg) strukturellt omöjlig framöver. `--pr-highlight` döpt om till `--chart-highlight` (används nu av båda graferna — upptäckte i förbifarten att Weight Curve-trendlinjen hade samma Arctic-cyan-osynlighetsrisk som PR-grafen hade, fixad i samma svep). Canvas-specifik CSS (`.pr-chart-canvas`, `canvas#weightChart`) borttagen som dödkod.
 
