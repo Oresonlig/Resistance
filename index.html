@@ -4334,7 +4334,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.78.4';
+const APP_VERSION = '3.78.5';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8706,7 +8706,18 @@ function renderProgress(){
 // den vanliga accentfärgen — så platå OCH PR-ögonblick syns i samma bild.
 function drawPRChart(canvasId, points, measure){
   const c=document.getElementById(canvasId);if(!c)return;
-  const ctx=c.getContext('2d');const W=c.offsetWidth||300;const H=150;c.width=W;c.height=H;
+  const ctx=c.getContext('2d');const W=c.offsetWidth||300;const H=150;
+  // 3.78.5 — HiDPI/retina-oskärpa (Niklas desktop-skärmdump, Bugg/graphbugg1.png):
+  // bufferten sattes tidigare i CSS-pixlar (c.width=W) medan `.pr-chart-canvas{width:100%}`
+  // sträcker canvasen till den fysiska pixel-bredden på skärmen — samma effekt som att
+  // zooma in en lågupplöst bild, medan all riktig DOM-text runtomkring alltid renderas
+  // skarpt oavsett devicePixelRatio. Fix: bufferten i FYSISKA pixlar (W*dpr/H*dpr),
+  // CSS-höjden låst separat (bredden styrs redan av CSS), och en dpr-skalning av
+  // context:et så all befintlig rit-kod nedan fortsätter jobba i CSS-pixel-koordinater
+  // utan att ändras. Att sätta c.width/height nollställer transform-matrisen automatiskt.
+  const dpr=window.devicePixelRatio||1;
+  c.width=W*dpr;c.height=H*dpr;c.style.height=H+'px';
+  ctx.scale(dpr,dpr);
   const unit=progressionUnit(measure);
   const vals=points.map(p=>progressionDisplay(measure,p.value));
   const mn=Math.min(...vals);const mx=Math.max(...vals);
@@ -8792,7 +8803,12 @@ function weightTrend(data, windowDays){
 }
 function drawChart(data, goalDisp){
   const c=document.getElementById('weightChart');if(!c)return;
-  const ctx=c.getContext('2d');const W=c.offsetWidth||320;const H=190;c.width=W;c.height=H;
+  const ctx=c.getContext('2d');const W=c.offsetWidth||320;const H=190;
+  // 3.78.5 — samma HiDPI/retina-oskärpa-fix som drawPRChart (se kommentar där för full
+  // förklaring): buffert i fysiska pixlar + dpr-skalning av context:et.
+  const dpr=window.devicePixelRatio||1;
+  c.width=W*dpr;c.height=H*dpr;c.style.height=H+'px';
+  ctx.scale(dpr,dpr);
   const ws=data.map(d=>d.weight);const labels=data.map(d=>d.date.slice(5));
   const allVals=goalDisp!=null?[...ws,goalDisp]:ws;
   const mn=Math.min(...allVals)-1;const mx=Math.max(...allVals)+1;
