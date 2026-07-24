@@ -6,6 +6,15 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.79.5 — 2026-07-24
+**Den vita "linjen" — löst (5:e gången), och den var aldrig en linje.** Niklas tittade live och gav den avgörande beskrivningen: *"det är inte en kant, det är ett vitt MELLANRUM — det rinner blod bakom."* Det är signaturen för ett GENOMSKINLIGT element, inte en border eller en färg. Rotorsaken: `.chain-bar` (progressbaren) låg på `rgba(255,255,255,0.04)` — 96% genomskinlig — som ett fullbrett band mellan den opaka mörka `.chain-intro` och den opaka mörka `.chain-strip-outer`. Alltså syntes den fixerade blodcanvasen (z-index 0) + den ljusa silver-`<body>` RAKT IGENOM den → ett tunt ljust band med blodstråk bakom. Varje tidigare runda TONADE OM den genomskinliga baren (fortfarande genomskinlig → fortfarande ett fönster) istället för att göra den OPAK. Fix: solid mörk track (`#1c1e25`) = del av det kontinuerliga blodfältet, precis som i designen där progressbaren ligger PÅ det solida svarta header-fältet. Den 43%-breda fillen förblir silver — det ÄR själva progress-indikatorn och ska synas.
+
+**Metodlärdom (värd att spara):** ett ljust artefakt som ÖVERLEVER upprepade "rotorsaksfixar" OCH beskrivs som ett genomskinligt MELLANRUM är en opacitets-/z-index-läcka — inte en border, inte en färg. Sluta tona om; gör elementet opakt. (Fyra rundor brända på att tinta/flytta istället för att fråga "vad lyser IGENOM här?".)
+
+174 tester gröna, `check_syntax.js` OK.
+
+---
+
 ## 3.79.4 — 2026-07-24
 **Full Moon round 4.**
 

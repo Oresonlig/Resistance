@@ -2725,18 +2725,22 @@ body.theme-fullmoon .chain-intro-sub{color:#9aa0ac;}
    stray line, not a progress track) — same rgba value read fine against the
    old light chain-intro but pops way too hard against near-black. Toned down,
    glow removed. */
-/* 3.79.4 — THE white line, found on the third pass. Two independent sources
-   sat on top of each other in this exact strip and I only ever removed one at
-   a time: (a) `header{border-bottom}` (gone in 3.79.3), and (b) THIS — the
-   progress bar. `.chain-bar` renders as a full-width 3px element between
-   .chain-intro and .chain-strip-outer, i.e. precisely where Niklas keeps
-   pointing. Its fill ramped to #c7ccd6 (near-white silver) and the track was
-   8% white; against the old LIGHT chain-intro both were unremarkable, but
-   against the near-black bloody field they read as a bright rule across the
-   screen. Muted to charcoal-silver so it still shows progress without
-   reading as a line drawn across the top. */
-body.theme-fullmoon .chain-bar{background:rgba(255,255,255,0.04);}
-body.theme-fullmoon .chain-fill{background:linear-gradient(90deg,#3a3f4a,#6d7280);box-shadow:none;}
+/* 3.79.5 — THE white gap, actually solved. Niklas, looking live: "det är inte
+   en kant, det är ett vitt MELLANRUM, det rinner blod bakom." That's the exact
+   signature of a TRANSLUCENT element, not a border: `.chain-bar` sat at
+   rgba(255,255,255,0.04) — 96% see-through — as a full-width strip between the
+   (opaque dark) .chain-intro and the (opaque dark) .chain-strip-outer. So the
+   fixed blood canvas (z0) + the light silver <body> behind it showed straight
+   THROUGH it → a thin bright band with blood streaks running behind. Every
+   prior round I re-TINTED this translucent bar (still translucent → still a
+   window) instead of making it OPAQUE. Fix: solid dark track = part of the
+   continuous bloody field (matches the design, where the progress bar sits ON
+   the solid black header). The 43%-wide fill stays silver — that's the actual
+   progress indicator and is meant to read.
+   Lesson: a light artifact that survives repeated "root-cause" fixes and is
+   described as a see-through GAP is an opacity/z-index leak, not a border. */
+body.theme-fullmoon .chain-bar{background:#1c1e25;}
+body.theme-fullmoon .chain-fill{background:linear-gradient(90deg,#5a5f6b,#9aa0ac);box-shadow:none;}
 /* The bloody lower edge — the actual HeaderEdge() path from the handoff
    (variants/fullmoon.jsx), inlined as an SVG data URI. Neither a straight
    border nor an alpha fade ever read as "blood" (Niklas, 2 rounds): it needs
@@ -4598,7 +4602,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.79.4';
+const APP_VERSION = '3.79.5';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
