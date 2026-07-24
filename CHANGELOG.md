@@ -6,6 +6,11 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.79.7 — 2026-07-24
+**Full Moon → WIP.** Temat markeras som work-in-progress (`name: 'Full Moon · WIP'`) — den övre strippen (progressbar/slider/blodfält) landade inte trots många rundor, Niklas parkerar det för idag. Temat är kvar valbart i appen men flaggat WIP (samma konvention som Void hade). "Werewolf mythos" borttaget ur beskrivningen (`desc: 'Silver monochrome · Obsidian blood'`).
+
+---
+
 ## 3.79.6 — 2026-07-24
 **Progressbaren fick tillbaka sin design.** Att göra `.chain-bar` opak (3.79.5) täppte gapet men baren läste då som en dov grå fullbredds-DIVIDER (Niklas: "svart/vit/grått border emellan, varför?"). Två orsaker: (a) den gick kant-till-kant som en linjal, (b) fillen var den dämpade grå jag satt i 3.79.4 medan jag jagade den (orelaterade) vita linjen. Återställd till handoffens faktiska progressbar (`variants/fullmoon.jsx` `.fm-progress-bar`): INDRAGEN från kanterna (`margin:2px 16px 0`) så den läser som en inramad bar och inte en avdelare, rundade ändar, subtil opak mörk track (`#2a2d36`), ljus silverfill (`#8990a0→#e8ecf3`) med mjukt sken. Silver för att Full Moon ÄR silver-monokrom — en tema-riktig progress-indikator, inte en vilsen border.
 
