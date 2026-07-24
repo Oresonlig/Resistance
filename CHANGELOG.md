@@ -6,6 +6,21 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.79.2 — 2026-07-24
+**Full Moon round 2 (Niklas gym-feedback on the 3.79.1 screenshot).**
+
+**Alternation parity bug.** `.pass-ex-header` (the session-name banner) is an unstyled DOM sibling rendered BEFORE the exercise loop — it ate slot 1, shifting every `.ex-block`'s `nth-child` position by one. Assault Bike (1st exercise, meant to stay silver) landed on `nth-child(even)` and rendered fully obsidian-black instead. Fixed by flipping to `:nth-child(odd)`.
+
+**"Expand loses the frosted look".** Whichever exercise happened to be active/expanded could still land on the dark variant (opaque, no see-through) — jarring since that's the card you're actually staring at while logging sets. Scoped the dark variant to `.collapsed` only: the active exercise (never has `.collapsed`) now always keeps the silver frosted-glass treatment regardless of position; only the collapsed rows below alternate. Answers Niklas' question directly — silver-on-expand, not a separate black header bar.
+
+**Stray white line.** `.chain-bar`'s 28%-opacity light-grey track (correct against the old light chain-intro) turned into a glowing bright bar once the field behind it went black. Toned down to a faint 8%-white track, removed the `.chain-fill` glow entirely.
+
+**Fade didn't read as "blood".** `.chain-strip-outer`'s smooth alpha fade-to-transparent looked like an accidental gradient, not the deliberate bloody edge from the handoff render. Shortened the fade and added a distinct wet-silver hairline (`border-bottom`) where the dark field ends.
+
+174 tests green, `check_syntax.js` OK. Still not browser-verified by me — going on Niklas' screenshots.
+
+---
+
 ## 3.79.1 — 2026-07-24
 **Full Moon gym-feedback pass (themebugg.png handoff render vs. live mobile screenshot).** Three concrete misses:
 

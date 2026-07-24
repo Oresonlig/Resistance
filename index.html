@@ -2721,9 +2721,17 @@ body.theme-fullmoon nav button.active{color:#0c0d11;background:linear-gradient(1
    through both, fading out at the bottom of the strip into the silver body. */
 body.theme-fullmoon .chain-intro{background:linear-gradient(180deg,#0a0b0e 0%,#070809 100%);border-bottom:none;}
 body.theme-fullmoon .chain-intro-sub{color:#9aa0ac;}
-body.theme-fullmoon .chain-bar{background:rgba(150,157,172,0.28);}
-body.theme-fullmoon .chain-fill{background:linear-gradient(90deg,#8990a0,#eef1f6);box-shadow:0 0 8px rgba(232,236,244,0.6);}
-body.theme-fullmoon .chain-strip-outer{background:linear-gradient(180deg,#08090c 0%,rgba(8,9,12,0.85) 75%,rgba(8,9,12,0) 100%);padding-bottom:16px;position:relative;z-index:1;}
+/* Was a bright glowing white bar against the new black field (looked like a
+   stray line, not a progress track) — same rgba value read fine against the
+   old light chain-intro but pops way too hard against near-black. Toned down,
+   glow removed. */
+body.theme-fullmoon .chain-bar{background:rgba(255,255,255,0.08);}
+body.theme-fullmoon .chain-fill{background:linear-gradient(90deg,#5a5f6b,#c7ccd6);box-shadow:none;}
+/* Was a smooth alpha fade-to-transparent — read as an accidental gradient, not
+   the "bloody line" edge from the handoff render. Shortened the fade + added a
+   distinct wet-silver hairline right where the field ends, so the bottom of
+   the moon-tile strip reads as a deliberate edge again. */
+body.theme-fullmoon .chain-strip-outer{background:linear-gradient(180deg,#08090c 0%,#08090c 80%,rgba(8,9,12,0) 100%);border-bottom:2px solid rgba(150,159,176,0.32);padding-bottom:16px;position:relative;z-index:1;}
 body.theme-fullmoon .section-title{font-family:'Cinzel',serif;font-weight:700;letter-spacing:.05em;color:#14161c;}
 body.theme-fullmoon .section-sub{color:#6d7280;}
 /* ---------- chain-tab: moon-phase tiles (own formspråk, like Obsidian/Cosmic Horror) ----------
@@ -2811,24 +2819,33 @@ body.theme-fullmoon .data-btn{position:relative;z-index:1;background:linear-grad
 body.theme-fullmoon .data-btn:hover{border-color:#0a0b0e;color:#0a0b0e;}
 body.theme-fullmoon .weight-chart-wrap{position:relative;z-index:1;background:linear-gradient(180deg,rgba(226,230,238,0.55) 0%,rgba(198,203,214,0.42) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:rgba(146,153,168,0.4);}
 body.theme-fullmoon .wlog-list{position:relative;z-index:1;background:linear-gradient(180deg,rgba(226,230,238,0.55) 0%,rgba(198,203,214,0.42) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(146,153,168,0.4);padding:2px 12px;}
-/* ---------- alternating obsidian/silver exercise cards (themebugg.png handoff render) ---------- */
-body.theme-fullmoon .ex-block:nth-child(even){background:linear-gradient(160deg,#16181e 0%,#06070a 100%);border-color:#000;box-shadow:0 10px 24px rgba(10,11,14,0.3),inset 0 0 0 1px rgba(200,206,218,0.08);}
-body.theme-fullmoon .ex-block:nth-child(even) .ex-name{color:#f4f5f8;}
-body.theme-fullmoon .ex-block:nth-child(even) .ex-detail{color:#9aa0ac;}
-body.theme-fullmoon .ex-block:nth-child(even) .ex-prev{color:#9aa0ac;}
-body.theme-fullmoon .ex-block:nth-child(even) .ex-prev .last-val{color:#f4f5f8;}
-body.theme-fullmoon .ex-block:nth-child(even) .set-num,body.theme-fullmoon .ex-block:nth-child(even) .ex-prev-history-set{color:#c7ccd6;}
-body.theme-fullmoon .ex-block:nth-child(even) .set-unit{color:#9aa0ac;}
-body.theme-fullmoon .ex-block:nth-child(even) .sets-group-label{color:#9aa0ac;border-top-color:rgba(200,206,218,0.15);}
-body.theme-fullmoon .ex-block:nth-child(even) .ex-collapsed-name{color:#f4f5f8;}
-body.theme-fullmoon .ex-block:nth-child(even) .ex-collapsed-status{color:#9aa0ac;}
-body.theme-fullmoon .ex-block:nth-child(even) .ex-collapsed-chevron{color:#9aa0ac;}
-body.theme-fullmoon .ex-block:nth-child(even) .ex-tag{background:transparent;border-color:#c7ccd6;color:#e6e9ef;}
-body.theme-fullmoon .ex-block:nth-child(even) .ex-btn-skip,body.theme-fullmoon .ex-block:nth-child(even) .ex-btn-edit{background:linear-gradient(180deg,#22242b,#0c0d11);border-color:#3a3f4a;color:#c7ccd6;}
-body.theme-fullmoon .ex-block:nth-child(even) .ex-btn-skip:hover,body.theme-fullmoon .ex-block:nth-child(even) .ex-btn-edit:hover{color:#f4f5f8;border-color:#c7ccd6;}
-body.theme-fullmoon .ex-block:nth-child(even) .set-input{background:linear-gradient(180deg,#1c1e24,#0a0b0e);border-color:#3a3f4a;color:#f4f5f8;}
-body.theme-fullmoon .ex-block:nth-child(even) .set-input:focus{border-color:#c7ccd6;box-shadow:0 0 0 2px rgba(199,204,214,0.14);}
-body.theme-fullmoon .ex-block:nth-child(even) .ex-note-input{background:rgba(10,11,14,0.5);border-color:#3a3f4a;color:#f4f5f8;}
+/* ---------- alternating obsidian/silver exercise cards (themebugg.png handoff render) ----------
+   Two fixes over the first pass (Niklas gym-feedback, screenshot 2):
+   1) `.pass-ex-header` (session name banner) is an unstyled DOM sibling BEFORE
+      the ex-block loop (see buildPassBodyHTML) — it shifts nth-child parity by
+      one, so plain `:nth-child(even)` landed on Assault Bike (1st exercise,
+      meant to stay silver) instead of Incline Walk. Corrected to `:nth-child(odd)`.
+   2) Scoped to `.collapsed` only — the ACTIVE/expanded exercise (the one you're
+      actually logging) never gets the opaque obsidian variant now, so it always
+      keeps the frosted see-through look regardless of where it falls in the
+      alternation. Collapsed rows below still alternate. */
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd){background:linear-gradient(160deg,#16181e 0%,#06070a 100%);border-color:#000;box-shadow:0 10px 24px rgba(10,11,14,0.3),inset 0 0 0 1px rgba(200,206,218,0.08);}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-name{color:#f4f5f8;}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-detail{color:#9aa0ac;}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-prev{color:#9aa0ac;}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-prev .last-val{color:#f4f5f8;}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .set-num,body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-prev-history-set{color:#c7ccd6;}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .set-unit{color:#9aa0ac;}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .sets-group-label{color:#9aa0ac;border-top-color:rgba(200,206,218,0.15);}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-collapsed-name{color:#f4f5f8;}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-collapsed-status{color:#9aa0ac;}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-collapsed-chevron{color:#9aa0ac;}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-tag{background:transparent;border-color:#c7ccd6;color:#e6e9ef;}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-btn-skip,body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-btn-edit{background:linear-gradient(180deg,#22242b,#0c0d11);border-color:#3a3f4a;color:#c7ccd6;}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-btn-skip:hover,body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-btn-edit:hover{color:#f4f5f8;border-color:#c7ccd6;}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .set-input{background:linear-gradient(180deg,#1c1e24,#0a0b0e);border-color:#3a3f4a;color:#f4f5f8;}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .set-input:focus{border-color:#c7ccd6;box-shadow:0 0 0 2px rgba(199,204,214,0.14);}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-note-input{background:rgba(10,11,14,0.5);border-color:#3a3f4a;color:#f4f5f8;}
 /* ---------- stacking: opaque panels need their own lift above the fixed blood canvas (z-index:0) ---------- */
 body.theme-fullmoon .chain-intro,body.theme-fullmoon .chain-bar,body.theme-fullmoon .ex-block,body.theme-fullmoon .stat-box,body.theme-fullmoon .pr-card,body.theme-fullmoon .hist-entry,body.theme-fullmoon .pr-groups{position:relative;z-index:1;}
 
@@ -4521,7 +4538,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.79.1';
+const APP_VERSION = '3.79.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
