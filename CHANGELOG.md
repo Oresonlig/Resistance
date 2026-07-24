@@ -6,6 +6,19 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.79.1 — 2026-07-24
+**Full Moon gym-feedback pass (themebugg.png handoff render vs. live mobile screenshot).** Three concrete misses:
+
+**"Toppen ska täckas av blod" — inte fallet.** `.chain-intro` och `.chain-strip-outer` hade sin EGEN ljusa/transparenta bakgrund som opakt dolde ambient-canvasen precis där handoff-rendern visar den blöda igenom. Header var det ENDA mörka fältet (bara logo+meta), medan progress-bar + mångskivornas chain-strip satt på den ljusa kroppsbakgrunden — helt fel proportion mot designen (~25% mörkt fält där, inte ~10%). Fix: samma mörka gradient som header fortsätter genom chain-intro (`#0a0b0e→#070809`) och tonas ut genom chain-strip-outer (`#08090c` → transparent vid botten) innan den möter den silverfärgade kropps-bakgrunden — kontinuerligt "bloody field" istf ett hårt klipp efter headern.
+
+**"Månen ska under" — inte fallet.** Månen (`moonX:0.72,moonY:0.22,moonR:0.3`) satt uppe i chain-strip-området, stor och skarp, och dominerade ovanpå mångskivorna istf att kännas som en diffus glöd bakom träningskorten. Nu när chain-strip-fältet är opakt mörkt döljs den övre delen av månen naturligt där; flyttade dessutom centrum till `moonX:0.5,moonY:0.42,moonR:0.22` (båda mount-ställena: `mountFullMoonBg` + `toggleAmbientEffects`) så den sitter lägre, mindre och läses som en glöd bakom övnings-korten, matchar handoff-rendern.
+
+**"Varannan svart, varannan silver" — inte fallet.** README specade alternerande obsidian/silver-kort, hoppades över i förra passet som en scope-trim. Återinfört via `.ex-block:nth-child(even)` (matchar Cosmic Horrors etablerade nth-child-mönster) — obsidian-bakgrund + ljus text/tag/input-overrides för de jämna korten. Assault Bike (1:a, expanderad) förblir silver, Incline Walk (2:a) blir svart, Ab Wheel (3:e) förblir silver — matchar handoff-rendern exakt.
+
+174 tester gröna, `check_syntax.js` OK. Fortsatt inte browser-testat av mig (ingen browser i sandboxen) — bygger på Niklas skärmdump + handoff-bilden, inte egen visuell verifiering.
+
+---
+
 ## 3.79.0 — 2026-07-24
 **Full Moon — nytt tema, The Chain's första LJUSA tema med egen chain-strip-formspråk.** Portat från Claude Design-handoffen i `theme/Full Moon/` (klar sedan 2026-07-23, väntade på godkännande). Silver monokrom värld, obsidian-svart blod som levande accent, varulv-mytologi i detaljerna (Cinzel-versaler, "on the hunt"-känsla).
 
