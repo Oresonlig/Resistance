@@ -6,6 +6,21 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.79.3 — 2026-07-24
+**Full Moon round 3 (Niklas gym-feedback).** Four points, three of them repeat offenders — worth noting that each had a *different* root cause than the previous round's guess.
+
+**Vit kant i toppen (3:e gången).** Rotorsaken var min egen `border-bottom:2px solid rgba(150,159,176,0.25)` på `body.theme-fullmoon header`, lagd i 3.79.0 och överlevde två rundor av "vit linje"-fixar eftersom jag varje gång letade i chain-bar/chain-strip istället för i header-regeln. Borttagen.
+
+**"Ingen blodig linje som i originalet."** Både en rak `border-bottom` (3.79.1) och en alpha-fade (3.79.2) misslyckades av samma skäl: kanten behöver den ojämna, droppande SILHUETTEN för att läsas som blod — det är formen, inte färgen eller mjukheten. Nu portad ordentligt: `HeaderEdge()`-pathen från handoffen (`variants/fullmoon.jsx`) inlinad som en SVG data-URI-bakgrund på `.chain-strip-outer` (lager 1 = solid fält, lager 2 = drop-silhuetten på de nedersta 30px, `preserveAspectRatio='none'` sträcker 384-bredden till valfri skärm). Hex-fill + `%23`-kodning enligt SVG-fallgroparna i `theme/REFERENCE.md`.
+
+**Svart övning som blev silver vid expandering "blev inte bra".** 3.79.2 löste "expanderad ska vara genomskinlig" genom att ta bort den mörka identiteten helt. Niklas eget förslag implementerat istället: expanderat mörkt kort BEHÅLLER den frostade genomskinliga kroppen men markeras som ett av de svarta via ett obsidian-band bakom namnraden (`.ex-header-row`, blödd till kortets kanter) + en mjuk mörk halo istf hård kant. Kollapsade rader är fortsatt helsvarta.
+
+**Månen var "bara en vit cirkel".** Kratrarna ritades i 0.16–0.28 alpha av en grå nära skivans egen ljusa ton → osynliga i praktiken, kvar blev en platt vit skiva. Nu i tre lager: stora mörka MARIA-fläckar (de karaktäristiska "haven" som får ögat att läsa *måne*), kratrar med ~1.5x kontrast + solbelyst rim-stroke på motsatt sida (skuggledtråden som säljer "kraterförsedd sfär"), och en terminator-gradient som mörknar mot nedre högra limben så skivan läser som en belyst sfär. Repositionerad till `moonX:0.68` (höger om centrum, som designen) med `moonR:0.3`. **Ingen extern månbild behövs — löst i canvas-motorn.**
+
+174 tester gröna, `check_syntax.js` OK. Ej browser-verifierat av mig.
+
+---
+
 ## 3.79.2 — 2026-07-24
 **Full Moon round 2 (Niklas gym-feedback on the 3.79.1 screenshot).**
 

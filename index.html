@@ -2691,7 +2691,7 @@ body.theme-fullmoon header{
     radial-gradient(ellipse 90% 130% at 26% -20%,#16181f 0%,rgba(22,24,31,0) 58%),
     linear-gradient(180deg,#0a0b0e 0%,#070809 62%,#050609 100%);
   box-shadow:0 10px 30px rgba(5,6,9,0.45);
-  border-bottom:2px solid rgba(150,159,176,0.25);
+  border-bottom:none; /* was a 2px silver rule — read as a stray white edge across the top (Niklas, 2x) */
 }
 body.theme-fullmoon .logo{font-family:'Cinzel',serif;font-weight:800;letter-spacing:.14em;color:#d6dbe3;text-shadow:0 1px 4px rgba(0,0,0,0.6);}
 body.theme-fullmoon .logo span{color:#f4f6fa;}
@@ -2727,11 +2727,20 @@ body.theme-fullmoon .chain-intro-sub{color:#9aa0ac;}
    glow removed. */
 body.theme-fullmoon .chain-bar{background:rgba(255,255,255,0.08);}
 body.theme-fullmoon .chain-fill{background:linear-gradient(90deg,#5a5f6b,#c7ccd6);box-shadow:none;}
-/* Was a smooth alpha fade-to-transparent — read as an accidental gradient, not
-   the "bloody line" edge from the handoff render. Shortened the fade + added a
-   distinct wet-silver hairline right where the field ends, so the bottom of
-   the moon-tile strip reads as a deliberate edge again. */
-body.theme-fullmoon .chain-strip-outer{background:linear-gradient(180deg,#08090c 0%,#08090c 80%,rgba(8,9,12,0) 100%);border-bottom:2px solid rgba(150,159,176,0.32);padding-bottom:16px;position:relative;z-index:1;}
+/* The bloody lower edge — the actual HeaderEdge() path from the handoff
+   (variants/fullmoon.jsx), inlined as an SVG data URI. Neither a straight
+   border nor an alpha fade ever read as "blood" (Niklas, 2 rounds): it needs
+   the uneven wavy drip silhouette. Layer 1 = solid field down to the last
+   30px, layer 2 = the drip shape occupying those 30px. preserveAspectRatio
+   'none' stretches the 384-wide path to any screen width.
+   Hex fill only — rgba() is invalid in SVG presentation attributes (see
+   theme/REFERENCE.md), and '#' must be encoded as %23 inside a data URI. */
+body.theme-fullmoon .chain-strip-outer{
+  background:
+    linear-gradient(#08090c,#08090c) top/100% calc(100% - 30px) no-repeat,
+    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 384 40' preserveAspectRatio='none'><path d='M0 0 H384 V14 C 372 20 360 15 348 19 C 334 24 322 17 308 21 C 292 27 280 16 264 22 C 250 27 238 17 222 23 C 206 30 196 18 180 24 C 165 30 152 18 136 24 C 122 29 108 17 92 23 C 78 28 66 18 50 24 C 36 29 22 17 8 22 L 0 20 Z' fill='%2308090c'/></svg>") bottom/100% 30px no-repeat;
+  padding-bottom:34px;position:relative;z-index:1;
+}
 body.theme-fullmoon .section-title{font-family:'Cinzel',serif;font-weight:700;letter-spacing:.05em;color:#14161c;}
 body.theme-fullmoon .section-sub{color:#6d7280;}
 /* ---------- chain-tab: moon-phase tiles (own formspråk, like Obsidian/Cosmic Horror) ----------
@@ -2828,7 +2837,12 @@ body.theme-fullmoon .wlog-list{position:relative;z-index:1;background:linear-gra
    2) Scoped to `.collapsed` only — the ACTIVE/expanded exercise (the one you're
       actually logging) never gets the opaque obsidian variant now, so it always
       keeps the frosted see-through look regardless of where it falls in the
-      alternation. Collapsed rows below still alternate. */
+      alternation. Collapsed rows below still alternate.
+   3) Round 3 (Niklas): flipping a black card to full silver on expand "blev
+      inte bra" — it lost its identity. Instead the expanded dark card KEEPS the
+      translucent frosted body (what he likes) but is marked as a dark one by
+      an obsidian band behind the name row + a soft dark fading border, per his
+      own suggestion. See the .ex-header-row block further down. */
 body.theme-fullmoon .ex-block.collapsed:nth-child(odd){background:linear-gradient(160deg,#16181e 0%,#06070a 100%);border-color:#000;box-shadow:0 10px 24px rgba(10,11,14,0.3),inset 0 0 0 1px rgba(200,206,218,0.08);}
 body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-name{color:#f4f5f8;}
 body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-detail{color:#9aa0ac;}
@@ -2846,6 +2860,28 @@ body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-btn-skip:hover,body.t
 body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .set-input{background:linear-gradient(180deg,#1c1e24,#0a0b0e);border-color:#3a3f4a;color:#f4f5f8;}
 body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .set-input:focus{border-color:#c7ccd6;box-shadow:0 0 0 2px rgba(199,204,214,0.14);}
 body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-note-input{background:rgba(10,11,14,0.5);border-color:#3a3f4a;color:#f4f5f8;}
+/* EXPANDED dark card — keeps the frosted translucent body, but is still read as
+   "one of the black ones": obsidian band behind the name row (bled to the card
+   edges via negative margins) + a soft dark halo instead of a hard border. */
+body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed){
+  border:1px solid rgba(10,11,14,0.55);
+  box-shadow:0 0 0 1px rgba(10,11,14,0.18),0 10px 26px -6px rgba(6,7,10,0.55),inset 0 1px 0 rgba(255,255,255,0.55);
+}
+body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row{
+  background:linear-gradient(160deg,#16181e 0%,#06070a 100%);
+  /* base .ex-block padding is `8px 0 6px` — no horizontal padding, so the band
+     spans the full card width with margin-x:0 and text stays aligned with the
+     rest of the card content. */
+  margin:-8px 0 10px;padding:12px 0 10px;
+  box-shadow:inset 0 -1px 0 rgba(200,206,218,0.12);
+}
+body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-name{color:#f4f5f8;}
+body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-btn-skip,
+body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-btn-edit{
+  background:linear-gradient(180deg,#22242b,#0c0d11);border-color:#3a3f4a;color:#c7ccd6;
+}
+body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-btn-skip:hover,
+body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-btn-edit:hover{color:#f4f5f8;border-color:#c7ccd6;}
 /* ---------- stacking: opaque panels need their own lift above the fixed blood canvas (z-index:0) ---------- */
 body.theme-fullmoon .chain-intro,body.theme-fullmoon .chain-bar,body.theme-fullmoon .ex-block,body.theme-fullmoon .stat-box,body.theme-fullmoon .pr-card,body.theme-fullmoon .hist-entry,body.theme-fullmoon .pr-groups{position:relative;z-index:1;}
 
@@ -4538,7 +4574,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.79.2';
+const APP_VERSION = '3.79.3';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -9706,7 +9742,7 @@ function toggleAmbientEffects(){
   }
   if(state.theme==='fullmoon'){
     const c=document.getElementById('fullMoonBloodCanvas');
-    if(state.ambientEffects!==false){ if(c && !_fmBloodField && window.createBloodField) _fmBloodField=window.createBloodField(c,{moon:true,moonX:0.5,moonY:0.42,moonR:0.22,density:0.9,speed:1,wound:true}); }
+    if(state.ambientEffects!==false){ if(c && !_fmBloodField && window.createBloodField) _fmBloodField=window.createBloodField(c,{moon:true,moonX:0.68,moonY:0.4,moonR:0.3,density:0.9,speed:1,wound:true}); }
     else { if(_fmBloodField){ _fmBloodField.stop(); _fmBloodField=null; } if(c){ const x=c.getContext('2d'); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,c.width,c.height); } }
   }
   renderData();
@@ -10131,13 +10167,35 @@ function _startUnderstoryVines(canvas){
       disc.addColorStop(0,'#ffffff'); disc.addColorStop(0.5,'#eef1f6'); disc.addColorStop(0.8,'#d1d6e0'); disc.addColorStop(1,'#b6bcc8');
       c.save(); c.beginPath(); c.arc(cx,cy,moonR,0,Math.PI*2); c.closePath(); c.clip();
       c.fillStyle=disc; c.fillRect(0,0,size,size);
-      const craters=[[-0.30,-0.22,0.30,0.24],[0.18,-0.10,0.24,0.20],[-0.05,0.28,0.34,0.18],[0.34,0.30,0.18,0.24],[-0.42,0.20,0.16,0.26],[0.10,0.08,0.14,0.16],[-0.18,-0.02,0.10,0.28],[0.40,-0.34,0.12,0.18],[0.02,-0.36,0.09,0.24]];
+      // 3.79.3 — Niklas: månen läste som "bara en vit cirkel". Rotorsak: kratrarna
+      // ritades i ~0.16-0.28 alpha av en grå som ligger nära själva skivans ljusa
+      // ton → osynliga i praktiken. Nu i två lager: stora mörka MARIA-fläckar
+      // (de karaktäristiska "haven" som gör att ögat läser måne, inte cirkel) och
+      // sedan de mindre kratrarna, båda med rejält höjd kontrast.
+      const maria=[[-0.28,-0.26,0.42,0.30],[0.22,-0.06,0.36,0.26],[-0.02,0.30,0.44,0.24],[0.36,0.34,0.26,0.22]];
+      for(const [dx,dy,r,a] of maria){
+        const gx=cx+dx*moonR,gy=cy+dy*moonR,gr=r*moonR;
+        const g=c.createRadialGradient(gx,gy,0,gx,gy,gr);
+        g.addColorStop(0,`rgba(126,134,152,${a})`); g.addColorStop(0.6,`rgba(146,154,170,${a*0.55})`); g.addColorStop(1,'rgba(150,158,174,0)');
+        c.fillStyle=g; c.beginPath(); c.arc(gx,gy,gr,0,Math.PI*2); c.fill();
+      }
+      const craters=[[-0.30,-0.22,0.30,0.30],[0.18,-0.10,0.24,0.26],[-0.05,0.28,0.34,0.24],[0.34,0.30,0.18,0.30],[-0.42,0.20,0.16,0.32],[0.10,0.08,0.14,0.22],[-0.18,-0.02,0.10,0.34],[0.40,-0.34,0.12,0.24],[0.02,-0.36,0.09,0.30],[-0.12,0.46,0.11,0.26],[0.28,0.06,0.08,0.28]];
       for(const [dx,dy,r,a] of craters){
         const gx=cx+dx*moonR,gy=cy+dy*moonR,gr=r*moonR;
         const g=c.createRadialGradient(gx,gy,0,gx,gy,gr);
-        g.addColorStop(0,`rgba(120,127,144,${a})`); g.addColorStop(0.7,`rgba(146,153,168,${a*0.5})`); g.addColorStop(1,'rgba(146,153,168,0)');
+        g.addColorStop(0,`rgba(96,104,122,${a*1.5})`); g.addColorStop(0.55,`rgba(122,130,148,${a*0.85})`); g.addColorStop(1,'rgba(140,148,164,0)');
         c.fillStyle=g; c.beginPath(); c.arc(gx,gy,gr,0,Math.PI*2); c.fill();
+        // sunlit rim on the opposite side of each crater — the shading cue that
+        // actually sells "cratered sphere" rather than "grey blotches"
+        c.beginPath(); c.arc(gx-gr*0.12,gy-gr*0.12,gr*0.82,0,Math.PI*2);
+        c.lineWidth=Math.max(0.6,gr*0.1); c.strokeStyle=`rgba(255,255,255,${a*0.5})`; c.stroke();
       }
+      // terminator shading — subtle darkening toward the lower-right limb so the
+      // disc reads as a lit sphere instead of a flat white circle
+      const term=c.createRadialGradient(cx-moonR*0.35,cy-moonR*0.38,moonR*0.15,cx,cy,moonR*1.05);
+      term.addColorStop(0,'rgba(255,255,255,0)'); term.addColorStop(0.62,'rgba(150,158,176,0.05)');
+      term.addColorStop(1,'rgba(104,112,132,0.35)');
+      c.fillStyle=term; c.fillRect(0,0,size,size);
       c.restore();
       c.beginPath(); c.arc(cx,cy,Math.max(0,moonR),0,Math.PI*2); c.lineWidth=1.6; c.strokeStyle='rgba(104,111,128,0.6)'; c.stroke();
       c.beginPath(); c.arc(cx,cy,Math.max(0,moonR-1.6),0,Math.PI*2); c.lineWidth=2; c.strokeStyle='rgba(255,255,255,0.55)'; c.stroke();
@@ -10318,7 +10376,7 @@ function mountFullMoonBg(){
   bg.appendChild(canvas);
   document.body.insertBefore(bg,document.body.firstChild);
   if(state.ambientEffects!==false && window.createBloodField){
-    _fmBloodField=window.createBloodField(canvas,{moon:true,moonX:0.5,moonY:0.42,moonR:0.22,density:0.9,speed:1,wound:true});
+    _fmBloodField=window.createBloodField(canvas,{moon:true,moonX:0.68,moonY:0.4,moonR:0.3,density:0.9,speed:1,wound:true});
   }
 }
 function unmountFullMoonBg(){
