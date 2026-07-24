@@ -6,6 +6,19 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.79.0 — 2026-07-24
+**Full Moon — nytt tema, The Chain's första LJUSA tema med egen chain-strip-formspråk.** Portat från Claude Design-handoffen i `theme/Full Moon/` (klar sedan 2026-07-23, väntade på godkännande). Silver monokrom värld, obsidian-svart blod som levande accent, varulv-mytologi i detaljerna (Cinzel-versaler, "on the hunt"-känsla).
+
+**Chain-strip:** hex-tokens ersatta av cirkulära månbrickor — egen formspråk likt Obsidian/Cosmic Horror (`clip-path:none` + `chain-tab-letter` blir en silver-mångskiva). Done-state läser som "förmörkad" gratis via basens befintliga opacity/color-mix-nedtoning, ingen extra CSS behövdes. Forced Rest ('V') är MEDVETET orörd — den guldmarkören är enhetlig över alla teman, se rest-day-minnet.
+
+**Signature-effekt:** `window.createBloodField` — en canvas-motor (portad oförändrad från `ambient-fullmoon.js`) med en andas silvermåne + ihållande nedrinnande blodstråk (bara den ledande droppen rör sig, spåret den lämnat ligger kvar) + lösa droppar + pölar. Respekterar `prefers-reduced-motion`, redan korrekt dpr-skalad, togglebar i Settings som alla andra ambient-effekter.
+
+**Omfattning denna version:** Chain-vyn är fullt designad och implementerad. Progress/Weight/Settings-flikarna är EXTRAPOLERADE till samma silver/frostat-glas-språk (PM22-surfaces + Nanosuit-mönstrad panel-frostning eftersom bakgrunden är en rörlig viewport-fast canvas, samma "vilda västern"-risk som Nanosuit) — ingen egen Claude Design-mockup finns för dessa flikar. Auth-skärmen rörd EJ (Full Moon är `cat:'light'` och ingår därför aldrig i login-temats mörka demo-rotation — samma etablerade mönster som Arctic/Undertow/Overgrowth, ingen `.cl-*`/`.auth-*`-override behövs).
+
+**Ej browser-testat visuellt** — sandboxen saknar browser. 174 tester gröna (ingen testtäckning för CSS/canvas-rendering, kräver manuell verifiering: växla till Full Moon i Settings, kolla Chain/Progress/Weight/Settings-flikarna + ambient-toggle av/på).
+
+---
+
 ## 3.78.7 — 2026-07-23
 **Tre gym-feedback-punkter: graf-kontrast, graf-datumlayout, sprint-distans.**
 

@@ -2649,6 +2649,164 @@ body.theme-understory .add-set-btn{color:#3d5e3a;border-color:rgba(50,90,45,0.4)
 body.theme-understory .ex-note-banner{color:#7a5000;background:rgba(150,100,0,0.1);border-color:#8a6000;}
 body.theme-understory .ex-note-save{background:rgba(252,255,247,0.8);border-color:#7a5000;color:#7a5000;}body.theme-understory .draft-notice{color:#2f7a4a;border-color:rgba(47,122,74,0.3);background:rgba(252,255,247,0.5);}
 /* ═════════════════════════════════════════════════════════════
+   FULL MOON — Silver monochrome · Obsidian blood · Werewolf mythos
+   Designed in Claude Design (Niklas + Claude), ported 2026-07-24.
+   Source: theme/Full Moon/ (README.md, Full Moon.html, ambient-fullmoon.js,
+   variants/fullmoon.jsx). The Chain's first LIGHT theme.
+   Palette: moonlit silver world, obsidian-BLACK blood as the living accent.
+   Fonts: Cinzel (display) + Space Grotesk (sans) + JetBrains Mono (technical)
+     — all three already Google-Fonts-loaded in <head>, no new link needed.
+   Blood: 32-ish trail canvas via window.createBloodField (see JS, near
+   Understory's vine functions) — persistent downward drips + breathing
+   silver full moon, toggleable in Settings like every other ambient effect.
+   Chain-strip: own moon-phase formspråk (circular moon-tiles replace the
+   hexagon), like Obsidian/Cosmic Horror. Rest-day 'V' untouched — that gold
+   marker is deliberately theme-uniform, see feedback_rest_day_label memory.
+   ═════════════════════════════════════════════════════════════ */
+body.theme-fullmoon{
+  --black:#c9ced7;--white:#15171d;--red:#0a0b0e;
+  --gold:#3a3f4c;--green-bright:#3f5a52;
+  --gray-mid:#9096a3;--gray-light:#6d7280;
+  --display:'Cinzel',serif;--sans:'Space Grotesk',sans-serif;--mono:'JetBrains Mono',monospace;
+  --on-accent:#f4f5f8; /* Full Moon is 'light' cat — excluded from the login demo rotation (dark-only), kept for completeness */
+  --surface-base:rgba(226,230,238,0.62);--surface-elevated:rgba(238,241,247,0.85);
+  --surface-input:rgba(238,241,245,0.55);--surface-saved:rgba(210,215,224,0.7);
+  --surface-deep:rgba(178,184,196,0.4);--surface-overlay:rgba(255,255,255,0.35);
+  --border-subtle:rgba(146,153,168,0.45);--border-strong:rgba(20,22,28,0.55);
+  --tag-base-bg:rgba(255,255,255,0.5);    --tag-base-border:rgba(20,22,28,0.35);  --tag-base-color:#3a3f4a;
+  --tag-ramp-bg:#fff;                     --tag-ramp-border:#14161c;              --tag-ramp-color:#14161c;
+  --tag-bw-bg:#fff;                       --tag-bw-border:#14161c;                --tag-bw-color:#14161c;
+  --tag-uni-bg:#fff;                      --tag-uni-border:#3a3f4a;               --tag-uni-color:#3a3f4a;
+  --tag-singles-bg:#fff;                  --tag-singles-border:#0a0b0e;           --tag-singles-color:#0a0b0e;
+  --tag-timed-bg:#fff;                    --tag-timed-border:#3f5a52;             --tag-timed-color:#3f5a52;
+  background:
+    radial-gradient(ellipse 95% 55% at 50% 122%,#adb3c0 0%,rgba(173,179,192,0) 62%),
+    linear-gradient(180deg,#ccd1da 0%,#bec3ce 55%,#b2b8c4 100%);
+  background-attachment:fixed;color:#14161c;color-scheme:light;
+}
+/* ---------- header: bloody black field, silver logo ---------- */
+body.theme-fullmoon header{
+  z-index:2;
+  background:
+    radial-gradient(ellipse 90% 130% at 26% -20%,#16181f 0%,rgba(22,24,31,0) 58%),
+    linear-gradient(180deg,#0a0b0e 0%,#070809 62%,#050609 100%);
+  box-shadow:0 10px 30px rgba(5,6,9,0.45);
+  border-bottom:2px solid rgba(150,159,176,0.25);
+}
+body.theme-fullmoon .logo{font-family:'Cinzel',serif;font-weight:800;letter-spacing:.14em;color:#d6dbe3;text-shadow:0 1px 4px rgba(0,0,0,0.6);}
+body.theme-fullmoon .logo span{color:#f4f6fa;}
+body.theme-fullmoon .header-user{color:#8990a0;}
+body.theme-fullmoon .header-user strong{color:#e8ecf3;}
+body.theme-fullmoon .header-logout{color:#b7bdca;border-color:rgba(180,186,202,0.3);}
+body.theme-fullmoon .header-logout:hover{color:#f4f6fa;border-color:#c7ccd6;}
+body.theme-fullmoon .sync-dot.ok{background:#eef1f6;box-shadow:0 0 6px rgba(232,236,244,0.85);}
+body.theme-fullmoon .am-pill{background:rgba(10,11,14,0.4);border-color:rgba(150,159,176,0.3);color:#9aa0ac;}
+body.theme-fullmoon .am-pill:hover{border-color:#c7ccd6;color:#eef1f6;}
+body.theme-fullmoon .am-pill.logged{color:#dfe3ea;border-color:rgba(200,206,218,0.4);background:rgba(40,42,48,0.5);}
+body.theme-fullmoon .am-pill.missing{color:#c46a5a;border-color:rgba(196,106,90,0.4);background:rgba(30,15,15,0.4);}
+body.theme-fullmoon .am-pill-log{border-color:rgba(200,206,218,0.5);color:#eef1f6;}
+body.theme-fullmoon .btn-chain-edit{color:#c7ccd6;border-color:rgba(180,186,202,0.35);}
+body.theme-fullmoon .btn-chain-edit:hover{color:#f4f6fa;border-color:#eef1f6;}
+/* ---------- nav (bottom tabs) — frosted silver bar ---------- */
+body.theme-fullmoon nav{background:linear-gradient(180deg,rgba(214,218,225,0.92) 0%,rgba(196,201,211,0.9) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid rgba(10,11,14,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7);}
+body.theme-fullmoon nav button{color:#71767f;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.1em;}
+body.theme-fullmoon nav button.active{color:#0c0d11;background:linear-gradient(180deg,rgba(20,22,28,0.06) 0%,transparent 60%);border-top-color:#0c0d11;}
+/* ---------- chain intro + progress bar ---------- */
+body.theme-fullmoon .chain-intro{background:rgba(255,255,255,0.35);border-bottom:1px solid rgba(146,153,168,0.4);}
+body.theme-fullmoon .chain-intro-sub{color:#6d7280;}
+body.theme-fullmoon .chain-bar{background:rgba(146,153,168,0.3);}
+body.theme-fullmoon .chain-fill{background:linear-gradient(90deg,#8990a0,#eef1f6);box-shadow:0 0 8px rgba(232,236,244,0.6);}
+body.theme-fullmoon .section-title{font-family:'Cinzel',serif;font-weight:700;letter-spacing:.05em;color:#14161c;}
+body.theme-fullmoon .section-sub{color:#6d7280;}
+/* ---------- chain-tab: moon-phase tiles (own formspråk, like Obsidian/Cosmic Horror) ----------
+   Rest-day 'V' is deliberately UNTOUCHED here — that gold marker is uniform
+   across every theme (see feedback_rest_day_label memory), never override
+   .chain-tab.rest-day. Done-state inherits the base opacity/color-mix fade
+   (reads as "eclipsed" for free) — only shape (border-radius) is added here. */
+body.theme-fullmoon .chain-tab{clip-path:none;}
+body.theme-fullmoon .chain-tab-letter{border-radius:50%;background:radial-gradient(circle at 36% 30%,#eef1f6 0%,#ccd1db 55%,#9ba2af 100%);color:#191b21;box-shadow:inset 1px 1px 2px rgba(255,255,255,0.7),inset -2px -2px 5px rgba(96,102,116,0.5);}
+body.theme-fullmoon .chain-tab.adjacent .chain-tab-letter{background:radial-gradient(circle at 36% 30%,#e2e6ec 0%,#b6bcc8 60%,#8b93a2 100%);opacity:1;}
+body.theme-fullmoon .chain-tab.adjacent .chain-tab-name-short{display:none;}
+body.theme-fullmoon .chain-tab.active{background:linear-gradient(180deg,rgba(246,248,251,0.95),rgba(214,219,226,0.92));border-radius:28px;box-shadow:0 0 16px rgba(236,240,248,0.7),inset 0 1px 0 rgba(255,255,255,0.9);}
+body.theme-fullmoon .chain-tab.active .chain-tab-letter{background:radial-gradient(circle at 34% 30%,#fff 0%,#e2e6ec 55%,#bcc2cd 100%);box-shadow:inset 1px 1px 2px rgba(255,255,255,0.9),inset -2px -2px 5px rgba(120,126,140,0.4);}
+body.theme-fullmoon .chain-tab-name-full{font-family:'Cinzel',serif;font-weight:700;letter-spacing:.05em;color:#191b21;background:none;}
+/* ---------- exercise cards ---------- */
+body.theme-fullmoon .ex-block{background:linear-gradient(158deg,rgba(232,235,240,0.62) 0%,rgba(198,203,214,0.52) 100%);border:1px solid rgba(146,153,168,0.5);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 8px 20px rgba(20,22,28,0.12);backdrop-filter:blur(3px) saturate(110%);-webkit-backdrop-filter:blur(3px) saturate(110%);}
+body.theme-fullmoon .ex-block.saved{background:var(--surface-saved);border-color:rgba(63,90,82,0.4);}
+body.theme-fullmoon .ex-name{color:#0c0d11;}
+body.theme-fullmoon .ex-detail{color:#6a6f7a;}
+body.theme-fullmoon .ex-prev{color:#6a6f7a;}
+body.theme-fullmoon .ex-prev .last-val{color:#14161c;}
+body.theme-fullmoon .set-num{color:#5f646f;}
+body.theme-fullmoon .ex-prev-history-set{color:#5f646f;}
+body.theme-fullmoon .ex-prev-history-set.warmup{color:#7b808b;}
+body.theme-fullmoon .ex-note-input{border-color:rgba(146,153,168,0.5);}
+body.theme-fullmoon .ex-btn-skip,body.theme-fullmoon .ex-btn-edit{background:linear-gradient(180deg,#e7eaef 0%,#d0d5de 100%);border:1px solid #a7adb9;color:#5f646f;}
+body.theme-fullmoon .ex-btn-skip:hover,body.theme-fullmoon .ex-btn-edit:hover{color:#0a0b0e;border-color:#0a0b0e;}
+body.theme-fullmoon .set-input,body.theme-fullmoon .add-ex-input,body.theme-fullmoon .swap-select{border-color:rgba(146,153,168,0.5);}
+body.theme-fullmoon .set-input:focus{border-color:#14161c;box-shadow:0 0 0 2px rgba(20,22,28,0.14);}
+body.theme-fullmoon .set-unit{color:#7b808b;}
+body.theme-fullmoon .sets-group-label{color:#6a6f7a;border-top:1px dashed rgba(146,153,168,0.4);}
+body.theme-fullmoon .ex-collapsed-name{color:#14161c;}
+body.theme-fullmoon .ex-collapsed-status{color:#6d7280;}
+body.theme-fullmoon .ex-collapsed-chevron{color:#6a6f7a;}
+/* ---------- LOG / DONE / Finish — shared sharp small-radius rect (fm-btn-primary vocabulary) ---------- */
+body.theme-fullmoon .set-log-btn{background:#0c0d11;color:#f4f5f8;font-family:'Cinzel',serif;font-weight:800;letter-spacing:.1em;border:none;clip-path:none;border-radius:2px;box-shadow:0 4px 10px rgba(10,11,14,0.3);}
+body.theme-fullmoon .set-log-btn.has-value{background:linear-gradient(180deg,#2a2c33,#0c0d11);}
+body.theme-fullmoon .set-log-btn:hover{background:#1c1d22;}
+body.theme-fullmoon .set-logged-indicator{color:#3f5a52;text-shadow:0 0 4px rgba(63,90,82,0.4);}
+body.theme-fullmoon .ex-done-primary{border-radius:2px;}
+body.theme-fullmoon .ex-done-primary.ready{background:#0c0d11;border-color:#0c0d11;color:#f4f5f8;}
+body.theme-fullmoon .ex-done-primary.ready:hover{background:#1c1d22;}
+body.theme-fullmoon .btn-primary{background:#0c0d11;color:#f4f5f8;font-family:'Cinzel',serif;font-weight:800;letter-spacing:.1em;border:1px solid #0c0d11;border-radius:2px;box-shadow:0 6px 16px rgba(10,11,14,0.3);}
+body.theme-fullmoon .btn-primary:hover{background:#1c1d22;}
+body.theme-fullmoon .btn-primary:disabled{background:rgba(20,22,28,0.15);color:#8990a0;box-shadow:none;}
+body.theme-fullmoon .btn-secondary{border-color:rgba(20,22,28,0.35);color:#3a3f4a;}
+body.theme-fullmoon .btn-secondary:hover{border-color:#0a0b0e;color:#0a0b0e;}
+/* ---------- Progress tab ---------- */
+body.theme-fullmoon .stat-box{background:rgba(226,230,238,0.55);border:1px solid rgba(146,153,168,0.45);}
+body.theme-fullmoon .stat-num{color:#14161c;font-family:'Cinzel',serif;}
+body.theme-fullmoon .stat-desc{color:#6a6f7a;}
+body.theme-fullmoon .pr-card{background:rgba(226,230,238,0.55);border:1px solid rgba(146,153,168,0.45);}
+body.theme-fullmoon .pr-card::before{background:rgba(255,255,255,0.7);color:#3a3f4a;}
+body.theme-fullmoon .pr-value{color:#3a3f4a;font-weight:700;}
+body.theme-fullmoon .pr-groups{background:rgba(226,230,238,0.5);border:1px solid rgba(146,153,168,0.4);}
+body.theme-fullmoon .pr-group-head{color:#6d7280;}
+body.theme-fullmoon .pr-group-head.open{color:#14161c;}
+body.theme-fullmoon .hist-entry{background:rgba(226,230,238,0.45);border-left:2px solid #0a0b0e;}
+body.theme-fullmoon .hist-date{color:#14161c;}
+body.theme-fullmoon .hist-pass{color:#6d7280;}
+body.theme-fullmoon .hist-set{color:#7b808b;}
+/* ---------- selFg fix — toast + add-ex-confirm sit on var(--red) (near-black), need light text ---------- */
+body.theme-fullmoon .toast{color:#f4f5f8;}
+body.theme-fullmoon .add-ex-confirm{color:#f4f5f8;}
+body.theme-fullmoon .add-set-btn{color:#3a3f4a;border-color:rgba(20,22,28,0.35);}
+body.theme-fullmoon .draft-notice{color:#3f5a52;border-color:rgba(63,90,82,0.35);background:rgba(255,255,255,0.4);}
+body.theme-fullmoon .ex-note-banner{color:#7a5000;background:rgba(150,100,0,0.1);border-color:#8a6000;}
+body.theme-fullmoon .ex-note-save{background:rgba(238,241,247,0.8);border-color:#7a5000;color:#7a5000;}
+/* ---------- modals ---------- */
+body.theme-fullmoon .app-modal-card{background:rgba(232,235,242,0.95);}
+body.theme-fullmoon .app-modal-title{color:#14161c;font-family:'Cinzel',serif;}
+body.theme-fullmoon .app-modal-body{color:#3a3f4a;}
+body.theme-fullmoon .app-modal-input,body.theme-fullmoon .app-modal-select{background:#fff;border:1px solid rgba(20,22,28,0.3);color:#14161c;}
+body.theme-fullmoon .app-modal-btn{border:1px solid rgba(20,22,28,0.3);color:#3a3f4a;background:rgba(255,255,255,0.5);}
+body.theme-fullmoon .app-modal-btn-primary{background:#0c0d11;color:#f4f5f8;border:1px solid #0c0d11;}
+body.theme-fullmoon .app-modal-btn-danger{background:linear-gradient(180deg,#b84040,#8a2828);color:#fff;border:none;}
+/* ---------- scrollbar ---------- */
+body.theme-fullmoon::-webkit-scrollbar-track{background:#c3c8d2;}
+body.theme-fullmoon::-webkit-scrollbar-thumb{background:#9096a3;border:1px solid #6d7280;}
+/* ---------- Settings/Weight panels — frosted-glass recipe (proactive: fullmoon-bg
+   is a viewport-fixed animated canvas like Nanosuit's hex-weave, same "vilda
+   västern" risk if these stay unstyled, see feedback_teman_arkitektur memory) ---------- */
+body.theme-fullmoon .settings-panel{position:relative;z-index:1;background:linear-gradient(180deg,rgba(226,230,238,0.55) 0%,rgba(198,203,214,0.42) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(146,153,168,0.4);padding:8px;}
+body.theme-fullmoon .data-btn{position:relative;z-index:1;background:linear-gradient(180deg,rgba(226,230,238,0.55) 0%,rgba(198,203,214,0.42) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:rgba(146,153,168,0.4);color:#6d7280;}
+body.theme-fullmoon .data-btn:hover{border-color:#0a0b0e;color:#0a0b0e;}
+body.theme-fullmoon .weight-chart-wrap{position:relative;z-index:1;background:linear-gradient(180deg,rgba(226,230,238,0.55) 0%,rgba(198,203,214,0.42) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:rgba(146,153,168,0.4);}
+body.theme-fullmoon .wlog-list{position:relative;z-index:1;background:linear-gradient(180deg,rgba(226,230,238,0.55) 0%,rgba(198,203,214,0.42) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(146,153,168,0.4);padding:2px 12px;}
+/* ---------- stacking: opaque panels need their own lift above the fixed blood canvas (z-index:0) ---------- */
+body.theme-fullmoon .chain-intro,body.theme-fullmoon .chain-bar,body.theme-fullmoon .ex-block,body.theme-fullmoon .stat-box,body.theme-fullmoon .pr-card,body.theme-fullmoon .hist-entry,body.theme-fullmoon .pr-groups{position:relative;z-index:1;}
+
+/* ═════════════════════════════════════════════════════════════
    OBSIDIAN — Dark fantasy · Gothic scriptorium · Breathing gold embers
    Designed in Claude Design (Niklas + Claude), ported 2026-05-22.
    Source: obsidian/ObsidianTheme.jsx (290 rader CSS).
@@ -4337,7 +4495,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.78.7';
+const APP_VERSION = '3.79.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8872,6 +9030,7 @@ const THEMES = [
   {id:'arctic',        name:'Arctic Terminal',cat:'light',desc:'Frozen lake · Liquid nitrogen · Frosted glass',  class:'theme-arctic'},
   {id:'undertow',      name:'Undertow',      cat:'light', desc:'Cold water · Abyss navy · Caustic light + bubble gasps', class:'theme-undertow'},
   {id:'understory',    name:'Overgrowth',    cat:'light', desc:'Canopy closes in · Deep sap green · Creeping vines over the field of view', class:'theme-understory'},
+  {id:'fullmoon',      name:'Full Moon',     cat:'light', desc:'Silver monochrome · Obsidian blood · Werewolf mythos', class:'theme-fullmoon'},
 ];
 
 // Ren visual-apply: byter body-klass + mount/unmount ambient-lager. Ingen state/save.
@@ -8891,6 +9050,8 @@ function setThemeVisual(themeId){
   else unmountUnderstoryBg();
   if(themeId==='nanosuit') mountNanosuitBg();
   else unmountNanosuitBg();
+  if(themeId==='fullmoon') mountFullMoonBg();
+  else unmountFullMoonBg();
 }
 
 function applyTheme(themeId){
@@ -9500,6 +9661,11 @@ function toggleAmbientEffects(){
     if(state.ambientEffects!==false){ if(_nsHexStartLoop) _nsHexStartLoop(); }
     else { _nsHexAlive=false; cancelAnimationFrame(_nsHexRaf); _nsHexRaf=0; if(_nsHexDraw) _nsHexDraw(); }
   }
+  if(state.theme==='fullmoon'){
+    const c=document.getElementById('fullMoonBloodCanvas');
+    if(state.ambientEffects!==false){ if(c && !_fmBloodField && window.createBloodField) _fmBloodField=window.createBloodField(c,{moon:true,moonX:0.72,moonY:0.22,moonR:0.3,density:0.9,speed:1,wound:true}); }
+    else { if(_fmBloodField){ _fmBloodField.stop(); _fmBloodField=null; } if(c){ const x=c.getContext('2d'); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,c.width,c.height); } }
+  }
   renderData();
 }
 
@@ -9879,6 +10045,244 @@ function _startUnderstoryVines(canvas){
   _usVineRaf=requestAnimationFrame(tick);
 }
 
+// ── FULL MOON — signature backdrop ──────────────────────────────
+// Port av theme/Full Moon/ambient-fullmoon.js (Claude Design-handoff, 3.79.0).
+// window.createBloodField(canvas,opts): silver full moon (breathing glow) +
+// persistent downward-running obsidian-blood trails (only the leading bead
+// advances, the streak it left stays put) + falling drops + pools. Honors
+// prefers-reduced-motion. Returns {stop()}.
+(function(){
+  const clamp=(v,a,b)=>(v<a?a:v>b?b:v);
+  const rand=(a,b)=>a+Math.random()*(b-a);
+  function createBloodField(canvas,opts){
+    opts=opts||{};
+    const ctx=canvas.getContext('2d');
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    const density=opts.density!=null?opts.density:1;
+    const showMoon=opts.moon!==false;
+    const showWound=opts.wound!==false;
+    const moonXf=opts.moonX!=null?opts.moonX:0.72;
+    const moonYf=opts.moonY!=null?opts.moonY:0.24;
+    const moonRf=opts.moonR!=null?opts.moonR:0.28;
+    const speedK=opts.speed!=null?opts.speed:1;
+    const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let w=0,h=0,raf=0,alive=true,t=0;
+    let drips=[],drops=[],pools=[];
+    let maxDrips=0,woundH=0,woundSeed=0;
+    let moon=null,moonR=0,moonCx=0,moonCy=0;
+    function buildMoon(){
+      moonCx=w*moonXf; moonCy=h*moonYf; moonR=Math.max(2,Math.min(w,h)*moonRf);
+      const pad=moonR*2.8; const size=Math.ceil(pad*2);
+      moon=document.createElement('canvas'); moon.width=size*dpr; moon.height=size*dpr;
+      const c=moon.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0);
+      const cx=pad,cy=pad;
+      let seat=c.createRadialGradient(cx,cy,moonR*0.85,cx,cy,moonR*2.6);
+      seat.addColorStop(0,'rgba(92,99,116,0)'); seat.addColorStop(0.12,'rgba(92,99,116,0.46)');
+      seat.addColorStop(0.4,'rgba(116,123,140,0.18)'); seat.addColorStop(1,'rgba(116,123,140,0)');
+      c.fillStyle=seat; c.fillRect(0,0,size,size);
+      let bloom=c.createRadialGradient(cx,cy,moonR*0.7,cx,cy,moonR*1.25);
+      bloom.addColorStop(0,'rgba(255,255,255,0)'); bloom.addColorStop(0.82,'rgba(248,250,255,0)');
+      bloom.addColorStop(0.92,'rgba(255,255,255,0.6)'); bloom.addColorStop(1,'rgba(255,255,255,0)');
+      c.fillStyle=bloom; c.fillRect(0,0,size,size);
+      let disc=c.createRadialGradient(cx-moonR*0.3,cy-moonR*0.32,moonR*0.08,cx,cy,moonR);
+      disc.addColorStop(0,'#ffffff'); disc.addColorStop(0.5,'#eef1f6'); disc.addColorStop(0.8,'#d1d6e0'); disc.addColorStop(1,'#b6bcc8');
+      c.save(); c.beginPath(); c.arc(cx,cy,moonR,0,Math.PI*2); c.closePath(); c.clip();
+      c.fillStyle=disc; c.fillRect(0,0,size,size);
+      const craters=[[-0.30,-0.22,0.30,0.24],[0.18,-0.10,0.24,0.20],[-0.05,0.28,0.34,0.18],[0.34,0.30,0.18,0.24],[-0.42,0.20,0.16,0.26],[0.10,0.08,0.14,0.16],[-0.18,-0.02,0.10,0.28],[0.40,-0.34,0.12,0.18],[0.02,-0.36,0.09,0.24]];
+      for(const [dx,dy,r,a] of craters){
+        const gx=cx+dx*moonR,gy=cy+dy*moonR,gr=r*moonR;
+        const g=c.createRadialGradient(gx,gy,0,gx,gy,gr);
+        g.addColorStop(0,`rgba(120,127,144,${a})`); g.addColorStop(0.7,`rgba(146,153,168,${a*0.5})`); g.addColorStop(1,'rgba(146,153,168,0)');
+        c.fillStyle=g; c.beginPath(); c.arc(gx,gy,gr,0,Math.PI*2); c.fill();
+      }
+      c.restore();
+      c.beginPath(); c.arc(cx,cy,Math.max(0,moonR),0,Math.PI*2); c.lineWidth=1.6; c.strokeStyle='rgba(104,111,128,0.6)'; c.stroke();
+      c.beginPath(); c.arc(cx,cy,Math.max(0,moonR-1.6),0,Math.PI*2); c.lineWidth=2; c.strokeStyle='rgba(255,255,255,0.55)'; c.stroke();
+      moon._pad=pad;
+    }
+    function drawMoon(glow){
+      if(!moon) return;
+      const pad=moon._pad;
+      ctx.save(); ctx.globalAlpha=0.92+glow*0.08;
+      ctx.drawImage(moon,moonCx-pad,moonCy-pad,pad*2,pad*2);
+      ctx.restore();
+    }
+    function cxAt(d,depth){ return d.x+Math.sin(depth*d.freq+d.seed)*d.amp+d.drift*depth; }
+    function widthAt(d,u){
+      const base=d.w;
+      let wgt=base*(0.8+0.2*clamp(u/0.05,0,1));
+      if(u>0.82){ const k=(u-0.82)/0.18; wgt+=base*0.9*Math.sin(k*Math.PI*0.5); }
+      return wgt;
+    }
+    function makeDrip(x){
+      return {x,w:rand(2.4,7),seed:rand(0,Math.PI*2),amp:rand(0,3.5),freq:rand(0.008,0.022),drift:rand(-0.05,0.05),
+        grown:0,target:rand(h*0.1,h*0.98),speed:rand(0.5,1.7)*speedK,state:'grow',restT:0,fade:1,dying:false,
+        dripAt:rand(160,460),dripT:rand(0,200)};
+    }
+    function pickX(){ return rand(w*0.015,w*0.985); }
+    function spawnDrop(x,y,r){ drops.push({x,y,vy:rand(0.3,0.7),r,tail:r*rand(0.9,1.4)}); }
+    function initBlood(initial){
+      drips=[]; drops=[]; pools=[];
+      maxDrips=Math.round((6+w/46)*density);
+      woundH=clamp(h*0.05,12,26); woundSeed=rand(0,6.28);
+      for(let i=0;i<maxDrips;i++){
+        const d=makeDrip(pickX());
+        if(initial){ d.grown=rand(0,d.target); if(d.grown>=d.target-1) d.state='rest'; }
+        drips.push(d);
+      }
+    }
+    function updateDrip(d){
+      if(reduce) return;
+      if(d.dying){ d.fade-=0.012; if(d.fade<=0) Object.assign(d,makeDrip(pickX())); return; }
+      if(d.state==='grow'){
+        d.grown+=d.speed;
+        if(d.grown>=d.target){ d.grown=d.target; d.state='rest'; d.restT=0; }
+      } else {
+        d.restT++; d.dripT++;
+        if(d.dripT>d.dripAt && d.grown>h*0.14 && d.grown<h-8){
+          spawnDrop(cxAt(d,d.grown),d.grown,clamp(d.w*0.6,1.5,4));
+          d.dripT=0; d.dripAt=rand(220,620);
+        }
+        if(d.restT>80 && d.grown<h*0.92 && Math.random()<0.004){
+          d.state='grow'; d.target=Math.min(h,d.grown+rand(h*0.1,h*0.4)); d.restT=0;
+        }
+        if(d.grown>h*0.85 && d.restT>300 && Math.random()<0.0009) d.dying=true;
+      }
+    }
+    function drawDrip(d){
+      const g=d.grown; if(g<3) return;
+      const steps=Math.max(8,Math.floor(g/7));
+      const cxs=[],ys=[],hw=[];
+      for(let i=0;i<=steps;i++){
+        const depth=g*i/steps,u=i/steps;
+        cxs.push(cxAt(d,depth)); ys.push(depth); hw.push(widthAt(d,u)*0.5*d.fade);
+      }
+      const left=[],right=[];
+      for(let i=0;i<=steps;i++){
+        const a=i>0?i-1:i,b=i<steps?i+1:i;
+        let dx=cxs[b]-cxs[a],dy=ys[b]-ys[a]; const dl=Math.hypot(dx,dy)||1; dx/=dl; dy/=dl;
+        const nx=-dy,ny=dx;
+        left.push([cxs[i]+nx*hw[i],ys[i]+ny*hw[i]]); right.push([cxs[i]-nx*hw[i],ys[i]-ny*hw[i]]);
+      }
+      ctx.beginPath(); ctx.moveTo(left[0][0],left[0][1]);
+      for(let i=1;i<=steps;i++) ctx.lineTo(left[i][0],left[i][1]);
+      for(let i=steps;i>=0;i--) ctx.lineTo(right[i][0],right[i][1]);
+      ctx.closePath();
+      const grad=ctx.createLinearGradient(0,0,0,g);
+      grad.addColorStop(0,`rgba(12,13,17,${0.96*d.fade})`); grad.addColorStop(1,`rgba(3,4,6,${0.98*d.fade})`);
+      ctx.fillStyle=grad; ctx.fill();
+      ctx.lineWidth=1; ctx.strokeStyle=`rgba(150,159,176,${0.3*d.fade})`; ctx.stroke();
+      ctx.beginPath();
+      for(let i=0;i<=steps;i++){ const gx=cxs[i]-hw[i]*0.42; i===0?ctx.moveTo(gx,ys[i]):ctx.lineTo(gx,ys[i]); }
+      const gg=ctx.createLinearGradient(0,0,0,g);
+      gg.addColorStop(0,`rgba(226,230,238,${0.42*d.fade})`); gg.addColorStop(1,'rgba(226,230,238,0)');
+      ctx.strokeStyle=gg; ctx.lineWidth=Math.max(1,d.w*0.26); ctx.lineCap='round'; ctx.stroke();
+      const hx=cxs[steps],hy=ys[steps],hr=widthAt(d,1)*0.5*d.fade;
+      ctx.beginPath(); ctx.arc(hx,hy,hr,0,Math.PI*2);
+      ctx.fillStyle=`rgba(6,7,10,${0.98*d.fade})`; ctx.fill();
+      ctx.lineWidth=1; ctx.strokeStyle=`rgba(150,159,176,${0.3*d.fade})`; ctx.stroke();
+      ctx.beginPath(); ctx.arc(hx-hr*0.34,hy-hr*0.4,Math.max(0.6,hr*0.3),0,Math.PI*2);
+      ctx.fillStyle=`rgba(232,236,244,${0.6*d.fade})`; ctx.fill();
+    }
+    function drawWound(){
+      const H=woundH;
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(w,0); ctx.lineTo(w,H*0.5);
+      const stepX=Math.max(10,w/20);
+      for(let x=w;x>=-1;x-=stepX){
+        const dip=H*0.5+Math.sin(x*0.06+woundSeed)*H*0.32+Math.sin(x*0.017+2)*H*0.16;
+        ctx.lineTo(x,clamp(dip,2,H));
+      }
+      ctx.closePath();
+      const grad=ctx.createLinearGradient(0,0,0,H);
+      grad.addColorStop(0,'rgba(4,5,7,0.99)'); grad.addColorStop(1,'rgba(9,10,13,0.95)');
+      ctx.fillStyle=grad; ctx.fill();
+      ctx.beginPath(); ctx.moveTo(0,H*0.2); ctx.lineTo(w,H*0.2);
+      ctx.lineWidth=1.4; ctx.strokeStyle='rgba(200,206,218,0.3)'; ctx.stroke();
+    }
+    function updateDrops(){
+      for(let i=drops.length-1;i>=0;i--){
+        const d=drops[i];
+        if(!reduce){ d.vy+=0.16*speedK; d.y+=d.vy; }
+        if(d.y>h-2){ pools.push({x:d.x,y:h-1,rw:d.r*2.2,tw:d.r*9,a:0.5}); drops.splice(i,1); }
+      }
+    }
+    function drawDrop(d){
+      ctx.beginPath(); ctx.moveTo(d.x,d.y-d.tail);
+      ctx.quadraticCurveTo(d.x-d.r,d.y-d.r,d.x-d.r,d.y);
+      ctx.arc(d.x,d.y,d.r,Math.PI,0,true);
+      ctx.quadraticCurveTo(d.x+d.r,d.y-d.r,d.x,d.y-d.tail);
+      ctx.closePath();
+      ctx.fillStyle='rgba(7,8,11,0.95)'; ctx.fill();
+      ctx.lineWidth=1; ctx.strokeStyle='rgba(150,159,176,0.28)'; ctx.stroke();
+      ctx.beginPath(); ctx.arc(d.x-d.r*0.3,d.y-d.r*0.35,Math.max(0.5,d.r*0.3),0,Math.PI*2);
+      ctx.fillStyle='rgba(232,236,244,0.6)'; ctx.fill();
+    }
+    function drawPools(){
+      for(let i=pools.length-1;i>=0;i--){
+        const p=pools[i];
+        if(!reduce){ p.rw+=(p.tw-p.rw)*0.05; p.a-=0.0015; }
+        if(p.a<=0){ pools.splice(i,1); continue; }
+        ctx.beginPath(); ctx.ellipse(p.x,p.y,p.rw,p.rw*0.22,0,0,Math.PI*2);
+        ctx.fillStyle=`rgba(6,7,10,${p.a})`; ctx.fill();
+      }
+    }
+    function build(){
+      const r=canvas.getBoundingClientRect();
+      const nw=Math.max(1,r.width),nh=Math.max(1,r.height);
+      if(nw<4||nh<4) return;
+      if(nw===w&&nh===h) return;
+      w=nw; h=nh;
+      canvas.width=w*dpr; canvas.height=h*dpr;
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      if(showMoon) buildMoon();
+      initBlood(true);
+    }
+    function tick(){
+      if(!alive) return;
+      raf=requestAnimationFrame(tick); t++;
+      try{
+        ctx.clearRect(0,0,w,h);
+        if(showMoon) drawMoon(0.5+0.5*Math.sin(t*0.006));
+        ctx.lineJoin='round';
+        if(!reduce && drips.length<maxDrips && t%22===0) drips.push(makeDrip(pickX()));
+        for(const d of drips){ updateDrip(d); drawDrip(d); }
+        if(showWound) drawWound();
+        updateDrops();
+        for(const d of drops) drawDrop(d);
+        drawPools();
+      } catch(err){
+        if(!window.__fmLogged){ console.error('BloodField error:',err); window.__fmLogged=true; }
+      }
+    }
+    build();
+    const ro=new ResizeObserver(build);
+    ro.observe(canvas);
+    tick();
+    return { stop(){ alive=false; cancelAnimationFrame(raf); ro.disconnect(); } };
+  }
+  window.createBloodField=createBloodField;
+})();
+
+let _fmBloodField=null;
+function mountFullMoonBg(){
+  if(document.getElementById('fullmoon-bg')) return;
+  const bg=document.createElement('div');
+  bg.id='fullmoon-bg'; bg.setAttribute('aria-hidden','true');
+  bg.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;';
+  const canvas=document.createElement('canvas');
+  canvas.id='fullMoonBloodCanvas';
+  canvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;';
+  bg.appendChild(canvas);
+  document.body.insertBefore(bg,document.body.firstChild);
+  if(state.ambientEffects!==false && window.createBloodField){
+    _fmBloodField=window.createBloodField(canvas,{moon:true,moonX:0.72,moonY:0.22,moonR:0.3,density:0.9,speed:1,wound:true});
+  }
+}
+function unmountFullMoonBg(){
+  if(_fmBloodField){ _fmBloodField.stop(); _fmBloodField=null; }
+  const el=document.getElementById('fullmoon-bg'); if(el) el.remove();
+}
+
 // 3.67.0 — PM18: in-app-hjälp. Innehåll som DATA + en render-loop (samma princip
 // som mätsätten) — aldrig per-ämne-specialkod. Statiskt författad HTML, ingen
 // användardata → ingen escaping behövs i body.
@@ -9962,8 +10366,11 @@ function renderData(){
   // Overgrowth (id 'understory'): --red (#1f4226) OCH --white (#143018) är BÅDA mörka
   // → vald-state blev mörk-på-mörk (KG/2min/temakort oläsliga). Ljus selFg.
   const isUnderstory = (state.theme||'iron') === 'understory';
+  // Full Moon: --red (obsidian blood #0a0b0e) OCH --white (ink #14161c) är BÅDA
+  // mörka → samma mörk-på-mörk-fälla som Overgrowth/Undertow. Ljus selFg.
+  const isFullMoon = (state.theme||'iron') === 'fullmoon';
   const selBg = isVoid ? '#fff' : 'var(--red)';
-  const selFg = isVoid ? '#000' : isUndertow ? '#eaf2fb' : isUnderstory ? '#f3f8ea' : 'var(--white)';
+  const selFg = isVoid ? '#000' : isUndertow ? '#eaf2fb' : isUnderstory ? '#f3f8ea' : isFullMoon ? '#f4f5f8' : 'var(--white)';
   const selBorder = isVoid ? '#888' : 'var(--red)';
   const unitBtn=(u)=>`<button onclick="state.unit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.unit===u?selBg:'none'};border:1px solid ${state.unit===u?selBorder:'#2a2a2a'};color:${state.unit===u?selFg:'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u.toUpperCase()}</button>`;
   const tempBtn=(u)=>`<button onclick="state.tempUnit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.tempUnit===u?selBg:'none'};border:1px solid ${state.tempUnit===u?selBorder:'#2a2a2a'};color:${state.tempUnit===u?selFg:'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u==='c'?'°C':'°F'}</button>`;
