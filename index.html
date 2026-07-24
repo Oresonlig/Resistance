@@ -2725,8 +2725,18 @@ body.theme-fullmoon .chain-intro-sub{color:#9aa0ac;}
    stray line, not a progress track) — same rgba value read fine against the
    old light chain-intro but pops way too hard against near-black. Toned down,
    glow removed. */
-body.theme-fullmoon .chain-bar{background:rgba(255,255,255,0.08);}
-body.theme-fullmoon .chain-fill{background:linear-gradient(90deg,#5a5f6b,#c7ccd6);box-shadow:none;}
+/* 3.79.4 — THE white line, found on the third pass. Two independent sources
+   sat on top of each other in this exact strip and I only ever removed one at
+   a time: (a) `header{border-bottom}` (gone in 3.79.3), and (b) THIS — the
+   progress bar. `.chain-bar` renders as a full-width 3px element between
+   .chain-intro and .chain-strip-outer, i.e. precisely where Niklas keeps
+   pointing. Its fill ramped to #c7ccd6 (near-white silver) and the track was
+   8% white; against the old LIGHT chain-intro both were unremarkable, but
+   against the near-black bloody field they read as a bright rule across the
+   screen. Muted to charcoal-silver so it still shows progress without
+   reading as a line drawn across the top. */
+body.theme-fullmoon .chain-bar{background:rgba(255,255,255,0.04);}
+body.theme-fullmoon .chain-fill{background:linear-gradient(90deg,#3a3f4a,#6d7280);box-shadow:none;}
 /* The bloody lower edge — the actual HeaderEdge() path from the handoff
    (variants/fullmoon.jsx), inlined as an SVG data URI. Neither a straight
    border nor an alpha fade ever read as "blood" (Niklas, 2 rounds): it needs
@@ -2752,7 +2762,10 @@ body.theme-fullmoon .chain-tab{clip-path:none;}
 body.theme-fullmoon .chain-tab-letter{border-radius:50%;background:radial-gradient(circle at 36% 30%,#eef1f6 0%,#ccd1db 55%,#9ba2af 100%);color:#191b21;box-shadow:inset 1px 1px 2px rgba(255,255,255,0.7),inset -2px -2px 5px rgba(96,102,116,0.5);}
 body.theme-fullmoon .chain-tab.adjacent .chain-tab-letter{background:radial-gradient(circle at 36% 30%,#e2e6ec 0%,#b6bcc8 60%,#8b93a2 100%);opacity:1;}
 body.theme-fullmoon .chain-tab.adjacent .chain-tab-name-short{display:none;}
-body.theme-fullmoon .chain-tab.active{background:linear-gradient(180deg,rgba(246,248,251,0.95),rgba(214,219,226,0.92));border-radius:28px;box-shadow:0 0 16px rgba(236,240,248,0.7),inset 0 1px 0 rgba(255,255,255,0.9);}
+/* 3.79.4 — glow was 16px @ 0.7 white: on the near-black field it bloomed into a
+   wide horizontal white haze across the strip (visible as a bright band in the
+   screenshots), reinforcing the "white line at the top" read. Tightened. */
+body.theme-fullmoon .chain-tab.active{background:linear-gradient(180deg,rgba(246,248,251,0.95),rgba(214,219,226,0.92));border-radius:28px;box-shadow:0 0 10px rgba(236,240,248,0.3),inset 0 1px 0 rgba(255,255,255,0.9);}
 body.theme-fullmoon .chain-tab.active .chain-tab-letter{background:radial-gradient(circle at 34% 30%,#fff 0%,#e2e6ec 55%,#bcc2cd 100%);box-shadow:inset 1px 1px 2px rgba(255,255,255,0.9),inset -2px -2px 5px rgba(120,126,140,0.4);}
 body.theme-fullmoon .chain-tab-name-full{font-family:'Cinzel',serif;font-weight:700;letter-spacing:.05em;color:#191b21;background:none;}
 /* ---------- exercise cards ---------- */
@@ -2789,16 +2802,25 @@ body.theme-fullmoon .btn-primary:disabled{background:rgba(20,22,28,0.15);color:#
 body.theme-fullmoon .btn-secondary{border-color:rgba(20,22,28,0.35);color:#3a3f4a;}
 body.theme-fullmoon .btn-secondary:hover{border-color:#0a0b0e;color:#0a0b0e;}
 /* ---------- Progress tab ---------- */
-body.theme-fullmoon .stat-box{background:rgba(226,230,238,0.55);border:1px solid rgba(146,153,168,0.45);}
+/* 3.79.4 — Progress/Weight/Settings were "väldigt svårt att se" (Niklas).
+   Root cause: these panels sat at 45-55% alpha while the ambient canvas behind
+   them is at its BRIGHTEST here — the full moon is a near-white disc parked
+   mid-screen, exactly where the stat grid and chart land. On the Chain tab the
+   same alpha works because the moon sits behind dark drips and the card is
+   dense with text; on the data tabs it washed the panels out completely.
+   Raised to ~90% + blur. This intentionally trades some of the frosted-glass
+   look for legibility on these tabs — .ex-block (Chain) is deliberately left
+   at its lower alpha since Niklas likes the see-through there. */
+body.theme-fullmoon .stat-box{background:rgba(230,234,241,0.9);border:1px solid rgba(146,153,168,0.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
 body.theme-fullmoon .stat-num{color:#14161c;font-family:'Cinzel',serif;}
-body.theme-fullmoon .stat-desc{color:#6a6f7a;}
-body.theme-fullmoon .pr-card{background:rgba(226,230,238,0.55);border:1px solid rgba(146,153,168,0.45);}
-body.theme-fullmoon .pr-card::before{background:rgba(255,255,255,0.7);color:#3a3f4a;}
+body.theme-fullmoon .stat-desc{color:#5f646f;}
+body.theme-fullmoon .pr-card{background:rgba(230,234,241,0.9);border:1px solid rgba(146,153,168,0.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+body.theme-fullmoon .pr-card::before{background:rgba(255,255,255,0.85);color:#3a3f4a;}
 body.theme-fullmoon .pr-value{color:#3a3f4a;font-weight:700;}
-body.theme-fullmoon .pr-groups{background:rgba(226,230,238,0.5);border:1px solid rgba(146,153,168,0.4);}
-body.theme-fullmoon .pr-group-head{color:#6d7280;}
+body.theme-fullmoon .pr-groups{background:rgba(230,234,241,0.9);border:1px solid rgba(146,153,168,0.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+body.theme-fullmoon .pr-group-head{color:#5f646f;}
 body.theme-fullmoon .pr-group-head.open{color:#14161c;}
-body.theme-fullmoon .hist-entry{background:rgba(226,230,238,0.45);border-left:2px solid #0a0b0e;}
+body.theme-fullmoon .hist-entry{background:rgba(230,234,241,0.88);border-left:2px solid #0a0b0e;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
 body.theme-fullmoon .hist-date{color:#14161c;}
 body.theme-fullmoon .hist-pass{color:#6d7280;}
 body.theme-fullmoon .hist-set{color:#7b808b;}
@@ -2823,11 +2845,11 @@ body.theme-fullmoon::-webkit-scrollbar-thumb{background:#9096a3;border:1px solid
 /* ---------- Settings/Weight panels — frosted-glass recipe (proactive: fullmoon-bg
    is a viewport-fixed animated canvas like Nanosuit's hex-weave, same "vilda
    västern" risk if these stay unstyled, see feedback_teman_arkitektur memory) ---------- */
-body.theme-fullmoon .settings-panel{position:relative;z-index:1;background:linear-gradient(180deg,rgba(226,230,238,0.55) 0%,rgba(198,203,214,0.42) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(146,153,168,0.4);padding:8px;}
-body.theme-fullmoon .data-btn{position:relative;z-index:1;background:linear-gradient(180deg,rgba(226,230,238,0.55) 0%,rgba(198,203,214,0.42) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:rgba(146,153,168,0.4);color:#6d7280;}
+body.theme-fullmoon .settings-panel{position:relative;z-index:1;background:linear-gradient(180deg,rgba(232,236,242,0.92) 0%,rgba(208,213,223,0.88) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(146,153,168,0.5);padding:8px;}
+body.theme-fullmoon .data-btn{position:relative;z-index:1;background:linear-gradient(180deg,rgba(232,236,242,0.92) 0%,rgba(208,213,223,0.88) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:rgba(146,153,168,0.5);color:#5f646f;}
 body.theme-fullmoon .data-btn:hover{border-color:#0a0b0e;color:#0a0b0e;}
-body.theme-fullmoon .weight-chart-wrap{position:relative;z-index:1;background:linear-gradient(180deg,rgba(226,230,238,0.55) 0%,rgba(198,203,214,0.42) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:rgba(146,153,168,0.4);}
-body.theme-fullmoon .wlog-list{position:relative;z-index:1;background:linear-gradient(180deg,rgba(226,230,238,0.55) 0%,rgba(198,203,214,0.42) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(146,153,168,0.4);padding:2px 12px;}
+body.theme-fullmoon .weight-chart-wrap{position:relative;z-index:1;background:linear-gradient(180deg,rgba(232,236,242,0.94) 0%,rgba(208,213,223,0.9) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:rgba(146,153,168,0.5);}
+body.theme-fullmoon .wlog-list{position:relative;z-index:1;background:linear-gradient(180deg,rgba(232,236,242,0.92) 0%,rgba(208,213,223,0.88) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(146,153,168,0.5);padding:2px 12px;}
 /* ---------- alternating obsidian/silver exercise cards (themebugg.png handoff render) ----------
    Two fixes over the first pass (Niklas gym-feedback, screenshot 2):
    1) `.pass-ex-header` (session name banner) is an unstyled DOM sibling BEFORE
@@ -2843,7 +2865,9 @@ body.theme-fullmoon .wlog-list{position:relative;z-index:1;background:linear-gra
       translucent frosted body (what he likes) but is marked as a dark one by
       an obsidian band behind the name row + a soft dark fading border, per his
       own suggestion. See the .ex-header-row block further down. */
-body.theme-fullmoon .ex-block.collapsed:nth-child(odd){background:linear-gradient(160deg,#16181e 0%,#06070a 100%);border-color:#000;box-shadow:0 10px 24px rgba(10,11,14,0.3),inset 0 0 0 1px rgba(200,206,218,0.08);}
+/* 3.79.4 — border was `#000` on a near-black card = invisible; the card had no
+   readable outline at all (Niklas: "gör borden tydligare"). Silver rim instead. */
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd){background:linear-gradient(160deg,#16181e 0%,#06070a 100%);border:1px solid rgba(190,198,214,0.42);box-shadow:0 10px 24px rgba(10,11,14,0.35),inset 0 0 0 1px rgba(200,206,218,0.12);}
 body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-name{color:#f4f5f8;}
 body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-detail{color:#9aa0ac;}
 body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-prev{color:#9aa0ac;}
@@ -2864,8 +2888,8 @@ body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-note-input{background
    "one of the black ones": obsidian band behind the name row (bled to the card
    edges via negative margins) + a soft dark halo instead of a hard border. */
 body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed){
-  border:1px solid rgba(10,11,14,0.55);
-  box-shadow:0 0 0 1px rgba(10,11,14,0.18),0 10px 26px -6px rgba(6,7,10,0.55),inset 0 1px 0 rgba(255,255,255,0.55);
+  border:2px solid rgba(10,11,14,0.72);
+  box-shadow:0 0 0 1px rgba(10,11,14,0.3),0 12px 30px -6px rgba(6,7,10,0.6),inset 0 1px 0 rgba(255,255,255,0.55);
 }
 body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row{
   background:linear-gradient(160deg,#16181e 0%,#06070a 100%);
@@ -4574,7 +4598,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.79.3';
+const APP_VERSION = '3.79.4';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

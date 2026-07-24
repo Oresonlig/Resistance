@@ -6,6 +6,19 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.79.4 — 2026-07-24
+**Full Moon round 4.**
+
+**Den vita linjen — hittad på riktigt den här gången.** Lärdomen: det var ALDRIG en linje, det var TRE ljusa element staplade på exakt samma y-position, och jag tog bort ett i taget och trodde varje gång att jag var klar. (a) `header{border-bottom:2px silver}` — borttagen 3.79.3. (b) **`.chain-bar` — progressbaren.** Den renderas som ett fullbrett 3px-element mellan `.chain-intro` och `.chain-strip-outer`, dvs. exakt där Niklas pekat varje gång; dess fill rampade till `#c7ccd6` (nära vitt silver) och tracket låg på 8% vitt. Mot den GAMLA ljusa chain-intro var båda omärkliga — mot det nya nattsvarta blodfältet lyste de som en linje tvärs över skärmen. Dämpad till koltonad silver. (c) `.chain-tab.active` box-shadow `0 0 16px @ 0.7` vitt blommade ut till ett brett vitt dis över hela strippen (syns tydligt i skärmdumparna) och förstärkte samma intryck — strypt till `10px @ 0.3`. **Metodfel att ta med sig: när ett visuellt symptom överlever en "rotorsaksfix", räkna med FLERA samtidiga källor på samma plats istället för att anta att man missade rätt element.**
+
+**Tydligare kant på svarta övningar.** `border-color:#000` på ett nästan svart kort = osynlig kant. Kollapsade mörka kort får nu en silverrim (`rgba(190,198,214,0.42)`), expanderade mörka kort en tjockare 2px-kant + djupare halo.
+
+**Progress/Weight/Settings "väldigt svårt att se".** Panelerna låg på 45–55% alpha samtidigt som ambient-canvasen är som ALLRA ljusast just där — fullmånen är en nästan vit skiva mitt på skärmen, precis bakom stat-rutnätet och vikt-grafen. På Chain-fliken funkar samma alpha eftersom månen där ligger bakom mörka blodstråk och kortet är tätt med text; på data-flikarna sköljde den bort panelerna helt. Höjda till ~90% + blur (`.stat-box`, `.pr-card`, `.pr-groups`, `.hist-entry`, `.settings-panel`, `.data-btn`, `.weight-chart-wrap`, `.wlog-list`). **Medveten avvägning:** detta offrar en del av frostat-glas-looken på DESSA flikar till förmån för läsbarhet — `.ex-block` på Chain är avsiktligt kvar på sin lägre alpha eftersom Niklas gillar genomsiktligheten där.
+
+174 tester gröna, `check_syntax.js` OK. Ej browser-verifierat av mig.
+
+---
+
 ## 3.79.3 — 2026-07-24
 **Full Moon round 3 (Niklas gym-feedback).** Four points, three of them repeat offenders — worth noting that each had a *different* root cause than the previous round's guess.
 
