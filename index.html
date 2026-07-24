@@ -2739,8 +2739,17 @@ body.theme-fullmoon .chain-intro-sub{color:#9aa0ac;}
    progress indicator and is meant to read.
    Lesson: a light artifact that survives repeated "root-cause" fixes and is
    described as a see-through GAP is an opacity/z-index leak, not a border. */
-body.theme-fullmoon .chain-bar{background:#1c1e25;}
-body.theme-fullmoon .chain-fill{background:linear-gradient(90deg,#5a5f6b,#9aa0ac);box-shadow:none;}
+/* 3.79.6 — the opaque bar (3.79.5) killed the gap but read as a dull grey
+   full-width DIVIDER (Niklas: "svart/vit/grått border emellan, varför?").
+   Two reasons: (a) it spanned edge-to-edge like a rule, (b) its fill was the
+   muted grey I'd set in 3.79.4 while chasing the (unrelated) white-line bug.
+   Restored to the handoff's actual progress bar (variants/fullmoon.jsx
+   .fm-progress-bar): INSET from the edges so it reads as a contained bar not a
+   divider, rounded ends, subtle opaque dark track, bright silver fill with a
+   soft glow. Silver because Full Moon IS silver-monochrome — an on-theme
+   progress indicator, not a stray border. */
+body.theme-fullmoon .chain-bar{background:#2a2d36;margin:2px 16px 0;height:3px;border-radius:2px;overflow:hidden;}
+body.theme-fullmoon .chain-fill{background:linear-gradient(90deg,#8990a0,#e8ecf3);border-radius:2px;box-shadow:0 0 7px rgba(232,236,244,0.4);}
 /* The bloody lower edge — the actual HeaderEdge() path from the handoff
    (variants/fullmoon.jsx), inlined as an SVG data URI. Neither a straight
    border nor an alpha fade ever read as "blood" (Niklas, 2 rounds): it needs
@@ -4602,7 +4611,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.79.5';
+const APP_VERSION = '3.79.6';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

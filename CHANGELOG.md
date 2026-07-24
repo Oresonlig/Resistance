@@ -6,6 +6,13 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.79.6 — 2026-07-24
+**Progressbaren fick tillbaka sin design.** Att göra `.chain-bar` opak (3.79.5) täppte gapet men baren läste då som en dov grå fullbredds-DIVIDER (Niklas: "svart/vit/grått border emellan, varför?"). Två orsaker: (a) den gick kant-till-kant som en linjal, (b) fillen var den dämpade grå jag satt i 3.79.4 medan jag jagade den (orelaterade) vita linjen. Återställd till handoffens faktiska progressbar (`variants/fullmoon.jsx` `.fm-progress-bar`): INDRAGEN från kanterna (`margin:2px 16px 0`) så den läser som en inramad bar och inte en avdelare, rundade ändar, subtil opak mörk track (`#2a2d36`), ljus silverfill (`#8990a0→#e8ecf3`) med mjukt sken. Silver för att Full Moon ÄR silver-monokrom — en tema-riktig progress-indikator, inte en vilsen border.
+
+174 tester gröna, `check_syntax.js` OK.
+
+---
+
 ## 3.79.5 — 2026-07-24
 **Den vita "linjen" — löst (5:e gången), och den var aldrig en linje.** Niklas tittade live och gav den avgörande beskrivningen: *"det är inte en kant, det är ett vitt MELLANRUM — det rinner blod bakom."* Det är signaturen för ett GENOMSKINLIGT element, inte en border eller en färg. Rotorsaken: `.chain-bar` (progressbaren) låg på `rgba(255,255,255,0.04)` — 96% genomskinlig — som ett fullbrett band mellan den opaka mörka `.chain-intro` och den opaka mörka `.chain-strip-outer`. Alltså syntes den fixerade blodcanvasen (z-index 0) + den ljusa silver-`<body>` RAKT IGENOM den → ett tunt ljust band med blodstråk bakom. Varje tidigare runda TONADE OM den genomskinliga baren (fortfarande genomskinlig → fortfarande ett fönster) istället för att göra den OPAK. Fix: solid mörk track (`#1c1e25`) = del av det kontinuerliga blodfältet, precis som i designen där progressbaren ligger PÅ det solida svarta header-fältet. Den 43%-breda fillen förblir silver — det ÄR själva progress-indikatorn och ska synas.
 
