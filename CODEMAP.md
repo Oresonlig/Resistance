@@ -1,80 +1,85 @@
 # Code Map — index.html
 
-`index.html` är single-file: inline CSS + JS, ~290KB, ~10 350 rader. Radnummer är ungefärliga — använd Grep om de inte stämmer.
+`index.html` är single-file: inline CSS + JS, **11 518 rader** (verifierat 2026-07-25, efter kodgranskningen 3.80.0). CSS 20–3703, body-markup 3719–3848, huvud-JS 3849–11502. Radnummer driver FORT i denna fil — använd Grep om de inte stämmer, lita inte blint på siffrorna.
 
 ## Var saker bor
 
 ### State & defaults
-- `~4911` — `ensureStateDefaults()` (init `drafts{}`, `prCollapsed`)
-- `~4986` — `isFreshState(s)`
-- `~5003` — `freshState()` — single source of truth. `appVersion:APP_VERSION`
-- `~5391` — `const APP_VERSION` — **ENDA stället att bumpa version**
-- `~5521` — `const SCHEMA_VERSION` + `SCHEMA_MIGRATIONS`-pipeline
-- `~5363` — `getEffectiveChain()` — cachad chain med order + adds/removes
-- `~5377` — `invalidateChainCache()`
+- `~4099` — `ensureStateDefaults()` (init `drafts{}`, `prCollapsed`)
+- `~4193` — `isFreshState(s)`
+- `~4214` — `freshState()` — single source of truth. `appVersion:APP_VERSION`
+- `~4615` — `const APP_VERSION` — **ENDA stället att bumpa version**
+- `~4883` — `const SCHEMA_VERSION` + `SCHEMA_MIGRATIONS`-pipeline
+- `~4587` — `getEffectiveChain()` — cachad chain med order + adds/removes
+- `~4601` — `invalidateChainCache()`
+- **`freshState()` och `ensureStateDefaults()` måste hållas i synk** — 3.80.0 hittade `deletions.log` (3.77.1) bara i den ena. Nytt state-fält = lägg till på BÅDA ställena, annars beror defaulten på vilken load-väg som kördes.
 
 ### Chain & rendering
-- `~5690` — `newCycle()` — **TDZ-fälla:** anropas inuti `freshState()`, läser `state` via `getEffectiveChain()`. Vid `let state = freshState()` är `state` i TDZ → ReferenceError. Defensiv try/catch sedan 3.35.12. RÖR INTE utan att förstå detta.
-- `~5713` — `ensureDraft(passId)` — multi-draft: `state.drafts[passId]`-slots, inte enda `state.draft`
-- `ensureExtraSets(exId, passId)` — **3.59.0 ROTFIX:** ren `reconcileSets` (`src/set-reconcile.js`, speglad i index.html) = EN symmetrisk regel som paddar BÅDE warmup OCH work mot `getSetTargets(ex)` (self-healing mot försvinnande set), bevarar loggade set, ramp strippar warmups, `setEdited`/`saved` låser formen. Ersatte work-only-paddet + RAMP-filtret (slut på 3.39/3.44/3.49/3.52/3.55-lapptäcket där warmups saknade skyddsnät → Unilateral Row tappade en uppvärmning permanent). Instrument: `SET_RESTORED@reconcile` loggas vid pad av befintlig draft → copy-draft `incidents[]`. `getSetTargets(ex)` = single source of truth för warmup/work-antal (delas med `getDefaultSets`).
-- `~8306` — `TAG_HINTS`-map + `~8314` `getExerciseDescriptionLine` + `getExerciseTip`: tag-driven rad 1 + övnings-tip rad 2
-- `~8931` — `togglePRCollapse()` + PR-render: kollapsbar PR-sektion, `state.prCollapsed` default true
-- `~6246` — `buildAddExRow(passId)` — "Add exercise"-knapp + dropdown (använder `groupExercisesByCategory()`)
-- `~6337` — `buildPassBodyHTML(pass,cycle,nextId)` — session-body HTML
-- `~6717` — chain-strip rendering (i renderData)
-- `~7286` — Edit Chain-vyn (reorder)
-- `~7494` — `showEditExercises(passId)`
-- `~7615` — `confirmAddPermEx(passId)`
-- `~7774` — `buildTagEditorHTML(ex, passId)` — tags-editor
-- `~8573` — `confirmAddEx(passId)`
-- `~8810` — `selectSession(passId)` — byter aktiv session + fade-animation
+- `~4869` — `newCycle()` — **TDZ-fälla:** anropas inuti `freshState()`, läser `state` via `getEffectiveChain()`. Vid `let state = freshState()` är `state` i TDZ → ReferenceError. Defensiv try/catch sedan 3.35.12. RÖR INTE utan att förstå detta.
+- `~4892` — `ensureDraft(passId)` — multi-draft: `state.drafts[passId]`-slots, inte enda `state.draft`
+- `~8030` — `ensureExtraSets(exId, passId)` — **3.59.0 ROTFIX:** ren `reconcileSets` (`src/set-reconcile.js`, speglad i index.html) = EN symmetrisk regel som paddar BÅDE warmup OCH work mot `getSetTargets(ex)` (self-healing mot försvinnande set), bevarar loggade set, ramp strippar warmups, `setEdited`/`saved` låser formen. Instrument: `SET_RESTORED@reconcile` loggas vid pad av befintlig draft → copy-draft `incidents[]`. `getSetTargets(ex)` = single source of truth för warmup/work-antal (delas med `getDefaultSets`).
+- `~7893` — `TAG_HINTS`-map + närliggande `getExerciseDescriptionLine`/`getExerciseTip`: tag-driven rad 1 + övnings-tip rad 2 (`tip`-fält på `EXERCISE_LIBRARY`-posten, resolvas via kanoniskt namn → följer med vid swap, se 3.57.0)
+- `~8742` — `togglePRCollapse()` + PR-render: kollapsbar PR-sektion, `state.prCollapsed` default true
+- `~5886` — `buildAddExRow(passId)` — "Add exercise"-knapp + dropdown (använder `groupExercisesByCategory()`)
+- `~5917` — `buildPassBodyHTML(pass,cycle,nextId)` — session-body HTML
+- `~6264` — **`renderChain()`** — CHAIN-fliken: intro/progress-bar + chain-strip (session-tabs) + exercise-area. **OBS: chain-strippen renderas HÄR, INTE i `renderData()`** (som är Settings-hubben — lätt att blanda ihop namnen).
+- `~8554` — `selectSession(passId)` — byter aktiv session. **Byter `chain-ex-area.innerHTML` direkt** → måste (som renderChain/rerenderSession) köra `captureAllDraftInputs()` först, annars tappas otippade set-inputs (fixat 3.80.0).
+- **`buildReorderUI` FINNS INTE** (raderad 3.80.0) — den gamla Edit Chain-panelen (`#reorder-panel`) var oåtkomlig dödkod sedan den ersattes av `showEditSort` + `showEditAddRemove`, och dess rest-dag-knapp anropade en `toggleRestSlot()` som aldrig existerat. Återinför den inte; rest-dagar hanteras av `addRestSlot`/`removeRestSlot` i `showEditAddRemove`.
+- `~6993` — `showEditExercises(passId)`
+- `~7258` — `buildTagEditorHTML(ex, passId)` — tags-editor
+- `~7438` — `saveExercise(passId, exId)` — measure-driven capture av alla set → `savedExercises`
+- `~10376` — **`renderData()`** — Settings-HUBBEN (Training/Appearance/Data & Sync/Help/Support/Admin), INTE chain-strippen (se ovan)
 
 ### EXERCISE_LIBRARY & helpers
-- `~5183` — `EXERCISE_LIBRARY` array
-- `~6235` — `groupExercisesByCategory()` — cachad gruppering, används av buildAddExRow + swap-dropdown + edit-vyn. `_groupedExCache` nollställs vid custom exercise-ändring.
+- `~4398` — `EXERCISE_LIBRARY` array
+- `~5875` — `groupExercisesByCategory()` — cachad gruppering, används av buildAddExRow + swap-dropdown + edit-vyn. `_groupedExCache` nollställs vid custom exercise-ändring.
 
 ### Extras (3.54.0 — full parity med ordinarie övningar)
 - Stabila id: `extra_<passId>_<sid>` sätts i `confirmAddEx`. Legacy index-id migreras i `ensureStateDefaults`. INGEN re-indexering vid remove.
-- `makeExtraEx(entry)` + `extraExId(name)` — nära `getRenderExId` (~5475). Speglas i `src/extras-model.js` (testtäckt). Vid ändring: uppdatera båda.
-- `buildExtraBlock` FINNS INTE längre — extras renderas som syntetiska ex-objekt genom samma loop som ordinarie i `buildPassBodyHTML` (`allExs`). Branch på `ex.extra` styr bara action-knapparna (Skip/Edit▾[Tags/+Program/Remove], ingen swap).
+- `~4707` — `makeExtraEx(entry)`, `~4714` `extraExId(name)`, `~4719` `getRenderExId(slotId)`. Speglas i `src/extras-model.js` (testtäckt). Vid ändring: uppdatera båda.
+- `buildExtraBlock` FINNS INTE längre (pensionerad 3.54.0) — extras renderas som syntetiska ex-objekt genom samma loop som ordinarie i `buildPassBodyHTML` (`allExs`). Branch på `ex.extra` styr bara action-knapparna (Skip/Edit▾[Tags/+Program/Remove], ingen swap).
 - PR/historik/notes nycklas på kanoniskt exId (namn-slug) — extras delar identitet med samma övning i program.
-- Tag-overrides på extra-id är efemära: städas i `finishSession` + `removeExtra`, flyttas till nya id:t i `saveExtraToProgram`.
 
 ### Mätsätt / measure (3.56.0 — input-form + PR separerat från set-schema)
-- 7 mätsätt i `MEASURES`-registry (nära `getRenderExId`): `weight/bw/bwreps/timed/cardio/cardiosprint/carry`. Speglas i `src/measures.js` (testtäckt). Vid ändring: uppdatera BÅDA.
-- `getMeasure(exId, ex)`: override(`state.exerciseMeasureOverride[exId]`) > library-default (`libraryMeasureMap`, byggd från `EXERCISE_LIBRARY[].measure`) > custom.measure > ex.measure > **namn-fallback** (template I–N slots saknar BASE_SLOT_DEFAULT_NAME → exId-lookup missar) > flaggor > `weight`.
-- Override nyckel = **kanoniskt exId** (följer rörelsen, per användare). `getSprintBase` = `time`/`dist` för cardiosprint.
-- Render: `measureCells(measure, sprintBase, ...)` bygger fält-cellerna; grid-kolumner via `.set-row.m-${measure}`-klass. Ersatte `if(isBW){}else{}`. `isBW`/`isTimed` härleds nu FRÅN measure.
-- Capture/save/PR/copy/historik alla measure-drivna. `formatSetLine` + `prValue`/`prTiebreak` är shape-medvetna (läser settets egen form, ej nuvarande measure). Saved set bär `measure`.
+- **9 mätsätt** i `MEASURES`-registry (`~4744`, nära `getRenderExId`): `weight/bw/bwreps/timed/cardio/cardiosprint/carry/inclinecardio/sauna` (de två sista tillagda 3.70.0/3.70.1 — uppdatera denna lista + `src/measures.js` om fler läggs till). `~4806` `getMeasure(exId, ex)`.
+- **`minInput:true`** (3.80.0) på cardio/inclinecardio/sauna = tiden matas in OCH visas i MINUTER (lagras alltid som `secs`). Skiljer dem från `timed`/`cardiosprint` som är råa sekunder. Läses av `formatSetLine`.
+- `getMeasure`: override(`state.exerciseMeasureOverride[exId]`) > library-default (`libraryMeasureMap`, byggd från `EXERCISE_LIBRARY[].measure`) > custom.measure > ex.measure > **namn-fallback** (template I–N slots saknar BASE_SLOT_DEFAULT_NAME → exId-lookup missar) > flaggor > `weight`.
+- Override nyckel = **kanoniskt exId** (följer rörelsen, per användare). (`getSprintBase`/`setSprintBase` RADERADE 3.78.7 — cardiosprint visar tid + km + antal samtidigt, ingen toggle.)
+- Render: `measureCells(measure, sprintBase, ...)` bygger fält-cellerna; grid-kolumner via `.set-row.m-${measure}`-klass. `isBW`/`isTimed` härleds FRÅN measure.
+- Capture/save/PR/copy/historik alla measure-drivna. `formatSetLine` + `prValue`/`prTiebreak` är shape-medvetna (läser settets egen form, ej nuvarande measure). Saved EXERCISE bär `measure` (`saveExercise` → `savedExercises[exId].measure`), inte det enskilda settet.
+- `formatSetLine(set, u, measure)` (`~8364`) — tredje argumentet är VALFRITT och bryter INTE shape-principen: det används bara för att lösa upp `secs`-tvetydigheten (rå tid vs minut-cardio vars andra fält är tomt). Saknas det gäller gamla beteendet. Call-sites: historik i `buildPassBodyHTML` (via `getLastSession().measure`), `renderProgress`, `buildCopyLines`. Testat i `tests/format-set-line.test.js`.
 - Set-schema: `getTagDefaults(ex, measure)` — ramp/uni/singles = tag-styrt; annars `MEASURE_SET_DEFAULTS[measure]` (cardio=1 set, ej HIT).
-- UI: tag-editor har measure single-select (`setExerciseMeasure`) + sprintBase-toggle (`setSprintBase`).
-- Library-data: bw=Chins/Pull-ups/Dips/Back Ext, bwreps=Ab Wheel/core, timed=Plank/Dead Hang, cardio=Bike/Walk, cardiosprint=Assault Bike, carry=Farmers/Sled.
+- UI: tag-editor har measure single-select (`setExerciseMeasure`). Ingen sprintBase-toggle längre (3.78.7).
 
 ### Synk-lagret (3.62.0 läs-före-skriv+CAS, 3.64.0 server-enforced CAS)
 - **Två invarianter sedan 3.62.0 — bryt dem ALDRIG:** (1) `_cloudSeenThisSession`-gate: ingen skrivning mot molnet (pushState/keepalive) förrän en lyckad molnläsning skett denna session. (2) CAS: alla skrivningar villkoras på senast sedda `updated_at` (`state.lastSyncedCloudISO`); konflikt → pull+merge → retry en gång. Blind upsert (`sbUpsert`) FINNS INTE längre — återinför den inte.
 - **Sedan 3.64.0: CAS är server-enforced, inte bara klient-konvention.** Direkt `INSERT`/`UPDATE` på `app_state` är indraget för rollen `authenticated` (Supabase Dashboard, se `SYNC_CAS_SERVER_SPEC.md`) — all skrivning MÅSTE gå genom Postgres-funktionen `write_app_state_cas(p_expected_updated_at, p_data)`. En gammal pre-3.64.0-klient som försöker en rå PATCH/POST får `403`.
-- `~4646` — `mergeLogEntries`, `mergeWeightEntries`, `mergeArrayById`, `mergeKeyedMap`, `mergeArrayUnion`, `mergeMapOfArrays`, `mergeMapOfArrayById`
-- `~4720` — `syncFromCloud(userId)` — koalescerad (`_syncPromise` delas; parallella anrop AWAITAR pågående pull, no-op:ar inte). Preserverar lokala `state.drafts`. Sätter gate + `lastSyncedCloudISO` i alla branches; tom molnrad rensar ISO (→ insert-väg).
-- `~4880` — `sbGet` (12s abort-timeout), `sbWriteStateCas(expectedISO, data)` (POST mot `/rest/v1/rpc/write_app_state_cas`, `'conflict'` vid `cas_conflict`-fel eller tomt svar). Ersätter f.d. `sbPatchStateIfMatch`/`sbInsertState` (rå PATCH/POST — finns inte längre).
-- `~4990` — `pushState(opts)` — pull-before-push (alltid awaitad) → gate-check → CAS-skrivning (`sbWriteStateCas`) → konflikt = pull+merge+retry(`_casRetry`). Backoff-retry kör fullt flöde (aldrig skipPull). Drafts exkluderas ur payload.
-- `~5050` — `save()` — isFreshState-guard + QuotaExceededError-toast
+- `~5328` — `mergeLogEntries`, `mergeWeightEntries`, `mergeArrayById`, `mergeKeyedMap`, `mergeArrayUnion`, `mergeMapOfArrays`, `mergeMapOfArrayById`
+- `~5404` — `syncFromCloud(userId)` — koalescerad (`_syncPromise` delas; parallella anrop AWAITAR pågående pull, no-op:ar inte). Preserverar lokala `state.drafts`. Sätter gate + `lastSyncedCloudISO` i alla branches; tom molnrad rensar ISO (→ insert-väg).
+- `~5565` — `sbGet` (12s abort-timeout), `~5585` `sbWriteStateCas(expectedISO, data)` (POST mot `/rest/v1/rpc/write_app_state_cas`, `'conflict'` vid `cas_conflict`-fel eller tomt svar).
+- `~5662` — `pushState(opts)` — pull-before-push (alltid awaitad) → gate-check → CAS-skrivning (`sbWriteStateCas`) → konflikt = pull+merge+retry(`_casRetry`). Backoff-retry kör fullt flöde (aldrig skipPull). Drafts exkluderas ur payload.
+- `~5729` — `save()` — isFreshState-guard + QuotaExceededError-toast
 - `finishSession(passId)` — rensar `state.drafts[passId]`
-- `~9540` — `keepaliveCloudPush()` — gate-check + `sbWriteStateCas` via RPC (fire-and-forget; konflikt/403 = tyst no-op, datat kvar i localStorage). `__periodicSyncTimer` (30s) strax ovan.
-- `~9600` — event-handlers: `visibilitychange`, `beforeunload`, `pagehide`
+- `~11411` — `keepaliveCloudPush()` — gate-check + `sbWriteStateCas` via RPC (fire-and-forget; konflikt/403 = tyst no-op, datat kvar i localStorage).
 - Forensik: `PUSH_BLOCKED@gate` + `PUSH_CONFLICT@cas` i `_dbgPush`-ringbufferten
-- **`autoReloadForNewVersion(cloudVersion)` (3.62.1)** — ersatte dismiss-bar `showOldVersionBanner`. Triggas i `syncFromCloud` när `cloud.appVersion > APP_VERSION`. Säkrar lokal data → toast → `location.reload()` efter 1.5s. Stänger residual-risken att en öppen flik med gammal (pre-CAS) JS pushar blint på obestämd tid — self-healer inom en periodisk synk-cykel (≤30s synlig flik) istället för att kräva manuell refresh. **OBS:** `registration.update()`-polling för SW FUNGERAR INTE med query-string-versionering (`./sw.js?v=X`) — en redan-registrerad flik re-kollar bara sin egen gamla URL. Försök inte den vägen igen.
-- `sw.js`: network-first för navigations-requests (HTML-shell) sedan 3.62.1 — SWR på shellen var rotorsaken till "refresha två gånger vid deploy". SWR kvar för fonter/CDN/bilder.
-- **`loadStateForUser()` (3.62.2)** — returnerande enhet (har lokal data) väntar nu på en BUNDEN (5s) `syncFromCloud()`-pull INNAN `handleSession` ritar upp appen, istället för att rendera stale lokal data och byta ut den sekunder senare. Detta var det faktiska "mobilen visar gamla programmet"-fönstret (utöver skriv-racet 3.62.0 löste). `syncFromCloud` avvisar aldrig internt → Promise.race kan bara timeouta, aldrig hänga. Bieffekt: `_cloudSeenThisSession`-gaten sätts tidigare. "Updated from cloud ✓"-toast tystad när `isLoading` (boot-merge, inte bakgrundsuppdatering).
+- **`autoReloadForNewVersion(cloudVersion)` (3.62.1)** — triggas i `syncFromCloud` när `cloud.appVersion > APP_VERSION`. Säkrar lokal data → toast → `location.reload()` efter 1.5s. **OBS:** `registration.update()`-polling för SW FUNGERAR INTE med query-string-versionering (`./sw.js?v=X`) — försök inte den vägen igen.
+- `sw.js`: network-first för navigations-requests (HTML-shell) sedan 3.62.1 — SWR kvar för fonter/CDN/bilder.
+- `~4020` — **`loadStateForUser()` (3.62.2)** — returnerande enhet väntar nu på en BUNDEN (5s) `syncFromCloud()`-pull INNAN `handleSession` ritar upp appen, istället för att rendera stale lokal data. `syncFromCloud` avvisar aldrig internt → Promise.race kan bara timeouta, aldrig hänga.
 
 ### Modaler & UI-utilities
-- `~10052` — `askModalText(title, opts)` returnerar `{text, select}` (INTE en string)
-- `~10133` — `askModalConfirm(title, body, opts)`
-- `~10336` — Service Worker registration (`sw.js`)
+- `~11187` — `askModalText(title, opts)` returnerar `{text, select}` (INTE en string)
+- `~11268` — `askModalConfirm(title, body, opts)`
+- `~11491` — Service Worker registration (`navigator.serviceWorker.register('./sw.js?v='+APP_VERSION)`)
 
 ### Teman
-- `~8987` — `THEMES`-arrayen (tema-registry)
-- `~9004` — `applyTheme()` — sätter `document.body.className` + startar/stoppar ambient effects
-- Temablocken i CSS: Iron `body:not([class*="theme-"])` (~460), Night City (~529), Arctic (~1039), Ember (~1334), Void (~1846), Nanosuit (~1917), Undertow (~2954), Overgrowth/understory (~3091), Crusader (~3246), Obsidian (~3697), Cosmic Horror (~4066)
+- `~9020` — `THEMES`-arrayen (tema-registry). **11 aktiva teman** (Full Moon tillkom 3.79.0, flaggat `· WIP`). **Iron är det KLASSLÖSA default-temat** (`class:''`) — `body.theme-iron` matchar ALDRIG något; Iron = base-CSS:en (`body:not([class*="theme-"])`). Vill du styla "endast Iron": styla by default, override:a på `body[class*="theme-"]` för alla andra. Se [[feedback_teman_arkitektur]].
+- `~9057` — `applyTheme()` — sätter `document.body.className` + startar/stoppar ambient effects (`setThemeVisual`)
+- Temablocken i CSS: Iron `body:not([class*="theme-"])` (~460), Night City (~495), Arctic (~871), Ember, Void, Nanosuit, Undertow, Overgrowth/understory, Obsidian, Cosmic Horror, Full Moon (`body.theme-fullmoon`). Grep `body.theme-X{` för exakt position. **Crusader + Daylight BORTTAGNA ur appen 3.58.14** — inga `body.theme-crusader`/`body.theme-daylight`-block finns längre i index.html (kvar bara i `theme/`-mappen för ev. framtida rework).
+
+### Login-skärmen (`#userScreen`, "basement forge"-design, 3.72.0→3.74.3)
+- Markup + CSS runt `~1800-2160` (`.cl-*`-klasser), JS-motor (kedje-SVG, embers, tema-demo) i slutet av filen (`bootChainLogin`, `authThemeFadeSwap` m.fl., sök `AUTH SCREEN THEME DEMO`/`LOGIN CHAIN SYSTEM`).
+- Forge-atmosfären (uppstigande glöd/hex/embers) är Iron-only via `body[class*="theme-"]{display:none}`-hide (samma klasslös-Iron-mönster som ovan).
+- Mobil-layout (`@media(max-width:940px)`) använder `align-items:flex-start` på `.cl-grid` (INTE `center`) — annars återintroduceras ett "hoppar mellan teman"-fel pga font-metrik-beroende centrering. Se [[feedback_root_cause_before_patching]].
 
 ## Arkitektur — viktiga val
 
@@ -87,7 +92,7 @@
 - **Rendering är string-interpolation → innerHTML.** XSS-känsligt — `escapeHTML()` används men inte överallt (PM9/PM19 öppen).
 
 ## Versionsrutin
-1. `const APP_VERSION = 'x.x.x'` (~rad 5391) — **ENDA stället**
+1. `const APP_VERSION = 'x.x.x'` (`~4615`) — **ENDA stället**
 2. State-init (`appVersion:APP_VERSION`) + header läser konstanten dynamiskt
 3. `CHANGELOG.md` entry överst
 

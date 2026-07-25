@@ -6,6 +6,33 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.80.0 — 2026-07-25
+**Full kodgranskning av index.html (11 626 rader) — 10 fynd åtgärdade, 94 rader dödkod bort.** Hela filen läst i sekvens plus två maskinella pass: alla inline-`on*`-handlers matchade mot faktiskt definierade funktioner, och alla CSS-selektorer matchade mot markup/JS.
+
+**Buggar**
+- **Död Edit Chain-panel + trasig knapp.** `buildReorderUI()` (~94 rader) byggde den GAMLA reorder-panelen med rest-dag-hantering och "Save Order". Den ersattes av `showEditSort`/`showEditAddRemove` men raderades aldrig — och blev oåtkomlig: alla fem call-sites är gatade på `if(document.getElementById('reorder-panel'))`, och ingen kod monterade panelen till att börja med. Dess `+ Rest`/`✕ Remove`-knapp anropade `toggleRestSlot()`, **en funktion som inte finns någonstans i filen** (den försvann med den gamla panelen; hade panelen någonsin renderats hade knappen kastat ReferenceError). Panelen, dess fem refresh-block och dess CSS-regel är borta.
+- **Borttagen session låg kvar i listan.** `removeSessionFromChain` är `async` (väntar på confirm-dialogen) men onclick körde `removeSessionFromChain(pid);showEditAddRemove();` — omritningen skedde alltså FÖRE dialogen svarat, och den enda kod som ritade om efteråt var det döda panel-blocket. Resultat: man bekräftade borttagningen och sessionen stod kvar tills man navigerade bort. Omritningen flyttad in i funktionen, efter `save()`.
+- **Cardio-tid visades som råa sekunder.** `formatSetLine` är shape-driven (läser settets egna fält), men `secs` ensamt är tvetydigt: rå tid (timed/cardiosprint) eller minut-inmatad cardio/sauna/incline-tid vars andra fält lämnats tomt. En Walk/Bike Cardio loggad på bara tid utan km föll i sekund-grenen → **"1950s" istället för "33min"** i både Last-historiken och copy-texten. Löst measure-drivet: nytt `minInput`-fält i `MEASURES`-registret (cardio/inclinecardio/sauna) + valfritt `measure`-argument till `formatSetLine`. Saknas measure (äldre loggposter) gäller exakt gamla beteendet. Ingen per-övnings-specialkod.
+- **Otippade set-inputs förlorades vid sessionsbyte.** `selectSession` byter ut `chain-ex-area.innerHTML` direkt utan att först fånga DOM-värden till `inputBuffer` — `renderChain`/`rerenderSession` gör det (3.55.0 #5B), men denna väg missades. Värden man skrivit in men inte hunnit logga försvann när man tittade på en annan session och kom tillbaka.
+- **log-tombstones tappades vid backup-import.** `sanitizeImportedState` byggde om `deletions` med bara `customExercises` + `exerciseNotes` — `log` (3.77.1) föll bort, så en återställd backup tappade vetskapen om raderade pass och nästa cloud-merge kunde resurrecta dem (samma P4-klass som exerciseNotes 3.38.0). Nyckeln är `passId|timestamp`, valideras nu explicit.
+- **`KNOWN_MIGRATIONS` var efter.** `preacherEZ_v1` (3.73.1) och `tagOverridesExId_v1` (3.76.0) saknades → flaggorna ströks vid backup-import och migrationerna kördes om. Ofarligt idag (båda är idempotenta) men en fälla för nästa migration som inte är det.
+- **`resetAll` tappade `tempUnit`.** 3.71.0 la till temperaturenheten men aldrig i preserve-listan — en °F-användare hamnade på °C efter reset trots att kg/lbs bevarades.
+- **Vilotimern visade fel siffra i ~500ms.** `startRestTimer` ritade ut innan `timerSeconds` sattes → förra nedräkningens sista värde blinkade förbi tills första interval-ticket.
+- **Log-knappens has-value-stil tände inte på reps.** `updateLogBtnState` läser både vikt och reps men `oninput` satt bara på viktfältet — skrev man bara reps (vanligt på BW-/reps-övningar) tändes knappen först vid nästa omritning.
+- **Krasch-risk i login-svansen.** `handleSession` avslutar med `syncFromCloud(currentUser.id)` utanför try/catch; om `buildCurrentUser` kastat är `currentUser` null → TypeError + unhandled rejection istället för synk. Guardad.
+
+**Dödkod**
+- `state.weightStep` + dess Settings-kontroll ("Weight step · Used by +/− steppers on set inputs") borttagen. Stepprarna finns inte — de ströks med plate-calc-spåret — men reglaget låg kvar och gick att ställa in utan att påverka någonting.
+- Redundant `renames[x] && renames[x]!==null` i `migrateExerciseNames` (tre ställen) — `&&` uteslöt redan null.
+
+**Verifierat rent:** CSS:en har noll döda selektorer (`.m-*` byggs som `m-${measure}`), noll döda id-regler, och inga andra odefinierade inline-handlers. `check_syntax.js` OK.
+
+**186 tester gröna** (174 → 186): ny `tests/format-set-line.test.js` med 12 fall som låser cardio/sauna/incline-minuter, att timed/cardiosprint förblir sekunder, bakåtkompatibilitet utan measure, och att `minInput` gäller exakt de tre mätsätten. `MEASURES` exponerad via testharnessen.
+
+⚠ **Ej browser-verifierat.** Testa särskilt: (a) Edit → Add/Remove → ta bort en session (ska försvinna direkt), (b) logga Walk/Bike Cardio med bara tid → historiken ska visa min, (c) skriv i ett set-fält, byt session i strippen, gå tillbaka — värdet ska vara kvar.
+
+---
+
 ## 3.79.7 — 2026-07-24
 **Full Moon → WIP.** Temat markeras som work-in-progress (`name: 'Full Moon · WIP'`) — den övre strippen (progressbar/slider/blodfält) landade inte trots många rundor, Niklas parkerar det för idag. Temat är kvar valbart i appen men flaggat WIP (samma konvention som Void hade). "Werewolf mythos" borttaget ur beskrivningen (`desc: 'Silver monochrome · Obsidian blood'`).
 
