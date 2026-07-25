@@ -110,8 +110,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .view.active{display:block;}
 /* CHAIN */
 .chain-intro{padding:13px 14px 10px;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;}.chain-intro-sub{font-family:var(--mono);font-size:.52rem;color:#aaa;letter-spacing:.07em;margin-top:3px;}
-.chain-bar{height:3px;background:#1a1a1a;}
-.chain-fill{height:100%;background:var(--red);transition:width .4s;}.chain-strip-outer{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:10px 11px 0;}
+.chain-strip-outer{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:10px 11px 0;}
 .chain-strip-outer::-webkit-scrollbar{display:none;}
 .chain-strip-inner{display:flex;align-items:center;min-width:max-content;padding-bottom:10px;gap:4px;}
 .chain-tab{display:flex;flex-direction:row;align-items:stretch;cursor:pointer;border:none;padding:0;flex-shrink:0;height:44px;background:none;clip-path:polygon(9px 0,calc(100% - 9px) 0,100% 50%,calc(100% - 9px) 100%,9px 100%,0 50%);transition:opacity .22s;}
@@ -288,6 +287,15 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .add-ex-confirm{background:var(--red);border:none;color:var(--white);font-family:var(--mono);font-size:.52rem;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;cursor:pointer;}
 .rest-content{padding:10px 0 3px;font-family:var(--mono);font-size:.64rem;color:#484848;line-height:1.8;}
 .pass-actions{display:flex;gap:6px;margin-top:10px;}
+/* 3.81.0 — stacking-lyft för vilodags-vyn. Ett canvas-tema monterar sin bakgrund
+   som `position:fixed;z-index:0` — ett POSITIONERAT element målas alltid ovanpå
+   opositionerade syskon oavsett DOM-ordning. På vanliga pass räddas innehållet av
+   att `.ex-block` har ett eget lyft, men vilodagen har inga ex-block alls: bara
+   rubriken, brödtexten och knappen — alla opositionerade. Därför ritades Full
+   Moons blodstråk rakt ÖVER "Forced Rest"-titeln och Mark Rest Done-knappen
+   (Niklas skärmdump 2026-07-25). Lyftet ligger i bas-CSS:en, inte i temablocket,
+   eftersom exakt samma latenta fälla finns i Nanosuit/Undertow/Overgrowth. */
+.pass-ex-header,.rest-content,.pass-actions{position:relative;z-index:1;}
 /* 3.34.1: btn-primary (Finish Session) — Iron default upgraded med gradient+glow,
    matchar nu Obsidian/Cosmic's "cool" feel istället för flat röd. */
 .btn-primary{flex:1;background:linear-gradient(180deg,#d04535 0%,#8a2820 100%);border:1px solid #8a2820;color:var(--white);font-family:var(--display);font-size:.95rem;letter-spacing:.1em;padding:10px;cursor:pointer;transition:all .15s;text-shadow:0 1px 0 rgba(0,0,0,0.3);box-shadow:inset 0 1px 0 rgba(255,180,160,0.22),0 2px 8px rgba(192,57,43,0.3);}
@@ -430,7 +438,7 @@ body{--chart-highlight:var(--gold);}
 .toast.show{transform:translateX(-50%) translateY(0);}
 
 @media(min-width:600px){
-  #view-chain .chain-strip-outer,#view-chain .chain-ex-area,#view-chain .chain-intro,#view-chain .chain-bar{max-width:560px;margin-left:auto;margin-right:auto;}
+  #view-chain .chain-strip-outer,#view-chain .chain-ex-area,#view-chain .chain-intro{max-width:560px;margin-left:auto;margin-right:auto;}
   #view-chain .chain-ex-area{padding-left:0;padding-right:0;}
   #view-progress,#view-weight,#view-data{max-width:560px;}
   .sets-group-label{font-size:.48rem;}
@@ -633,24 +641,6 @@ body.theme-nightcity nav button.active{
       0 0 64px rgba(0,255,240,0.2);
   }
 }
-/* CHAIN PROGRESS BAR — animated rainbow */
-body.theme-nightcity .chain-bar{
-  background:rgba(20,5,40,0.6);
-  height:6px;
-  position:relative;
-  overflow:hidden;
-}
-body.theme-nightcity .chain-fill{
-  background:linear-gradient(90deg,#ffe600 0%,#ff2d78 50%,#00fff0 100%);
-  background-size:200% 100%;
-  animation:gradient-shift 3s linear infinite;
-  box-shadow:0 0 12px rgba(255,230,0,0.6),0 0 24px rgba(255,45,120,0.3);
-}
-@keyframes gradient-shift{
-  0%{background-position:0% 50%;}
-  100%{background-position:200% 50%;}
-}
-
 /* PRIMARY BUTTON — sharp edges, electric */
 body.theme-nightcity .btn-primary{
   background:linear-gradient(135deg,var(--red) 0%,#e6cf00 100%);
@@ -940,8 +930,6 @@ body.theme-arctic nav{
 }
 body.theme-arctic nav button{font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:.12em;color:#5a7a88;}
 body.theme-arctic nav button.active{background:rgba(0,168,216,0.14);color:var(--red);border-top-color:var(--red);}
-body.theme-arctic .chain-fill{background:linear-gradient(90deg,#00a8d8,#00c8a0);}
-body.theme-arctic .chain-bar{background:#c8dde5;}
 
 body.theme-arctic .btn-primary{
   background:linear-gradient(135deg,#00a8d8 0%,#0088b8 100%);
@@ -1231,23 +1219,6 @@ body.theme-ember nav button.active{
     color:#ff8c1a;
   }
 }
-/* CHAIN PROGRESS — molten metal flowing */
-body.theme-ember .chain-bar{
-  background:#1a0c00;
-  position:relative;
-  overflow:hidden;
-}
-body.theme-ember .chain-fill{
-  background:linear-gradient(90deg,#cc3300 0%,#ff6a00 30%,#ffcc00 60%,#ff6a00 80%,#cc3300 100%);
-  background-size:200% 100%;
-  animation:molten-flow 4s linear infinite;
-  box-shadow:0 0 12px rgba(255,106,0,0.6);
-}
-@keyframes molten-flow{
-  0%{background-position:0% 50%;}
-  100%{background-position:200% 50%;}
-}
-
 /* PRIMARY BUTTON — glowing furnace switch */
 body.theme-ember .btn-primary{
   background:linear-gradient(180deg,#ff8c1a 0%,#cc3300 100%);
@@ -1475,8 +1446,7 @@ body.theme-void .logo{font-family:'Playfair Display',serif;font-style:italic;let
 body.theme-void .logo span{color:#888;}
 body.theme-void nav{border-top:1px solid #222;background:#000;}
 body.theme-void nav button{color:#444;}
-body.theme-void nav button.active{border-top-color:#fff;color:#fff;}body.theme-void .chain-fill{background:#fff;}
-body.theme-void .chain-bar{background:#111;}
+body.theme-void nav button.active{border-top-color:#fff;color:#fff;}
 body.theme-void .btn-primary{background:#fff;color:#000;font-family:'Playfair Display',serif;font-style:italic;}
 body.theme-void .btn-primary:hover{background:#ddd;}body.theme-void .ex-btn-skip{border-color:#444;color:#666;}
 body.theme-void .set-input{background:#050505;border-color:#3a3a3a;}
@@ -1607,13 +1577,6 @@ body.theme-nanosuit nav button.active{
   0%{box-shadow:0 0 0 0 rgba(0,212,255,0.8);}
   100%{box-shadow:0 0 0 1px rgba(0,212,255,0.3),0 0 20px rgba(0,212,255,0.2);}
 }
-/* Chain progress bar */
-body.theme-nanosuit .chain-bar{background:#0a1828;height:4px;}
-body.theme-nanosuit .chain-fill{
-  background:linear-gradient(90deg,#00d4ff 0%,#00fff0 50%,#50ff88 100%);
-  box-shadow:0 0 12px rgba(0,212,255,0.5);
-}
-
 /* Primary button — tactical HUD */
 body.theme-nanosuit .btn-primary{
   background:linear-gradient(135deg,#00d4ff 0%,#0099cc 100%);
@@ -1718,7 +1681,6 @@ body.theme-nanosuit .chain-intro{
   -webkit-backdrop-filter:blur(18px);
   border-bottom:1px solid rgba(0,212,255,0.14);
 }
-body.theme-nanosuit .chain-bar{position:relative;z-index:1;}
 
 /* Section titles */
 body.theme-nanosuit .section-title{
@@ -2448,8 +2410,7 @@ body.theme-undertow .logo span{color:#163763;}
 body.theme-undertow nav{background:linear-gradient(180deg,rgba(255,255,255,0.25),rgba(255,255,255,0.62));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(18,48,90,0.14);}
 body.theme-undertow nav button{font-family:'DM Mono',monospace;font-weight:400;letter-spacing:.12em;color:#43606d;}
 body.theme-undertow nav button.active{color:#163763;font-weight:500;background:none;border-top-color:#163763;}
-body.theme-undertow nav button.active::before{content:'';position:absolute;top:4px;left:50%;width:6px;height:6px;border-radius:50%;border:1px solid #163763;transform:translateX(-50%);animation:ut-tabRise 3.6s ease-in-out infinite;pointer-events:none;}body.theme-undertow .chain-fill{background:linear-gradient(90deg,#214b86,#163763);}
-body.theme-undertow .chain-bar{background:rgba(18,48,90,0.12);}
+body.theme-undertow nav button.active::before{content:'';position:absolute;top:4px;left:50%;width:6px;height:6px;border-radius:50%;border:1px solid #163763;transform:translateX(-50%);animation:ut-tabRise 3.6s ease-in-out infinite;pointer-events:none;}
 body.theme-undertow .btn-primary{background:linear-gradient(180deg,#214b86 0%,#163763 100%);color:#eaf2fb;font-family:'Archivo',sans-serif;font-weight:700;letter-spacing:.12em;box-shadow:0 8px 18px -8px rgba(22,55,99,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:1px solid #163763;border-radius:11px;}
 /* DONE + Finish delar LOG-knappens pill-form (border-radius:11px). .ready-färg
    fixas (annars ärver den var(--white)=#102430 mörk text på navy = oläsligt). */
@@ -2566,8 +2527,7 @@ body.theme-understory nav{background:linear-gradient(180deg,rgba(248,252,239,0.2
 body.theme-understory nav button{font-family:'Spline Sans Mono',monospace;font-weight:400;letter-spacing:.1em;color:#8aa47e;}
 body.theme-understory nav button.active{color:#1f4226;font-weight:500;background:none;border-top-color:#1f4226;}
 body.theme-understory nav button.active::before{content:'';position:absolute;top:3px;left:50%;width:7px;height:7px;border-radius:0 50% 50% 50%;background:#2f7a4a;transform-origin:bottom center;animation:us-sproutRise 3.6s ease-in-out infinite;}
-@keyframes us-sproutRise{0%{transform:translate(-50%,4px) scale(.5);opacity:0;}35%{opacity:1;}100%{transform:translate(-50%,-8px) scale(1);opacity:0;}}body.theme-understory .chain-fill{background:linear-gradient(90deg,#2f5e37,#1f4226);}
-body.theme-understory .chain-bar{background:rgba(31,66,38,0.12);}
+@keyframes us-sproutRise{0%{transform:translate(-50%,4px) scale(.5);opacity:0;}35%{opacity:1;}100%{transform:translate(-50%,-8px) scale(1);opacity:0;}}
 body.theme-understory .btn-primary{background:linear-gradient(180deg,#2f5e37 0%,#1c3c22 100%);color:#eef5e4;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;letter-spacing:.1em;box-shadow:0 8px 18px -8px rgba(28,60,34,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:1px solid #1c3c22;border-radius:4px 20px 4px 20px;}
 /* DONE + Finish delar LOG-knappens bladform (sharp TL/BR, round TR/BL). .ready-färg
    fixas (annars ärver den var(--white)=#143018 mörk text på sap-green = oläsligt). */
@@ -2710,7 +2670,7 @@ body.theme-fullmoon .btn-chain-edit:hover{color:#f4f6fa;border-color:#eef1f6;}
 body.theme-fullmoon nav{background:linear-gradient(180deg,rgba(214,218,225,0.92) 0%,rgba(196,201,211,0.9) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid rgba(10,11,14,0.4);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7);}
 body.theme-fullmoon nav button{color:#71767f;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.1em;}
 body.theme-fullmoon nav button.active{color:#0c0d11;background:linear-gradient(180deg,rgba(20,22,28,0.06) 0%,transparent 60%);border-top-color:#0c0d11;}
-/* ---------- chain intro + progress bar ---------- */
+/* ---------- chain intro ---------- */
 /* Bloody field extends THROUGH chain-intro + the chain-strip (moon-tiles read
    against night-sky black, matching the handoff render) — not just <header>.
    Niklas gym-feedback (themebugg.png vs live screenshot, 2026-07-24): the top
@@ -2720,35 +2680,17 @@ body.theme-fullmoon nav button.active{color:#0c0d11;background:linear-gradient(1
    through both, fading out at the bottom of the strip into the silver body. */
 body.theme-fullmoon .chain-intro{background:linear-gradient(180deg,#0a0b0e 0%,#070809 100%);border-bottom:none;}
 body.theme-fullmoon .chain-intro-sub{color:#9aa0ac;}
-/* Was a bright glowing white bar against the new black field (looked like a
-   stray line, not a progress track) — same rgba value read fine against the
-   old light chain-intro but pops way too hard against near-black. Toned down,
-   glow removed. */
-/* 3.79.5 — THE white gap, actually solved. Niklas, looking live: "det är inte
-   en kant, det är ett vitt MELLANRUM, det rinner blod bakom." That's the exact
-   signature of a TRANSLUCENT element, not a border: `.chain-bar` sat at
-   rgba(255,255,255,0.04) — 96% see-through — as a full-width strip between the
-   (opaque dark) .chain-intro and the (opaque dark) .chain-strip-outer. So the
-   fixed blood canvas (z0) + the light silver <body> behind it showed straight
-   THROUGH it → a thin bright band with blood streaks running behind. Every
-   prior round I re-TINTED this translucent bar (still translucent → still a
-   window) instead of making it OPAQUE. Fix: solid dark track = part of the
-   continuous bloody field (matches the design, where the progress bar sits ON
-   the solid black header). The 43%-wide fill stays silver — that's the actual
-   progress indicator and is meant to read.
-   Lesson: a light artifact that survives repeated "root-cause" fixes and is
-   described as a see-through GAP is an opacity/z-index leak, not a border. */
-/* 3.79.6 — the opaque bar (3.79.5) killed the gap but read as a dull grey
-   full-width DIVIDER (Niklas: "svart/vit/grått border emellan, varför?").
-   Two reasons: (a) it spanned edge-to-edge like a rule, (b) its fill was the
-   muted grey I'd set in 3.79.4 while chasing the (unrelated) white-line bug.
-   Restored to the handoff's actual progress bar (variants/fullmoon.jsx
-   .fm-progress-bar): INSET from the edges so it reads as a contained bar not a
-   divider, rounded ends, subtle opaque dark track, bright silver fill with a
-   soft glow. Silver because Full Moon IS silver-monochrome — an on-theme
-   progress indicator, not a stray border. */
-body.theme-fullmoon .chain-bar{background:#2a2d36;margin:2px 16px 0;height:3px;border-radius:2px;overflow:hidden;}
-body.theme-fullmoon .chain-fill{background:linear-gradient(90deg,#8990a0,#e8ecf3);border-radius:2px;box-shadow:0 0 7px rgba(232,236,244,0.4);}
+/* 3.81.0 — HÄR satt "den vita raden", och den är nu borta vid roten: elementet
+   finns inte längre. Historiken, kort: `.chain-bar` låg mellan två OPAKA mörka
+   syskon (.chain-intro och .chain-strip-outer) och var själv genomsläpplig, så
+   den ljusa silver-bodyn + blodcanvasen (z0) syntes rakt igenom som ett ljust
+   band. 3.79.0–3.79.5 tonade om den translucenta baren fyra gånger (fortfarande
+   translucent → fortfarande ett fönster); 3.79.5 gjorde den opak, och 3.79.6 gav
+   den `margin:2px 16px 0` för att den skulle läsa som en bar istället för en
+   avdelare — vilket återinförde exakt samma läcka, nu som en 2px glipa ovanför
+   och 16px på vardera sida. Niklas 2026-07-25: baren tillför inget textraden
+   inte redan säger, ta bort den i ALLA teman. Gjort. De två mörka elementen
+   möter nu varandra utan marginal → ingen yta att läcka igenom. */
 /* The bloody lower edge — the actual HeaderEdge() path from the handoff
    (variants/fullmoon.jsx), inlined as an SVG data URI. Neither a straight
    border nor an alpha fade ever read as "blood" (Niklas, 2 rounds): it needs
@@ -2763,6 +2705,32 @@ body.theme-fullmoon .chain-strip-outer{
     url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 384 40' preserveAspectRatio='none'><path d='M0 0 H384 V14 C 372 20 360 15 348 19 C 334 24 322 17 308 21 C 292 27 280 16 264 22 C 250 27 238 17 222 23 C 206 30 196 18 180 24 C 165 30 152 18 136 24 C 122 29 108 17 92 23 C 78 28 66 18 50 24 C 36 29 22 17 8 22 L 0 20 Z' fill='%2308090c'/></svg>") bottom/100% 30px no-repeat;
   padding-bottom:34px;position:relative;z-index:1;
 }
+/* ---------- FM-2: Forced Rest-vyn ----------
+   Enda skärmen utan `.ex-block`, alltså enda skärmen helt utan frostad panel —
+   rubrik, brödtext och knapp låg som naken text direkt mot den ljusa silverbodyn
+   med fullmånen bakom, och blodstråken målades över dem (lyftet ligger nu i
+   bas-CSS:en, se .pass-ex-header-regeln där). `.btn-ghost` föll dessutom tillbaka
+   på sin default `#888 på transparent` = i praktiken osynlig här. Vilodagen får
+   nu samma frostade slab som resten av temat och temats riktiga knappspråk —
+   "Mark Rest Done" ÄR vyns primära handling, den ska synas som en. */
+body.theme-fullmoon .pass-ex-header{border-bottom-color:rgba(20,22,28,0.25);}
+body.theme-fullmoon .pass-ex-header.rest-day .pass-ex-letter{color:#3a3f4a;}
+body.theme-fullmoon .pass-ex-name{color:#14161c;}
+body.theme-fullmoon .session-ex-status{color:#5f646f;}
+body.theme-fullmoon .session-ex-status::before{color:#8b909b;}
+body.theme-fullmoon .rest-content{
+  background:linear-gradient(180deg,rgba(232,236,242,0.92) 0%,rgba(208,213,223,0.88) 100%);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(146,153,168,0.5);
+  border-radius:2px;padding:14px 16px;margin-top:10px;color:#3a3f4a;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 8px 20px rgba(20,22,28,0.12);
+}
+body.theme-fullmoon .btn-ghost{
+  background:#0c0d11;color:#f4f5f8;border:1px solid #0c0d11;border-radius:2px;
+  font-family:'Cinzel',serif;font-weight:800;letter-spacing:.1em;
+  box-shadow:0 6px 16px rgba(10,11,14,0.3);
+}
+body.theme-fullmoon .btn-ghost:hover{background:#1c1d22;border-color:#1c1d22;color:#f4f5f8;}
 body.theme-fullmoon .section-title{font-family:'Cinzel',serif;font-weight:700;letter-spacing:.05em;color:#14161c;}
 body.theme-fullmoon .section-sub{color:#6d7280;}
 /* ---------- chain-tab: moon-phase tiles (own formspråk, like Obsidian/Cosmic Horror) ----------
@@ -2774,6 +2742,33 @@ body.theme-fullmoon .chain-tab{clip-path:none;}
 body.theme-fullmoon .chain-tab-letter{border-radius:50%;background:radial-gradient(circle at 36% 30%,#eef1f6 0%,#ccd1db 55%,#9ba2af 100%);color:#191b21;box-shadow:inset 1px 1px 2px rgba(255,255,255,0.7),inset -2px -2px 5px rgba(96,102,116,0.5);}
 body.theme-fullmoon .chain-tab.adjacent .chain-tab-letter{background:radial-gradient(circle at 36% 30%,#e2e6ec 0%,#b6bcc8 60%,#8b93a2 100%);opacity:1;}
 body.theme-fullmoon .chain-tab.adjacent .chain-tab-name-short{display:none;}
+/* ---------- FM-1: färdigt pass fick INTE läsa som "kvar att göra" ----------
+   Rotorsak (Niklas 2026-07-25, "vissa ligger på glänt och tänds upp som om de
+   är kvar denna kedja"): STATUS (done vs kvar) och NÄRHET (active/adjacent/
+   distant) kodades båda i samma visuella kanal — ljusstyrka. Bas-CSS:en fejdar
+   done till `opacity:.15`, men regeln ovan (`.adjacent .chain-tab-letter`,
+   specificitet 0-4-1) slår bas-regeln `.chain-tab.done .chain-tab-letter`
+   (0-3-0) och satte tillbaka `opacity:1` + den ljusa månen. Alltså: ett FÄRDIGT
+   pass som råkade ligga bredvid det aktiva tändes upp till full fullmåne och
+   blev omöjligt att skilja från ett kommande.
+   Fix: separera axlarna. Status bor i månFASEN (ljus skiva = kvar, förmörkad
+   skiva = klar), närhet bor i KANTEN (tunn rim = distant, ljus rim = på glänt).
+   Ingen ljusstyrke-överlappning kvar → tre entydiga tillstånd. Rest-dagar är
+   undantagna (`:not(.rest-day)`) — deras guld är låst och tema-oberoende, se
+   feedback_rest_day_label. */
+body.theme-fullmoon .chain-tab.done:not(.rest-day) .chain-tab-letter{
+  background:radial-gradient(circle at 36% 30%,#2b2f38 0%,#15171c 58%,#0a0b0e 100%);
+  color:#767c88;
+  opacity:1;              /* inte en spöklik halvtransparent bricka — en SLÄCKT måne */
+  filter:none;            /* bas-regelns saturate(.4) behövs inte, paletten är redan grå */
+  box-shadow:inset 0 0 0 1px rgba(190,198,214,0.3);
+}
+/* Färdig + på glänt: samma förmörkade skiva, men med en ljus rim så grannskapet
+   syns — skillnaden ligger i kanten, aldrig i skivans ljus. */
+body.theme-fullmoon .chain-tab.adjacent.done:not(.rest-day) .chain-tab-letter{
+  box-shadow:inset 0 0 0 1.5px rgba(222,228,240,0.8);
+  color:#a9afbb;
+}
 /* 3.79.4 — glow was 16px @ 0.7 white: on the near-black field it bloomed into a
    wide horizontal white haze across the strip (visible as a bright band in the
    screenshots), reinforcing the "white line at the top" read. Tightened. */
@@ -2919,7 +2914,7 @@ body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-
 body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-btn-skip:hover,
 body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-btn-edit:hover{color:#f4f5f8;border-color:#c7ccd6;}
 /* ---------- stacking: opaque panels need their own lift above the fixed blood canvas (z-index:0) ---------- */
-body.theme-fullmoon .chain-intro,body.theme-fullmoon .chain-bar,body.theme-fullmoon .ex-block,body.theme-fullmoon .stat-box,body.theme-fullmoon .pr-card,body.theme-fullmoon .hist-entry,body.theme-fullmoon .pr-groups{position:relative;z-index:1;}
+body.theme-fullmoon .chain-intro,body.theme-fullmoon .ex-block,body.theme-fullmoon .stat-box,body.theme-fullmoon .pr-card,body.theme-fullmoon .hist-entry,body.theme-fullmoon .pr-groups{position:relative;z-index:1;}
 
 /* ═════════════════════════════════════════════════════════════
    OBSIDIAN — Dark fantasy · Gothic scriptorium · Breathing gold embers
@@ -3025,8 +3020,6 @@ body.theme-obsidian .section-title{font-family:'Cinzel',serif;font-weight:600;le
 body.theme-obsidian .section-sub{font-family:'Cinzel',serif;color:#5a4a28;letter-spacing:.18em;font-weight:600;text-transform:uppercase;}
 
 /* Chain bar */
-body.theme-obsidian .chain-bar{background:#2a2010;}
-body.theme-obsidian .chain-fill{background:linear-gradient(90deg,#c9a35a,#f0d99c);}
 
 /* Chain-strip — runda medaljer för icke-aktiv, rektangel med diamond-ends för aktiv (designens look) */
 /* Container-hexagon bort: adjacent/distant ska följa medaljong-formen, inte Iron-hexagonen (3.46.1) */
@@ -3356,8 +3349,6 @@ body.theme-cosmic-horror .section-title{font-family:'Cormorant SC',serif;font-we
 body.theme-cosmic-horror .section-sub{font-family:'IBM Plex Mono',monospace;color:#4f6a64;letter-spacing:.2em;font-weight:400;text-transform:uppercase;}
 
 /* Chain bar */
-body.theme-cosmic-horror .chain-bar{background:#0a2020;}
-body.theme-cosmic-horror .chain-fill{background:linear-gradient(90deg,#7fc8b4,#aedcd0);}
 
 /* Chain-strip — organiska asymmetriska blobs (skriver över hexagon) */
 /* Container-hexagon bort: adjacent/distant ska följa temats blob, inte Iron-hexagonen (3.46.1) */
@@ -4612,7 +4603,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.80.0';
+const APP_VERSION = '3.81.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -6289,7 +6280,13 @@ function renderChain(){
   // Morning weight nu i headerns AM-pill (refreshAmPill anropas vid view-byte och efter login)
   // 3.58.3: redundant "The Chain"-titel borttagen härifrån (dubblerade headerns
   // logga) — Edit-knappen flyttad till headern. Kvar: sessions-done/round-rad + %.
-  let html=`<div class="chain-intro"><div class="chain-intro-sub">${doneSessions}/${totalSessions} sessions done · Round ${state.cycles.length}</div><span style="font-family:var(--mono);font-size:.52rem;color:var(--gray-mid)">${pct}%</span></div><div class="chain-bar"><div class="chain-fill" style="width:${pct}%"></div></div>`;
+  // 3.81.0 — progressbaren (.chain-bar/.chain-fill) BORTTAGEN i alla teman på
+  // Niklas order: den tillförde inget som inte redan står i texten ("3/7 sessions
+  // done" + procenten), var ful på flera teman, och var dessutom den återkommande
+  // "vita raden" på Full Moon — ett fullbrett band mellan två opaka mörka syskon
+  // som läckte igenom (translucent track 3.79.0-3.79.5, sedan margin-gap 3.79.6).
+  // .chain-intro möter nu .chain-strip-outer direkt: inga marginaler, ingen glipa.
+  let html=`<div class="chain-intro"><div class="chain-intro-sub">${doneSessions}/${totalSessions} sessions done · Round ${state.cycles.length}</div><span style="font-family:var(--mono);font-size:.52rem;color:var(--gray-mid)">${pct}%</span></div>`;
 
   // Horizontal session strip — spotlight design (active expanded, neighbours ajar, rest closed)
   const activeIdx=effectiveChain.findIndex(p=>p.id===_chainSelectedId);

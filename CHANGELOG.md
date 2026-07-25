@@ -6,6 +6,21 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.81.0 — 2026-07-25
+**Progressbaren borttagen i alla teman + Full Moons kvarvarande grafikbuggar lösta.**
+
+**Progressbaren (`.chain-bar`/`.chain-fill`) är borta — helt, i alla 11 teman.** Niklas: "den gör inte ett skit... bara ful och i vägen på många". Textraden är kvar oförändrad (`3/7 sessions done · Round 11` + procenten till höger) — det var bara den växande stapeln som togs bort. Städat: bas-CSS, desktop-max-width-regeln, per-tema-overrides i Night City / Arctic / Ember / Void / Nanosuit / Undertow / Overgrowth / Obsidian / Cosmic Horror / Full Moon, samt `@keyframes gradient-shift` och `@keyframes molten-flow` som bara drev fillen.
+
+**Och därmed är "den vita raden" borta vid roten — elementet existerar inte längre.** Värt att skriva ned varför fyra tidigare rundor misslyckades: `.chain-bar` låg som ett fullbrett band mellan två OPAKA mörka syskon (`.chain-intro` och `.chain-strip-outer`) medan den själv var genomsläpplig, så den ljusa silverbodyn + blodcanvasen (z-index 0) syntes rakt igenom. 3.79.0–3.79.4 tonade om den translucenta baren (fortfarande translucent → fortfarande ett fönster). 3.79.5 gjorde den opak, vilket faktiskt täppte till glipan — men 3.79.6 gav den sedan `margin:2px 16px 0` för att den skulle läsa som en inramad bar istället för en avdelare, **och återinförde exakt samma läcka**: 2px glipa ovanför + 16px på vardera sida där bodyn lyste igenom igen. Det är därför den "ibland fylldes ut och ibland inte" — man såg silverfillen på en del av raden och den läckande bakgrunden på resten. Nu möter `.chain-intro` och `.chain-strip-outer` varandra utan någon marginal alls: ingen yta kvar att läcka igenom.
+
+**FM-1 — färdiga pass tändes upp som om de vore kvar i kedjan.** Rotorsak: STATUS (klar/kvar) och NÄRHET (active/adjacent/distant) kodades i samma visuella kanal — ljusstyrka. Bas-CSS fejdar done till `opacity:.15`, men Full Moons `.chain-tab.adjacent .chain-tab-letter` (specificitet 0-4-1) slår bas-regeln `.chain-tab.done .chain-tab-letter` (0-3-0) och satte tillbaka `opacity:1` + den ljusa månen. Ett färdigt pass som råkade ligga bredvid det aktiva blev alltså en full silvermåne, omöjlig att skilja från ett kommande. Fix: axlarna separerade. Status bor i månfasen (ljus skiva = kvar, förmörkad skiva = klar), närhet i kanten (tunn rim = distant, ljus rim = på glänt). Tre entydiga tillstånd, ingen ljusstyrke-överlappning kvar. Rest-dagarnas guld är undantaget (`:not(.rest-day)`) — det är låst och tema-oberoende.
+
+**FM-2 — Forced Rest-vyn var oläslig.** Två orsaker: (a) vilodagen är enda skärmen helt utan `.ex-block`, alltså enda skärmen utan frostad panel OCH utan stacking-lyft — rubrik, brödtext och knapp låg opositionerade, så den fixerade blodcanvasen (`z-index:0`) målades rakt över dem; (b) `.btn-ghost` hade ingen Full Moon-override och föll tillbaka på default `#888` på transparent = i praktiken osynlig mot silverbodyn. Fix: lyftet (`position:relative;z-index:1` på `.pass-ex-header`/`.rest-content`/`.pass-actions`) lagt i **bas-CSS:en, inte temablocket** — exakt samma latenta fälla finns i Nanosuit/Undertow/Overgrowth. Vilodagen fick dessutom temats frostade slab och riktiga knappspråk (Mark Rest Done är vyns primära handling och ser nu ut som en).
+
+186 tester gröna, `check_syntax.js` OK, noll döda CSS-selektorer. ⚠ Ej browser-verifierat.
+
+---
+
 ## 3.80.0 — 2026-07-25
 **Full kodgranskning av index.html (11 626 rader) — 10 fynd åtgärdade, 94 rader dödkod bort.** Hela filen läst i sekvens plus två maskinella pass: alla inline-`on*`-handlers matchade mot faktiskt definierade funktioner, och alla CSS-selektorer matchade mot markup/JS.
 
