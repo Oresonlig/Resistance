@@ -6,6 +6,17 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.81.2 — 2026-07-25
+**Full Moon: vilodagarna hade kvar exakt den bugg som just fixats för sessions.** Niklas: *"Avklarad rest day på glänt är lika stark som rest day kvar att göra på glänt"* och *"rest day avklarad är mörkare än övrig session avklarad"*.
+
+Orsaken var min egen 3.81.1-fix: jag scopade allt med `:not(.rest-day)` för att inte röra det låsta guldet, vilket lämnade vilodagarna kvar i det gamla beteendet. Två följdfel: (a) temats `.chain-tab.adjacent .chain-tab-letter{opacity:1}` (specificitet 0-4-1) slog fortfarande bas-regelns done-fade (0-3-0) för vilodagar → en avklarad vilodag på glänt lyste lika starkt som en kvarvarande; (b) en avklarad vilodag på avstånd ärvde bas-CSS:ens `opacity:.15` medan avklarade sessions låg på `.58` → vilodagen blev mörkare än allt annat avklarat.
+
+**Rätt uppdelning, som löser båda utan att röra guldet:** FÄRG/FAS ligger på **bokstaven** och gäller bara vanliga pass (`:not(.rest-day)`) — vilodagens guld är låst med `!important` i bas-CSS och ska aldrig överridas. DÄMPNING ligger på **containern** och gäller **alla** brickor, vilodagar inkluderade. Rest-dagar får därmed exakt samma styrkenivåer som sessions (`.58` avklarad, `.74` avklarad på glänt) utan att en enda guldregel rörs. Bas-CSS:ens letter-fade neutraliseras samtidigt, så containern ensam äger dämpningen — annars multipliceras `.15 × .58` och brickan blir det svarta tomrum som gjorde att man inte såg att passet fanns där.
+
+186 tester gröna, `check_syntax.js` OK.
+
+---
+
 ## 3.81.1 — 2026-07-25
 **Full Moon: "på glänt"-läget fanns inte, och avklarade pass drog sig inte tillbaka nog.** Niklas live-feedback på 3.81.0-underlaget: *"sessions som är på glänt, ej är det minsta expanderade"* och *"det syns knappt skillnad på F som ska vara lite på glänt, och session V som är klar"*.
 

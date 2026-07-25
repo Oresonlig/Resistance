@@ -2773,30 +2773,43 @@ body.theme-fullmoon .chain-tab.adjacent .chain-tab-name-short{
    Ingen ljusstyrke-överlappning kvar → tre entydiga tillstånd. Rest-dagar är
    undantagna (`:not(.rest-day)`) — deras guld är låst och tema-oberoende, se
    feedback_rest_day_label. */
+   ── ANSVARSFÖRDELNING (viktig, den löser rest-dagarna på köpet) ──
+   FÄRG/FAS ligger på BOKSTAVEN och gäller bara vanliga pass (`:not(.rest-day)`)
+   — vilodagens guld är låst med !important i bas-CSS och ska aldrig röras.
+   DÄMPNING ligger på CONTAINERN och gäller ALLA brickor, inklusive vilodagar.
+   Därför får rest-dagar exakt samma styrkenivåer som sessions utan att en enda
+   guldregel överrids. Före 3.81.2 var allt detta `:not(.rest-day)`, vilket gav
+   två fel: (a) temats `.chain-tab.adjacent .chain-tab-letter{opacity:1}` (0-4-1)
+   slog bas-regelns done-fade (0-3-0) även för vilodagar → en AVKLARAD vilodag på
+   glänt lyste lika starkt som en kvarvarande; (b) en avklarad vilodag på avstånd
+   ärvde bas-CSS:ens `opacity:.15` medan avklarade sessions låg på .58 → vilodagen
+   blev mörkare än allt annat avklarat. */
 body.theme-fullmoon .chain-tab.done:not(.rest-day) .chain-tab-letter{
   background:radial-gradient(circle at 36% 30%,#2b2f38 0%,#15171c 58%,#0a0b0e 100%);
   color:#767c88;
-  opacity:1;              /* inte en spöklik halvtransparent bricka — en SLÄCKT måne */
-  filter:none;            /* bas-regelns saturate(.4) behövs inte, paletten är redan grå */
   box-shadow:inset 0 0 0 1px rgba(196,204,220,0.42);
-}
-/* ...och hela brickan sänks så ett avklarat pass DRAR SIG TILLBAKA i strippen.
-   Fasen (mörk skiva) säger "klar", dämpningen säger "avverkad". */
-body.theme-fullmoon .chain-tab.done:not(.rest-day){opacity:.58;}
-/* Färdig + på glänt: samma förmörkade skiva och samma kapsel som grannen, men
-   BÅDA nedtonade — så den läser som "klar, ligger bredvid" och aldrig som ett
-   kommande pass. Skillnaden mot en kommande granne ligger i skivans fas och
-   kapselns styrka, aldrig i om den är expanderad eller inte. */
-body.theme-fullmoon .chain-tab.adjacent.done:not(.rest-day){
-  opacity:.74;
-  background:linear-gradient(180deg,rgba(60,65,77,0.5),rgba(40,44,53,0.45));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.1);
 }
 body.theme-fullmoon .chain-tab.adjacent.done:not(.rest-day) .chain-tab-letter{
   box-shadow:inset 0 0 0 1.5px rgba(222,228,240,0.7);
   color:#9aa1ad;
 }
 body.theme-fullmoon .chain-tab.adjacent.done:not(.rest-day) .chain-tab-name-short{color:#949ba8;}
+/* Bas-CSS:ens letter-fade (`opacity:.15` + `saturate(.4)`) neutraliseras så att
+   CONTAINERN ensam äger dämpningen — annars multipliceras .15 × .58 och brickan
+   blir det svarta tomrum Niklas påpekade ("man ska kunna se att pass A ligger
+   där, bara att den är avklarad"). */
+body.theme-fullmoon .chain-tab.done .chain-tab-letter{opacity:1;filter:none;}
+/* Dämpningen — EN nivå per tillstånd, delad av sessions och vilodagar.
+   Fasen/guldet säger VAD brickan är, dämpningen säger att den är avverkad. */
+body.theme-fullmoon .chain-tab.done{opacity:.58;}
+/* Färdig + på glänt: samma kapsel som en kommande granne, men nedtonad — så den
+   läser som "klar, ligger bredvid" och aldrig som ett kommande pass. Båda är
+   expanderade, för båda ÄR på glänt; skillnaden ligger i fas och kapselstyrka. */
+body.theme-fullmoon .chain-tab.adjacent.done{
+  opacity:.74;
+  background:linear-gradient(180deg,rgba(60,65,77,0.5),rgba(40,44,53,0.45));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.1);
+}
 /* 3.79.4 — glow was 16px @ 0.7 white: on the near-black field it bloomed into a
    wide horizontal white haze across the strip (visible as a bright band in the
    screenshots), reinforcing the "white line at the top" read. Tightened. */
@@ -4631,7 +4644,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.81.1';
+const APP_VERSION = '3.81.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
