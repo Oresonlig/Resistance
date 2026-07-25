@@ -6,6 +6,17 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.81.1 — 2026-07-25
+**Full Moon: "på glänt"-läget fanns inte, och avklarade pass drog sig inte tillbaka nog.** Niklas live-feedback på 3.81.0-underlaget: *"sessions som är på glänt, ej är det minsta expanderade"* och *"det syns knappt skillnad på F som ska vara lite på glänt, och session V som är klar"*.
+
+Rotorsak till det första: `body.theme-fullmoon .chain-tab.adjacent .chain-tab-name-short{display:none}`. Kortnamnet var alltså **avstängt** i Full Moon, så granne och avlägsen renderade identiskt — det fanns inget glänt-läge alls att se skillnad på. Varför det hade gömts: kortnamnet ärver `--white`/`--red` från bas-CSS:en, och båda är nära svarta i Full Moon → osynlig text mot den mörka strippen. Rätt lösning är Irons princip (referensen Niklas skickade): **containern bär EN kapsel**, bokstaven förblir en måne och namnet ligger ljust ovanpå — en komprimerad komplett form, aldrig två lösa bitar och aldrig en extra bricka.
+
+Avklarade pass: `.chain-tab.done:not(.rest-day)` sänks nu till `opacity:.58` — månfasen (mörk skiva) säger *klar*, dämpningen säger *avverkad*. Done + på glänt får `opacity:.74` plus en nedtonad kapsel, så den läser som "klar, ligger bredvid" och aldrig som ett kommande pass. Skillnaden mellan kommande granne och avklarad granne ligger i skivans fas och kapselns styrka — båda är expanderade, för båda ÄR på glänt.
+
+Rest-dagarnas guld är fortsatt orört (`:not(.rest-day)` genomgående).
+
+---
+
 ## 3.81.0 — 2026-07-25
 **Progressbaren borttagen i alla teman + Full Moons kvarvarande grafikbuggar lösta.**
 
