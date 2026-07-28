@@ -6,6 +6,17 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.82.0 — 2026-07-28
+**Live-test-batch: tre Full Moon-grafikbuggar + reps synliga vid PR i progressionsgrafen.**
+
+**1. "Last (Xd ago)" osynlig på de mörka korten.** Det svarta bandet på ett expanderat mörkt kort bär inte bara namnet — `.ex-header-row > .ex-label-col` innehåller namn, taggar, `.ex-detail`, `.ex-tip`, hela "Last"-blocket och reminder-bannern. Men bandet hade bara tre färgregler (namn + två knappar), medan den *kollapsade* mörka varianten hade sexton. Allt annat ärvde de ljusa kortens mörka text. Värst var `.ex-prev .last-val` på `#14161c` mot ett `#06070a`-band — svart på svart. Färglistan är nu speglad från den kollapsade varianten.
+
+**2. Avklarad övning på mörkt kort blev grå-på-grå.** Bas-CSS målar `.ex-collapsed-summary` med `var(--surface-saved)`, och Full Moons token är `rgba(210,215,224,0.7)` — en ljus halvtransparent yta, helt rätt för de silvriga korten men lagd ovanpå det mörka kortets gradient blir den mellangrå. Ovanpå det ligger vit `.ex-collapsed-name` (svag) och `.ex-collapsed-status` i `#9aa0ac` (borta). De mörka korten får nu en egen mörk saved-yta; de ljusa är orörda.
+
+**3. Avklarade sessions svagare än avklarade vilodagar.** Niklas: *"borde inte de ha samma styrka/tydlighet som de övriga passen när de är avklarade?"* Vilodagens guld är låst med `!important` och kan därför bara dämpas av containern, medan en session dämpas två gånger — av containerns `opacity` **och** av sin egen mörka månfas. Ett steg mot två. Riktning: lyft sessionerna, rör inte guldet. Skivan förblir mörk (förmörkad måne = avklarad, status bor kvar i fasen); det är glyfen och kanten som får tillbaka sin läsbarhet, så en avklarad bricka aldrig blir ett svart tomrum.
+
+**4. Reps vid PR-punkterna i progressionsgrafen.** PR-logiken har alltid vägt in reps — `prTiebreak` låter fler reps på samma vikt räknas som nytt PR — men grafens Y-axel plottar bara vikt. Följden: 10 kg × 1r → 10 kg × 3r gav en spikrak linje med en PR-markör utan synlig anledning. Y-axeln förblir ärlig vikt; PR-punkterna får i stället reps utskrivna, `(3r)`. Measure-drivet på `m.pr` — reps är tiebreak bara för vikt- och BW-mätsätt, för timed/cardio bär `prTiebreak` något annat och etiketten vore fel. Etiketten hoppas över när punkterna ligger tätare än 24px (samma trängsel-lärdom som de tvåradiga datumen i 3.78.7); PR-pricken bär markeringen ändå.
+
 ## 3.81.2 — 2026-07-25
 **Full Moon: vilodagarna hade kvar exakt den bugg som just fixats för sessions.** Niklas: *"Avklarad rest day på glänt är lika stark som rest day kvar att göra på glänt"* och *"rest day avklarad är mörkare än övrig session avklarad"*.
 

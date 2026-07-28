@@ -2784,16 +2784,25 @@ body.theme-fullmoon .chain-tab.adjacent .chain-tab-name-short{
    glänt lyste lika starkt som en kvarvarande; (b) en avklarad vilodag på avstånd
    ärvde bas-CSS:ens `opacity:.15` medan avklarade sessions låg på .58 → vilodagen
    blev mörkare än allt annat avklarat. */
+/* 3.82.0 — bokstaven i en avklarad SESSION var svagare än guldet i en avklarad
+   VILODAG (Niklas: "borde inte de ha samma styrka som de övriga passen?").
+   Orsak: vilodagens guld är låst med `!important` (bas-CSS rad ~123) och kan
+   därför bara dämpas av containern, medan en session dämpas TVÅ gånger — av
+   containerns opacity OCH av sin egen mörka månfas. Ett steg mot ett.
+   Riktning vald av Niklas: lyft sessionerna, rör inte guldet. Skivan förblir
+   mörk (förmörkad måne = avklarad — status bor kvar i fasen), det är bara
+   GLYFEN och kanten som får tillbaka sin läsbarhet, så en avklarad bricka
+   aldrig blir det svarta tomrum som redan påpekats en gång. */
 body.theme-fullmoon .chain-tab.done:not(.rest-day) .chain-tab-letter{
-  background:radial-gradient(circle at 36% 30%,#2b2f38 0%,#15171c 58%,#0a0b0e 100%);
-  color:#767c88;
-  box-shadow:inset 0 0 0 1px rgba(196,204,220,0.42);
+  background:radial-gradient(circle at 36% 30%,#333845 0%,#191c23 58%,#0d0f13 100%);
+  color:#c2c9d6;
+  box-shadow:inset 0 0 0 1px rgba(206,214,230,0.6);
 }
 body.theme-fullmoon .chain-tab.adjacent.done:not(.rest-day) .chain-tab-letter{
-  box-shadow:inset 0 0 0 1.5px rgba(222,228,240,0.7);
-  color:#9aa1ad;
+  box-shadow:inset 0 0 0 1.5px rgba(228,234,244,0.8);
+  color:#dde2ec;
 }
-body.theme-fullmoon .chain-tab.adjacent.done:not(.rest-day) .chain-tab-name-short{color:#949ba8;}
+body.theme-fullmoon .chain-tab.adjacent.done:not(.rest-day) .chain-tab-name-short{color:#c2c9d6;}
 /* Bas-CSS:ens letter-fade (`opacity:.15` + `saturate(.4)`) neutraliseras så att
    CONTAINERN ensam äger dämpningen — annars multipliceras .15 × .58 och brickan
    blir det svarta tomrum Niklas påpekade ("man ska kunna se att pass A ligger
@@ -2954,6 +2963,34 @@ body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-
 }
 body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-btn-skip:hover,
 body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-btn-edit:hover{color:#f4f5f8;border-color:#c7ccd6;}
+/* 3.82.0 — det svarta bandet bär HELA etikettkolumnen, inte bara namnet:
+   `.ex-header-row > .ex-label-col` innehåller namn, taggar, .ex-detail, .ex-tip,
+   "Last (Xd ago)"-blocket och reminder-bannern (se renderChain). Här fanns bara
+   tre färgregler (namn + två knappar) medan den KOLLAPSADE mörka varianten hade
+   sexton — resten ärvde de ljusa kortens mörka text och blev svart-på-svart.
+   Värst: `.ex-prev .last-val` på #14161c mot ett #06070a-band, dvs "Last (9d
+   ago)" helt osynlig (Niklas skärmdump). Speglar nu den kollapsade listan. */
+body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-detail,
+body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-tip,
+body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-prev{color:#9aa0ac;}
+body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-prev .last-val{color:#f4f5f8;}
+body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-prev-history-set,
+body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-prev-history-set .set-lbl{color:#c7ccd6;}
+body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-prev-history-set.warmup,
+body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-prev-history-set.warmup .set-lbl{color:#9aa0ac;}
+body.theme-fullmoon .ex-block:nth-child(odd):not(.collapsed) .ex-header-row .ex-tag{background:transparent;border-color:#c7ccd6;color:#e6e9ef;}
+/* 3.82.0 — avklarad övning på ett MÖRKT kort blev grå-på-grå (Niklas skärmdump,
+   "Face Pulls"). Bas-CSS rad ~164 målar `.ex-collapsed-summary` med
+   var(--surface-saved), och Full Moons token är rgba(210,215,224,0.7) — en LJUS
+   halvtransparent yta, helt rätt för de silvriga korten men lagd ovanpå det
+   mörka kortets gradient blir den mellangrå. Ovanpå det ligger den vita
+   `.ex-collapsed-name` (svag) och `.ex-collapsed-status` #9aa0ac (borta).
+   Det mörka kortet får därför sin EGEN saved-yta, så vit text behåller sitt
+   underlag. Ljusa/jämna kort är orörda — där är den ljusa token rätt. */
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd).saved .ex-collapsed-summary{
+  background:linear-gradient(160deg,rgba(30,34,42,0.94) 0%,rgba(10,12,16,0.94) 100%);
+}
+body.theme-fullmoon .ex-block.collapsed:nth-child(odd).saved .ex-collapsed-status{color:#b3b9c5;}
 /* ---------- stacking: opaque panels need their own lift above the fixed blood canvas (z-index:0) ---------- */
 body.theme-fullmoon .chain-intro,body.theme-fullmoon .ex-block,body.theme-fullmoon .stat-box,body.theme-fullmoon .pr-card,body.theme-fullmoon .hist-entry,body.theme-fullmoon .pr-groups{position:relative;z-index:1;}
 
@@ -4644,7 +4681,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.81.2';
+const APP_VERSION = '3.82.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8921,7 +8958,21 @@ function drawPRChart(containerId, points, measure){
   // datum-etiketter (dag ovanför, månad under — se punkterna nedan).
   const p={t:14,r:12,b:34,l:38};const cw=W-p.l-p.r;const ch=H-p.t-p.b;
   const yFor=(v)=>p.t+ch*(1-(v-loY)/(hiY-loY));
-  const pts=points.map((pt,i)=>({x:p.l+cw*(i/(points.length-1)),y:yFor(vals[i]),pr:pt.isPR,ts:pt.ts}));
+  const pts=points.map((pt,i)=>({x:p.l+cw*(i/(points.length-1)),y:yFor(vals[i]),pr:pt.isPR,ts:pt.ts,tb:pt.tb}));
+  // 3.82.0 — Y-axeln är VIKT, men PR:et avgörs av vikt OCH reps: prTiebreak låter
+  // fler reps på samma vikt räknas som nytt PR (getAllPRs/getExerciseProgression).
+  // Följden var att 10 kg × 1r → 10 kg × 3r ritade en spikrak linje med en
+  // PR-markör men utan synlig anledning (Niklas: "grafen ska ta hänsyn till det").
+  // Vald lösning: behåll den ärliga vikt-axeln, skriv ut reps vid PR-punkterna.
+  // Measure-drivet på m.pr — reps ÄR tiebreak bara för vikt- och BW-mätsätt; för
+  // timed/cardio bär prTiebreak något annat och etiketten vore en lögn.
+  const _prShape=(MEASURES[measure]||MEASURES.weight).pr;
+  const showReps=_prShape==='weight'||_prShape==='extra';
+  // Samma trängsel-lärdom som de tvåradiga datumen (3.78.7): med många punkter
+  // ligger etiketterna på varandra. Under ~24px mellan punkterna ritas de inte —
+  // PR-pricken bär markeringen ändå.
+  const _gap=points.length>1?cw/(points.length-1):cw;
+  const repsRoom=_gap>=24;
   let svg=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="width:100%;height:${H}px;display:block;">`;
   for(let i=0;i<=3;i++){
     const y=p.t+ch*(i/3);
@@ -8941,6 +8992,12 @@ function drawPRChart(containerId, points, measure){
     svg+=pt.pr
       ? `<circle cx="${pt.x}" cy="${pt.y}" r="4" style="fill:var(--chart-highlight)" stroke="#000"/>`
       : `<circle cx="${pt.x}" cy="${pt.y}" r="2.5" fill="#c0392b"/>`;
+    if(pt.pr&&showReps&&repsRoom&&pt.tb>0){
+      // Ovanför pricken när det finns takhöjd, annars under — annars klipps den
+      // av viewBoxen när ett PR ligger i toppen av grafen (vilket det ofta gör).
+      const above=pt.y-9>=p.t+7;
+      svg+=`<text x="${pt.x}" y="${above?pt.y-9:pt.y+16}" font-size="8" font-weight="700" font-family="DM Mono,monospace" style="fill:var(--chart-highlight)" text-anchor="middle">(${pt.tb}r)</text>`;
+    }
     if(showAll||i%everyN===0||pt.pr){
       // 3.78.7 — gym-feedback: "29 Apr 19 May 25 May 1 Jun 8 Jun..." på EN rad blev
       // grötigt/överlappande med många punkter. Tvåradigt (dag ovanför, månad under)
