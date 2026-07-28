@@ -5,7 +5,9 @@
   "main": "check_syntax.js",
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "check:themes": "node check_themes.js",
+    "check": "node check_syntax.js && node check_themes.js && vitest run"
   },
   "repository": {
     "type": "git",
