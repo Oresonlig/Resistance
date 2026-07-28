@@ -120,8 +120,23 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 /* 3.73.2 — rest-day gold locked with !important so per-theme .chain-tab-letter
    overrides (higher specificity via body.theme-X) can't suppress it. Uses the
    fixed --rest-gold so every theme's rest tabs read as the SAME gold. */
-.chain-tab.rest-day .chain-tab-letter{color:color-mix(in srgb,var(--rest-gold) 50%,#666)!important;background:color-mix(in srgb,var(--rest-gold) 6%,transparent)!important;}
-.chain-tab.adjacent.rest-day .chain-tab-letter{color:var(--rest-gold)!important;background:color-mix(in srgb,var(--rest-gold) 16%,transparent)!important;}
+/* 3.83.0 — NÄRHET FICK INTE LÄNGRE GÖRA VILODAGEN LJUSARE. Tidigare låg
+   "kvar att göra" på dämpad guld och "på glänt" på FULL guld, dvs närheten
+   boostade ljusstyrkan. Två fel av det:
+   (a) Det är tvärtemot hur vanliga pass beter sig en rad ovanför (distant
+       --red 26%, adjacent 24% — grannen är marginellt SVAGARE) och tvärtemot
+       regeln i CLAUDE.md §5: "på glänt lyses INTE upp lika kraftigt som kvar
+       att träna — närhet ≠ prioritet".
+   (b) Boosten åt exakt upp done-dämpningen. Räknat på --rest-gold #c9a35a:
+       en AVKLARAD vilodag på glänt = full guld × .74 = (149,121,67), en
+       KVARVARANDE på avstånd = dämpad guld × 1.0 = (151,132,96). Samma färg.
+       Niklas: "väldigt otydligt att se på dem vad som är vad."
+   Fix: FÄRGEN (status/prioritet) växlas — kvar att göra får full guld, på
+   glänt får den dämpade. PLATTAN (6% → 16% → 32%) lämnas orörd, för den är
+   närhets-kanalen och ska fortsätta växa mot aktiv. Samma tvåkanals-uppdelning
+   som resten av strippen. Aktiv förblir ljusast. */
+.chain-tab.rest-day .chain-tab-letter{color:var(--rest-gold)!important;background:color-mix(in srgb,var(--rest-gold) 6%,transparent)!important;}
+.chain-tab.adjacent.rest-day .chain-tab-letter{color:color-mix(in srgb,var(--rest-gold) 50%,#666)!important;background:color-mix(in srgb,var(--rest-gold) 16%,transparent)!important;}
 .chain-tab.active.rest-day .chain-tab-letter{color:var(--rest-gold)!important;background:color-mix(in srgb,var(--rest-gold) 32%,transparent)!important;}
 .chain-tab.done .chain-tab-letter{opacity:.15;background:color-mix(in srgb,var(--red) 3%,transparent);filter:saturate(0.4);}
 .chain-tab.adjacent.done .chain-tab-name-short{opacity:.22;}
@@ -4681,7 +4696,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.82.0';
+const APP_VERSION = '3.83.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -9125,7 +9140,7 @@ const THEMES = [
   {id:'arctic',        name:'Arctic Terminal',cat:'light',desc:'Frozen lake · Liquid nitrogen · Frosted glass',  class:'theme-arctic'},
   {id:'undertow',      name:'Undertow',      cat:'light', desc:'Cold water · Abyss navy · Caustic light + bubble gasps', class:'theme-undertow'},
   {id:'understory',    name:'Overgrowth',    cat:'light', desc:'Canopy closes in · Deep sap green · Creeping vines over the field of view', class:'theme-understory'},
-  {id:'fullmoon',      name:'Full Moon · WIP', cat:'light', desc:'Silver monochrome · Obsidian blood', class:'theme-fullmoon'},
+  {id:'fullmoon',      name:'Full Moon',     cat:'light', desc:'Silver monochrome · Obsidian blood', class:'theme-fullmoon'},
 ];
 
 // Ren visual-apply: byter body-klass + mount/unmount ambient-lager. Ingen state/save.

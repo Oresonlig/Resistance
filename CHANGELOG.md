@@ -6,6 +6,21 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.83.0 — 2026-07-28
+**Vilodagens ljusstyrka slutade koda närhet — gällde alla 11 teman. Full Moon avflaggat.**
+
+Niklas kunde inte skilja en avklarad vilodag från en kvarvarande: *"väldigt otydligt att se på dem vad som är vad"*, och om V:et låg bredvid det aktiva passet *"lyser den upp som fan"*.
+
+**Rotorsaken var mätbar, inte en smaksak.** Bas-CSS gav vilodagen dämpad guld på avstånd och FULL guld på glänt — alltså gjorde närheten brickan ljusare. Räknat på `--rest-gold` `#c9a35a` blev följden att en **avklarad** vilodag på glänt (full guld × `.74`) landade på `(149,121,67)` medan en **kvarvarande** på avstånd (dämpad guld × `1.0`) landade på `(151,132,96)`. Samma färg. Närhets-boosten åt exakt upp den done-dämpning som lades in i 3.81.2 — skillnaden var inte för subtil, den var utraderad.
+
+Det var dessutom tvärtemot hur vanliga pass beter sig en rad längre upp i samma fil (distant `--red 26%`, adjacent `24%` — grannen är marginellt *svagare*) och tvärtemot regeln i CLAUDE.md §5: *"på glänt lyses INTE upp lika kraftigt som kvar att träna — närhet ≠ prioritet."* Vilodagarna var alltså det enda stället i strippen som bröt mot appens egen ordning.
+
+**Fixen växlar FÄRGEN men inte PLATTAN.** Kvar att göra får full guld, på glänt får den dämpade — färgen bär status och prioritet. Plattan bakom bokstaven (`6%` → `16%` → `32%`) lämnas orörd, för den är närhets-kanalen och ska fortsätta växa mot aktiv. Aktiv förblir ljusast. Samma tvåkanals-uppdelning som resten av strippen redan följer, nu även för guldet. Avklarad på glänt landar därmed på `(112,98,71)` mot kvarvarandes `(201,163,90)`.
+
+Ändringen ligger i bas-CSS med `!important` och gäller därför **samtliga teman** — felet satt i bas-lagret, inte i Full Moon, och en lokal patch hade lämnat samma förvirring kvar i de tio andra.
+
+**Full Moon: `· WIP` borttaget.** Temat är färdigt efter 3.81.0–3.83.0.
+
 ## 3.82.0 — 2026-07-28
 **Live-test-batch: tre Full Moon-grafikbuggar + reps synliga vid PR i progressionsgrafen.**
 
