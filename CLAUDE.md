@@ -13,7 +13,9 @@ finns i memory-filerna som länkas per punkt. Bryter något mot detta: fråga f�
 - **Push-scope:** `index.html` + `CHANGELOG.md` + filer han uttryckligen namngett
   (t.ex. `src/`-speglar och tester som hör till ändringen). **Rör ALDRIG lösa
   ospårade filer** — `Bugg/`, `.claude/`, spec-`.md`, zip-arkiv, `theme/`-mappar.
-- **Före varje push:** `node check_syntax.js` **och** `npm test` ska vara gröna.
+- **Före varje push:** `npm run check` (= `check_syntax.js` + `check_themes.js` +
+  `npm test`) ska vara grön. Tema-checken felar hårt på rest-day-asymmetri i
+  chain-strippen; dess warn-rader ska LÄSAS, inte scrollas förbi.
 - Commit-meddelanden med specialtecken: skriv till temp-fil, `git commit -F`.
   PowerShell here-strings bryts på emojis/pilar.
 - Rapportera alltid vad som INTE är verifierat. Browser-verifiering görs av Niklas.
@@ -59,6 +61,9 @@ finns i memory-filerna som länkas per punkt. Bryter något mot detta: fråga f�
   tänds upp som kommande.
 - **Verifiera SEX kombinationer** vid varje chain-tab-ändring: `distant`,
   `adjacent`, `done`, `adjacent.done` — **och samma fyra igen med `.rest-day`**.
+  `node check_themes.js` kontrollerar detta mekaniskt — kör den, lita inte på ögat.
+- **Ny variant av en komponent (mörkt kort, saved-läge) = styla ALLA dess barn**,
+  inte bara namnet. Tema-checkens `[variant]`-warn jämför syskonvarianter åt dig.
 - **Vilodagar:** etiketten är ALLTID ett enkelt `V` (aldrig VB/VC/V1/V2) — men det
   interna id:t förblir unikt. Guldet är låst med `!important`; scopa aldrig hela
   sitt state-arbete med `:not(.rest-day)`, då ärver vilodagarna gamla buggar.
