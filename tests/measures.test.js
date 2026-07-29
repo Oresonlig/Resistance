@@ -9,8 +9,8 @@ import {
 } from '../src/measures.js';
 
 describe('MEASURES registry', () => {
-  it('har 9 mätsätt', () => {
-    expect(MEASURE_KEYS).toEqual(['weight','bw','bwreps','timed','cardio','cardiosprint','carry','inclinecardio','sauna']);
+  it('har 11 mätsätt', () => {
+    expect(MEASURE_KEYS).toEqual(['weight','bw','bwreps','timed','cardio','cardiosprint','run','runsprint','carry','inclinecardio','sauna']);
   });
   it('varje measure har fields + pr', () => {
     for (const k of MEASURE_KEYS) {
@@ -61,8 +61,35 @@ describe('prValue — PR-metrik per measure', () => {
   it('tomt fält → null', () => expect(prValue('bwreps', {})).toBe(null));
 });
 
+// 3.84.0 — löpning. Pace är den enda PR-metriken där "bättre" betyder LÄGRE tid;
+// den löses genom att lagra hastighet (km/h) så jämförelsen förblir "högre vinner".
+describe('prValue — pace (run/runsprint)', () => {
+  it('run → km/h: 10 km på 50 min = 12 km/h', () => {
+    expect(prValue('run', { secs: 3000, dist: 10 })).toBeCloseTo(12, 6);
+  });
+  it('runsprint mäts på pace, INTE på sprintantal', () => {
+    expect(prValue('runsprint', { secs: 1800, dist: 6, sprints: 8 })).toBeCloseTo(12, 6);
+  });
+  it('snabbare tid på samma distans ger HÖGRE värde (så PR-motorns v>cur._v håller)', () => {
+    const slow = prValue('run', { secs: 3600, dist: 10 });
+    const fast = prValue('run', { secs: 3000, dist: 10 });
+    expect(fast).toBeGreaterThan(slow);
+  });
+  it('saknad distans → ingen PR', () => expect(prValue('run', { secs: 3000 })).toBe(null));
+  it('saknad tid → ingen PR', () => expect(prValue('run', { dist: 10 })).toBe(null));
+  it('noll-värden ger aldrig Infinity', () => {
+    expect(prValue('run', { secs: 0, dist: 10 })).toBe(null);
+    expect(prValue('run', { secs: 3000, dist: 0 })).toBe(null);
+  });
+  it('failat set räknas ej', () => expect(prValue('run', { secs: 3000, dist: 10, fail: true })).toBe(null));
+});
+
 describe('prTiebreak', () => {
   it('weight tie → reps', () => expect(prTiebreak('weight', { weight: 100, reps: 8 })).toBe(8));
   it('secs tie → last', () => expect(prTiebreak('timed', { secs: 30, weight: 10, extra: 5 })).toBe(15));
   it('sprints → ingen tiebreak (0)', () => expect(prTiebreak('cardiosprint', { sprints: 5 })).toBe(0));
+  it('pace tie → längre distans vinner', () => {
+    expect(prTiebreak('run', { secs: 3000, dist: 10 })).toBe(10);
+    expect(prTiebreak('runsprint', { secs: 1800, dist: 6, sprints: 8 })).toBe(6);
+  });
 });

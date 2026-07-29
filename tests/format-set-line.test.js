@@ -41,6 +41,24 @@ describe('formatSetLine — sekund-baserade mätsätt lämnas orörda', () => {
   });
 });
 
+// 3.84.0 — sprint-grenen i formatSetLine matchade på `set.sprints != null` och skrev
+// tiden hårdkodat som sekunder, oavsett minInput. runsprint loggar TOTALTID i minuter
+// (till skillnad från cardiosprint, vars secs är per-sprint-tid), så ett 30-minuters
+// löppass skrevs ut som "1800s". Assault Bike måste förbli oförändrad — se testet ovan.
+describe('formatSetLine — löpning (run/runsprint)', () => {
+  it('runsprint skriver totaltiden i minuter, med sprintantalet kvar', () => {
+    expect(fmt({ secs: 1800, dist: 6, sprints: 8 }, 'runsprint')).toBe('6km · 30min · 8 sprints');
+  });
+
+  it('run med distans matchar cardios form', () => {
+    expect(fmt({ secs: 3000, dist: 10 }, 'run')).toBe('10km · 50min');
+  });
+
+  it('run utan distans skrivs i minuter', () => {
+    expect(fmt({ secs: 3000 }, 'run')).toBe('50min');
+  });
+});
+
 describe('formatSetLine — bakåtkompatibilitet', () => {
   it('utan measure gäller exakt det gamla beteendet (äldre loggposter)', () => {
     expect(fmt({ secs: 1950 })).toBe('1950s');
@@ -64,9 +82,11 @@ describe('formatSetLine — bakåtkompatibilitet', () => {
 });
 
 describe('MEASURES.minInput speglar minut-inmatningen i measureCells', () => {
-  it('exakt cardio/inclinecardio/sauna är minut-baserade', () => {
+  // 3.84.0: run/runsprint tillkom. cardiosprint är MEDVETET utanför listan — dess secs
+  // är per-sprint-tid (Assault Bike), inte totaltid, och matas därför in i råa sekunder.
+  it('exakt cardio/inclinecardio/run/runsprint/sauna är minut-baserade', () => {
     const M = T.MEASURES;
     const min = Object.keys(M).filter(k => M[k].minInput);
-    expect(min.sort()).toEqual(['cardio', 'inclinecardio', 'sauna']);
+    expect(min.sort()).toEqual(['cardio', 'inclinecardio', 'run', 'runsprint', 'sauna']);
   });
 });

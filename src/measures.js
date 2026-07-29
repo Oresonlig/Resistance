@@ -19,6 +19,12 @@ export const MEASURES = {
   timed:        { fields: ['secs'],             pr: 'secs',    forced: true,  bw: false },
   cardio:       { fields: ['secs', 'dist'],     pr: 'dist',    forced: false, bw: false, minInput: true },
   cardiosprint: { fields: ['secs', 'dist', 'sprints'], pr: 'sprints', forced: false, bw: false },
+  // 3.84.0 — LÖPNING. Skild från `cardio` ENBART på PR-axeln: cardio delas med Walk +
+  // Bike Cardio där distans är målet, löpning mäts på PACE. Fält och grid identiska.
+  // `pr:'pace'` lagras/jämförs som km/h → HÖGRE vinner, så PR-motorns `v > cur._v`
+  // står orörd trots att "lägre tid är bättre". Visas som min/km (fmtPace i index.html).
+  run:          { fields: ['secs', 'dist'],     pr: 'pace',    forced: false, bw: false, minInput: true },
+  runsprint:    { fields: ['secs', 'dist', 'sprints'], pr: 'pace', forced: false, bw: false, minInput: true },
   carry:        { fields: ['weight', 'distm'],  pr: 'weight',  forced: false, bw: false },
   inclinecardio:{ fields: ['incline', 'secs', 'dist'], pr: 'dist', forced: false, bw: false, minInput: true },
   sauna:        { fields: ['temp', 'secs'],     pr: 'secs',    forced: false, bw: false, minInput: true },
@@ -59,6 +65,9 @@ export function prValue(measure, set) {
     case 'secs':    return set.secs != null ? set.secs : null;
     case 'dist':    return set.dist != null ? set.dist : null;
     case 'sprints': return set.sprints != null ? set.sprints : null;
+    // Pace som HASTIGHET (km/h) så jämförelsen förblir "högre vinner". Kräver BÅDA
+    // fälten — saknas ett går paceen inte att räkna och settet bär ingen PR.
+    case 'pace':    return (set.dist > 0 && set.secs > 0) ? (set.dist / (set.secs / 3600)) : null;
     default:        return null;
   }
 }
@@ -70,5 +79,7 @@ export function prTiebreak(measure, set) {
   if (m.pr === 'weight') return set.reps || 0;
   if (m.pr === 'extra')  return set.reps || 0;
   if (m.pr === 'secs')   return (set.weight || 0) + (set.extra || 0);
+  // Samma pace på längre distans är den bättre prestationen.
+  if (m.pr === 'pace')   return set.dist || 0;
   return 0;
 }

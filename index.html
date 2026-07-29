@@ -247,10 +247,10 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .set-row{display:grid;align-items:start;gap:4px;margin-bottom:4px;}.set-row.uni-set{grid-template-columns:24px 1fr 1fr 48px 28px 36px 28px;}/* 3.56.0 — measure-drivna grid-layouter (olika fält-antal per mätsätt) */
 .set-row.m-weight,.set-row.m-bw{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
 .set-row.m-bwreps,.set-row.m-timed{grid-template-columns:24px 1fr 48px 36px 28px;}
-.set-row.m-cardio,.set-row.m-carry,.set-row.m-sauna{grid-template-columns:24px 1fr 1fr 36px 28px;}
+.set-row.m-cardio,.set-row.m-carry,.set-row.m-sauna,.set-row.m-run{grid-template-columns:24px 1fr 1fr 36px 28px;}
 /* 3.78.7 — cardiosprint fick ett tredje fält (tid+km+antal, ingen sprintBase-toggle
    längre) — flyttad hit från 2-fälts-gruppen ovan, samma bredd som inclinecardio. */
-.set-row.m-inclinecardio,.set-row.m-cardiosprint{grid-template-columns:24px 1fr 1fr 1fr 36px 28px;}
+.set-row.m-inclinecardio,.set-row.m-cardiosprint,.set-row.m-runsprint{grid-template-columns:24px 1fr 1fr 1fr 36px 28px;}
 .set-row.m-weight.uni,.set-row.m-bw.uni{grid-template-columns:24px 1fr 1fr 48px 28px 36px 28px;}
 .set-row.m-bwreps.uni{grid-template-columns:24px 1fr 48px 28px 36px 28px;}
 /* STANDARD set-label size — crosses ALL themes (matches .set-unit KG/REPS at .82rem).
@@ -4585,7 +4585,8 @@ const EXERCISE_LIBRARY = [
   {name:'Dead Hang', cat:'Cardio', measure:'timed', tip:'Supinated or neutral'},
   {name:'Farmers Walk', cat:'Cardio', measure:'carry'},
   {name:'Incline Walk', cat:'Cardio', measure:'inclinecardio', tip:'Treadmill incline'},
-  {name:'Running', cat:'Cardio', measure:'cardio'},
+  {name:'Running', cat:'Cardio', measure:'run'},
+  {name:'Running with Sprints', cat:'Cardio', measure:'runsprint', tip:'Sprint count is logged, pace is the PR'},
   {name:'Sauna', cat:'Cardio', measure:'sauna'},
   {name:'Sled Push', cat:'Cardio', measure:'carry'},
   {name:'Walk', cat:'Cardio', measure:'cardio'},
@@ -4696,7 +4697,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.83.0';
+const APP_VERSION = '3.84.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4838,6 +4839,14 @@ const MEASURES = {
   // samma "alla fält på en gång"-mönster som inclinecardio. sprintBase-togglen (time
   // ELLER dist) borttagen i samma svep — se getSprintBase/setSprintBase (raderade).
   cardiosprint: { fields:['secs','dist','sprints'], pr:'sprints', forced:false, bw:false },
+  // 3.84.0 — LÖPNING. Skild från `cardio` ENBART på PR-axeln: cardio delas med Walk +
+  // Bike Cardio där distans är målet, löpning mäts på PACE. Fälten och grid-layouten är
+  // identiska (2 resp. 3 fält) — hela skillnaden ligger i `pr`, precis som mätsätts-
+  // enumen är tänkt att användas (särskilj i DATA, inte i kod).
+  // `pr:'pace'` lagras och jämförs som km/h → HÖGRE vinner, så PR-motorns `v > cur._v`
+  // står orörd trots att "lägre tid är bättre". Visas som min/km via fmtPace().
+  run:          { fields:['secs','dist'],     pr:'pace',    forced:false, bw:false, minInput:true },
+  runsprint:    { fields:['secs','dist','sprints'], pr:'pace', forced:false, bw:false, minInput:true },
   carry:        { fields:['weight','distm'],  pr:'weight',  forced:false, bw:false },
   inclinecardio:{ fields:['incline','secs','dist'], pr:'dist', forced:false, bw:false, minInput:true },
   sauna:        { fields:['temp','secs'],     pr:'secs',    forced:false, bw:false, minInput:true },
@@ -4915,6 +4924,12 @@ function prValue(measure, set){
     case 'secs':    return set.secs!=null?set.secs:null;
     case 'dist':    return set.dist!=null?set.dist:null;
     case 'sprints': return set.sprints!=null?set.sprints:null;
+    // 3.84.0 — pace lagras som HASTIGHET (km/h) just för att jämförelsen ska förbli
+    // "högre vinner". Ett rent pace-tal (min/km) hade krävt inverterad jämförelse på
+    // tre ställen i PR-motorn (getAllPRs, progressionSeries, buildPRMap) — den vägen
+    // går sönder tyst för alla andra mätsätt. Kräver BÅDA fälten; saknas ett går
+    // paceen inte att räkna och settet bär ingen PR.
+    case 'pace':    return (set.dist>0 && set.secs>0) ? (set.dist/(set.secs/3600)) : null;
     default:        return null;
   }
 }
@@ -4923,7 +4938,19 @@ function prTiebreak(measure, set){
   const m = MEASURES[measure] || MEASURES.weight;
   if(m.pr==='weight'||m.pr==='extra') return set.reps||0;
   if(m.pr==='secs') return (set.weight||0)+(set.extra||0);
+  // Samma pace på längre distans är den bättre prestationen.
+  if(m.pr==='pace') return set.dist||0;
   return 0;
+}
+// 3.84.0 — km/h → löparens läsform "5:30 /km". 0 eller ogiltigt → '—' (aldrig Infinity).
+function fmtPace(kmh){
+  if(!(kmh>0) || !isFinite(kmh)) return '—';
+  const secPerKm = 3600/kmh;
+  const mm = Math.floor(secPerKm/60);
+  const ss = Math.round(secPerKm%60);
+  const mm2 = ss===60 ? mm+1 : mm;
+  const ss2 = ss===60 ? 0 : ss;
+  return mm2+':'+String(ss2).padStart(2,'0')+' /km';
 }
 // Idempotent migration: resolva exId på log/cycle/notes/tombstones. Speglar
 // migrateExerciseIdentity i src/exercise-identity.js.
@@ -6081,7 +6108,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
         const isBW = mdef.bw;
         const isTimed = measure==='timed';
 
-        let tags='';if(isRampEx)tags+=`<span class="ex-tag ramp">Ramp</span>`;if(isSingles)tags+=`<span class="ex-tag singles">Singles</span>`;if(isBW){const bwDisp=todayWkg?`${toDisplay(todayWkg)} ${unitLabel()}`:'';tags+=`<span class="ex-tag bw">BW${bwDisp?' '+bwDisp:''}</span>`;}if(isUni)tags+=`<span class="ex-tag uni">Unilateral</span>`;if(isTimed)tags+=`<span class="ex-tag timed">Timed</span>`;if(measure==='bwreps')tags+=`<span class="ex-tag">Reps</span>`;if(measure==='cardio')tags+=`<span class="ex-tag">Cardio</span>`;if(measure==='cardiosprint')tags+=`<span class="ex-tag">Sprint</span>`;if(measure==='carry')tags+=`<span class="ex-tag">Carry</span>`;if(measure==='inclinecardio')tags+=`<span class="ex-tag">Incline</span>`;if(measure==='sauna')tags+=`<span class="ex-tag">Sauna</span>`;
+        let tags='';if(isRampEx)tags+=`<span class="ex-tag ramp">Ramp</span>`;if(isSingles)tags+=`<span class="ex-tag singles">Singles</span>`;if(isBW){const bwDisp=todayWkg?`${toDisplay(todayWkg)} ${unitLabel()}`:'';tags+=`<span class="ex-tag bw">BW${bwDisp?' '+bwDisp:''}</span>`;}if(isUni)tags+=`<span class="ex-tag uni">Unilateral</span>`;if(isTimed)tags+=`<span class="ex-tag timed">Timed</span>`;if(measure==='bwreps')tags+=`<span class="ex-tag">Reps</span>`;if(measure==='cardio')tags+=`<span class="ex-tag">Cardio</span>`;if(measure==='cardiosprint')tags+=`<span class="ex-tag">Sprint</span>`;if(measure==='run')tags+=`<span class="ex-tag">Run</span>`;if(measure==='runsprint')tags+=`<span class="ex-tag">Run · Sprints</span>`;if(measure==='carry')tags+=`<span class="ex-tag">Carry</span>`;if(measure==='inclinecardio')tags+=`<span class="ex-tag">Incline</span>`;if(measure==='sauna')tags+=`<span class="ex-tag">Sauna</span>`;
         const lastSession=getLastSession(_exId);
         let prevText='';
         if(lastSession){
@@ -7375,7 +7402,7 @@ function buildTagEditorHTML(ex, passId){
   // 3.56.0 — Mätsätt (measure): single-select, nyckel = kanoniskt exId (följer rörelsen).
   const canonId = ex.extra?extraExId(ex.name):(getRenderExId(ex.id)||ex.id);
   const curMeasure = getMeasure(canonId, getEffectiveEx(ex)); // 3.77.0 — swap-medveten
-  const MEASURE_OPTS=[['weight','Weight × reps'],['bw','Bodyweight + load'],['bwreps','Reps only'],['timed','Timed (sec)'],['cardio','Cardio (time + km)'],['cardiosprint','Cardio sprints (time + km + count)'],['carry','Loaded carry (kg + m)'],['inclinecardio','Incline cardio (grade + time + km)'],['sauna','Sauna (temp + time)']];
+  const MEASURE_OPTS=[['weight','Weight × reps'],['bw','Bodyweight + load'],['bwreps','Reps only'],['timed','Timed (sec)'],['cardio','Cardio (time + km)'],['cardiosprint','Cardio sprints (time + km + count)'],['run','Running (time + km, PR = pace)'],['runsprint','Running w/ sprints (time + km + count, PR = pace)'],['carry','Loaded carry (kg + m)'],['inclinecardio','Incline cardio (grade + time + km)'],['sauna','Sauna (temp + time)']];
   const measureSel='<select onchange="setExerciseMeasure(\''+eid+'\',\''+pid+'\',this.value)" style="font-family:var(--mono);font-size:.5rem;padding:4px 6px;background:var(--surface-input);color:var(--white);border:1px solid var(--border-subtle);">'+MEASURE_OPTS.map(function(o){return '<option value="'+o[0]+'"'+(o[0]===curMeasure?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>';
   const measureBlock='<div style="margin-bottom:10px;padding-top:8px;border-top:1px solid var(--border-subtle);"><div style="font-family:var(--mono);font-size:.48rem;color:#7ab;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Logged as</div>'+measureSel+'</div>';
   const user=escapeHTML(currentUser?.name||'you');
@@ -7570,11 +7597,18 @@ function saveExercise(passId,exId){
       const rRaw=dom('r'); base={sid, reps: rRaw!=null?_int(rRaw):(b.reps??null), forced, warmup};
     } else if(measure==='timed'){
       const rRaw=dom('r'); base={sid, secs: rRaw!=null?_int(rRaw):(b.secs??null), forced, warmup};
-    } else if(measure==='cardio'){
+    } else if(measure==='cardio'||measure==='run'){
       // Input is minutes (UX), stored as secs internally (see measureCells).
       const rRaw=dom('r');const dRaw=dom('dist');
       const minsVal=rRaw!=null?parseFloat(rRaw):null;
       base={sid, secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(b.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(b.dist??null), warmup};
+    } else if(measure==='runsprint'){
+      // 3.84.0 — som cardio (minuter in, secs lagrat) + sprintantal. Skild gren från
+      // cardiosprint, som läser secs RÅTT eftersom dess tid är per sprint.
+      const sRaw=dom('spr');const sprints=sRaw!=null?_int(sRaw):(b.sprints??null);
+      const rRaw=dom('r');const dRaw=dom('dist');
+      const minsVal=rRaw!=null?parseFloat(rRaw):null;
+      base={sid, secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(b.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(b.dist??null), sprints, warmup};
     } else if(measure==='inclinecardio'){
       // Samma minuter-UX som cardio + inclinegrad i %.
       const incRaw=dom('inc');const rRaw=dom('r');const dRaw=dom('dist');
@@ -7931,6 +7965,10 @@ function measureCells(measure, exId, sid, savedSet, bufVal, dis, wCls, unitL){
     // befintligt sparat sprint-secs-data är redan i rå sekunder, ett minut-fält skulle
     // visa gamla värden 60x för litet.
     case 'cardiosprint': return secsCell+distCell+sprintsCell;
+    // 3.84.0 — löpning: cardioTimeCell (MINUTER), till skillnad från cardiosprint ovan
+    // som behåller råa sekunder eftersom dess secs är per-sprint-tid, inte totaltid.
+    case 'run':          return cardioTimeCell+distCell;
+    case 'runsprint':    return cardioTimeCell+distCell+sprintsCell;
     case 'carry':        return weightCell+distmCell;
     case 'inclinecardio':return inclineCell+cardioTimeCell+distCell;
     case 'sauna':        return tempCell+cardioTimeCell;
@@ -8059,6 +8097,7 @@ const MEASURE_SET_DEFAULTS = {
   weight:{warmup:2,work:1}, bw:{warmup:0,work:3}, bwreps:{warmup:0,work:3},
   timed:{warmup:0,work:1}, cardio:{warmup:0,work:1}, cardiosprint:{warmup:0,work:1}, carry:{warmup:0,work:3},
   inclinecardio:{warmup:0,work:1}, sauna:{warmup:0,work:1},
+  run:{warmup:0,work:1}, runsprint:{warmup:0,work:1},
 };
 function getTagDefaults(ex, measure){
   const pt = getPrimaryTag(ex);
@@ -8221,11 +8260,16 @@ function captureInputsToSetsBuffer(exId,passId){
       const rRaw=dom('r'); rec={reps: rRaw!=null?_int(rRaw):(p.reps??null), forced};
     } else if(measure==='timed'){
       const rRaw=dom('r'); rec={secs: rRaw!=null?_int(rRaw):(p.secs??null), forced};
-    } else if(measure==='cardio'){
+    } else if(measure==='cardio'||measure==='run'){
       // Input is minutes (UX), stored as secs internally (see measureCells).
       const rRaw=dom('r');const dRaw=dom('dist');
       const minsVal=rRaw!=null?parseFloat(rRaw):null;
       rec={secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(p.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(p.dist??null)};
+    } else if(measure==='runsprint'){
+      const sRaw=dom('spr');const sprints=sRaw!=null?_int(sRaw):(p.sprints??null);
+      const rRaw=dom('r');const dRaw=dom('dist');
+      const minsVal=rRaw!=null?parseFloat(rRaw):null;
+      rec={secs: (minsVal!=null&&!isNaN(minsVal))?Math.round(minsVal*60):(p.secs??null), dist: dRaw!=null?(parseFloat(dRaw)||null):(p.dist??null), sprints};
     } else if(measure==='inclinecardio'){
       const incRaw=dom('inc');const rRaw=dom('r');const dRaw=dom('dist');
       const minsVal=rRaw!=null?parseFloat(rRaw):null;
@@ -8457,7 +8501,10 @@ function formatSetLine(set,u,measure){
   if(set.sprints!=null){
     // 3.78.7 — dist OCH secs kan nu båda vara satta samtidigt (ingen sprintBase-toggle
     // längre) — visa båda om båda finns, istf att dist tyst vann över secs.
-    const sp=[];if(set.dist!=null)sp.push(set.dist+'km');if(set.secs!=null)sp.push(set.secs+'s');
+    // 3.84.0 — tiden respekterar nu minInput. runsprint matar in TOTALTID (minuter),
+    // cardiosprint råa sekunder per sprint; utan _min-kollen skrevs ett 30-minuterspass
+    // ut som "1800s". Assault Bike (ingen minInput) är oförändrad.
+    const sp=[];if(set.dist!=null)sp.push(set.dist+'km');if(set.secs!=null)sp.push(_min?Math.round(set.secs/60)+'min':set.secs+'s');
     str=(sp.length?sp.join(' · ')+' · ':'')+set.sprints+' sprints';
   }
   else if(set.distm!=null)      str=(set.weight!=null?toDisplay(set.weight)+' '+u:'')+' · '+set.distm+'m';
@@ -8808,10 +8855,15 @@ function progressionUnit(measure){
   if(m.pr==='dist') return 'km';
   if(m.pr==='secs') return 's';
   if(m.pr==='sprints') return 'sprints';
+  // 3.84.0 — grafen plottar km/h, INTE min/km. Medvetet: en progressionsgraf måste ha
+  // "upp = bättre", och min/km sjunker när man blir snabbare → linjen hade pekat neråt
+  // vid framsteg. PR-KORTETS headline visar min/km via fmtPace (löparens läsform).
+  if(m.pr==='pace') return 'km/h';
   return 'reps';
 }
 function progressionDisplay(measure, rawValue){
   const m=MEASURES[measure]||MEASURES.weight;
+  if(m.pr==='pace') return Math.round(rawValue*10)/10;
   return (m.pr==='weight'||m.pr==='extra') ? toDisplay(rawValue) : rawValue;
 }
 
@@ -8860,6 +8912,14 @@ function prCardHTML(pr, isOpen, points){
     val=`${pr.sprints!=null?pr.sprints:'?'} sprints`;
     const subParts=[];if(pr.dist!=null)subParts.push(`${pr.dist} km`);if(pr.secs!=null)subParts.push(`${pr.secs}s`);
     sub=subParts.join(' · ');
+  }
+  // 3.84.0 — löpning: headline är PACE (det som faktiskt är PR:et), distans+tid som
+  // underrad. runsprint lägger sprintantalet sist — loggat men aldrig PR-bärande.
+  else if(m==='run'||m==='runsprint'){
+    val=fmtPace(prValue(m,pr));
+    const rp=[];if(pr.dist!=null)rp.push(`${pr.dist} km`);if(pr.secs!=null)rp.push(`${Math.round(pr.secs/60)} min`);
+    if(m==='runsprint'&&pr.sprints!=null)rp.push(`${pr.sprints} sprints`);
+    sub=rp.join(' · ');
   }
   else if(m==='carry'){val=`${toDisplay(pr.weight)||'?'}${u}`;sub=pr.distm!=null?`${pr.distm} m`:'';}
   else{val=`${toDisplay(pr.weight)}${u}`;sub=`${fmtReps(pr.reps)} reps`;}

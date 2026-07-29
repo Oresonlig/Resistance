@@ -6,6 +6,27 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.84.0 — 2026-07-29
+**Running splittad i två övningar, och löpning fick en PR-metrik där lägre tid är bättre.**
+
+Niklas hade satt om Running till mätsättet *Cardio sprints* för att alls kunna logga sprintar — det fanns ingen sprintvariant. Följden var att löpningen loggades i **sekunder**: `Cardio sprints` behåller råa sekunder eftersom dess tid är per-sprint-tid på Assault Bike, inte totaltid. Han fick alltså räkna om "hur många sekunder är 25 minuter?" vid varje pass, för att systemet sedan skulle räkna tillbaka det till minuter.
+
+**Ny övning:** `Running with Sprints` — totaltid i minuter, distans i km, antal sprintar. Sprintarnas individuella tid är medvetet inte modellerad; det Niklas vill veta är hur många han gjorde.
+
+**Två nya mätsätt, `run` och `runsprint`.** Båda skiljer sig från befintliga `cardio` på **enbart** PR-axeln — fält och grid-layout är identiska. `cardio` delas med Walk och Bike Cardio, där distansen är målet; löpning mäts på pace. Det är precis vad mätsätts-enumen finns till för: särskilj i data, inte i kod. Assault Bike, Walk och Bike Cardio är oförändrade.
+
+**Pace lagras och jämförs som km/h, inte som min/km.** PR-motorn jämför `v > cur._v` på tre ställen (`getAllPRs`, `progressionSeries`, `buildPRMap`) — "högre vinner" är en invariant genom hela systemet. En metrik där lägre är bättre hade krävt en riktnings-flagga genom alla tre, vilket går sönder tyst för de åtta andra mätsätten. Hastighet vänder problemet rätt: snabbare löpning ger ett högre tal, och inte en rad i jämförelselogiken behövde röras. PR-kortet visar ändå löparens läsform via nya `fmtPace()` — `5:30 /km`. Vid identisk pace vinner den längre distansen.
+
+**Progressionsgrafen plottar km/h, inte min/km.** Medvetet: en progressionsgraf måste ha "upp = bättre", och min/km sjunker när man blir snabbare — linjen hade pekat neråt vid framsteg.
+
+**Buggfix på köpet:** `formatSetLine` matchade sprint-set på `set.sprints != null` och skrev tiden hårdkodat i sekunder, förbi `minInput`-flaggan. Ett 30-minuterspass med sprintar hade skrivits ut som `1800s` i historik och copy. Assault Bikes utskrift är oförändrad — testad åt båda hållen.
+
+Ingen datamigrering: Niklas ställer om vanliga Running själv i *Logged as* (hans override vinner över biblioteket), och den gamla loggningen var ett enda pass.
+
++11 tester (197 totalt).
+
+---
+
 ## 3.83.0 — 2026-07-28
 **Vilodagens ljusstyrka slutade koda närhet — gällde alla 11 teman. Full Moon avflaggat.**
 
