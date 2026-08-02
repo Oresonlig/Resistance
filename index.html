@@ -309,8 +309,13 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
    rubriken, brödtexten och knappen — alla opositionerade. Därför ritades Full
    Moons blodstråk rakt ÖVER "Forced Rest"-titeln och Mark Rest Done-knappen
    (Niklas skärmdump 2026-07-25). Lyftet ligger i bas-CSS:en, inte i temablocket,
-   eftersom exakt samma latenta fälla finns i Nanosuit/Undertow/Overgrowth. */
-.pass-ex-header,.rest-content,.pass-actions{position:relative;z-index:1;}
+   eftersom exakt samma latenta fälla finns i Nanosuit/Undertow/Overgrowth.
+   3.84.1 — `.cycle-done` (CHAIN COMPLETE + "Start New Round →") saknades i
+   listan och hade EXAKT samma brist som Forced Rest-vyn: den har inga ex-block,
+   bara rubrik/brödtext/knapp, alla opositionerade. Full Moons måne ritades rakt
+   över Start New Round-knappen (Niklas skärmdump 2026-08-02). Samma rad, samma
+   orsak, samma fix — och den gäller nu alla teman med ambient-lager på en gång. */
+.pass-ex-header,.rest-content,.pass-actions,.cycle-done{position:relative;z-index:1;}
 /* 3.34.1: btn-primary (Finish Session) — Iron default upgraded med gradient+glow,
    matchar nu Obsidian/Cosmic's "cool" feel istället för flat röd. */
 .btn-primary{flex:1;background:linear-gradient(180deg,#d04535 0%,#8a2820 100%);border:1px solid #8a2820;color:var(--white);font-family:var(--display);font-size:.95rem;letter-spacing:.1em;padding:10px;cursor:pointer;transition:all .15s;text-shadow:0 1px 0 rgba(0,0,0,0.3);box-shadow:inset 0 1px 0 rgba(255,180,160,0.22),0 2px 8px rgba(192,57,43,0.3);}
@@ -2787,7 +2792,8 @@ body.theme-fullmoon .chain-tab.adjacent .chain-tab-name-short{
    skiva = klar), närhet bor i KANTEN (tunn rim = distant, ljus rim = på glänt).
    Ingen ljusstyrke-överlappning kvar → tre entydiga tillstånd. Rest-dagar är
    undantagna (`:not(.rest-day)`) — deras guld är låst och tema-oberoende, se
-   feedback_rest_day_label. */
+   feedback_rest_day_label.
+
    ── ANSVARSFÖRDELNING (viktig, den löser rest-dagarna på köpet) ──
    FÄRG/FAS ligger på BOKSTAVEN och gäller bara vanliga pass (`:not(.rest-day)`)
    — vilodagens guld är låst med !important i bas-CSS och ska aldrig röras.
@@ -2940,22 +2946,18 @@ body.theme-fullmoon .wlog-list{position:relative;z-index:1;background:linear-gra
 /* 3.79.4 — border was `#000` on a near-black card = invisible; the card had no
    readable outline at all (Niklas: "gör borden tydligare"). Silver rim instead. */
 body.theme-fullmoon .ex-block.collapsed:nth-child(odd){background:linear-gradient(160deg,#16181e 0%,#06070a 100%);border:1px solid rgba(190,198,214,0.42);box-shadow:0 10px 24px rgba(10,11,14,0.35),inset 0 0 0 1px rgba(200,206,218,0.12);}
-body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-name{color:#f4f5f8;}
-body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-detail{color:#9aa0ac;}
-body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-prev{color:#9aa0ac;}
-body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-prev .last-val{color:#f4f5f8;}
-body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .set-num,body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-prev-history-set{color:#c7ccd6;}
-body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .set-unit{color:#9aa0ac;}
-body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .sets-group-label{color:#9aa0ac;border-top-color:rgba(200,206,218,0.15);}
+/* 3.84.1 — DÖDKOD BORT. Ett kollapsat kort visar BARA summary-raden: bas-CSS
+   rad ~174 är `.ex-block.collapsed > *:not(.ex-collapsed-summary){display:none}`.
+   Här låg tolv regler för .ex-name/.ex-detail/.ex-prev/.ex-prev .last-val/
+   .set-num/.ex-prev-history-set/.set-unit/.sets-group-label/.ex-btn-skip/
+   .ex-btn-edit/.set-input/.ex-note-input — alla inuti syskon som är display:none.
+   De målade element ingen kunde se. Kvar står de fyra som faktiskt bor i
+   summary-raden. Lägg inte tillbaka de andra: när kortet expanderas försvinner
+   .collapsed och EXPANDED-blocket nedanför tar över — där hör de hemma. */
 body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-collapsed-name{color:#f4f5f8;}
 body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-collapsed-status{color:#9aa0ac;}
 body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-collapsed-chevron{color:#9aa0ac;}
 body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-tag{background:transparent;border-color:#c7ccd6;color:#e6e9ef;}
-body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-btn-skip,body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-btn-edit{background:linear-gradient(180deg,#22242b,#0c0d11);border-color:#3a3f4a;color:#c7ccd6;}
-body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-btn-skip:hover,body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-btn-edit:hover{color:#f4f5f8;border-color:#c7ccd6;}
-body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .set-input{background:linear-gradient(180deg,#1c1e24,#0a0b0e);border-color:#3a3f4a;color:#f4f5f8;}
-body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .set-input:focus{border-color:#c7ccd6;box-shadow:0 0 0 2px rgba(199,204,214,0.14);}
-body.theme-fullmoon .ex-block.collapsed:nth-child(odd) .ex-note-input{background:rgba(10,11,14,0.5);border-color:#3a3f4a;color:#f4f5f8;}
 /* EXPANDED dark card — keeps the frosted translucent body, but is still read as
    "one of the black ones": obsidian band behind the name row (bled to the card
    edges via negative margins) + a soft dark halo instead of a hard border. */
@@ -4697,7 +4699,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.84.0';
+const APP_VERSION = '3.84.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -10227,7 +10229,10 @@ function _startUnderstoryVines(canvas){
   function createBloodField(canvas,opts){
     opts=opts||{};
     const ctx=canvas.getContext('2d');
-    const dpr=Math.min(window.devicePixelRatio||1,2);
+    // 3.84.1 — dpr-tak 2 → 1.5 (samma som Overgrowth efter dess perf-fix, se
+    // theme/REFERENCE.md "Canvas-perf"). 44% färre pixlar att rastrera per frame.
+    // Motivet är mjuka gradienter och blur — skillnaden mot 2.0 syns inte här.
+    const dpr=Math.min(window.devicePixelRatio||1,1.5);
     const density=opts.density!=null?opts.density:1;
     const showMoon=opts.moon!==false;
     const showWound=opts.wound!==false;
@@ -10429,9 +10434,28 @@ function _startUnderstoryVines(canvas){
       if(showMoon) buildMoon();
       initBlood(true);
     }
+    // 3.84.1 — SCROLL-PAUS. Rapport (Johannes iPhone, 2026-08-02): blodet flyter
+    // rent på Android men hackar vid scroll på iOS. Full Moon är enda temat som
+    // kombinerar en fullskärms-canvas som ritar om varje frame MED backdrop-filter
+    // på nästan varje panel som scrollar (ex-block, stat-box, pr-card, pr-groups,
+    // hist-entry, settings-panel, wlog-list, nav). WebKit måste då omsampla varje
+    // suddad panel mot en bakgrund som ändras varje frame, samtidigt som scrollen
+    // komposieras — de slåss om samma budget. Ingen tittar på droppande blod medan
+    // de scrollar, så loopen står still tills scrollen lagt sig. `t` stannar också,
+    // så animationen återupptas där den var istället för att hoppa.
+    // capture:true behövs — scroll-event bubblar inte, men fångas på vägen ned.
+    let paused=false,resumeT=0;
+    function onScroll(){
+      paused=true;
+      clearTimeout(resumeT);
+      resumeT=setTimeout(function(){ paused=false; },160);
+    }
+    window.addEventListener('scroll',onScroll,{passive:true,capture:true});
     function tick(){
       if(!alive) return;
-      raf=requestAnimationFrame(tick); t++;
+      raf=requestAnimationFrame(tick);
+      if(paused) return;
+      t++;
       try{
         ctx.clearRect(0,0,w,h);
         if(showMoon) drawMoon(0.5+0.5*Math.sin(t*0.006));
@@ -10450,7 +10474,7 @@ function _startUnderstoryVines(canvas){
     const ro=new ResizeObserver(build);
     ro.observe(canvas);
     tick();
-    return { stop(){ alive=false; cancelAnimationFrame(raf); ro.disconnect(); } };
+    return { stop(){ alive=false; cancelAnimationFrame(raf); ro.disconnect(); window.removeEventListener('scroll',onScroll,true); clearTimeout(resumeT); } };
   }
   window.createBloodField=createBloodField;
 })();

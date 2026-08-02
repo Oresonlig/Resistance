@@ -6,6 +6,35 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.84.1 — 2026-08-02
+**Elva rader svensk prosa låg som levande CSS och dödade Full Moons done-regel. Fyra omgångar "fixa vilodagsgrafiken" justerade färger i en regel ingen läste.**
+
+Kommentaren som förklarar ansvarsfördelningen i Full Moons chain-strip stängdes med `*/` mitt i sig själv. Raderna därefter blev **CSS**. Webbläsaren läste dem som en selektor, hittade `{opacity:1}` som stod citerat i löptexten, och kastade regeln. Den skräpselektor som följde svalde sedan nästa riktiga selektor — och det som därmed aldrig kördes var hela 3.82.0-fixen:
+
+```css
+body.theme-fullmoon .chain-tab.done:not(.rest-day) .chain-tab-letter{
+  background: radial-gradient(…);   /* förmörkad måne  */
+  color: #c2c9d6;                   /* läsbar glyf     */
+  box-shadow: inset 0 0 0 1px …;    /* silverkant      */
+}
+```
+
+Utan den föll en avklarad session tillbaka på bas-CSS:ens `background: --red 3%` (nära genomskinlig) och temats eget `color:#191b21` (nära svart). Nästan svart bokstav på nästan svart remsa. Att vilodagarnas guld är låst med `!important` — och därför överlevde — gjorde att V-brickorna blev det enda synliga i strippen. Det lästes rimligen som ett fel på vilodagarna. Felet var att sessionerna hade försvunnit.
+
+Det förklarar också varför fyra tidigare omgångar inte hjälpte: de ändrade värden i en regel som aldrig nådde renderingen.
+
+**`check_themes.js` fick en CHECK 0 för kommentarsbalans**, körd mot rå HTML före kommentarsstrippningen (regexen i `stripComments` döljer annars precis det här felet). Verifierad mot den röda revisionen 3.84.0 — den felar med rätt radnummer, inte bara grönt på nuvarande kod.
+
+**"Start New Round →" låg bakom månen.** `.cycle-done` saknades i bas-CSS:ens lyft-lista och har inga `.ex-block` som räddar den — bara rubrik, brödtext och knapp, alla opositionerade, och ett positionerat element med `z-index:0` målas alltid ovanpå opositionerat innehåll. Samma rad, samma orsak och samma fix som Forced Rest-vyn fick tidigare. Lyftet ligger i bas-CSS:en, så alla teman med ambient-lager är fixade på en gång.
+
+**Full Moon hackade vid scroll på iPhone men inte på Android.** Temat är det enda som kombinerar en fullskärms-canvas som ritar om varje frame med `backdrop-filter` på nästan varje panel som scrollar. WebKit måste då blurra om varje panel mot en bakgrund som ändras varje frame, samtidigt som scrollen komposieras — ur samma budget. Loopen pausar nu under scroll och återupptas 160 ms efter sista scroll-eventet (`t` stannar också, så animationen fortsätter där den var istället för att hoppa). dpr-taket sänkt 2 → 1.5, samma som Overgrowth efter dess perf-fix: 44 % färre pixlar per frame.
+
+**13 döda CSS-regler bort.** Full Moons kollapsade mörka kort stylade `.set-input`, `.set-num`, `.ex-note-input`, `.ex-btn-skip` med flera — alla inuti syskon som bas-CSS döljer med `display:none` när kortet är kollapsat. De målade element ingen kunde se. Kvar står de fyra som faktiskt bor i summary-raden.
+
+197 tester gröna.
+
+---
+
 ## 3.84.0 — 2026-07-29
 **Running splittad i två övningar, och löpning fick en PR-metrik där lägre tid är bättre.**
 

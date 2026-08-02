@@ -7,7 +7,16 @@
  * rader CSS. Samma buggklasser återkommer därför gång på gång. Det här skriptet
  * flyttar de mekaniskt kontrollerbara delarna från minne till kod.
  *
- * Fyra checkar, i fallande träffsäkerhet:
+ * Fem checkar, i fallande träffsäkerhet:
+ *
+ *  0. KOMMENTARSBALANS (error)
+ *     Ett "*​/" utan öppnande "/*" betyder att en kommentar stängts tidigare än
+ *     avsett — prosan därefter blir LEVANDE CSS, webbläsaren läser den som en
+ *     selektor och kastar tyst hela nästa regel. Buggen fanns i 3.82.0 och
+ *     upptäcktes först i 3.84.1: Full Moons done-regel för chain-tab hade
+ *     aldrig körts i en browser, och fyra försök att "fixa vilodagsgrafiken"
+ *     justerade färger i en regel ingen läste. Checken körs FÖRE
+ *     kommentarsstrippningen — regexen i stripComments döljer felet annars.
  *
  *  1. CHAIN-TAB REST-DAY-ASYMMETRI (error)
  *     Om ETT temas samtliga regler för ett tillstånd bär `:not(.rest-day)` får
@@ -56,6 +65,53 @@ function extractStyles(html) {
 }
 
 const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '');
+
+/**
+ * CHECK 0 — kommentarsbalans. Körs mot RÅ html (före stripComments) och
+ * rapporterar radnummer i index.html, inte i det extraherade CSS-blocket.
+ * Citattecken spåras så att ett "*​/" inuti en sträng eller data-URI inte larmar.
+ */
+function checkCommentBalance(html) {
+  const out = [];
+  const re = /<style[^>]*>([\s\S]*?)<\/style>/gi;
+  let m;
+  while ((m = re.exec(html))) {
+    const body = m[1];
+    const bodyStart = m.index + m[0].indexOf(body);
+    let line = html.slice(0, bodyStart).split('\n').length;
+    let inC = false, openLine = 0, quote = '';
+    for (let i = 0; i < body.length; i++) {
+      const ch = body[i];
+      if (ch === '\n') { line++; continue; }
+      const two = ch + (body[i + 1] || '');
+      if (inC) {
+        if (two === '*/') { inC = false; i++; }
+        continue;
+      }
+      if (quote) {
+        if (ch === '\\') { i++; continue; }
+        if (ch === quote) quote = '';
+        continue;
+      }
+      if (ch === '"' || ch === "'") { quote = ch; continue; }
+      if (two === '/*') { inC = true; openLine = line; i++; continue; }
+      if (two === '*/') {
+        out.push(
+          `[kommentar] rad ${line}: "*/" utan öppnande "/*".\n` +
+          `             En kommentar har stängts tidigare än avsett. Texten däremellan är\n` +
+          `             LEVANDE CSS — webbläsaren läser den som en selektor och kastar tyst\n` +
+          `             hela regeln som följer. Buggen syns inte i appen, den syns som att\n` +
+          `             "fixen inte tog". Se 3.84.1.`
+        );
+        i++;
+      }
+    }
+    if (inC) {
+      out.push(`[kommentar] rad ${openLine}: "/*" stängs aldrig — resten av <style> är utkommenterad.`);
+    }
+  }
+  return out;
+}
 
 /**
  * Platt regel-lista. CSS i den här kodbasen nästlar inte utöver at-rules,
@@ -255,6 +311,11 @@ const metaFor = (key) => themeMeta.get(clsToId.get(key) ?? key) ?? null;
 const errors = [];
 const warns = [];
 const info = [];
+
+// ══════════════════════════════════════════════════════════════════
+// CHECK 0 — kommentarsbalans (mot rå html, före stripComments)
+// ══════════════════════════════════════════════════════════════════
+errors.push(...checkCommentBalance(html));
 
 // ══════════════════════════════════════════════════════════════════
 // CHECK 1 — chain-tab: rest-day-asymmetri + tillståndsmatris
