@@ -191,6 +191,40 @@ Done-knappen behåller temats form men renderas ihålig: transparent bg + accent
 ### nav — rör aldrig position
 Default `nav { position:fixed; bottom:0 }` är hela appens layout. Sätt aldrig `position:relative` på nav i tema-CSS — nav hoppar till toppen och layout kraschar.
 
+### Stacking — löst en gång, rör den inte per tema
+Fram till 3.85.0 fick varje tema räkna upp sina opaka paneler med
+`position:relative;z-index:1`. Det var fel nivå: ett positionerat element med
+`z-index:0` målas alltid över opositionerat innehåll, så varje panel som inte
+stod med i listan hamnade under bakgrunden — och listan blev fel varje gång en
+ny vy lades till.
+
+`.view` lyfts nu **en gång** i bas-CSS och skapar en stacking-kontext. Hela dess
+subträd ligger därmed över bakgrundslagret, i alla teman, för alltid.
+
+| z | Klass / element | |
+|---|---|---|
+| 0 | `.ambient-back` | canvas/SVG/pseudo-bakgrund |
+| 1 | `.view` | allt appinnehåll |
+| 2 | `.ambient-front` | vinjett, scanlines, partiklar — medvetet **över** innehållet |
+| 99 | `.rest-timer` | |
+| 100 | `header`, `nav` | ligger utanför `.view` → alltid över båda ambient-lagren |
+| 999 | `.toast` | |
+| 1000 | app-modal | |
+
+**Vad ett nytt tema ska göra:** sätt klassen `ambient-back` på sitt bakgrundslager
+(eller `z-index:var(--z-ambient-back)` om lagret har egen geometri, som Obsidians
+centrerade ember-canvas). Lager som ska ligga över innehållet: `ambient-front`.
+Det är allt.
+
+**Vad ett tema ALDRIG ska göra:** sätta `z-index` på en panel, en vy, `header`
+eller `nav`. Full Moon satte `z-index:2` på headern och *sänkte* den därmed från
+bas-CSS:ens 100 — borttaget i 3.85.0.
+
+⚠ Tro inte på påståendet att ".view-lyftet ensamt är opålitligt för descendants".
+Det stod i tema-CSS:en i två år. En stacking-kontext lyfter hela subträdet,
+garanterat. Observationen bakom påståendet kom av att lyftet var scopat till
+`body.theme-nanosuit` medan buggrapporterna kom från teman som inte hade det.
+
 ### Canvas/SVG: Android mix-blend + isolation
 `mix-blend-mode:screen` på fixed canvas + `isolation:isolate` på body → stacking-context-konflikt → Android Chrome blendarar mot vit viewport → hela appen blir vit. **Fix:** skippa mix-blend-mode, använd egna hsla()-alphas. Skippa isolation:isolate.
 
@@ -247,6 +281,8 @@ antalet rader. En instans per vy är oftast oproblematiskt.
 4. Mappa `.xx-*` → befintliga klasser (se mappningstabell)
 
 **Fas 2 — Special effects (canvas/SVG/animations):**
+0. Klassen `ambient-back` (eller `ambient-front`) på lagret — se stacking-avsnittet.
+   Inga panel-lyft, inga z-index i temablocket.
 1. Canvas/SVG-element i HTML body efter `</script>`
 2. Start/stop-funktioner i JS
 3. Hook i `applyTheme()` + `initTheme()`

@@ -70,8 +70,10 @@ finns i memory-filerna som länkas per punkt. Bryter något mot detta: fråga f�
 - Ljusa teman: PM22 surface-overrides är OBLIGATORISKA (annars vit text på vitt).
 - **Använd ALLTID `var(--surface-X)`**, aldrig hårdkodad `background:#XXX`.
 - Frostat glas = **LÅG opacitet (10–55%) + blur**. Aldrig 85–94%.
-- Canvas-teman: **varje** opak panel behöver egen `position:relative;z-index:1`.
-  `.view`-lyftet ensamt räcker inte.
+- **Ambient-lager: sätt `ambient-back` eller `ambient-front` på lagret — inget mer.**
+  `.view` lyfts en gång i bas-CSS (3.85.0). Sätt ALDRIG `position:relative;z-index:1`
+  på en panel, en vy, header eller nav i tema-CSS. Den gamla regeln ("varje opak
+  panel behöver eget lyft") var fel diagnos och är borttagen.
 - Sätt aldrig egen `font-family`/`font-size` på header-hörnet (`--ui-mono` är låst)
   eller på `.set-num`.
 
