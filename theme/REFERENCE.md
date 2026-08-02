@@ -10,27 +10,34 @@ Teman definieras som `body.theme-X { ... }`-block i inline CSS i `index.html`. I
 
 Temaklass sätts via `applyTheme(themeId)` → `document.body.className = 'theme-' + themeId`.
 
-Teman registreras i `THEMES`-arrayen (~rad 7221 i index.html) med `{id, name, cat, desc, class}`.
+Teman registreras i `THEMES`-arrayen (`~rad 9192` i index.html, verifierat 2026-08-02 — Grep för att bekräfta, radnummer driver fort) med `{id, name, cat, desc, class}`.
 
 ---
 
-## Befintliga teman
+## Befintliga teman (11 st, verifierat mot THEMES-arrayen 2026-08-02)
 
 | id | Visningsnamn | Kategori | Klass |
 |----|-------------|----------|-------|
-| `iron` | Iron | dark | *(default, ingen klass)* |
-| `nanosuit` | Nanosuit | dark | `theme-nanosuit` |
+| `iron` | Iron | dark | *(default, KLASSLÖS — `class:''`, `body.theme-iron` matchar aldrig)* |
+| `nanosuit` | Nanosuit 2.0 | dark | `theme-nanosuit` |
 | `nightcity` | Night City | dark | `theme-nightcity` |
 | `ember` | Ember | dark | `theme-ember` |
 | `void` | Void | dark | `theme-void` |
 | `obsidian` | Obsidian | dark | `theme-obsidian` |
-| `cosmichorror` | Cosmic Horror | dark | `theme-cosmichorror` |
-| `understory` | Overgrowth | dark | `theme-understory` |
-| `crusader` | Crusader | light | `theme-crusader` |
-| `arctic` | Arctic | light | `theme-arctic` |
-| `daylight` | Daylight | light | `theme-daylight` |
+| `cosmic-horror` | Cosmic Horror | dark | `theme-cosmic-horror` |
+| `arctic` | Arctic Terminal | light | `theme-arctic` |
+| `undertow` | Undertow | light | `theme-undertow` |
+| `understory` | Overgrowth | light | `theme-understory` |
+| `fullmoon` | Full Moon | light | `theme-fullmoon` |
 
 OBS: Overgrowth har internt id `understory` — visningsnamn ändrades men class-id är oförändrat.
+
+OBS: `check_themes.js` rapporterar `10 teman med egna block` — det är korrekt. Iron
+har inget `body.theme-iron`-block eftersom det ÄR bas-CSS:en. 11 teman, 10 block.
+
+**⚠ BORTTAGNA 3.58.14 — finns INTE längre i appen:** `crusader` (Crusader) och `daylight` (Daylight). Tidigare fanns de listade här som aktiva — de är det inte. Ingen `body.theme-crusader`/`body.theme-daylight`-CSS finns kvar i `index.html`. Filerna i `theme/`-mappen (inkl. denna referens tidigare) ligger kvar för ett ev. framtida Claude Design-rework, men porta dem INTE tillbaka in i appen utan att lägga till en ny `THEMES`-entry + full CSS-block igen. Se `feedback_teman_arkitektur` (Claude-minne) för borttagnings-receptet + migration av befintliga användare (`migrateRemovedThemes`).
+
+**⭐ Iron = klasslöst default-tema.** `body.theme-iron { }` matchar ALDRIG — Iron ÄR base-CSS:en (`body:not([class*="theme-"])`). Vill du styla "endast Iron": styla by default, override:a med `body[class*="theme-"] { }` för alla andra teman (matchar automatiskt framtida teman också).
 
 ---
 
@@ -45,6 +52,8 @@ OBS: Overgrowth har internt id `understory` — visningsnamn ändrades men class
 - [ ] Header, nav, logo, header-user, sync-dot, AM-pill (3 states)
 - [ ] Pass-card (next-up, in-progress, done) + pass-letter, pass-name, pass-preview
 - [ ] Chain-tab (default, adjacent, active, done, rest-day) + letter, name-full/short
+      — **tre tillstånd är obligatoriska, se eget avsnitt nedan**
+- [ ] `node check_themes.js` grön (ingår i `npm run check`) — **läs warn-raderna**
 - [ ] Ex-block (saved-state), ex-name, ex-detail, ex-prev, ex-note-input
 - [ ] Tags: ramp, bw, uni, singles, timed
 - [ ] Ex-btn-done, ex-btn-skip, ex-btn-edit
@@ -98,6 +107,43 @@ Standardvärden i `:root` är Iron-kompatibla. Overrida bara de som avviker.
 
 ---
 
+## Chain-strippen — tre tillstånd, två kanaler
+
+Den enskilt mest regressionsdrabbade delen av tema-arbetet. Tre versioner i rad
+(3.81.1, 3.81.2, 3.83.0) fixade samma buggklass i olika hörn.
+
+**Tre tillstånd är OBLIGATORISKA.** Ett eget formspråk (månbrickor, hexagoner,
+sigill) får aldrig kosta något av dem:
+
+| Tillstånd | Ska läsa som | Får ALDRIG |
+|-----------|--------------|------------|
+| *kvar att träna* | full styrka | — |
+| *på glänt* | antytt, ej fullt expanderat, **svagare än kvar-att-träna** | vara identisk med distant |
+| *avklarad* | tydligt avverkad | bli osynlig — man ska se att passet ligger där och kunna trycka på det |
+
+**Koda ALDRIG status och närhet i samma visuella kanal.**
+
+- **Status** (klar vs kvar) bor på **bokstaven** — fas, fyllning, färg.
+- **Närhet** (active/adjacent/distant) bor på **containern** — kapsel, kant, expansion.
+
+Blandas de slår `.adjacent`-reglernas specificitet (0-4-1) bas-regelns `.done`-fade
+(0-3-0), och färdiga pass tänds upp som kommande. Det var 3.81.1.
+
+**Vilodagen är inte ett undantag från dämpningen.** Guldet är låst med `!important`
+i bas-CSS och ska aldrig överridas — men scopa därför inte hela sitt state-arbete
+med `:not(.rest-day)`. Färg/fas: `:not(.rest-day)`. Dämpning/kapsel: **utan scope**,
+så vilodagarna följer med. Det var 3.81.2.
+
+**Närhet får inte göra brickan ljusare.** Grannen ska vara marginellt *svagare* än
+en distant bricka, inte starkare — annars äter närhets-boosten upp done-dämpningen
+och en avklarad granne blir exakt lika ljus som en kvarvarande på avstånd. Det var
+3.83.0, och det var mätbart identiska RGB-värden, inte en smaksak.
+
+**Verifiera SEX kombinationer:** `distant`, `adjacent`, `done`, `adjacent.done` —
+och samma fyra igen med `.rest-day`. `node check_themes.js` gör det mekaniskt.
+
+---
+
 ## Mappningstabell — Claude Design → app-klasser
 
 | Designens klass | App-klass |
@@ -121,6 +167,20 @@ Standardvärden i `:root` är Iron-kompatibla. Overrida bara de som avviker.
 ---
 
 ## Fallgropar
+
+### Kommentarsbalans — en stängd kommentar dödar nästa regel
+Ett `*/` utan öppnande `/*` gör att prosan därefter blir **levande CSS**.
+Webbläsaren läser den som en selektor, och kastar tyst hela regeln som följer.
+Inget syns i konsolen; symptomet är att "fixen inte tog". Det inträffade i
+3.82.0 och upptäcktes först i 3.84.1 — Full Moons done-regel för chain-tab hade
+aldrig körts, och **fyra** omgångar "fixa vilodagsgrafiken" justerade färgvärden
+i en regel ingen läste.
+
+Två vanor som förebygger det:
+1. Skriv aldrig `{...}` i löptext inuti en kommentar utan att kontrollera att
+   kommentaren är hel — ett citat som `` `.x{opacity:1}` `` blir annars den
+   deklarationsblock som avslutar skräpselektorn.
+2. `node check_themes.js` felar hårt på obalans (CHECK 0). Kör den.
 
 ### clip-path-arv på Log/Done-knappar
 Default `.set-log-btn { clip-path: polygon(hexagon) }`. Tema-block som bara overridar `background`/`border-radius` men INTE `clip-path` visar Iron's hexagon-form oavsett tema. **Fix:** `body.theme-X .set-log-btn { clip-path: none }` för alla teman som vill ha annan form.
@@ -148,6 +208,20 @@ En konstant-animerande canvas med ett `ctx.stroke()` per linjesegment (~11 000 a
 4. Förrendera partiklar till sprite + `drawImage`
 5. ~30fps-tak: rita bara om `now - _last >= 33`
 6. dpr-tak 1.5 för mjuka effekter
+7. **Pausa loopen under scroll** (`scroll` → `paused=true`, återuppta ~160 ms
+   efter sista eventet, `capture:true` eftersom scroll inte bubblar). Ingen
+   tittar på ambient-effekten medan de scrollar, och det är exakt då den kostar
+   mest.
+
+### backdrop-filter över en animerad canvas (iOS-specifikt)
+`backdrop-filter: blur()` tvingar kompositorn att omsampla panelens bakgrund.
+Är bakgrunden en canvas som ritar om varje frame måste **varje** suddad panel
+blurras om varje frame — samtidigt som scrollen komposieras, ur samma budget.
+WebKit/iOS drabbas betydligt hårdare än Android Chrome; rapporterat som "hackar
+när han scrollar" på iPhone medan samma bygge flyter på Android (Full Moon,
+3.84.1). Undvik `backdrop-filter` på paneler som **upprepas per rad**
+(`hist-entry`, `pr-card`) i teman med animerad bakgrund — de multipliceras med
+antalet rader. En instans per vy är oftast oproblematiskt.
 
 ### Desktop-buggar
 - Header sprider sig till skärmkanter på desktop: fix med `@media(min-width:600px){ header{padding:14px max(24px, calc((100vw - 600px) / 2));} }`
