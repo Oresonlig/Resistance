@@ -49,6 +49,11 @@
   --tag-uni-bg:#120e00;            --tag-uni-border:#4a3a00;   --tag-uni-color:#c89030;
   --tag-singles-bg:#140a0a;        --tag-singles-border:#4a2a2a; --tag-singles-color:#c07060;
   --tag-timed-bg:#08101a;          --tag-timed-border:#1a2a3a;   --tag-timed-color:#7ab;
+  /* ── 3.85.0: stacking-stegen. Hela ordningen dokumenterad vid `.view` nedan.
+     Teman refererar tokens, aldrig råa tal — då finns ordningen på ETT ställe. */
+  --z-ambient-back:0;
+  --z-content:1;
+  --z-ambient-front:2;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--black);color:var(--white);font-family:var(--sans);min-height:100vh;overflow-x:hidden;max-width:100vw;color-scheme:dark;}
@@ -106,7 +111,39 @@ nav button:last-child{border-right:none;}
 nav button.active{color:var(--white);background:var(--surface-base);border-top:2px solid var(--red);margin-top:-1px;}
 nav button:hover:not(.active){color:var(--white);background:var(--surface-overlay);}
 
-.view{display:none;}
+/* ══ STACKING-STEGEN — definierad EN gång, gäller alla teman ═══════════════════
+   Bakgrund: varje tema med ett ambient-lager har historiskt fått räkna upp sina
+   egna opaka paneler med `position:relative;z-index:1`, en i taget, allteftersom
+   buggrapporter kom in (Nanosuit 3.58.3-11, Full Moon 3.81.0, `.cycle-done`
+   3.84.1). Listan var en manuell inventering och blev fel varje gång en ny vy
+   lades till — ett positionerat element med `z-index:0` målas ALLTID över
+   opositionerat innehåll, så varje panel som inte stod med i listan hamnade
+   under bakgrunden. Niklas 2026-08-02: "micromanagement bs jag inte vill behöva
+   göra vid varje tema-implementation."
+
+   Rotfixen: lyft `.view` en gång. Den skapar en stacking-kontext, och DÅ ligger
+   allt appinnehåll — nuvarande och framtida, i alla teman — automatiskt över
+   bakgrundslagret. Ingen panel behöver någonsin nämnas igen.
+
+   Stegen, i sin helhet:
+      0  .ambient-back    bakgrund (canvas/SVG/pseudo) — bakom allt innehåll
+      1  .view            ALLT appinnehåll
+      2  .ambient-front   vinjett/scanlines/partiklar — medvetet ÖVER innehåll
+     99  .rest-timer
+    100  header, nav      (utanför .view — därför alltid över båda ambient-lagren)
+    999  .toast
+   1000  app-modal
+   9999  theme-nightcity CRT-flimmer (medvetet över allt)
+
+   REGLER FÖR NYA TEMAN:
+   - Bakgrundslager: sätt klassen `ambient-back` (eller `z-index:var(--z-ambient-back)`
+     om lagret har egen geometri, som Obsidians centrerade ember-canvas).
+   - Lager som ska ligga ÖVER innehållet: `ambient-front`.
+   - Sätt ALDRIG z-index på en panel, en vy, header eller nav i tema-CSS.
+   ══════════════════════════════════════════════════════════════════════════════ */
+.ambient-back{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:var(--z-ambient-back);}
+.ambient-front{position:fixed;inset:0;pointer-events:none;z-index:var(--z-ambient-front);}
+.view{display:none;position:relative;z-index:var(--z-content);}
 .view.active{display:block;}
 /* CHAIN */
 .chain-intro{padding:13px 14px 10px;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;}.chain-intro-sub{font-family:var(--mono);font-size:.52rem;color:#aaa;letter-spacing:.07em;margin-top:3px;}
@@ -302,20 +339,11 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .add-ex-confirm{background:var(--red);border:none;color:var(--white);font-family:var(--mono);font-size:.52rem;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;cursor:pointer;}
 .rest-content{padding:10px 0 3px;font-family:var(--mono);font-size:.64rem;color:#484848;line-height:1.8;}
 .pass-actions{display:flex;gap:6px;margin-top:10px;}
-/* 3.81.0 — stacking-lyft för vilodags-vyn. Ett canvas-tema monterar sin bakgrund
-   som `position:fixed;z-index:0` — ett POSITIONERAT element målas alltid ovanpå
-   opositionerade syskon oavsett DOM-ordning. På vanliga pass räddas innehållet av
-   att `.ex-block` har ett eget lyft, men vilodagen har inga ex-block alls: bara
-   rubriken, brödtexten och knappen — alla opositionerade. Därför ritades Full
-   Moons blodstråk rakt ÖVER "Forced Rest"-titeln och Mark Rest Done-knappen
-   (Niklas skärmdump 2026-07-25). Lyftet ligger i bas-CSS:en, inte i temablocket,
-   eftersom exakt samma latenta fälla finns i Nanosuit/Undertow/Overgrowth.
-   3.84.1 — `.cycle-done` (CHAIN COMPLETE + "Start New Round →") saknades i
-   listan och hade EXAKT samma brist som Forced Rest-vyn: den har inga ex-block,
-   bara rubrik/brödtext/knapp, alla opositionerade. Full Moons måne ritades rakt
-   över Start New Round-knappen (Niklas skärmdump 2026-08-02). Samma rad, samma
-   orsak, samma fix — och den gäller nu alla teman med ambient-lager på en gång. */
-.pass-ex-header,.rest-content,.pass-actions,.cycle-done{position:relative;z-index:1;}
+/* 3.85.0 — här låg `.pass-ex-header,.rest-content,.pass-actions,.cycle-done
+   {position:relative;z-index:1}`, den manuella lyft-listan. Varje rad i den var
+   en buggrapport: vilodags-vyn 3.81.0, CHAIN COMPLETE 3.84.1. Listan behövs inte
+   längre — `.view` lyfts en gång och tar allt innehåll med sig. Se stacking-
+   stegen vid `.view` ovan. Lägg ALDRIG tillbaka enskilda paneler här. */
 /* 3.34.1: btn-primary (Finish Session) — Iron default upgraded med gradient+glow,
    matchar nu Obsidian/Cosmic's "cool" feel istället för flat röd. */
 .btn-primary{flex:1;background:linear-gradient(180deg,#d04535 0%,#8a2820 100%);border:1px solid #8a2820;color:var(--white);font-family:var(--display);font-size:.95rem;letter-spacing:.1em;padding:10px;cursor:pointer;transition:all .15s;text-shadow:0 1px 0 rgba(0,0,0,0.3);box-shadow:inset 0 1px 0 rgba(255,180,160,0.22),0 2px 8px rgba(192,57,43,0.3);}
@@ -917,7 +945,7 @@ body.theme-arctic{
 
 /* Strong frost halos in all four corners — behind content, shows through glass cards */
 body.theme-arctic::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:var(--z-ambient-back);
   background:
     radial-gradient(ellipse 70% 70% at 0% 0%,    rgba(80,175,218,0.85) 0%, transparent 65%),
     radial-gradient(ellipse 70% 70% at 100% 0%,  rgba(80,175,218,0.85) 0%, transparent 65%),
@@ -1115,7 +1143,7 @@ body.theme-ember{
 
 /* Floating ember particles drifting upward — purely decorative, very subtle */
 body.theme-ember::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:var(--z-ambient-front);
   background-image:
     radial-gradient(2px 2px at 12% 80%,rgba(255,106,0,0.4) 50%,transparent 100%),
     radial-gradient(1px 1px at 28% 65%,rgba(255,200,80,0.3) 50%,transparent 100%),
@@ -1523,7 +1551,7 @@ body.theme-nanosuit{
 
 /* Scanning grid overlay — subtle horizontal lines */
 body.theme-nanosuit::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:var(--z-ambient-front);
   background-image:linear-gradient(0deg,rgba(0,212,255,0.015) 50%,transparent 50%);
   background-size:100% 3px;
 }
@@ -1654,18 +1682,25 @@ body.theme-nanosuit .ex-tag{
 }
 /* Nanosuit tag colors — se tokens i body.theme-nanosuit ovan (3.34.11) */
 
-/* Lift content above the fixed hex canvas — #nanosuit-bg is position:fixed;z-index:0, and .view/.ex-block
-   were plain static elements, which paint BELOW any positioned z-index:0 layer
-   regardless of DOM order. That's why the opaque .ex-block bg below never
-   blocked the weave: the canvas was stacking on top of it, not behind it. */
-body.theme-nanosuit .view{position:relative;z-index:1;}
+/* 3.85.0 — här låg `body.theme-nanosuit .view{position:relative;z-index:1}` plus
+   tio enskilda panel-lyft (.ex-block, .chain-intro, .stat-box, .pr-card,
+   .pr-groups, .hist-entry, .settings-panel, .data-btn, .weight-chart-wrap,
+   .wlog-list). Lyftet ligger nu i bas-CSS:en på `.view` och gäller alla teman.
+
+   Kommentarerna här påstod att ".view-lyftet ensamt är empiriskt opålitligt för
+   descendants" och att varje panel därför behövde ett eget "belt-and-suspenders"-
+   lyft. Det stämmer inte: `.view` med `z-index:1` skapar en stacking-kontext, och
+   då målas HELA dess subträd över varje syskon på z-index:0 — det är garanterat,
+   inte sannolikt. Den troliga förklaringen till observationen är att lyftet var
+   scopat till `body.theme-nanosuit`, medan buggrapporterna som följde kom från
+   Undertow, Overgrowth och Full Moon — teman som aldrig HADE något .view-lyft.
+   Slutsatsen blev "lyftet fungerar inte" när orsaken var "lyftet fanns inte där". */
 
 /* Exercise blocks — frosted glass, same recipe as header/chain-intro (3.58.6
    note above the header rule explains the opacity range). Denser text than the
    header (set numbers, tags) so kept on the higher end of the working 10-55%
    band rather than matching header's lighter 18-42%. */
 body.theme-nanosuit .ex-block{
-  position:relative;z-index:1;
   background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
@@ -1690,12 +1725,8 @@ body.theme-nanosuit .ex-detail{
 }
 body.theme-nanosuit .ex-prev .last-val{color:#00b8a0;}
 /* Chain-intro panel — same frosted-glass recipe as the header (see 3.58.6 note
-   above the header rule for why opacity must stay low, not high). position:
-   relative;z-index:1 explicit here too (not just inherited via .view) — the
-   belt-and-suspenders lift, since the .view lift alone is empirically unreliable
-   for descendants. */
+   above the header rule for why opacity must stay low, not high). */
 body.theme-nanosuit .chain-intro{
-  position:relative;z-index:1;
   background:linear-gradient(180deg,rgba(8,22,36,0.56) 0%,rgba(8,22,36,0.3) 100%);
   backdrop-filter:blur(18px);
   -webkit-backdrop-filter:blur(18px);
@@ -1719,7 +1750,6 @@ body.theme-nanosuit .chain-intro-sub{
 
 /* Stat boxes — readouts */
 body.theme-nanosuit .stat-box{
-  position:relative;z-index:1;
   background:linear-gradient(135deg,#0a1420 0%,#050810 100%);
   border:1px solid #1a3040;
   clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
@@ -1733,12 +1763,8 @@ body.theme-nanosuit .stat-num{
 body.theme-nanosuit .stat-desc{color:#4a7a99;font-family:'JetBrains Mono',monospace;}
 
 /* PR cards — upgraded to the ex-block frosted-glass recipe (3.58.11), same
-   reasoning as the 3.58.10 settings-panel upgrade. Explicit position/z-index
-   lift added (not just inherited from .view) — per the established lesson,
-   the .view-level lift alone is empirically inconsistent for descendants, so
-   every individual opaque panel gets its own belt-and-suspenders lift. */
+   reasoning as the 3.58.10 settings-panel upgrade. */
 body.theme-nanosuit .pr-card{
-  position:relative;z-index:1;
   background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
@@ -1763,7 +1789,6 @@ body.theme-nanosuit .pr-value{
    3.58.11). .pr-groups wraps the whole category list in one shared frosted
    panel, same pattern as .wlog-list wrapping .wlog-row. */
 body.theme-nanosuit .pr-groups{
-  position:relative;z-index:1;
   background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
@@ -1773,9 +1798,8 @@ body.theme-nanosuit .pr-groups{
 body.theme-nanosuit .pr-group-head{color:#5a8899;}
 body.theme-nanosuit .pr-group-head:hover{color:var(--red);}
 
-/* History — same frosted-glass upgrade + explicit lift as PR cards above. */
+/* History — same frosted-glass upgrade as PR cards above. */
 body.theme-nanosuit .hist-entry{
-  position:relative;z-index:1;
   background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
@@ -1790,7 +1814,6 @@ body.theme-nanosuit .hist-pass{color:var(--red);font-family:'Orbitron',sans-seri
    blurred glass chrome. Inline border/padding on the element still wins where
    declared (untouched), this only supplies background+blur+border. */
 body.theme-nanosuit .settings-panel{
-  position:relative;z-index:1;
   background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
@@ -1798,7 +1821,6 @@ body.theme-nanosuit .settings-panel{
   padding:8px;
 }
 body.theme-nanosuit .data-btn{
-  position:relative;z-index:1;
   background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
@@ -1807,14 +1829,12 @@ body.theme-nanosuit .data-btn{
 }
 body.theme-nanosuit .data-btn:hover{border-color:var(--red);color:var(--red);}
 body.theme-nanosuit .weight-chart-wrap{
-  position:relative;z-index:1;
   background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
   border-color:rgba(0,212,255,0.16);
 }
 body.theme-nanosuit .wlog-list{
-  position:relative;z-index:1;
   background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
@@ -2645,7 +2665,14 @@ body.theme-understory .ex-note-save{background:rgba(252,255,247,0.8);border-colo
 body.theme-fullmoon{
   --black:#c9ced7;--white:#15171d;--red:#0a0b0e;
   --gold:#3a3f4c;--green-bright:#3f5a52;
-  --gray-mid:#9096a3;--gray-light:#6d7280;
+  /* 3.85.0 — sekundärtexten ett steg mörkare rakt igenom (Niklas: "mycket av
+     skärpan försvinner när det är halvgrå bakgrund mot ljusgrå fontfärg").
+     Fixat på TEXT-sidan, inte genom att höja panelernas opacitet — frostat glas
+     är låg opacitet + blur, och opacitetsskruvande i det här temat har skapat
+     ljusläckor förr (3.79.x). --gray-light #6d7280 → #474c57 bär de komponenter
+     som inte har egen färgregel: .cycle-done-sub, .hist-ex-header, .wlog-row,
+     onboarding-texten och grafernas axeletiketter. */
+  --gray-mid:#9096a3;--gray-light:#474c57;
   --display:'Cinzel',serif;--sans:'Space Grotesk',sans-serif;--mono:'JetBrains Mono',monospace;
   --on-accent:#f4f5f8; /* Full Moon is 'light' cat — excluded from the login demo rotation (dark-only), kept for completeness */
   --surface-base:rgba(226,230,238,0.62);--surface-elevated:rgba(238,241,247,0.85);
@@ -2664,8 +2691,10 @@ body.theme-fullmoon{
   background-attachment:fixed;color:#14161c;color-scheme:light;
 }
 /* ---------- header: bloody black field, silver logo ---------- */
+/* 3.85.0 — `z-index:2` borttaget här. Bas-CSS ger header z-index:100; temat
+   SÄNKTE den till 2, vilket bara kunde ställa till det (och krockade med det nya
+   ambient-front-steget). Ett tema ska aldrig röra headerns stacking. */
 body.theme-fullmoon header{
-  z-index:2;
   background:
     radial-gradient(ellipse 90% 130% at 26% -20%,#16181f 0%,rgba(22,24,31,0) 58%),
     linear-gradient(180deg,#0a0b0e 0%,#070809 62%,#050609 100%);
@@ -2723,7 +2752,7 @@ body.theme-fullmoon .chain-strip-outer{
   background:
     linear-gradient(#08090c,#08090c) top/100% calc(100% - 30px) no-repeat,
     url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 384 40' preserveAspectRatio='none'><path d='M0 0 H384 V14 C 372 20 360 15 348 19 C 334 24 322 17 308 21 C 292 27 280 16 264 22 C 250 27 238 17 222 23 C 206 30 196 18 180 24 C 165 30 152 18 136 24 C 122 29 108 17 92 23 C 78 28 66 18 50 24 C 36 29 22 17 8 22 L 0 20 Z' fill='%2308090c'/></svg>") bottom/100% 30px no-repeat;
-  padding-bottom:34px;position:relative;z-index:1;
+  padding-bottom:34px;position:relative;
 }
 /* ---------- FM-2: Forced Rest-vyn ----------
    Enda skärmen utan `.ex-block`, alltså enda skärmen helt utan frostad panel —
@@ -2736,7 +2765,7 @@ body.theme-fullmoon .chain-strip-outer{
 body.theme-fullmoon .pass-ex-header{border-bottom-color:rgba(20,22,28,0.25);}
 body.theme-fullmoon .pass-ex-header.rest-day .pass-ex-letter{color:#3a3f4a;}
 body.theme-fullmoon .pass-ex-name{color:#14161c;}
-body.theme-fullmoon .session-ex-status{color:#5f646f;}
+body.theme-fullmoon .session-ex-status{color:#3a3f4a;}
 body.theme-fullmoon .session-ex-status::before{color:#8b909b;}
 body.theme-fullmoon .rest-content{
   background:linear-gradient(180deg,rgba(232,236,242,0.92) 0%,rgba(208,213,223,0.88) 100%);
@@ -2752,7 +2781,7 @@ body.theme-fullmoon .btn-ghost{
 }
 body.theme-fullmoon .btn-ghost:hover{background:#1c1d22;border-color:#1c1d22;color:#f4f5f8;}
 body.theme-fullmoon .section-title{font-family:'Cinzel',serif;font-weight:700;letter-spacing:.05em;color:#14161c;}
-body.theme-fullmoon .section-sub{color:#6d7280;}
+body.theme-fullmoon .section-sub{color:#474c57;}
 /* ---------- chain-tab: moon-phase tiles (own formspråk, like Obsidian/Cosmic Horror) ----------
    Rest-day 'V' is deliberately UNTOUCHED here — that gold marker is uniform
    across every theme (see feedback_rest_day_label memory), never override
@@ -2850,22 +2879,22 @@ body.theme-fullmoon .chain-tab-name-full{font-family:'Cinzel',serif;font-weight:
 body.theme-fullmoon .ex-block{background:linear-gradient(158deg,rgba(232,235,240,0.62) 0%,rgba(198,203,214,0.52) 100%);border:1px solid rgba(146,153,168,0.5);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 8px 20px rgba(20,22,28,0.12);backdrop-filter:blur(3px) saturate(110%);-webkit-backdrop-filter:blur(3px) saturate(110%);}
 body.theme-fullmoon .ex-block.saved{background:var(--surface-saved);border-color:rgba(63,90,82,0.4);}
 body.theme-fullmoon .ex-name{color:#0c0d11;}
-body.theme-fullmoon .ex-detail{color:#6a6f7a;}
-body.theme-fullmoon .ex-prev{color:#6a6f7a;}
+body.theme-fullmoon .ex-detail{color:#454a55;}
+body.theme-fullmoon .ex-prev{color:#454a55;}
 body.theme-fullmoon .ex-prev .last-val{color:#14161c;}
-body.theme-fullmoon .set-num{color:#5f646f;}
-body.theme-fullmoon .ex-prev-history-set{color:#5f646f;}
-body.theme-fullmoon .ex-prev-history-set.warmup{color:#7b808b;}
+body.theme-fullmoon .set-num{color:#3a3f4a;}
+body.theme-fullmoon .ex-prev-history-set{color:#3a3f4a;}
+body.theme-fullmoon .ex-prev-history-set.warmup{color:#565c67;}
 body.theme-fullmoon .ex-note-input{border-color:rgba(146,153,168,0.5);}
-body.theme-fullmoon .ex-btn-skip,body.theme-fullmoon .ex-btn-edit{background:linear-gradient(180deg,#e7eaef 0%,#d0d5de 100%);border:1px solid #a7adb9;color:#5f646f;}
+body.theme-fullmoon .ex-btn-skip,body.theme-fullmoon .ex-btn-edit{background:linear-gradient(180deg,#e7eaef 0%,#d0d5de 100%);border:1px solid #a7adb9;color:#3a3f4a;}
 body.theme-fullmoon .ex-btn-skip:hover,body.theme-fullmoon .ex-btn-edit:hover{color:#0a0b0e;border-color:#0a0b0e;}
 body.theme-fullmoon .set-input,body.theme-fullmoon .add-ex-input,body.theme-fullmoon .swap-select{border-color:rgba(146,153,168,0.5);}
 body.theme-fullmoon .set-input:focus{border-color:#14161c;box-shadow:0 0 0 2px rgba(20,22,28,0.14);}
-body.theme-fullmoon .set-unit{color:#7b808b;}
-body.theme-fullmoon .sets-group-label{color:#6a6f7a;border-top:1px dashed rgba(146,153,168,0.4);}
+body.theme-fullmoon .set-unit{color:#565c67;}
+body.theme-fullmoon .sets-group-label{color:#454a55;border-top:1px dashed rgba(146,153,168,0.4);}
 body.theme-fullmoon .ex-collapsed-name{color:#14161c;}
-body.theme-fullmoon .ex-collapsed-status{color:#6d7280;}
-body.theme-fullmoon .ex-collapsed-chevron{color:#6a6f7a;}
+body.theme-fullmoon .ex-collapsed-status{color:#474c57;}
+body.theme-fullmoon .ex-collapsed-chevron{color:#454a55;}
 /* ---------- LOG / DONE / Finish — shared sharp small-radius rect (fm-btn-primary vocabulary) ---------- */
 body.theme-fullmoon .set-log-btn{background:#0c0d11;color:#f4f5f8;font-family:'Cinzel',serif;font-weight:800;letter-spacing:.1em;border:none;clip-path:none;border-radius:2px;box-shadow:0 4px 10px rgba(10,11,14,0.3);}
 body.theme-fullmoon .set-log-btn.has-value{background:linear-gradient(180deg,#2a2c33,#0c0d11);}
@@ -2891,17 +2920,17 @@ body.theme-fullmoon .btn-secondary:hover{border-color:#0a0b0e;color:#0a0b0e;}
    at its lower alpha since Niklas likes the see-through there. */
 body.theme-fullmoon .stat-box{background:rgba(230,234,241,0.9);border:1px solid rgba(146,153,168,0.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
 body.theme-fullmoon .stat-num{color:#14161c;font-family:'Cinzel',serif;}
-body.theme-fullmoon .stat-desc{color:#5f646f;}
+body.theme-fullmoon .stat-desc{color:#3a3f4a;}
 body.theme-fullmoon .pr-card{background:rgba(230,234,241,0.9);border:1px solid rgba(146,153,168,0.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
 body.theme-fullmoon .pr-card::before{background:rgba(255,255,255,0.85);color:#3a3f4a;}
 body.theme-fullmoon .pr-value{color:#3a3f4a;font-weight:700;}
 body.theme-fullmoon .pr-groups{background:rgba(230,234,241,0.9);border:1px solid rgba(146,153,168,0.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
-body.theme-fullmoon .pr-group-head{color:#5f646f;}
+body.theme-fullmoon .pr-group-head{color:#3a3f4a;}
 body.theme-fullmoon .pr-group-head.open{color:#14161c;}
 body.theme-fullmoon .hist-entry{background:rgba(230,234,241,0.88);border-left:2px solid #0a0b0e;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
 body.theme-fullmoon .hist-date{color:#14161c;}
-body.theme-fullmoon .hist-pass{color:#6d7280;}
-body.theme-fullmoon .hist-set{color:#7b808b;}
+body.theme-fullmoon .hist-pass{color:#474c57;}
+body.theme-fullmoon .hist-set{color:#565c67;}
 /* ---------- selFg fix — toast + add-ex-confirm sit on var(--red) (near-black), need light text ---------- */
 body.theme-fullmoon .toast{color:#f4f5f8;}
 body.theme-fullmoon .add-ex-confirm{color:#f4f5f8;}
@@ -2919,15 +2948,15 @@ body.theme-fullmoon .app-modal-btn-primary{background:#0c0d11;color:#f4f5f8;bord
 body.theme-fullmoon .app-modal-btn-danger{background:linear-gradient(180deg,#b84040,#8a2828);color:#fff;border:none;}
 /* ---------- scrollbar ---------- */
 body.theme-fullmoon::-webkit-scrollbar-track{background:#c3c8d2;}
-body.theme-fullmoon::-webkit-scrollbar-thumb{background:#9096a3;border:1px solid #6d7280;}
+body.theme-fullmoon::-webkit-scrollbar-thumb{background:#9096a3;border:1px solid #474c57;}
 /* ---------- Settings/Weight panels — frosted-glass recipe (proactive: fullmoon-bg
    is a viewport-fixed animated canvas like Nanosuit's hex-weave, same "vilda
    västern" risk if these stay unstyled, see feedback_teman_arkitektur memory) ---------- */
-body.theme-fullmoon .settings-panel{position:relative;z-index:1;background:linear-gradient(180deg,rgba(232,236,242,0.92) 0%,rgba(208,213,223,0.88) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(146,153,168,0.5);padding:8px;}
-body.theme-fullmoon .data-btn{position:relative;z-index:1;background:linear-gradient(180deg,rgba(232,236,242,0.92) 0%,rgba(208,213,223,0.88) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:rgba(146,153,168,0.5);color:#5f646f;}
+body.theme-fullmoon .settings-panel{background:linear-gradient(180deg,rgba(232,236,242,0.92) 0%,rgba(208,213,223,0.88) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(146,153,168,0.5);padding:8px;}
+body.theme-fullmoon .data-btn{background:linear-gradient(180deg,rgba(232,236,242,0.92) 0%,rgba(208,213,223,0.88) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:rgba(146,153,168,0.5);color:#3a3f4a;}
 body.theme-fullmoon .data-btn:hover{border-color:#0a0b0e;color:#0a0b0e;}
-body.theme-fullmoon .weight-chart-wrap{position:relative;z-index:1;background:linear-gradient(180deg,rgba(232,236,242,0.94) 0%,rgba(208,213,223,0.9) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:rgba(146,153,168,0.5);}
-body.theme-fullmoon .wlog-list{position:relative;z-index:1;background:linear-gradient(180deg,rgba(232,236,242,0.92) 0%,rgba(208,213,223,0.88) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(146,153,168,0.5);padding:2px 12px;}
+body.theme-fullmoon .weight-chart-wrap{background:linear-gradient(180deg,rgba(232,236,242,0.94) 0%,rgba(208,213,223,0.9) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:rgba(146,153,168,0.5);}
+body.theme-fullmoon .wlog-list{background:linear-gradient(180deg,rgba(232,236,242,0.92) 0%,rgba(208,213,223,0.88) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(146,153,168,0.5);padding:2px 12px;}
 /* ---------- alternating obsidian/silver exercise cards (themebugg.png handoff render) ----------
    Two fixes over the first pass (Niklas gym-feedback, screenshot 2):
    1) `.pass-ex-header` (session name banner) is an unstyled DOM sibling BEFORE
@@ -3008,8 +3037,9 @@ body.theme-fullmoon .ex-block.collapsed:nth-child(odd).saved .ex-collapsed-summa
   background:linear-gradient(160deg,rgba(30,34,42,0.94) 0%,rgba(10,12,16,0.94) 100%);
 }
 body.theme-fullmoon .ex-block.collapsed:nth-child(odd).saved .ex-collapsed-status{color:#b3b9c5;}
-/* ---------- stacking: opaque panels need their own lift above the fixed blood canvas (z-index:0) ---------- */
-body.theme-fullmoon .chain-intro,body.theme-fullmoon .ex-block,body.theme-fullmoon .stat-box,body.theme-fullmoon .pr-card,body.theme-fullmoon .hist-entry,body.theme-fullmoon .pr-groups{position:relative;z-index:1;}
+/* 3.85.0 — här låg Full Moons egen lyft-lista (.chain-intro, .ex-block,
+   .stat-box, .pr-card, .hist-entry, .pr-groups). Ersatt av `.view`-lyftet i
+   bas-CSS:en. Lägg inte tillbaka den — se stacking-stegen vid `.view`. */
 
 /* ═════════════════════════════════════════════════════════════
    OBSIDIAN — Dark fantasy · Gothic scriptorium · Breathing gold embers
@@ -3064,21 +3094,21 @@ body.theme-obsidian{
   position:fixed; top:0; bottom:0;
   left:50%; transform:translateX(-50%);
   width:100%; max-width:800px;
-  pointer-events:none; z-index:0;
+  pointer-events:none; z-index:var(--z-ambient-back);
   display:none;
 }
 body.theme-obsidian #obsidianEmberCanvas{display:block;}
 /* Parchment-noise overlay för texture (motsv. .ob-root::before) */
 body.theme-obsidian::before{
-  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:var(--z-ambient-back);
   background-image:
     radial-gradient(circle at 30% 40%, rgba(180,130,60,0.04) 0 1px, transparent 1px),
     radial-gradient(circle at 70% 60%, rgba(160,80,40,0.05)  0 1px, transparent 1px);
   background-size:19px 23px, 31px 27px;
 }
-/* Vignette (motsv. .ob-root::after) — z-index:1 så det ligger över canvas men under content */
+/* Vignette (motsv. .ob-root::after) — ambient-front: över innehållet, under header/nav. */
 body.theme-obsidian::after{
-  content:''; position:fixed; inset:0; pointer-events:none; z-index:1;
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:var(--z-ambient-front);
   background:radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.55) 100%);
 }
 
@@ -3387,7 +3417,7 @@ body.theme-cosmic-horror{
   position:absolute; top:0;
   left:50%; transform:translateX(-50%);
   width:100%; max-width:720px; /* 3.34.2: 800 → 720, närmare content-area på desktop */
-  pointer-events:none; z-index:0;
+  pointer-events:none; z-index:var(--z-ambient-back);
   display:none;
   opacity:0.55; /* 3.33.5: down from 0.85 — Niklas: "veins tar över" */
 }
@@ -3401,14 +3431,14 @@ body.theme-cosmic-horror #cosmicHorrorVeins{display:block;}
 @keyframes chPulseFlow{from{stroke-dashoffset:0;}to{stroke-dashoffset:-1;}}
 /* Subtle noise + vignette */
 body.theme-cosmic-horror::before{
-  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:var(--z-ambient-back);
   background-image:
     radial-gradient(circle at 30% 40%, rgba(120,200,180,0.03) 0 1px, transparent 1px),
     radial-gradient(circle at 70% 60%, rgba(80,160,150,0.04)  0 1px, transparent 1px);
   background-size:23px 19px, 31px 27px;
 }
 body.theme-cosmic-horror::after{
-  content:''; position:fixed; inset:0; pointer-events:none; z-index:1;
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:var(--z-ambient-front);
   background:radial-gradient(ellipse at center, transparent 50%, rgba(0,2,4,0.55) 100%);
 }
 
@@ -4699,7 +4729,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.84.1';
+const APP_VERSION = '3.85.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -4890,7 +4920,24 @@ function libraryCatMap(){
   _libraryCatCache = m;
   return m;
 }
-const PR_CAT_ORDER = ['Chest','Back','Shoulders','Arms','Legs','Traps','Core','Cardio','Other'];
+/* 3.85.0 — EN ordning för muskelgrupper. Låg tidigare hårdkodad på fem ställen
+   (PR-vyn + fyra identiska `catOrder` i Add exercise / Swap / Edit Program), i
+   ordningen Chest→Back→Shoulders→Arms→Legs→Traps→Core→Cardio. Niklas: "huller om
+   buller". Nu alfabetiskt, och `Custom`/`Other` sist — de är restkategorier, inte
+   muskelgrupper, och läser fel inne i alfabetet.
+   Nytt värde i `cat:` på en övning MÅSTE läggas till här, annars faller den ur
+   alla väljare (listorna itererar över ordningen, inte över kategorierna). */
+const CATEGORY_ORDER = ['Arms','Back','Cardio','Chest','Core','Legs','Shoulders','Traps'];
+// Kategori-väljaren i "+ Custom exercise"-dialogen (tre call-sites delade förr
+// varsin handskriven kopia av samma nio rader).
+const CATEGORY_SELECT_OPTIONS = [
+  ...CATEGORY_ORDER.map(c => ({value:c, label:c})),
+  {value:'Custom', label:'Custom (no category)'},
+];
+// Väljarna (Add exercise / Swap / Edit Program) — användarens egna sist.
+const PICKER_CAT_ORDER = [...CATEGORY_ORDER, 'Custom'];
+// PR-vyn — 'Other' är fallback i prCategoryOf() för allt utan känd kategori.
+const PR_CAT_ORDER = [...CATEGORY_ORDER, 'Other'];
 // Muskelgrupp för en PR-post (matchar på kanoniskt namn). Custom → custom.cat. Inget → 'Other'.
 function prCategoryOf(name){
   const slug = slugifyExId(canonicalName(name));
@@ -5998,7 +6045,7 @@ function groupExercisesByCategory(){
 
 function buildAddExRow(passId){
   const grouped=groupExercisesByCategory();
-  const catOrder=['Chest','Back','Shoulders','Arms','Legs','Traps','Core','Cardio','Custom'];
+  const catOrder=PICKER_CAT_ORDER;
   let opts=`<option value="">— Select exercise —</option>`;
   catOrder.forEach(cat=>{if(!grouped[cat])return;opts+=`<optgroup label="${cat}">`;grouped[cat].forEach(n=>{const en=escapeHTML(n);opts+=`<option value="${en}">${en}</option>`;});opts+=`</optgroup>`;});
   opts+=`<option value="__CUSTOM__">+ Custom exercise...</option>`;
@@ -6254,7 +6301,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
           if(!ex.extra){
             // Build categorized swap dropdown with optgroups (extras har ingen swap)
             const grouped = groupExercisesByCategory();
-            const catOrder = ['Chest','Back','Shoulders','Arms','Legs','Traps','Core','Cardio','Custom'];
+            const catOrder = PICKER_CAT_ORDER;
             let optsHtml = '';
             catOrder.forEach(cat=>{
               if(!grouped[cat]) return;
@@ -7117,7 +7164,7 @@ function showEditExercises(passId){
   const addedExs = state.addedExercises?.[passId] || [];
 
   const grouped = groupExercisesByCategory();
-  const catOrder = ['Chest','Back','Shoulders','Arms','Legs','Traps','Core','Cardio','Custom'];
+  const catOrder = PICKER_CAT_ORDER;
   let addOptsHtml = `<option value="">— Select exercise —</option>`;
   catOrder.forEach(cat=>{ if(!grouped[cat])return; addOptsHtml+=`<optgroup label="${cat}">`; grouped[cat].forEach(n=>{ addOptsHtml+=`<option value="${n}">${n}</option>`; }); addOptsHtml+=`</optgroup>`; });
   addOptsHtml += `<option value="__CUSTOM__">+ Custom exercise...</option>`;
@@ -7245,17 +7292,7 @@ async function confirmAddPermEx(passId){
       maxLength: 60,
       confirmLabel: 'Add',
       selectLabel: 'Category',
-      selectOptions: [
-        {value:'Chest', label:'Chest'},
-        {value:'Back', label:'Back'},
-        {value:'Shoulders', label:'Shoulders'},
-        {value:'Arms', label:'Arms'},
-        {value:'Legs', label:'Legs'},
-        {value:'Traps', label:'Traps'},
-        {value:'Core', label:'Core'},
-        {value:'Cardio', label:'Cardio'},
-        {value:'Custom', label:'Custom (no category)'}
-      ],
+      selectOptions: CATEGORY_SELECT_OPTIONS,
       selectDefault: 'Custom'
     });
     if(!result || !result.text) return;
@@ -8346,17 +8383,7 @@ async function doSwap(exId,val,passId){
       maxLength: 60,
       confirmLabel: 'Add',
       selectLabel: 'Category',
-      selectOptions: [
-        {value:'Chest', label:'Chest'},
-        {value:'Back', label:'Back'},
-        {value:'Shoulders', label:'Shoulders'},
-        {value:'Arms', label:'Arms'},
-        {value:'Legs', label:'Legs'},
-        {value:'Traps', label:'Traps'},
-        {value:'Core', label:'Core'},
-        {value:'Cardio', label:'Cardio'},
-        {value:'Custom', label:'Custom (no category)'}
-      ],
+      selectOptions: CATEGORY_SELECT_OPTIONS,
       selectDefault: 'Custom'
     });
     
@@ -8402,17 +8429,7 @@ async function confirmAddEx(passId){
       maxLength: 60,
       confirmLabel: 'Add',
       selectLabel: 'Category',
-      selectOptions: [
-        {value:'Chest', label:'Chest'},
-        {value:'Back', label:'Back'},
-        {value:'Shoulders', label:'Shoulders'},
-        {value:'Arms', label:'Arms'},
-        {value:'Legs', label:'Legs'},
-        {value:'Traps', label:'Traps'},
-        {value:'Core', label:'Core'},
-        {value:'Cardio', label:'Cardio'},
-        {value:'Custom', label:'Custom (no category)'}
-      ],
+      selectOptions: CATEGORY_SELECT_OPTIONS,
       selectDefault: 'Custom'
     });
     if(!result || !result.text) return;
@@ -9680,7 +9697,9 @@ function mountNanosuitBg(){
   if(document.getElementById('nanosuit-bg')) return;
   const bg=document.createElement('div');
   bg.id='nanosuit-bg'; bg.setAttribute('aria-hidden','true');
-  bg.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:0;isolation:isolate;overflow:hidden;';
+  // 3.85.0 — geometrin och z-index bor i klassen `ambient-back` (se stacking-stegen
+  // i CSS:en). `isolation:isolate` är temaspecifik och stannar inline.
+  bg.className='ambient-back'; bg.style.cssText='isolation:isolate;';
   const canvas=document.createElement('canvas');
   canvas.id='nanosuitHexCanvas';
   canvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
@@ -9985,7 +10004,7 @@ function mountUndertowBg(){
   if(document.getElementById('undertow-bg')) return;
   const bg=document.createElement('div');
   bg.id='undertow-bg'; bg.setAttribute('aria-hidden','true');
-  bg.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:0;isolation:isolate;overflow:hidden;';
+  bg.className='ambient-back'; bg.style.cssText='isolation:isolate;';
   bg.innerHTML=`<svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" viewBox="0 0 380 760" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><radialGradient id="ut-surface-glow" cx="50%" cy="-4%" r="82%"><stop offset="0%" stop-color="#ffffff" stop-opacity="1"/><stop offset="20%" stop-color="#ffffff" stop-opacity="0.75"/><stop offset="44%" stop-color="#e6f2f7" stop-opacity="0.4"/><stop offset="100%" stop-color="#e6f2f7" stop-opacity="0"/></radialGradient><linearGradient id="ut-caustic-fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/><stop offset="22%" stop-color="#ffffff" stop-opacity="1"/><stop offset="68%" stop-color="#ffffff" stop-opacity="0.7"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0.15"/></linearGradient><mask id="ut-caustic-mask"><rect width="100%" height="100%" fill="url(#ut-caustic-fade)"/></mask><filter id="ut-caustic" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.015 0.024" numOctaves="2" seed="7" stitchTiles="stitch" result="noise"/><feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -8.5 4.6" result="ridges"/><feGaussianBlur in="ridges" stdDeviation="0.5" result="soft"/><feComponentTransfer in="soft" result="caustic"><feFuncA type="gamma" amplitude="1" exponent="1.4" offset="0"/></feComponentTransfer><feFlood flood-color="#ffffff" result="white"/><feComposite in="white" in2="soft" operator="in"/></filter></defs><rect width="100%" height="100%" fill="url(#ut-surface-glow)"/><g style="mix-blend-mode:screen"><rect x="-10%" y="-10%" width="120%" height="120%" filter="url(#ut-caustic)" opacity="0.6" mask="url(#ut-caustic-mask)"/></g><g style="mix-blend-mode:screen"><polygon points="60,-20 120,-20 230,520 150,520" fill="#ffffff" opacity="0.18"/><polygon points="180,-20 214,-20 286,500 232,500" fill="#ffffff" opacity="0.14"/><polygon points="250,-20 300,-20 360,470 300,470" fill="#eaf4f8" opacity="0.12"/></g></svg>`;
   const canvas=document.createElement('canvas');
   canvas.id='undertowBubbleCanvas';
@@ -10073,7 +10092,7 @@ function mountUnderstoryBg(){
   if(document.getElementById('understory-bg')) return;
   const bg=document.createElement('div');
   bg.id='understory-bg'; bg.setAttribute('aria-hidden','true');
-  bg.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:0;isolation:isolate;overflow:hidden;';
+  bg.className='ambient-back'; bg.style.cssText='isolation:isolate;';
   bg.innerHTML=`<svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" viewBox="0 0 380 760" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><filter id="us-blobs" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.012 0.018" numOctaves="2" seed="11" stitchTiles="stitch" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -7 3.2" result="m"/><feGaussianBlur in="m" stdDeviation="2.5" result="s"/><feFlood flood-color="#314d22" result="f"/><feComposite in="f" in2="s" operator="in"/></filter><linearGradient id="us-shadow-fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff" stop-opacity="0.6"/><stop offset="40%" stop-color="#fff" stop-opacity="0.3"/><stop offset="100%" stop-color="#fff" stop-opacity="0.05"/></linearGradient><mask id="us-shadow-mask"><rect width="100%" height="100%" fill="url(#us-shadow-fade)"/></mask></defs><g style="mix-blend-mode:multiply"><rect x="-30" y="-30" width="120%" height="120%" filter="url(#us-blobs)" opacity="0.14" mask="url(#us-shadow-mask)"/></g></svg><span class="us-fleck f1"></span><span class="us-fleck f2"></span><span class="us-fleck f3"></span><span class="us-fleck f4"></span><span class="us-fleck f5"></span>`;
   const canvas=document.createElement('canvas');
   canvas.id='understoryVineCanvas';
@@ -10484,7 +10503,7 @@ function mountFullMoonBg(){
   if(document.getElementById('fullmoon-bg')) return;
   const bg=document.createElement('div');
   bg.id='fullmoon-bg'; bg.setAttribute('aria-hidden','true');
-  bg.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;';
+  bg.className='ambient-back';
   const canvas=document.createElement('canvas');
   canvas.id='fullMoonBloodCanvas';
   canvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;';

@@ -6,6 +6,42 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.85.0 — 2026-08-02
+**Stacking-stegen definierad en gång istället för att varje tema räknar upp sina egna paneler. Kategorierna i bokstavsordning. Full Moons sekundärtext ett steg mörkare.**
+
+### Ambient-lager: slut på panel-för-panel-lyftandet
+
+Varje tema med en animerad bakgrund har hittills fått lista sina opaka paneler manuellt med `position:relative;z-index:1` — en i taget, allteftersom buggrapporter kom in. Nanosuit hade elva sådana rader, Full Moon sex, bas-CSS:en fyra. Varje rad var en rapporterad bugg: vilodags-vyn i 3.81.0, CHAIN COMPLETE i 3.84.1. Listan var en manuell inventering och blev fel varje gång en ny vy lades till, för ett positionerat element med `z-index:0` målas alltid över opositionerat innehåll. Niklas: *"micromanagement bs jag inte vill behöva göra vid varje tema-implementation."*
+
+Rotorsaken var inte slarv utan att lyftet låg på fel nivå. `.view` lyfts nu **en gång** i bas-CSS:en och skapar en stacking-kontext — då ligger hela dess subträd, nuvarande som framtida, över bakgrundslagret i alla teman. De 21 panel-lyften är borta.
+
+Stegen är namngivna och tokeniserade så att ordningen finns på ett ställe:
+
+| z | Lager |
+|---|---|
+| 0 | `.ambient-back` — canvas/SVG/pseudo-bakgrund |
+| 1 | `.view` — allt appinnehåll |
+| 2 | `.ambient-front` — vinjett, scanlines, partiklar (medvetet över innehållet) |
+| 99–1000 | rest-timer, header/nav, toast, modal |
+
+Ett nytt tema sätter `ambient-back` eller `ambient-front` på sitt lager och är klart. Ingen panel ska någonsin nämnas igen.
+
+Kommentarerna i Nanosuit-blocket hävdade att *".view-lyftet ensamt är empiriskt opålitligt för descendants"* och att varje panel därför behövde ett eget lyft. Det stämmer inte — en stacking-kontext lyfter hela subträdet, garanterat. Den troliga förklaringen är att lyftet var scopat till `body.theme-nanosuit` medan buggrapporterna som följde kom från Undertow, Overgrowth och Full Moon, teman som aldrig hade något `.view`-lyft alls. Slutsatsen blev "lyftet fungerar inte" när orsaken var "lyftet fanns inte där".
+
+Full Moon satte dessutom `z-index:2` på headern, alltså **sänkte** den från bas-CSS:ens 100. Borttaget — ett tema ska aldrig röra headerns stacking.
+
+### Kategorier i bokstavsordning
+
+Ordningen `Chest → Back → Shoulders → Arms → Legs → Traps → Core → Cardio` låg hårdkodad på **åtta** ställen: PR-vyn, tre övningsväljare (Add exercise, Swap, Edit Program) och tre kopior av kategori-listan i "+ Custom exercise"-dialogen. Nu `Arms, Back, Cardio, Chest, Core, Legs, Shoulders, Traps` från **en** konstant, med `Custom` och `Other` sist — de är restkategorier, inte muskelgrupper, och läser fel inne i alfabetet.
+
+### Full Moon: mörkare sekundärtext
+
+`#5f646f → #3a3f4a`, `#6a6f7a → #454a55`, `#6d7280 → #474c57`, `#7b808b → #565c67`, plus temats `--gray-light`-token som bär de komponenter utan egen färgregel. Primärtexten är redan svart och orörd. Fixat på textsidan — panelernas opacitet är inte rörd, frostat glas är låg opacitet plus blur, och opacitetsskruvande i det här temat har skapat ljusläckor förr.
+
+197 tester gröna.
+
+---
+
 ## 3.84.1 — 2026-08-02
 **Elva rader svensk prosa låg som levande CSS och dödade Full Moons done-regel. Fyra omgångar "fixa vilodagsgrafiken" justerade färger i en regel ingen läste.**
 
