@@ -6,6 +6,30 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.85.1 — 2026-08-02
+**Vilodagens platta låg på fel axel: en kvarvarande vilodag var den mörkaste brickan i strippen. Plus en hårdkantad fyrkant ovanpå den runda brickan.**
+
+3.83.0 vände vilodagens **färg** så att närhet inte längre gjorde brickan ljusare — men lämnade **plattan** (`6% → 16% → 32%`) kvar på närhets-axeln. Och det var plattan som bar hela problemet: en kvarvarande vilodag på avstånd fick 6 % guld, vilket i Full Moon blir en nästan svart skiva mellan lysande månar. Den läser som ett hål i kedjan, inte som ett pass man har kvar. Samma bricka på glänt får 16 % och blir en varm, tydlig skiva — Niklas, med skärmdumpar av båda lägena: *"det är det ljuset/färgen jag vill ha på vilodagar när man inte har gjort dem."*
+
+Det är samma feltyp som 3.81.1, bara på vilodagarna istället för sessionerna: **status och närhet delade visuell kanal.** Nu ligger axlarna rätt.
+
+| | Bokstaven (status) | Containern (närhet) |
+|---|---|---|
+| Kvar att göra | full guld, 16 % platta | — |
+| Avklarad | dämpad guld, 8 % platta | — |
+| På glänt | *oförändrad* | kapsel + kortnamn |
+| Aktiv | full guld, 32 % platta — vinner alltid | full kapsel |
+
+Aktiv står sist och vinner även på en avklarad vilodag: "du är här" ska vara starkast, precis som för sessioner.
+
+Sidoeffekten är att 3.83.0:s kollision inte kan uppstå igen. Den berodde på att bara **en** axel skilde avklarad-på-glänt från kvarvarande-på-avstånd; nu sitter done-dämpningen på färgen och gäller oavsett närhet.
+
+**Fyrkanten över V-brickan.** Vilodagens kortnamn är tomt — en vilodag har inget sessionsnamn — men `.chain-tab-name-short` fick ändå en guldtonad bakgrund med `!important`. Kvar blev en tom 16 px-ruta utan `border-radius`, lagd ovanpå den runda brickan och den kapsel temat redan ritar. Full Moons `background:none` saknade `!important` och kunde inte ta bort den. Ytan är borttagen; kapseln på containern är närhets-kanalen och bär redan underlaget. Färgen är kvar för de teman där kortnamnet faktiskt syns.
+
+197 tester gröna.
+
+---
+
 ## 3.85.0 — 2026-08-02
 **Stacking-stegen definierad en gång istället för att varje tema räknar upp sina egna paneler. Kategorierna i bokstavsordning. Full Moons sekundärtext ett steg mörkare.**
 

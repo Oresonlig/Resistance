@@ -172,8 +172,31 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
    glänt får den dämpade. PLATTAN (6% → 16% → 32%) lämnas orörd, för den är
    närhets-kanalen och ska fortsätta växa mot aktiv. Samma tvåkanals-uppdelning
    som resten av strippen. Aktiv förblir ljusast. */
-.chain-tab.rest-day .chain-tab-letter{color:var(--rest-gold)!important;background:color-mix(in srgb,var(--rest-gold) 6%,transparent)!important;}
-.chain-tab.adjacent.rest-day .chain-tab-letter{color:color-mix(in srgb,var(--rest-gold) 50%,#666)!important;background:color-mix(in srgb,var(--rest-gold) 16%,transparent)!important;}
+/* 3.85.1 — 3.83.0 löste FÄRGEN men lämnade PLATTAN på fel axel, och det var
+   plattan som bar hela problemet. Niklas skärmdumpar 2026-08-02: en kvarvarande
+   vilodag på avstånd (6%) är en nästan svart skiva mellan lysande månar — den
+   läser som ett hål, inte som ett pass. Samma bricka på glänt (16%) blir en
+   varm, tydlig skiva: "det är det ljuset/färgen jag vill ha på vilodagar när man
+   inte har gjort dem."
+
+   Rotorsaken är att plattan 6→16→32% kodade NÄRHET på BOKSTAVEN. Det bryter mot
+   CLAUDE.md §5 — status hör hemma på bokstaven, närhet på containern — och det
+   är exakt samma feltyp som 3.81.1, bara på vilodagarna istället för sessionerna.
+   Att 3.83.0 vände färgen räddade läsbarheten mellan done och kvar, men lämnade
+   den kvarvarande brickan mörkast av alla.
+
+   Nu ligger axlarna rätt:
+     BOKSTAVEN bär STATUS  — kvar att göra = full guld på 16% platta (nivån han
+       pekade ut). Avklarad = dämpad guld på 8% platta. Ingen närhets-boost.
+     CONTAINERN bär NÄRHET — kapsel + kortnamn + expansion, oförändrat.
+   Aktiv står sist och vinner alltid (32%), även på en avklarad vilodag: "du är
+   här" ska vara starkast, precis som för sessioner.
+
+   Bonus: done-dämpningen sitter nu på färgen och gäller OAVSETT närhet, så
+   3.83.0:s kollision (avklarad-på-glänt ≈ kvarvarande-på-avstånd) kan inte
+   uppstå igen — den berodde på att bara en av de två axlarna skilde dem åt. */
+.chain-tab.rest-day .chain-tab-letter{color:var(--rest-gold)!important;background:color-mix(in srgb,var(--rest-gold) 16%,transparent)!important;}
+.chain-tab.done.rest-day .chain-tab-letter{color:color-mix(in srgb,var(--rest-gold) 50%,#666)!important;background:color-mix(in srgb,var(--rest-gold) 8%,transparent)!important;}
 .chain-tab.active.rest-day .chain-tab-letter{color:var(--rest-gold)!important;background:color-mix(in srgb,var(--rest-gold) 32%,transparent)!important;}
 .chain-tab.done .chain-tab-letter{opacity:.15;background:color-mix(in srgb,var(--red) 3%,transparent);filter:saturate(0.4);}
 .chain-tab.adjacent.done .chain-tab-name-short{opacity:.22;}
@@ -183,7 +206,14 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .chain-tab.active .chain-tab-name-full{max-width:130px;opacity:1;padding:0 12px 0 9px;}
 .chain-tab.adjacent .chain-tab-name-short{max-width:40px;opacity:.85;padding:0 9px 0 7px;}
 .chain-tab.active.rest-day .chain-tab-name-full{color:var(--rest-gold)!important;background:color-mix(in srgb,var(--rest-gold) 18%,transparent)!important;}
-.chain-tab.adjacent.rest-day .chain-tab-name-short{color:color-mix(in srgb,var(--rest-gold) 70%,transparent)!important;background:color-mix(in srgb,var(--rest-gold) 9%,transparent)!important;}
+/* 3.85.1 — bakgrunden här ritade en HÅRDKANTAD FYRKANT ovanpå den runda brickan
+   (Niklas skärmdump 2026-08-02, V:et till höger om aktiva D). Vilodagens kortnamn
+   är tomt — en vilodag har inget sessionsnamn — så det som återstod var en tom
+   ruta på 16px med en guldtonad yta, utan border-radius, lagd ovanpå den kapsel
+   som temat redan ritar. Full Moons `background:none` (utan !important) kunde
+   inte ta bort den. Ytan behövs inte: KAPSELN på containern är närhets-kanalen
+   och bär redan underlaget. Bara färgen är kvar, för de teman där namnet syns. */
+.chain-tab.adjacent.rest-day .chain-tab-name-short{color:color-mix(in srgb,var(--rest-gold) 70%,transparent)!important;background:transparent!important;}
 @media(max-width:480px){
   .chain-tab.active .chain-tab-name-full{max-width:110px;}
   .chain-tab-letter{width:38px;font-size:1.16rem;}
@@ -4729,7 +4759,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.85.0';
+const APP_VERSION = '3.85.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
