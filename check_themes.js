@@ -445,6 +445,50 @@ function qualifiers(scope, base) {
   return q;
 }
 
+/**
+ * "Bara ett delträd syns"-varianter.
+ *
+ * En regel som `.ex-block.collapsed > *:not(.ex-collapsed-summary){display:none}`
+ * betyder att varianten inte renderar samma barn som sitt syskon — den visar ett
+ * EGET, litet delträd. Att då jämföra hur många barn de två varianterna färglägger
+ * är meningslöst: skillnaden är strukturell, inte halvgjord. Premissen bakom
+ * CHECK 2 gäller helt enkelt inte för paret.
+ *
+ * Falsklarmet det här tar bort: Full Moons `.ex-block.collapsed:nth-child(odd)`
+ * (5 barn) mot `.ex-block:nth-child(odd):not(.collapsed)` (13). De åtta som
+ * "saknas" ligger i syskon som bas-CSS:en döljer — exakt de regler 3.84.1
+ * raderade som dödkod, med kommentaren "lägg inte tillbaka de andra".
+ *
+ * Självrättande, till skillnad från en tystnings-lista: försvinner göm-regeln
+ * börjar paret jämföras igen automatiskt. En allowlist hade tigit vidare även
+ * när skälet till tystnaden var borta.
+ */
+function hiddenSubtreeScopes(flatRules) {
+  const out = [];
+  for (const r of flatRules) {
+    if (!r.decls.some((d) => d.prop === 'display' && d.value.trim() === 'none')) continue;
+    const bare = stripThemeAnchor(r.sel);
+    if (!bare) continue;
+    const m = /^(.*?)\s*>\s*\*\s*:not\(\s*\.([\w-]+)\s*\)$/.exec(bare);
+    if (!m) continue;
+    const parts = compounds(m[1]);
+    const scope = parts[parts.length - 1];
+    const baseM = /^\.([\w-]+)/.exec(scope || '');
+    if (!baseM) continue;
+    // Ett tema-scopat göm-regel tystar bara SITT tema; bas-CSS (theme=null) gäller alla.
+    out.push({
+      theme: themeOf(r.sel),
+      base: baseM[1],
+      q: qualifiers(scope, baseM[1]),
+      visible: '.' + m[2],
+      scope,
+    });
+  }
+  return out;
+}
+
+const hiddenScopes = hiddenSubtreeScopes(flat);
+
 for (const [theme, perBase] of [...byTheme].sort()) {
   for (const [base, perScope] of [...perBase].sort()) {
     const all = [...perScope]
@@ -474,6 +518,22 @@ for (const [theme, perBase] of [...byTheme].sort()) {
         // En delta-regel ska bara bära sina egna avvikelser och är inte halvgjord.
         const superset = [...a.q].every((x) => b.q.has(x)) || [...b.q].every((x) => a.q.has(x));
         if (superset) continue;
+        // Den magrare varianten kanske inte HAR de barnen — se hiddenSubtreeScopes.
+        const hidden = hiddenScopes.find(
+          (h) => (h.theme === null || h.theme === theme) &&
+                 h.base === base &&
+                 [...h.q].every((x) => b.q.has(x))
+        );
+        if (hidden) {
+          if (VERBOSE) {
+            info.push(
+              `[variant] theme-${theme}: "${b.scope}" jämförs INTE med "${a.scope}" — ` +
+              `\`${hidden.scope} > *:not(${hidden.visible})\` är display:none, ` +
+              `varianterna renderar olika delträd.`
+            );
+          }
+          continue;
+        }
         const missing = [...a.leaves].filter((l) => !b.leaves.has(l) && l !== '(self)');
         if (missing.length >= 3) {
           warns.push(

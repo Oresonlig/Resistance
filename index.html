@@ -255,6 +255,14 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .ex-label-col{flex:1;min-width:0;}
 .ex-name{font-size:.95rem;font-weight:500;letter-spacing:.05em;}
 .ex-tag{display:inline-block;font-family:var(--mono);font-size:.46rem;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;background:var(--tag-base-bg);border:1px solid var(--tag-base-border);color:var(--tag-base-color);margin-left:5px;vertical-align:middle;border-radius:2px;}
+/* 3.85.2 — "Extra"-märket bar sin färg som inline-style i markupen
+   (`style="color:#446;border-color:#223"`). Det gick förbi alla tre tag-tokens
+   och kunde inte överridas av något tema, eftersom inline-style vinner. På varje
+   mörk yta blev märket mörkgrått mot nästan svart: Full Moons mörka kort ~1.8:1,
+   och Obsidian/Undertow fick sina egna tag-färger överkörda. Nu temats tokens,
+   dämpade ett snäpp så märket fortfarande läses som mindre viktigt än en riktig
+   tagg — dämpningen är relativ och håller därför i både ljusa och mörka teman. */
+.ex-tag-extra{opacity:.75;}
 /* 3.34.0 — Tags under name (alltid). Reset margin-left on tags inside .ex-tags-row. */
 .ex-tags-row{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 2px;}
 .ex-tags-row .ex-tag{margin:0;font-size:.5rem;padding:3px 8px;letter-spacing:.09em;}
@@ -4759,7 +4767,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.85.1';
+const APP_VERSION = '3.85.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -6266,7 +6274,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
         // 3.34.0 — Tags ALLTID under namnet (Niklas request). Egna rader för collapsed + expanded.
         const tagsRow = tags ? `<div class="ex-tags-row">${tags}</div>` : '';
         const tagsCollapsed = tags ? `<div class="ex-collapsed-tags">${tags}</div>` : '';
-        const _extraBadge = ex.extra ? ` <span class="ex-tag" style="color:#446;border-color:#223">Extra</span>` : '';
+        const _extraBadge = ex.extra ? ` <span class="ex-tag ex-tag-extra">Extra</span>` : '';
         html+=`<div class="ex-collapsed-summary"${_collapseAttr}>${_chevron}<div class="ex-collapsed-name-col"><div class="ex-collapsed-name">${escapeHTML(customName)}${_extraBadge}</div>${tagsCollapsed}</div><div class="ex-collapsed-status">${collapsedStatus}</div></div>`;
         const _tagLine = getExerciseDescriptionLine(ex);
         const _tip = getExerciseTip(ex);

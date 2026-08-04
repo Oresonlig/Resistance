@@ -6,6 +6,25 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.85.2 — 2026-08-04
+**"Extra"-märket var osynligt på alla mörka ytor, och tema-checken larmade falskt om en skillnad som är avsiktlig.**
+
+**Extra-märket.** En övning du lagt till själv får ett litet `Extra`-märke bredvid namnet. Färgen låg som inline-style rakt i markupen — `style="color:#446;border-color:#223"` — och inline-style vinner över varje CSS-regel. Märket gick därmed förbi alla tre tag-tokens (`--tag-base-bg/-border/-color`) som tokeniserades i 3.34.11, och inget tema kunde röra det.
+
+Mörkgrått mot nästan svart betyder osynligt: Full Moons mörka kort landar på ~1.8:1, och Obsidian (`#c9a35a`) och Undertow (`#aedcd0`) fick sina egna tag-färger överkörda av en färg de aldrig valt. Märket använder nu temats tokens som alla andra taggar, dämpat med `opacity:.75` så det fortfarande läses som mindre viktigt än en riktig tagg. Dämpningen är relativ och håller därför i både ljusa och mörka teman.
+
+Ingen check fångade det här: `check_themes.js` läser CSS-regler, inte `style`-attribut i markup. Det är en kvarstående lucka.
+
+**Tema-checkens falska varning.** CHECK 2 (variant-paritet) jämförde Full Moons hopfällda övningskort med det utfällda och rapporterade att det hopfällda färglägger 5 barn där det utfällda färglägger 13. Skillnaden är avsiktlig: bas-CSS:en har `.ex-block.collapsed > *:not(.ex-collapsed-summary){display:none}`, så ett hopfällt kort visar bara summary-raden. De åtta som "saknades" ligger i syskon som är gömda — precis de regler 3.84.1 raderade som dödkod, med kommentaren *"lägg inte tillbaka de andra"*.
+
+Checken bad alltså om tillbaka det som just städats bort, och skulle ha gjort det vid varje körning framöver. En permanent falsk varning tränar bort läsandet av varningar, vilket är hela poängen med skriptet.
+
+Ny `hiddenSubtreeScopes()` känner igen mönstret "allt utom ett delträd är dolt" och hoppar över just det paret — premissen bakom CHECK 2 (samma komponent, samma barn) gäller inte när varianterna renderar olika delträd. Skälet skrivs ut under `--verbose`, så tystnaden är synlig.
+
+Valt framför en tystnings-lista för att lösningen självrättar: tas göm-regeln bort börjar paret jämföras igen automatiskt. Verifierat mot ett rött fall — `check_themes.js` körd mot en kopia av `index.html` utan göm-regeln ger varningen tillbaka.
+
+197 tester gröna.
+
 ## 3.85.1 — 2026-08-02
 **Vilodagens platta låg på fel axel: en kvarvarande vilodag var den mörkaste brickan i strippen. Plus en hårdkantad fyrkant ovanpå den runda brickan.**
 
