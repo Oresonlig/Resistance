@@ -99,7 +99,16 @@
   --border-strong:#3a3a3a;       /* synligare border */
   /* ── 3.34.11: Tag design-tokens (PM22-style komplettering). Default = Iron. ──
      Teman över-rider bara variabler de avviker från, inte hela selektor-rules. */
-  --tag-base-bg:transparent;       --tag-base-border:#333;     --tag-base-color:#555;
+  /* 3.88.1 — bas-taggen (REPS, INCLINE, RUN…) låg på `#555`/`#333`, alltså
+     2,6:1 i Iron och 2,5:1 i Nanosuit. Den var medvetet nedtonad i 3.34.11 för
+     att inte konkurrera med övningsnamnet — men efter att 3.88.0 lyft all annan
+     text blev den kortets svagaste element, och en tagg man inte kan läsa fyller
+     ingen funktion. Niklas skärmdumpar från Nanosuit 2026-08-14.
+     Går nu via textskalans tystaste nivå i stället för en egen grå, så den följer
+     temat och kan aldrig hamna under golvet igen. Obsidian och Cosmic Horror
+     sätter egna guld-/mintfärgade taggar (7,8 resp. 11,9:1) och rörs inte.
+     De FÄRGADE varianterna (ramp/bw/uni/singles/timed) är accenter — orörda. */
+  --tag-base-bg:transparent;       --tag-base-border:var(--border-strong);     --tag-base-color:var(--text-faint);
   --tag-ramp-bg:#1a1000;           --tag-ramp-border:#6a4a00;  --tag-ramp-color:#d4a030;
   --tag-bw-bg:#0a140a;             --tag-bw-border:#1a3a1a;    --tag-bw-color:#5aaa5a;
   --tag-uni-bg:#120e00;            --tag-uni-border:#4a3a00;   --tag-uni-color:#c89030;
@@ -1648,12 +1657,16 @@ body.theme-void{
   --on-accent:#000; /* login primary button — white accent needs dark text, see .cl --on-accent */
   --gold:#aaaaaa;--green-bright:#cccccc;
   --gray-mid:#111111;--gray-light:#666666;
-  /* 3.34.11 — Tag tokens: alla varianter neutrala (Void = all tags look same) */
-  --tag-base-bg:transparent; --tag-base-border:#222; --tag-base-color:#444;
-  --tag-ramp-bg:transparent; --tag-ramp-border:#222; --tag-ramp-color:#444;
-  --tag-bw-bg:transparent;   --tag-bw-border:#222;   --tag-bw-color:#444;
-  --tag-uni-bg:transparent;  --tag-uni-border:#222;  --tag-uni-color:#444;
-  --tag-singles-bg:transparent; --tag-singles-border:#222; --tag-singles-color:#444;
+  /* 3.34.11 — Tag tokens: alla varianter neutrala (Void = all tags look same)
+     3.88.1 — låg på `#444`/`#222` = 2,1:1 mot Voids rena svarta yta, temats
+     svagaste mätvärde av alla. ALLA FEM höjs tillsammans, inte bara bas-taggen:
+     Voids designidé ÄR att varianterna ser likadana ut, och att lyfta en av dem
+     hade brutit just det. Uniformiteten bevaras, läsbarheten kommer med. */
+  --tag-base-bg:transparent; --tag-base-border:var(--border-strong); --tag-base-color:var(--text-faint);
+  --tag-ramp-bg:transparent; --tag-ramp-border:var(--border-strong); --tag-ramp-color:var(--text-faint);
+  --tag-bw-bg:transparent;   --tag-bw-border:var(--border-strong);   --tag-bw-color:var(--text-faint);
+  --tag-uni-bg:transparent;  --tag-uni-border:var(--border-strong);  --tag-uni-color:var(--text-faint);
+  --tag-singles-bg:transparent; --tag-singles-border:var(--border-strong); --tag-singles-color:var(--text-faint);
   /* PM22 surface-overrides — pure-black minimal */
   --surface-base:#000000;
   --surface-elevated:#050505;
@@ -4982,7 +4995,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.88.0';
+const APP_VERSION = '3.88.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

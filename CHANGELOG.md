@@ -6,6 +6,23 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.88.1 — 2026-08-14
+**Taggarna blev kortets svagaste element när allt annat lyftes.**
+
+Niklas gick igenom alla elva teman efter 3.88.0 (*"de mörka är KRAFTIGT förbättrade"*) och skickade två skärmdumpar från Nanosuit. De visade `REPS`-taggen: efter att all annan text höjts var den nu det enda som inte gick att läsa.
+
+Mätt mot kortytan låg bas-taggen på **2,43:1** i Nanosuit, **2,61:1** i Iron, Ember och Night City, **2,16:1** i Void. Den var medvetet nedtonad i 3.34.11 för att inte konkurrera med övningsnamnet — ett rimligt val då, men en tagg man inte kan läsa fyller ingen funktion.
+
+`--tag-base-color` och `--tag-base-border` pekar nu på textskalans tystaste nivå (`--text-faint` / `--border-strong`) i stället för en egen grå. Nanosuit **2,43 → 8,17:1**, Void **2,16 → 9,96:1**, Iron **2,61 → 8,50:1**. Taggen förblir det tystaste på kortet, men läsbar.
+
+I **Void** höjs alla fem varianter tillsammans, inte bara bas-taggen: temats designidé är att varianterna ser likadana ut, och att lyfta en av dem hade brutit just det. Uniformiteten bevaras.
+
+Obsidian (7,8:1) och Cosmic Horror (11,9:1) sätter egna guld- respektive mintfärgade taggar och rörs inte. De färgade varianterna (`RAMP`, `BW`, `UNI`, `SINGLES`, `TIMED`) är accenter och lämnas orörda i alla teman.
+
+**Varför svepet missade dem två versioner i rad:** taggfärgen bor i ett `--tag-*`-**token**, inte i en `color:`-regel, så CHECK 7 kunde aldrig se den. Nu kontrolleras `--tag-base-color` av CHECK 6, som läser tokens. Verifierad mot rött fall: 5 error på 3.88.0, 0 efter — och checken hittade Ember och Night City, som jag inte upptäckt med ögat.
+
+---
+
 ## 3.88.0 — 2026-08-14
 **De mörka temana dämpade texten åt fel håll — mot bakgrunden i stället för från vitt.**
 

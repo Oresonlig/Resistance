@@ -786,8 +786,16 @@ for (const r of flat) {
   // Ett gemensamt högt golv hade därför underkänt fyra teman som bevisligen
   // fungerar, och tvingat fram en ändring ingen bett om. Golvet höjs där felet
   // fanns; de ljusa behåller 3.87.0:s nivåer.
-  const FLOORS_DARK  = { '--text-strong': 10, '--text-body': 10, '--text-muted': 7,   '--text-faint': 6   };
-  const FLOORS_LIGHT = { '--text-strong': 7,  '--text-body': 7,  '--text-muted': 4.5, '--text-faint': 4.5 };
+  //
+  // `--tag-base-color` är med här och inte i CHECK 7, eftersom taggfärgen bor i
+  // ett TOKEN och inte i en `color:`-regel — CHECK 7 hade aldrig sett den. Det
+  // var precis luckan som lät bas-taggen ligga kvar på 2,1–2,6:1 genom hela
+  // 3.87.0–3.88.0 och bli kortets svagaste element när allt annat lyftes.
+  // De FÄRGADE tag-varianterna (ramp/bw/uni/singles/timed) är accenter och
+  // hör inte hit, av samma skäl som `.set-num` och `.work-group`.
+  const TAG_FLOOR = 4.5;
+  const FLOORS_DARK  = { '--text-strong': 10, '--text-body': 10, '--text-muted': 7,   '--text-faint': 6,   '--tag-base-color': TAG_FLOOR };
+  const FLOORS_LIGHT = { '--text-strong': 7,  '--text-body': 7,  '--text-muted': 4.5, '--text-faint': 4.5, '--tag-base-color': TAG_FLOOR };
 
   /** Deklarationer i `:root{}` respektive `body.theme-X{}` (utan efterföljande selektor). */
   function tokenScope(theme) {
@@ -864,12 +872,16 @@ for (const r of flat) {
       if (!c) continue;
       const ratio = contrast(over(c, panel), panel);
       if (ratio < floor) {
+        const rad = tok.startsWith('--tag-')
+          ? `             Peka tokenet på textskalan (t.ex. var(--text-faint)) i stället för en egen\n` +
+            `             grå — då följer den temat och kan inte hamna under golvet igen. De\n` +
+            `             FÄRGADE tag-varianterna är accenter och kontrolleras inte här.`
+          : `             Höj temats andel --white i blandningen. Skalan är avsiktligt uttryckt\n` +
+            `             som color-mix(--white, --black) så polariteten följer temat — ett för\n` +
+            `             lågt värde här betyder att NIVÅN är fel, inte att polariteten är det.`;
         errors.push(
           `[textskala] theme-${key}: ${tok} mäter ${ratio.toFixed(2)}:1 mot temats panel ` +
-          `(--surface-base över bakgrunden), golvet är ${floor}:1.\n` +
-          `             Höj temats andel --white i blandningen. Skalan är avsiktligt uttryckt\n` +
-          `             som color-mix(--white, --black) så polariteten följer temat — ett för\n` +
-          `             lågt värde här betyder att NIVÅN är fel, inte att polariteten är det.`
+          `(--surface-base över bakgrunden), golvet är ${floor}:1.\n` + rad
         );
       } else if (VERBOSE) {
         info.push(`[textskala] theme-${key}: ${tok} = ${ratio.toFixed(2)}:1 (golv ${floor}:1)`);
@@ -916,7 +928,7 @@ for (const r of flat) {
     ['rest-content', 7], ['section-sub', 7], ['edit-card-desc', 7],
     ['edit-sub', 7], ['edit-section-sub', 7], ['set-input', 7],
     ['ex-tip', 4.5], ['hist-set', 4.5], ['empty-state', 4.5], ['set-lbl', 4.5],
-    ['set-unit', 4.5], ['sets-group-label', 4.5],
+    ['set-unit', 4.5], ['sets-group-label', 4.5], ['ex-tag', 4.5],
   ]);
   // `.set-input` ligger på sin EGEN yta (`--surface-input`), inte på kortet.
   const INPUT_SURFACE = /\.set-input\b/;
