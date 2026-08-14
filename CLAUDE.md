@@ -55,6 +55,16 @@ finns i memory-filerna som länkas per punkt. Bryter något mot detta: fråga f�
   styrka), *på glänt* (antytt, ej fullt expanderat, svagare än kvar-att-träna),
   *avklarad* (tydligt avverkad men **ALDRIG osynlig** — man ska kunna se att passet
   ligger där och gå att trycka på).
+- **`!important` får låsa IDENTITET, aldrig YTA.** `background:...!important` raderar
+  temats *material* (gradient, inset-skuggor), inte bara dess färg — kvar blir en
+  genomskinlig film som är mörk mot en mörk botten hur mycket färg man än häller i.
+  Vilodagens guld: `color` är låst, ytan går via `--rest-plate`/`--rest-name-plate`.
+  Ett tema som ger `.chain-tab.active` egen kapselbakgrund MÅSTE deklarera båda
+  (`check_themes.js` CHECK 5). Kostade fem fixrundor 3.81.2→3.86.0.
+- **Textfärg går ALLTID via `--text-strong/-body/-muted/-faint`**, aldrig en egen grå.
+  Skalan är `color-mix(--white, --black)` så polariteten följer temat automatiskt.
+  Golv: datatext 7:1, etiketter 4,5:1 — `check_themes.js` CHECK 6+7 räknar, och
+  CHECK 7 fångar teman som kringgår skalan (sju av elva gjorde det, 3.87.0).
 - **Koda ALDRIG status och närhet i samma visuella kanal.** Status = fas/fyllning
   på bokstaven. Närhet = kapsel/kant/expansion på containern. Annars slår
   `.adjacent`-regler (0-4-1) bas-regelns `.done`-fade (0-3-0) och färdiga pass
@@ -110,6 +120,10 @@ finns i memory-filerna som länkas per punkt. Bryter något mot detta: fråga f�
   bort funktionen istället för att lösa färgproblemet.
 - Vid en buggklass på en flik: sök igenom **alla** flikar i samma svep. Niklas
   skickar en skärmdump och förväntar sig att du generaliserar fixen.
+- **"Blir det som förra gången?" = byt KRITERIUM, inte siffror.** Har flera rundor
+  av tweaks inte gett effekt är nästa tweak inte lösningen. Gör måttet mekaniskt
+  (ett tal ett skript räknar) så fel upptäcks av verktyget i stället för av Niklas.
+  3.87.0: kontrastgolvet avslöjade två av mina egna felbedömningar innan push.
 - **Det som kan bli ett skript eller ett test slår allt som bygger på minne.**
   Statisk analys (inline-handlers mot definierade funktioner, CSS-selektorer mot
   markup) hittar på sekunder det som annars kräver att man läser 11 000 rader.
