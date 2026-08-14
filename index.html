@@ -195,9 +195,39 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
    Bonus: done-dämpningen sitter nu på färgen och gäller OAVSETT närhet, så
    3.83.0:s kollision (avklarad-på-glänt ≈ kvarvarande-på-avstånd) kan inte
    uppstå igen — den berodde på att bara en av de två axlarna skilde dem åt. */
-.chain-tab.rest-day .chain-tab-letter{color:var(--rest-gold)!important;background:color-mix(in srgb,var(--rest-gold) 16%,transparent)!important;}
-.chain-tab.done.rest-day .chain-tab-letter{color:color-mix(in srgb,var(--rest-gold) 50%,#666)!important;background:color-mix(in srgb,var(--rest-gold) 8%,transparent)!important;}
-.chain-tab.active.rest-day .chain-tab-letter{color:var(--rest-gold)!important;background:color-mix(in srgb,var(--rest-gold) 32%,transparent)!important;}
+/* 3.86.0 — YTAN ÄR NU EN TOKEN, INTE EN PÅTVINGAD FILM.
+   Femte rundan på vilodagsbrickan, och först nu på rätt nivå. Rotorsaken var
+   inte procentsatserna (16/8/32 har justerats i 3.81.2, 3.83.0 och 3.85.1) utan
+   att `background:...!important` RADERAR temats material och ersätter det med en
+   genomskinlig film. En film över Full Moons nästan svarta remsa blir mörk hur
+   mycket guld man än häller i den — grannarna lyser för att de är byggda av
+   silver, inte för att de har högre opacitet. Därför:
+
+     Sessionerna i Full Moon har TRE nästan identiska silvermånar (kvar/glänt/
+     aktiv) och lägger hela närhets-koden i containern. Vilodagen hade fyra
+     platta filmer och kodade sitt tillstånd i ljusstyrka. Niklas 2026-08-14:
+     "av någon anledning så har rest days gått och fått specialbehandling."
+
+   Nu: `--rest-plate` bär YTAN, `!important` bär bara IDENTITETEN (guldfärgen på
+   glyfen — låst sedan 3.73.2, se feedback_rest_day_label). Basvärdena är exakt
+   de gamla, så de åtta teman som låter bokstaven bära sin egen yta är
+   oförändrade. Ett tema som bygger aktiv flik som EN kapsel sätter tokenen och
+   får vilodagen i sitt eget material. check_themes.js CHECK 5 kräver det.
+   Custom property-kaskaden: en tema-regel på `.chain-tab.rest-day` (0-4-1) slår
+   basens `.done.rest-day`/`.active.rest-day` (0-4-0), så ett tema som sätter
+   tokenen MÅSTE deklarera sitt done-läge explicit. */
+.chain-tab.rest-day .chain-tab-letter{
+  --rest-plate:color-mix(in srgb,var(--rest-gold) 16%,transparent);
+  color:var(--rest-gold)!important;background:var(--rest-plate)!important;
+}
+.chain-tab.done.rest-day .chain-tab-letter{
+  --rest-plate:color-mix(in srgb,var(--rest-gold) 8%,transparent);
+  color:color-mix(in srgb,var(--rest-gold) 50%,#666)!important;background:var(--rest-plate)!important;
+}
+.chain-tab.active.rest-day .chain-tab-letter{
+  --rest-plate:color-mix(in srgb,var(--rest-gold) 32%,transparent);
+  color:var(--rest-gold)!important;background:var(--rest-plate)!important;
+}
 .chain-tab.done .chain-tab-letter{opacity:.15;background:color-mix(in srgb,var(--red) 3%,transparent);filter:saturate(0.4);}
 .chain-tab.adjacent.done .chain-tab-name-short{opacity:.22;}
 .chain-tab-name-full,.chain-tab-name-short{font-family:var(--mono);font-weight:600;color:var(--white);max-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;opacity:0;letter-spacing:.05em;transition:max-width .25s ease-out,opacity .2s,padding .25s ease-out;padding:0;text-transform:uppercase;display:flex;align-items:center;background:color-mix(in srgb,var(--red) 18%,transparent);}
@@ -205,7 +235,17 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .chain-tab-name-short{color:color-mix(in srgb,var(--white) 60%,transparent);font-size:.52rem;font-weight:500;background:color-mix(in srgb,var(--red) 10%,transparent);}
 .chain-tab.active .chain-tab-name-full{max-width:130px;opacity:1;padding:0 12px 0 9px;}
 .chain-tab.adjacent .chain-tab-name-short{max-width:40px;opacity:.85;padding:0 9px 0 7px;}
-.chain-tab.active.rest-day .chain-tab-name-full{color:var(--rest-gold)!important;background:color-mix(in srgb,var(--rest-gold) 18%,transparent)!important;}
+/* 3.86.0 — samma feltyp som raden ovan, och FEMTE gången totalt (3.81.2 dämpning,
+   3.83.0 färg, 3.85.1 `.chain-tab-name-short`, nu bokstavsplattan + den här).
+   Slutsatsen stod redan rätt i 3.85.1:s kommentar — "kapseln bär redan
+   underlaget" — den tillämpades bara på en av de två raderna. I ett tema där
+   aktiv flik ÄR en kapsel målar den här regeln en hårdkantad rektangel ovanpå
+   den (Niklas skärmdump 2026-08-14, Full Moons FORCED REST). Ytan är nu en
+   token; färgen är kvar för de teman där namnet bär sitt eget underlag. */
+.chain-tab.active.rest-day .chain-tab-name-full{
+  --rest-name-plate:color-mix(in srgb,var(--rest-gold) 18%,transparent);
+  color:var(--rest-gold)!important;background:var(--rest-name-plate)!important;
+}
 /* 3.85.1 — bakgrunden här ritade en HÅRDKANTAD FYRKANT ovanpå den runda brickan
    (Niklas skärmdump 2026-08-02, V:et till höger om aktiva D). Vilodagens kortnamn
    är tomt — en vilodag har inget sessionsnamn — så det som återstod var en tom
@@ -2912,6 +2952,48 @@ body.theme-fullmoon .chain-tab.adjacent.done{
    screenshots), reinforcing the "white line at the top" read. Tightened. */
 body.theme-fullmoon .chain-tab.active{background:linear-gradient(180deg,rgba(246,248,251,0.95),rgba(214,219,226,0.92));border-radius:28px;box-shadow:0 0 10px rgba(236,240,248,0.3),inset 0 1px 0 rgba(255,255,255,0.9);}
 body.theme-fullmoon .chain-tab.active .chain-tab-letter{background:radial-gradient(circle at 34% 30%,#fff 0%,#e2e6ec 55%,#bcc2cd 100%);box-shadow:inset 1px 1px 2px rgba(255,255,255,0.9),inset -2px -2px 5px rgba(120,126,140,0.4);}
+/* ---------- 3.86.0: VILODAGEN ÄR EN GULDMÅNE ----------
+   Fem rundor (3.81.2, 3.83.0, 3.85.1 ×2) skruvade på procentsatserna i basens
+   guldfilm utan att någon blev bra. Rotorsaken: sessionerna här uppe är MÅNAR
+   — tre nästan identiska silvergradienter för kvar/glänt/aktiv, med all närhet
+   i containern — medan vilodagen inte hade något material alls, bara en
+   genomskinlig film mot en nästan svart remsa. Därför var den mörkast när den
+   låg still och ljusast bara när den råkade ligga på en ljus kapsel; därför gick
+   den inte att jämföra med sina grannar; därför hjälpte ingen procentsats.
+
+   Nu ärver den formspråket: EN guldmåne för kvar/glänt/aktiv (speglar
+   sessionernas tre silvermånar), EN förmörkad guldmåne för avklarad. Närheten
+   sköter containern precis som för sessionerna — den är inte `:not(.rest-day)`-
+   scopad, så det fungerar gratis.
+
+   ⚠ GLYFEN ÄR MEDVETET MÖRK HÄR, och det är en godkänd avvikelse från den låsta
+   tema-uniforma guldfärgen (3.73.2 / feedback_rest_day_label). Niklas valde
+   alternativ B 2026-08-14: guldet flyttar till MÅNEN, glyfen blir en mörk
+   bronsgravyr så den får samma rytm som sessionernas mörka bokstäver på ljusa
+   skivor. Ljus guld på ljus guldmåne mäter 2,2:1 och var inte ett alternativ;
+   den här kombinationen mäter 4,6:1. Återställ den INTE till ljus guld. */
+body.theme-fullmoon .chain-tab.rest-day .chain-tab-letter{
+  --rest-plate:radial-gradient(circle at 36% 30%,#f6ead0 0%,#d8bd85 55%,#9c8450 100%);
+  color:color-mix(in srgb,var(--rest-gold) 40%,#14100a)!important;
+}
+body.theme-fullmoon .chain-tab.done.rest-day .chain-tab-letter{
+  --rest-plate:radial-gradient(circle at 36% 30%,#3d3524 0%,#201b12 58%,#100e09 100%);
+  color:color-mix(in srgb,var(--rest-gold) 75%,#fff)!important;
+  box-shadow:inset 0 0 0 1px rgba(201,163,90,0.55);
+}
+/* Aktiv vilodag: hela kapseln blir varm i stället för att en rektangel målas
+   ovanpå den vita. Det var den ljusstyrkan Niklas gillade i skärmdumpen — det
+   som var fel var blockigheten, inte värmen. */
+body.theme-fullmoon .chain-tab.active.rest-day{
+  background:linear-gradient(180deg,rgba(251,244,228,0.95),rgba(232,215,178,0.92));
+  box-shadow:0 0 10px rgba(240,224,186,0.35),inset 0 1px 0 rgba(255,255,255,0.9);
+}
+/* Kapseln bär underlaget → ingen egen platta på namnet. Guldtexten hade dessutom
+   mätt 2,2:1 mot den ljusa kapseln; bronsen mäter 7,9:1. */
+body.theme-fullmoon .chain-tab.active.rest-day .chain-tab-name-full{
+  --rest-name-plate:none;
+  color:color-mix(in srgb,var(--rest-gold) 40%,#14100a)!important;
+}
 body.theme-fullmoon .chain-tab-name-full{font-family:'Cinzel',serif;font-weight:700;letter-spacing:.05em;color:#191b21;background:none;}
 /* ---------- exercise cards ---------- */
 body.theme-fullmoon .ex-block{background:linear-gradient(158deg,rgba(232,235,240,0.62) 0%,rgba(198,203,214,0.52) 100%);border:1px solid rgba(146,153,168,0.5);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 8px 20px rgba(20,22,28,0.12);backdrop-filter:blur(3px) saturate(110%);-webkit-backdrop-filter:blur(3px) saturate(110%);}
@@ -3246,6 +3328,12 @@ body.theme-obsidian .chain-tab.active .chain-tab-letter{
   box-shadow:none;
   opacity:1;
 }
+/* 3.86.0 — samma som Cosmic: regeln ovan tar bort bokstavens egen yta så guld-
+   glyfen blir en del av scrollen (3.46.4 tog uttryckligen bort "detached
+   medaljong"-looken). Men `border-radius:50%` från tema-basregeln står kvar, så
+   basens vilodagsplatta ritade tillbaka exakt den lösa guldcirkeln inuti
+   kapseln. Kapseln bär underlaget. */
+body.theme-obsidian .chain-tab.active.rest-day .chain-tab-letter{--rest-plate:none;}
 /* Namn inom aktiv — ingen separat bg, bara gold text */
 body.theme-obsidian .chain-tab.active .chain-tab-name-full{
   background:none !important;
@@ -3560,6 +3648,11 @@ body.theme-cosmic-horror .chain-tab.active .chain-tab-letter{
   opacity:1;
   border-radius:0;
 }
+/* 3.86.0 — regeln ovan sätter `border-radius:0` + `background:none` för att
+   bokstaven ska smälta in i bloben. Basens vilodagsplatta målade tillbaka en yta
+   UTAN radie → en hårdkantad fyrkant mitt i den organiska kapseln (Niklas
+   närbild 2026-08-14). Kapseln bär underlaget; bokstaven ska bara vara guld. */
+body.theme-cosmic-horror .chain-tab.active.rest-day .chain-tab-letter{--rest-plate:none;}
 body.theme-cosmic-horror .chain-tab.active .chain-tab-name-full{background:none !important;color:#e0f2eb;padding:0 10px 0 4px;letter-spacing:.16em;max-width:175px;}
 body.theme-cosmic-horror .chain-tab-name-short{color:#7a948c;background:rgba(20,50,46,0.4);font-family:'Cormorant SC',serif;font-weight:500;}
 
@@ -4767,7 +4860,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.85.2';
+const APP_VERSION = '3.86.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

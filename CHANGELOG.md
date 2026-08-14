@@ -6,6 +6,27 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.86.0 — 2026-08-14
+**Vilodagsbrickan hade ingen yta att lysa med — femte rundan, första gången på rätt nivå.**
+
+**Rotorsaken.** Bas-CSS:en målade vilodagens guld med `background: …!important`. Ett `!important` på `background` raderar inte bara temats färg, det raderar temats *material*. Kvar blev en genomskinlig guldfilm — och en film mot Full Moons nästan svarta remsa blir mörk hur mycket guld man än häller i den. Sessionerna bredvid lyser för att de är byggda av silver, inte för att de har högre opacitet.
+
+Det förklarar varför fyra tidigare rundor misslyckades: 3.81.2, 3.83.0 och 3.85.1 (två gånger) justerade alla procentsatserna 16/8/32 i filmen. Vi finjusterade ett fönsters opacitet medan grannarna var gjutna i metall.
+
+Det förklarar också Niklas observation 2026-08-14: *"alla de övriga passen har samma styrka när de är ej utförda, som på glänt, som när du markerar dem — men rest days har fått specialbehandling."* Sessionerna i Full Moon har tre nästan identiska silvermånar och lägger **all** närhetskodning i containern. Vilodagen hade inget material alls och kodade sitt tillstånd i ljusstyrka — den enda brickan i strippen som gjorde det.
+
+**Fixen.** Ytan är nu en token, `--rest-plate` respektive `--rest-name-plate`. `!important` bär bara identiteten (guldet), aldrig materialet. Basvärdena är exakt de gamla, så de åtta teman där bokstaven bär sin egen yta är oförändrade.
+
+- **Full Moon** får en riktig **guldmåne** — en för kvar/på glänt/markerad (speglar sessionernas tre silvermånar), en förmörkad för avklarad. Närheten sköts av containern, gratis, precis som för sessionerna. Aktiv vilodag får dessutom en varm kapsel i stället för en rektangel målad ovanpå den vita.
+- **Cosmic Horror** — den hårdkantade fyrkanten mitt i den organiska kapseln är borta. Temat sätter `border-radius:0` på aktiv bokstav för att den ska smälta in; basregeln målade tillbaka en yta utan radie.
+- **Obsidian** — samma sak, men med `border-radius:50%` kvarhängande: en lös guldmedaljong inuti kapseln, exakt den "detached look" 3.46.4 tog bort för sessionerna.
+
+**Glyfen i Full Moon är medvetet mörk** och det är en godkänd avvikelse från den tema-uniforma guldfärgen (3.73.2). Niklas valde alternativet: guldet flyttar till månen, glyfen blir en mörk bronsgravyr med samma rytm som sessionernas mörka bokstäver på ljusa skivor. Ljus guld på ljus guldmåne mäter 2,2:1 — den här kombinationen mäter 4,6:1.
+
+**`check_themes.js` CHECK 5.** Deklarerar ett tema en egen bakgrund på `.chain-tab.active` måste det också säga vad vilodagens yta ska vara. Verifierad mot det röda fallet: 3 error på 3.85.2, 0 på 3.86.0. Samma feltyp har nu rapporterats fem gånger — den är mekaniskt detekterbar, alltså ska den vara det.
+
+---
+
 ## 3.85.2 — 2026-08-04
 **"Extra"-märket var osynligt på alla mörka ytor, och tema-checken larmade falskt om en skillnad som är avsiktlig.**
 

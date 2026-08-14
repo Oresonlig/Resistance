@@ -7,7 +7,7 @@
  * rader CSS. Samma buggklasser återkommer därför gång på gång. Det här skriptet
  * flyttar de mekaniskt kontrollerbara delarna från minne till kod.
  *
- * Fem checkar, i fallande träffsäkerhet:
+ * Sex checkar, i fallande träffsäkerhet:
  *
  *  0. KOMMENTARSBALANS (error)
  *     Ett "*​/" utan öppnande "/*" betyder att en kommentar stängts tidigare än
@@ -38,6 +38,12 @@
  *
  *  4. KONTRAST I SAMMA REGEL (warn)
  *     color + background i samma block med ratio under 3:1.
+ *
+ *  5. VILODAGENS YTA I KAPSEL-TEMAN (error)
+ *     Ett tema som ger `.chain-tab.active` en egen kapselbakgrund måste också
+ *     deklarera `--rest-plate`/`--rest-name-plate`, annars målar bas-CSS:en
+ *     vilodagens guld som en lös bricka ovanpå kapseln. Samma feltyp har
+ *     rapporterats fem gånger (3.81.2, 3.83.0, 3.85.1 ×2, 3.86.0).
  *
  * Körning:  node check_themes.js [--verbose]
  * Exit 1 vid error, 0 annars.
@@ -664,6 +670,78 @@ for (const r of flat) {
   const ratio = contrast(fg, bg);
   if (ratio < 2) {
     warns.push(`[kontrast] ${r.sel} — ratio ${ratio.toFixed(2)}:1 (color vs background i samma regel)`);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CHECK 5 — vilodagens yta i teman som bygger aktiv flik som EN kapsel
+// ══════════════════════════════════════════════════════════════════
+// Bas-CSS:en målar vilodagens guld med `background:var(--rest-plate)!important`
+// respektive `var(--rest-name-plate)!important`. I ett tema där bokstaven och
+// namnet bär var sin egen yta byter den bara färg på något som redan var en yta
+// — helt ofarligt. Men i ett tema där AKTIV FLIK är en sammanhållen kapsel har
+// bokstaven medvetet ingen egen yta (eller en egen geometri), och då ritar
+// basregeln tillbaka en lös bricka ovanpå kapseln: en hårdkantad fyrkant i
+// Cosmic Horror, en lös guldmedaljong i Obsidian, en rektangel över namnet i
+// Full Moon. Samma feltyp har nu rapporterats FEM gånger (3.81.2, 3.83.0,
+// 3.85.1 ×2, 3.86.0). Den är mekaniskt detekterbar, alltså ska den vara det.
+//
+// Regel: deklarerar ett tema en egen bakgrund på `.chain-tab.active` måste det
+// också säga vad vilodagens yta ska vara — `--rest-plate` (t.ex. `none` om
+// kapseln bär underlaget, eller temats eget material i guld). Detsamma för
+// namnet, som alternativt får neutraliseras med ett eget `!important`.
+{
+  const capsuleThemes = new Map();
+  for (const r of flat) {
+    const t = themeOf(r.sel);
+    if (!t) continue;
+    const parts = compounds(stripThemeAnchor(r.sel));
+    if (parts.length !== 1) continue; // regeln måste träffa .chain-tab SJÄLV
+    if (!/^\.chain-tab(?![\w-])/.test(parts[0])) continue;
+    // Pseudoelement är dekor (Obsidians diamant-ändar), inte kapselns yta —
+    // annars flaggas rätt tema av fel skäl.
+    if (/::/.test(parts[0])) continue;
+    const { required } = classesOf(parts[0]);
+    if (!required.has('active') || required.has('rest-day')) continue;
+    const paints = r.decls.some(
+      (d) => /^background(-color|-image)?$/.test(d.prop) && d.value.trim() !== 'none'
+    );
+    if (paints) capsuleThemes.set(t, r.sel);
+  }
+
+  const declaresToken = (theme, prop) =>
+    flat.some((r) => themeOf(r.sel) === theme && r.decls.some((d) => d.prop === prop));
+
+  // Alternativ till --rest-name-plate: temat nollar namnets bakgrund med eget
+  // !important (då förlorar basregeln oavsett, som Cosmic Horror och Obsidian).
+  const neutralisesName = (theme) =>
+    flat.some((r) => {
+      if (themeOf(r.sel) !== theme) return false;
+      const parts = compounds(stripThemeAnchor(r.sel));
+      if (!/\.chain-tab-name-full/.test(parts[parts.length - 1] || '')) return false;
+      return r.decls.some(
+        (d) => /^background(-color|-image)?$/.test(d.prop) && d.important
+      );
+    });
+
+  for (const [theme, sel] of [...capsuleThemes].sort()) {
+    const missing = [];
+    if (!declaresToken(theme, '--rest-plate')) missing.push('--rest-plate');
+    if (!declaresToken(theme, '--rest-name-plate') && !neutralisesName(theme)) {
+      missing.push('--rest-name-plate');
+    }
+    if (!missing.length) {
+      if (VERBOSE) info.push(`[rest-plate] theme-${theme}: kapsel-tema, vilodagens yta deklarerad.`);
+      continue;
+    }
+    errors.push(
+      `[rest-plate] theme-${theme}: "${sel}" ger aktiv flik en EGEN kapselbakgrund, ` +
+      `men temat deklarerar aldrig ${missing.join(' + ')}.\n` +
+      `             Bas-CSS:en målar då vilodagens guld som en lös bricka OVANPÅ kapseln —\n` +
+      `             hårdkantad fyrkant (Cosmic 3.86.0), lös medaljong (Obsidian) eller en\n` +
+      `             rektangel över namnet (Full Moon). Sätt tokenen: \`none\` om kapseln bär\n` +
+      `             underlaget, annars temats eget material i guld. Se CLAUDE.md §5.`
+    );
   }
 }
 
