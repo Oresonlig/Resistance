@@ -415,7 +415,19 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .add-ex-input{flex:1;background:var(--surface-input);border:1px solid #5a1a1a;color:var(--white);font-family:var(--mono);font-size:.68rem;padding:6px 8px;}
 .add-ex-input:focus{outline:none;border-color:var(--red);}
 .add-ex-confirm{background:var(--red);border:none;color:var(--white);font-family:var(--mono);font-size:.52rem;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;cursor:pointer;}
-.rest-content{padding:10px 0 3px;font-family:var(--mono);font-size:.64rem;color:#484848;line-height:1.8;}
+/* 3.86.1 — VILODAGSVYN VAR APPENS ENDA SKÄRM UTAN PANEL. Varje annan vy lägger
+   sin text i ett `.ex-block`; den här lade brödtexten som naken text direkt mot
+   temats bakgrund — alltså rakt ovanpå den animerade ambient-canvasen. På
+   Nanosuit läser man den mot hexagonrutnätet, på Full Moon mot fullmånen.
+   Full Moon fick sin frostade slab redan i 3.81.0, men fixen lades i TEMAT i
+   stället för i basen, så de tio andra temana blev kvar i buggen (Niklas
+   2026-08-14: "rest days har ingen bakgrund, temat kör över synbarheten").
+   Panelen hör hemma här, en gång, för alla elva. */
+.rest-content{
+  padding:14px 16px;margin-top:10px;
+  background:var(--surface-base);border:1px solid var(--border-subtle);
+  font-family:var(--mono);font-size:.64rem;color:var(--gray-light);line-height:1.8;
+}
 .pass-actions{display:flex;gap:6px;margin-top:10px;}
 /* 3.85.0 — här låg `.pass-ex-header,.rest-content,.pass-actions,.cycle-done
    {position:relative;z-index:1}`, den manuella lyft-listan. Varje rad i den var
@@ -431,8 +443,12 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .btn-secondary:hover{border-color:#555;color:var(--gray-light);}
 .btn-chain-edit{background:none;border:1px solid #444;color:#888;font-family:var(--ui-mono);font-size:.7rem;padding:3px 9px;cursor:pointer;transition:all .15s;line-height:1;white-space:nowrap;flex-shrink:0;}
 .btn-chain-edit:hover{border-color:var(--red);color:var(--white);}
-.btn-ghost{flex:1;background:none;border:1px solid #3a3a3a;color:#888;font-family:var(--display);font-size:.95rem;letter-spacing:.1em;padding:10px;cursor:pointer;transition:all .15s;}
-.btn-ghost:hover{border-color:#444;color:#777;}
+/* 3.86.1 — `background:none` gjorde knappen till en ram runt ambient-canvasen.
+   Den bär "Mark Rest Done" i vilodagsvyn (samt Undo/Copy) och låg därmed som
+   temats enda opaklösa kontroll. Den förblir sekundär i hierarkin — den får en
+   yta, inte en fyllning. */
+.btn-ghost{flex:1;background:var(--surface-base);border:1px solid var(--border-strong);color:var(--gray-light);font-family:var(--display);font-size:.95rem;letter-spacing:.1em;padding:10px;cursor:pointer;transition:all .15s;}
+.btn-ghost:hover{border-color:var(--gray-light);color:var(--white);}
 .draft-notice{font-family:var(--mono);font-size:.5rem;color:#60aa60;text-align:center;padding:5px;border:1px solid #3a7a3a;margin-top:7px;}
 .cycle-done{padding:44px 20px;text-align:center;}
 .ob-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:65vh;padding:24px 20px 100px;max-width:440px;margin:0 auto;gap:0;}
@@ -470,9 +486,13 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .edit-page{padding:16px 14px 90px;max-width:560px;margin:0 auto;}.edit-title{font-family:var(--display);font-size:2rem;letter-spacing:.06em;margin-bottom:6px;}
 .edit-sub{font-family:var(--mono);font-size:.54rem;color:#888;margin-bottom:24px;}
 .edit-cards{display:grid;grid-template-columns:1fr;gap:10px;}
-.edit-card{border:1px solid #2a2a2a;padding:20px 18px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+/* 3.86.1 — samma fel som `.rest-content`: bara en ram, ingen yta. Hela Edit
+   Chain-skärmen (Sort / Add-Remove / Rebuild) låg som text mot temats bakgrund,
+   vilket på Full Moon betyder rakt ovanpå fullmånen och de fallande kedjorna —
+   se Niklas skärmdumpar 2026-08-14. En panel är en panel i alla elva teman. */
+.edit-card{background:var(--surface-base);border:1px solid var(--border-subtle);padding:20px 18px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
 .edit-card::after{content:'→';position:absolute;right:18px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:1.2rem;color:#444;transition:all .2s;}
-.edit-card:hover{border-color:var(--red);background:#0d0000;}
+.edit-card:hover{border-color:var(--red);background:var(--surface-overlay);}
 .edit-card:hover::after{color:var(--red);right:14px;}
 .edit-card-icon{font-size:1.8rem;margin-bottom:8px;}
 .edit-card-title{font-family:var(--display);font-size:1.4rem;letter-spacing:.06em;margin-bottom:4px;}
@@ -4860,7 +4880,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.86.0';
+const APP_VERSION = '3.86.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

@@ -6,6 +6,19 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.86.1 — 2026-08-14
+**Tre komponenter hade aldrig fått någon yta — temat lyste rakt igenom dem.**
+
+PM22-refaktorn (3.32.0, kompletterad 3.34.10) tokeniserade ytorna, men bara på de komponenter som *redan hade* en yta. Tre stycken hade ingen alls och stod därmed som naken text mot temats bakgrund — vilket sedan 3.85.0 betyder rakt ovanpå den animerade ambient-canvasen.
+
+- **`.rest-content`** — vilodagsvyn var appens enda skärm utan panel. Varje annan vy lägger sin text i ett `.ex-block`. På Nanosuit läste man brödtexten mot hexagonrutnätet, på Full Moon mot fullmånen. Full Moon fick sin frostade slab redan i 3.81.0, men fixen lades i *temat* i stället för i basen, så de tio andra temana blev kvar i buggen.
+- **`.edit-card`** — hela Edit Chain-skärmen (Sort / Add · Remove / Rebuild Chain) hade bara en ram. På Full Moon läser man den mot månen och de fallande kedjorna.
+- **`.btn-ghost`** — `background:none` gjorde vyns primära handling, "Mark Rest Done", till en ram runt ambient-canvasen. Den förblir sekundär i hierarkin: den får en yta, inte en fyllning.
+
+Alla tre använder nu `var(--surface-base)` / `var(--border-subtle)`, alltså rätt yta per tema automatiskt. Även `.edit-card:hover` som låg på hårdkodad `#0d0000` — nästan svart, vilket blev en svart blixt vid hover på de ljusa temana.
+
+---
+
 ## 3.86.0 — 2026-08-14
 **Vilodagsbrickan hade ingen yta att lysa med — femte rundan, första gången på rätt nivå.**
 
