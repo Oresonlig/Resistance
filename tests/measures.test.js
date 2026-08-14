@@ -9,8 +9,8 @@ import {
 } from '../src/measures.js';
 
 describe('MEASURES registry', () => {
-  it('har 11 mätsätt', () => {
-    expect(MEASURE_KEYS).toEqual(['weight','bw','bwreps','timed','cardio','cardiosprint','run','runsprint','carry','inclinecardio','sauna']);
+  it('har 12 mätsätt', () => {
+    expect(MEASURE_KEYS).toEqual(['weight','bw','bwreps','timed','bwtimed','cardio','cardiosprint','run','runsprint','carry','inclinecardio','sauna']);
   });
   it('varje measure har fields + pr', () => {
     for (const k of MEASURE_KEYS) {
@@ -25,7 +25,38 @@ describe('measureFromFlags — bakåtkompat', () => {
   it('null → weight', () => expect(measureFromFlags(null)).toBe('weight'));
   it('bw-flagga → bw', () => expect(measureFromFlags({ bw: true })).toBe('bw'));
   it('timed-flagga → timed', () => expect(measureFromFlags({ timed: true })).toBe('timed'));
-  it('bw+timed (Dead Hang) → timed (spec)', () => expect(measureFromFlags({ bw: true, timed: true })).toBe('timed'));
+  // 3.87.1 — VÄNDNING mot tidigare spec. Dead Hangs slot-data har alltid burit
+  // bw+timed, men `timed` vann och vikten föll bort → man kunde inte logga en
+  // hängning med bälte. Kombinationen måste testas före enbart timed.
+  it('bw+timed (Dead Hang) → bwtimed', () => expect(measureFromFlags({ bw: true, timed: true })).toBe('bwtimed'));
+});
+
+describe('bwtimed — viktat häng/håll (3.87.1)', () => {
+  it('PR-metriken är tiden, inte vikten', () => {
+    expect(prValue('bwtimed', { secs: 62, extra: 10 })).toBe(62);
+  });
+  it('längre häng vinner även med mindre vikt', () => {
+    expect(prValue('bwtimed', { secs: 75, extra: 0 }))
+      .toBeGreaterThan(prValue('bwtimed', { secs: 60, extra: 20 }));
+  });
+  it('lika tid → mer vikt vinner via tiebreak', () => {
+    expect(prTiebreak('bwtimed', { secs: 60, extra: 20 }))
+      .toBeGreaterThan(prTiebreak('bwtimed', { secs: 60, extra: 5 }));
+  });
+  it('fail-markerat set bär ingen PR', () => {
+    expect(prValue('bwtimed', { secs: 90, extra: 10, fail: true })).toBe(null);
+  });
+  it('gammalt Dead Hang-set utan extra fungerar oförändrat', () => {
+    expect(prValue('bwtimed', { secs: 45 })).toBe(45);
+    expect(prTiebreak('bwtimed', { secs: 45 })).toBe(0);
+  });
+  it('bär bodyweight-layout och tar båda fälten', () => {
+    expect(MEASURES.bwtimed.bw).toBe(true);
+    expect(MEASURES.bwtimed.fields).toEqual(['extra', 'secs']);
+  });
+  it('är INTE minInput — sekunder matas in rått, som timed', () => {
+    expect(MEASURES.bwtimed.minInput).toBeUndefined();
+  });
 });
 
 describe('resolveMeasure — prioritet', () => {

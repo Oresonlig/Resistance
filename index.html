@@ -398,7 +398,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 /* SETS */
 .sets-table{margin-top:6px;width:100%;}
 .set-row{display:grid;align-items:start;gap:4px;margin-bottom:4px;}.set-row.uni-set{grid-template-columns:24px 1fr 1fr 48px 28px 36px 28px;}/* 3.56.0 — measure-drivna grid-layouter (olika fält-antal per mätsätt) */
-.set-row.m-weight,.set-row.m-bw{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
+.set-row.m-weight,.set-row.m-bw,.set-row.m-bwtimed{grid-template-columns:24px 1fr 1fr 48px 36px 28px;}
 .set-row.m-bwreps,.set-row.m-timed{grid-template-columns:24px 1fr 48px 36px 28px;}
 .set-row.m-cardio,.set-row.m-carry,.set-row.m-sauna,.set-row.m-run{grid-template-columns:24px 1fr 1fr 36px 28px;}
 /* 3.78.7 — cardiosprint fick ett tredje fält (tid+km+antal, ingen sprintBase-toggle
@@ -4824,7 +4824,7 @@ const EXERCISE_LIBRARY = [
   // CARDIO / CONDITIONING
   {name:'Assault Bike', cat:'Cardio', measure:'cardiosprint'},
   {name:'Bike Cardio', cat:'Cardio', measure:'cardio', tip:'20 min steady state'},
-  {name:'Dead Hang', cat:'Cardio', measure:'timed', tip:'Supinated or neutral'},
+  {name:'Dead Hang', cat:'Cardio', measure:'bwtimed', tip:'Supinated or neutral'},
   {name:'Farmers Walk', cat:'Cardio', measure:'carry'},
   {name:'Incline Walk', cat:'Cardio', measure:'inclinecardio', tip:'Treadmill incline'},
   {name:'Running', cat:'Cardio', measure:'run'},
@@ -4939,7 +4939,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.87.0';
+const APP_VERSION = '3.87.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -5073,6 +5073,15 @@ const MEASURES = {
   bw:           { fields:['extra','reps'],    pr:'extra',   forced:true,  bw:true  },
   bwreps:       { fields:['reps'],            pr:'reps',    forced:true,  bw:false },
   timed:        { fields:['secs'],            pr:'secs',    forced:true,  bw:false },
+  // 3.87.1 — VIKTAT HÄNG/HÅLL. Dead Hang bar `bw:true,timed:true` i slot-datat sedan
+  // urminnes tid, men `measureFromFlags` returnerade `timed` först och tappade vikten
+  // — man kunde alltså inte logga en hängning med bälte. Niklas 2026-08-14: "vikt ev
+  // på deadhang, fanns tidigare. BW + extra vikt & tid."
+  // PR-regeln behövde INGEN ny kod: `prTiebreak` har alltid returnerat
+  // `(weight||0)+(extra||0)` för `pr:'secs'`. Längst tid vinner, lika tid → mer vikt.
+  // `formatSetLine` hade redan grenen `extra!=null && secs!=null` → "BW + 10 kg · 45s".
+  // Mätsätts-enumen var det enda som saknades — precis så här är den tänkt att växa.
+  bwtimed:      { fields:['extra','secs'],    pr:'secs',    forced:true,  bw:true  },
   // `minInput` = tiden matas in och läses som MINUTER i UI:t (lagras alltid som secs
   // internt). Driver både measureCells-fältet och formatSetLine-utskriften, så en
   // cardio-logg utan distans inte längre skrivs ut som "1950s" istället för "33min".
@@ -5095,6 +5104,9 @@ const MEASURES = {
 };
 function measureFromFlags(ex){
   if(!ex) return 'weight';
+  // 3.87.1 — bw+timed måste testas FÖRE enbart timed, annars vinner `timed` och
+  // vikten faller bort (Dead Hangs ursprungliga avsikt gick förlorad så).
+  if(ex.timed && ex.bw) return 'bwtimed';
   if(ex.timed) return 'timed';
   if(ex.bw) return 'bw';
   return 'weight';
@@ -7846,6 +7858,11 @@ function saveExercise(passId,exId){
       const rRaw=dom('r'); base={sid, reps: rRaw!=null?_int(rRaw):(b.reps??null), forced, warmup};
     } else if(measure==='timed'){
       const rRaw=dom('r'); base={sid, secs: rRaw!=null?_int(rRaw):(b.secs??null), forced, warmup};
+    } else if(measure==='bwtimed'){
+      // Extra vikt (bälte/västa) + tid. `bwSnap` sparas som i `bw` så PR-motorn
+      // kan räkna total belastning, och tiebreaket (weight+extra) blir rätt.
+      const bwRaw=dom('bw');const rRaw=dom('r');
+      base={sid, extra: bwRaw!=null?toKg(parseFloat(bwRaw)):(b.extra??0), bwSnap:todayWkg||0, secs: rRaw!=null?_int(rRaw):(b.secs??null), forced, warmup};
     } else if(measure==='cardio'||measure==='run'){
       // Input is minutes (UX), stored as secs internally (see measureCells).
       const rRaw=dom('r');const dRaw=dom('dist');
@@ -8208,6 +8225,7 @@ function measureCells(measure, exId, sid, savedSet, bufVal, dis, wCls, unitL){
     case 'bw':           return bwCell+repsCell+forcedCell;
     case 'bwreps':       return repsCell+forcedCell;
     case 'timed':        return secsCell+forcedCell;
+    case 'bwtimed':      return bwCell+secsCell+forcedCell;
     case 'cardio':       return cardioTimeCell+distCell;
     // 3.78.7 — tid OCH km alltid båda synliga (Niklas: ville se km, inte bara tid+antal
     // sprintar). secsCell (rå sekunder) hålls kvar, INTE cardioTimeCell (minuter) —
@@ -8344,7 +8362,7 @@ function getPrimaryTag(ex){
 // 3.56.0 — default set-antal per mätsätt (när inget set-schema-tag är aktivt).
 const MEASURE_SET_DEFAULTS = {
   weight:{warmup:2,work:1}, bw:{warmup:0,work:3}, bwreps:{warmup:0,work:3},
-  timed:{warmup:0,work:1}, cardio:{warmup:0,work:1}, cardiosprint:{warmup:0,work:1}, carry:{warmup:0,work:3},
+  timed:{warmup:0,work:1}, bwtimed:{warmup:0,work:1}, cardio:{warmup:0,work:1}, cardiosprint:{warmup:0,work:1}, carry:{warmup:0,work:3},
   inclinecardio:{warmup:0,work:1}, sauna:{warmup:0,work:1},
   run:{warmup:0,work:1}, runsprint:{warmup:0,work:1},
 };
@@ -8509,6 +8527,9 @@ function captureInputsToSetsBuffer(exId,passId){
       const rRaw=dom('r'); rec={reps: rRaw!=null?_int(rRaw):(p.reps??null), forced};
     } else if(measure==='timed'){
       const rRaw=dom('r'); rec={secs: rRaw!=null?_int(rRaw):(p.secs??null), forced};
+    } else if(measure==='bwtimed'){
+      const bwRaw=dom('bw');const rRaw=dom('r');
+      rec={extra: bwRaw!=null?toKg(parseFloat(bwRaw)):(p.extra??null), bwSnap:p.bwSnap||0, secs: rRaw!=null?_int(rRaw):(p.secs??null), forced};
     } else if(measure==='cardio'||measure==='run'){
       // Input is minutes (UX), stored as secs internally (see measureCells).
       const rRaw=dom('r');const dRaw=dom('dist');
@@ -9017,7 +9038,7 @@ function getAllPRs(){
           prs[key]={exId:key, name:ex.name, measure, _v:v, _tb:tb,
             weight:s.weight, reps:s.reps, secs:s.secs, extra:s.extra, bwSnap:s.bwSnap,
             dist:s.dist, distm:s.distm, sprints:s.sprints,
-            bw:MEASURES[measure]?.bw||false, timed:measure==='timed'};
+            bw:MEASURES[measure]?.bw||false, timed:(measure==='timed'||measure==='bwtimed')};
         }
       }
     }
@@ -11099,7 +11120,7 @@ function buildPRMap(){
           prMap[ex.name]={name:ex.name, measure, _v:v, _tb:tb,
             weight:s.weight, reps:s.reps, secs:s.secs, extra:s.extra, bwSnap:s.bwSnap,
             dist:s.dist, distm:s.distm, sprints:s.sprints,
-            bw:MEASURES[measure]?.bw||false, timed:measure==='timed'};
+            bw:MEASURES[measure]?.bw||false, timed:(measure==='timed'||measure==='bwtimed')};
         }
       }
     }

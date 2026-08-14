@@ -41,7 +41,8 @@
 - PR/historik/notes nycklas på kanoniskt exId (namn-slug) — extras delar identitet med samma övning i program.
 
 ### Mätsätt / measure (3.56.0 — input-form + PR separerat från set-schema)
-- **9 mätsätt** i `MEASURES`-registry (`~4744`, nära `getRenderExId`): `weight/bw/bwreps/timed/cardio/cardiosprint/carry/inclinecardio/sauna` (de två sista tillagda 3.70.0/3.70.1 — uppdatera denna lista + `src/measures.js` om fler läggs till). `~4806` `getMeasure(exId, ex)`.
+- **12 mätsätt** i `MEASURES`-registry (nära `getRenderExId` — grep `const MEASURES`): `weight/bw/bwreps/timed/bwtimed/cardio/cardiosprint/run/runsprint/carry/inclinecardio/sauna` (`run`/`runsprint` 3.84.0, `bwtimed` 3.87.1 — uppdatera denna lista + `src/measures.js` om fler läggs till). `getMeasure(exId, ex)` strax under.
+- **`bwtimed`** (3.87.1) = extra vikt + tid, för Dead Hang med bälte. `measureFromFlags` testar `bw && timed` FÖRE enbart `timed` — annars vinner `timed` och vikten faller bort (så var det t.o.m. 3.87.0). PR = längst tid; `prTiebreak` för `pr:'secs'` ger weight+extra, alltså vinner mer vikt vid lika tid — den logiken fanns redan, ingen ny PR-kod behövdes.
 - **`minInput:true`** (3.80.0) på cardio/inclinecardio/sauna = tiden matas in OCH visas i MINUTER (lagras alltid som `secs`). Skiljer dem från `timed`/`cardiosprint` som är råa sekunder. Läses av `formatSetLine`.
 - `getMeasure`: override(`state.exerciseMeasureOverride[exId]`) > library-default (`libraryMeasureMap`, byggd från `EXERCISE_LIBRARY[].measure`) > custom.measure > ex.measure > **namn-fallback** (template I–N slots saknar BASE_SLOT_DEFAULT_NAME → exId-lookup missar) > flaggor > `weight`.
 - Override nyckel = **kanoniskt exId** (följer rörelsen, per användare). (`getSprintBase`/`setSprintBase` RADERADE 3.78.7 — cardiosprint visar tid + km + antal samtidigt, ingen toggle.)

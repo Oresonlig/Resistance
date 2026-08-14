@@ -6,6 +6,21 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.87.1 — 2026-08-14
+**Dead Hang kan logga vikt igen — BW + extra vikt + tid.**
+
+Niklas 2026-08-14: *"vikt ev på deadhang. Fanns tidigare. BW + extra vikt & tid."*
+
+Dead Hangs slot-data har hela tiden burit `bw:true, timed:true` — avsikten fanns i datat. Men `measureFromFlags` testade `timed` först och returnerade `timed`, ett enfältsmätsätt med bara sekunder, så vikten föll bort. Hänger man med bälte fanns ingenstans att skriva in det.
+
+Nytt mätsätt i enumen, `bwtimed` (fält: `extra` + `secs`), och `bw && timed` testas nu före enbart `timed`. Ingen per-övningskod — det är precis så mätsätts-enumen är tänkt att växa.
+
+**PR-regeln krävde ingen ny kod.** `prTiebreak` har alltid returnerat `weight + extra` för `pr:'secs'`, och `formatSetLine` hade redan grenen `extra != null && secs != null` → `BW + 10 kg · 45s`. Arkitekturen var byggd för det här fallet; det var bara enum-posten som saknades. Alltså: **längst häng vinner, lika tid → mer vikt vinner.**
+
+Gäller alla användare, inte bara Niklas (hans beslut). Ingen migrering behövs: gamla Dead Hang-set har bara `secs` och skrivs ut precis som förut — `formatSetLine` läser settets egen form, inte nuvarande mätsätt. 204 tester (+7).
+
+---
+
 ## 3.87.0 — 2026-08-14
 **Textkontrast: en mätt skala i stället för ännu ett snäpp på måfå.**
 

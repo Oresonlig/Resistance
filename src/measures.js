@@ -17,6 +17,11 @@ export const MEASURES = {
   bw:           { fields: ['extra', 'reps'],    pr: 'extra',   forced: true,  bw: true  },
   bwreps:       { fields: ['reps'],             pr: 'reps',    forced: true,  bw: false },
   timed:        { fields: ['secs'],             pr: 'secs',    forced: true,  bw: false },
+  // 3.87.1 — viktat häng/håll (Dead Hang med bälte). Slot-datat har alltid burit
+  // `bw:true,timed:true`, men measureFromFlags lät `timed` vinna och vikten föll bort.
+  // Ingen ny PR-kod behövdes: prTiebreak för `pr:'secs'` returnerar redan
+  // weight+extra → längst tid vinner, lika tid → mer vikt.
+  bwtimed:      { fields: ['extra', 'secs'],    pr: 'secs',    forced: true,  bw: true  },
   cardio:       { fields: ['secs', 'dist'],     pr: 'dist',    forced: false, bw: false, minInput: true },
   cardiosprint: { fields: ['secs', 'dist', 'sprints'], pr: 'sprints', forced: false, bw: false },
   // 3.84.0 — LÖPNING. Skild från `cardio` ENBART på PR-axeln: cardio delas med Walk +
@@ -33,9 +38,11 @@ export const MEASURES = {
 export const MEASURE_KEYS = Object.keys(MEASURES);
 
 // Bakåtkompat: härled measure från äldre bw/timed-flaggor (för data/övningar utan
-// explicit measure). Dead Hang (bw+timed) → timed per spec (1-fält sekunder).
+// explicit measure). 3.87.1: bw+timed → `bwtimed` (var `timed`, vilket tappade
+// vikten — Dead Hangs ursprungliga avsikt). Kombinationen måste testas FÖRST.
 export function measureFromFlags(ex) {
   if (!ex) return 'weight';
+  if (ex.timed && ex.bw) return 'bwtimed';
   if (ex.timed) return 'timed';
   if (ex.bw) return 'bw';
   return 'weight';
