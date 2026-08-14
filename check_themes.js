@@ -7,7 +7,7 @@
  * rader CSS. Samma buggklasser återkommer därför gång på gång. Det här skriptet
  * flyttar de mekaniskt kontrollerbara delarna från minne till kod.
  *
- * Sex checkar, i fallande träffsäkerhet:
+ * Åtta checkar, i fallande träffsäkerhet:
  *
  *  0. KOMMENTARSBALANS (error)
  *     Ett "*​/" utan öppnande "/*" betyder att en kommentar stängts tidigare än
@@ -38,6 +38,17 @@
  *
  *  4. KONTRAST I SAMMA REGEL (warn)
  *     color + background i samma block med ratio under 3:1.
+ *
+ *  6. TEXTSKALANS KONTRASTGOLV (error)
+ *     `--text-strong/-body/-muted/-faint` mäts mot varje temas panel. Golv:
+ *     datatext 7:1, etiketter 4,5:1. Fångade att skalans första nivåer låg för
+ *     lågt i fem teman (3.87.0).
+ *
+ *  7. HÅRDKODAD TEXTFÄRG I TEMA-CSS (error)
+ *     CHECK 6 säkrar skalan; den här fångar teman som kringgår den med en egen
+ *     grå på samma komponent. Sju av elva gjorde det — utan den hade 3.87.0
+ *     höjt värden som Cosmic Horror och Obsidian aldrig läser, och blivit exakt
+ *     den icke-skillnad Niklas beskrev i förväg.
  *
  *  5. VILODAGENS YTA I KAPSEL-TEMAN (error)
  *     Ett tema som ger `.chain-tab.active` en egen kapselbakgrund måste också
@@ -741,6 +752,213 @@ for (const r of flat) {
       `             hårdkantad fyrkant (Cosmic 3.86.0), lös medaljong (Obsidian) eller en\n` +
       `             rektangel över namnet (Full Moon). Sätt tokenen: \`none\` om kapseln bär\n` +
       `             underlaget, annars temats eget material i guld. Se CLAUDE.md §5.`
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CHECK 6 — textskalans kontrastgolv per tema
+// ══════════════════════════════════════════════════════════════════
+// Niklas 2026-08-14: "vi har gjort tydlighetsåtgärder tidigare, och det har
+// knappt blivit någon skillnad. Oftast har vi gått från mycket mörk till lite
+// mindre mycket mörk." Skälet är att kontrast inte är linjär — i den mörka
+// tredjedelen av sRGB-kurvan flyttar man sig knappt trots att hex-talet hoppar —
+// och att varje runda har justerat EN regel i taget efter ögonmått.
+//
+// Golvet är därför ett tal, inte en bedömning. Räknas mot temats egen
+// panelfärg (--surface-base), komposierad över temats bakgrund när panelen är
+// genomskinlig. Kan inte fånga en ådra som råkar korsa just den textraden —
+// panelerna är frostat glas, det finns ett golv man inte kommer under utan att
+// röra frostningen (avvisat av Niklas 2026-08-02, och sakligt rätt).
+{
+  const FLOORS = {
+    '--text-strong': 7,   // set-historik, övningsrad — datatext
+    '--text-body': 7,     // brödtext, beskrivningar
+    '--text-muted': 4.5,  // avsiktligt dämpat
+    '--text-faint': 4.5,  // etiketter, status
+  };
+
+  /** Deklarationer i `:root{}` respektive `body.theme-X{}` (utan efterföljande selektor). */
+  function tokenScope(theme) {
+    const out = new Map();
+    for (const r of flat) {
+      const t = themeOf(r.sel);
+      const isRoot = !t && r.sel.trim() === ':root';
+      const isThemeRoot = t === theme && stripThemeAnchor(r.sel) === '';
+      if (!isRoot && !isThemeRoot) continue;
+      for (const d of r.decls) out.set(d.prop, d.value);
+    }
+    return out;
+  }
+
+  /** var(--x) och color-mix(in srgb, A N%, B) — den enda formen skalan använder. */
+  function resolve(value, scope, depth = 0) {
+    if (!value || depth > 6) return null;
+    const v = value.trim();
+    const varM = /^var\((--[\w-]+)\)$/.exec(v);
+    if (varM) return resolve(scope.get(varM[1]), scope, depth + 1);
+    const mixM = /^color-mix\(\s*in\s+srgb\s*,(.+)\)$/i.exec(v);
+    if (mixM) {
+      const parts = splitTop(mixM[1], ',');
+      if (parts.length !== 2) return null;
+      const pM = /^(.*?)\s+([\d.]+)%$/.exec(parts[0]);
+      const a = resolve(pM ? pM[1] : parts[0], scope, depth + 1);
+      const b = resolve(parts[1].replace(/\s+[\d.]+%$/, ''), scope, depth + 1);
+      if (!a || !b) return null;
+      const w = pM ? Number(pM[2]) / 100 : 0.5;
+      return {
+        r: a.r * w + b.r * (1 - w),
+        g: a.g * w + b.g * (1 - w),
+        b: a.b * w + b.b * (1 - w),
+        a: (a.a ?? 1) * w + (b.a ?? 1) * (1 - w),
+      };
+    }
+    return firstColor(v);
+  }
+
+  /** src över dst (alpha-compositing) — panelerna är genomskinliga i flera teman. */
+  const over = (src, dst) => {
+    const a = src.a ?? 1;
+    if (a >= 1 || !dst) return src;
+    return { r: src.r * a + dst.r * (1 - a), g: src.g * a + dst.g * (1 - a), b: src.b * a + dst.b * (1 - a), a: 1 };
+  };
+
+  // Iron är klasslöst (body:not([class*="theme-"])) och har inget eget block —
+  // det ÄR :root-värdena, så det måste testas explicit eller faller det ur.
+  const themeKeys = ['(iron)', ...[...byTheme.keys()].sort()];
+  for (const key of themeKeys) {
+    const theme = key === '(iron)' ? null : key;
+    const scope = tokenScope(theme);
+    // Bakgrunden = `--black`. Att i stället läsa temats `background`-shorthand
+    // gav fel svar: flera teman lägger en flerstopps-gradient där, och
+    // firstColor() plockade ett ljust stopp → Obsidian rapporterades som 1,63:1
+    // fast dess panel är nästan svart. `--black` ÄR temats basyta i den här
+    // kodbasens tokenvokabulär (Iron #0a0a0a, Arctic #e9f3f7, Full Moon #c9ced7).
+    const backdrop = resolve(scope.get('--black'), scope);
+    const surfRaw = scope.get('--surface-base');
+    const surf = surfRaw ? resolve(surfRaw, scope) : null;
+    const panel = surf ? over(surf, backdrop) : backdrop;
+    if (!panel) continue;
+
+    for (const [tok, floor] of Object.entries(FLOORS)) {
+      const raw = scope.get(tok);
+      if (!raw) continue; // temat ärver :root — testas där
+      const c = resolve(raw, scope);
+      if (!c) continue;
+      const ratio = contrast(over(c, panel), panel);
+      if (ratio < floor) {
+        errors.push(
+          `[textskala] theme-${key}: ${tok} mäter ${ratio.toFixed(2)}:1 mot temats panel ` +
+          `(--surface-base över bakgrunden), golvet är ${floor}:1.\n` +
+          `             Höj temats andel --white i blandningen. Skalan är avsiktligt uttryckt\n` +
+          `             som color-mix(--white, --black) så polariteten följer temat — ett för\n` +
+          `             lågt värde här betyder att NIVÅN är fel, inte att polariteten är det.`
+        );
+      } else if (VERBOSE) {
+        info.push(`[textskala] theme-${key}: ${tok} = ${ratio.toFixed(2)}:1 (golv ${floor}:1)`);
+      }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CHECK 7 — hårdkodad textfärg i tema-CSS under kontrastgolvet
+// ══════════════════════════════════════════════════════════════════
+// CHECK 6 säkrar SKALAN. Den säger ingenting om ett tema som kringgår skalan
+// genom att hårdkoda sin egen grå på samma komponent — och det är precis vad
+// sju av elva teman gör. Utan den här checken hade 3.87.0 höjt basvärden som
+// Cosmic Horror, Full Moon, Obsidian, Undertow, Overgrowth, Arctic och Nanosuit
+// aldrig läser, och resultatet hade blivit exakt det Niklas beskrev i förväg:
+// "vi har gjort tydlighetsåtgärder tidigare, och det har knappt blivit någon
+// skillnad."
+//
+// Listan är medvetet begränsad till komponenter som bär LÄSTEXT. Accentfärgade
+// etiketter (Obsidians röda .set-num, Cosmics .work-group) är designval och ska
+// inte tvingas in i gråskalan — de ligger utanför listan.
+{
+  // Bara komponenter som ligger på temats VANLIGA panel (`--surface-base`).
+  // Medvetet uteslutna, för att checken bara modellerar EN yta per tema:
+  //   .chain-intro-sub  — sitter på `.chain-intro`, en separat målad remsa i
+  //                       Cosmic/Full Moon/Obsidian (Full Moon drar t.ex. ner
+  //                       headerns svarta gradient genom hela bandet).
+  //   .ex-collapsed-*   — det hopfällda kortet är en egen variantyta, och i
+  //                       Full Moon är varannat kort MÖRKT med ljus text.
+  // Att larma på dem hade gett 15 falska fynd av 36, och en check som ropar varg
+  // tränar bort läsvanan — precis det check_themes byggdes för att undvika.
+  // Golvet per komponent speglar den NIVÅ bas-CSS:en tilldelar den. Ett enda
+  // golv på 4,5 hade godkänt Cosmic Horrors `.ex-detail` (#7a948c, 4,6:1) —
+  // alltså exakt raden "HIT → 1 set failure" i Niklas skärmdump — trots att
+  // basen lägger den på --text-strong, som mäter 7:1.
+  const TEXT_COMPONENTS = new Map([
+    ['ex-detail', 7], ['ex-prev', 7], ['ex-prev-history-set', 7],
+    ['rest-content', 7], ['section-sub', 7], ['edit-card-desc', 7],
+    ['edit-sub', 7], ['edit-section-sub', 7],
+    ['ex-tip', 4.5], ['hist-set', 4.5], ['empty-state', 4.5], ['set-lbl', 4.5],
+  ]);
+  // Dämpade varianter mäts mot det lägre golvet även på en strong-komponent.
+  const MUTED_VARIANT = /\.(warmup|done)\b/;
+
+  // Panelfärg per tema — samma härledning som CHECK 6.
+  function panelOf(theme) {
+    let surfRaw = null, black = null;
+    for (const r of flat) {
+      const t = themeOf(r.sel);
+      const isRoot = !t && r.sel.trim() === ':root';
+      const isThemeRoot = t === theme && stripThemeAnchor(r.sel) === '';
+      if (!isRoot && !isThemeRoot) continue;
+      for (const d of r.decls) {
+        if (d.prop === '--surface-base') surfRaw = d.value;
+        if (d.prop === '--black') black = d.value;
+      }
+    }
+    const backdrop = firstColor(black ?? ''); // se kommentaren i CHECK 6
+    const surf = firstColor(surfRaw ?? '');
+    if (!surf) return backdrop;
+    const a = surf.a ?? 1;
+    if (a >= 1 || !backdrop) return surf;
+    return {
+      r: surf.r * a + backdrop.r * (1 - a),
+      g: surf.g * a + backdrop.g * (1 - a),
+      b: surf.b * a + backdrop.b * (1 - a),
+      a: 1,
+    };
+  }
+
+  const panels = new Map();
+  const found = new Map(); // theme -> [rader]
+  for (const r of flat) {
+    const theme = themeOf(r.sel);
+    if (!theme) continue;
+    const parts = compounds(stripThemeAnchor(r.sel));
+    // Nästlad under ett variant-scope (`.ex-block:nth-child(odd) .ex-prev`) →
+    // ytan är inte --surface-base och kan inte avgöras här.
+    if (parts.length > 1) continue;
+    const leaf = parts[parts.length - 1] || '';
+    const cls = [...leaf.matchAll(/\.([\w-]+)/g)].map((m) => m[1]);
+    const hit = cls.find((c) => TEXT_COMPONENTS.has(c));
+    if (!hit) continue;
+    const floor = MUTED_VARIANT.test(leaf) ? 4.5 : TEXT_COMPONENTS.get(hit);
+    const colorDecl = r.decls.find((d) => d.prop === 'color');
+    if (!colorDecl) continue;
+    const c = parseColor(colorDecl.value); // bara literala hex/rgb — var() är redan rätt
+    if (!c || (c.a ?? 1) < 0.9) continue;
+    if (!panels.has(theme)) panels.set(theme, panelOf(theme));
+    const panel = panels.get(theme);
+    if (!panel) continue;
+    const ratio = contrast(c, panel);
+    if (ratio >= floor) continue;
+    if (!found.has(theme)) found.set(theme, []);
+    found.get(theme).push(`${r.sel}  →  ${colorDecl.value}  (${ratio.toFixed(2)}:1, golv ${floor}:1)`);
+  }
+
+  for (const [theme, rows] of [...found].sort()) {
+    errors.push(
+      `[textfärg] theme-${theme}: ${rows.length} hårdkodad${rows.length === 1 ? ' textfärg' : 'e textfärger'} ` +
+      `under kontrastgolvet mot temats panel.\n` +
+      rows.map((x) => `               ${x}`).join('\n') + '\n' +
+      `             Använd textskalan (--text-strong/-body/-muted/-faint) i stället för en egen grå.\n` +
+      `             Skalan är härledd ur temats --white, så tonen (Cosmics mint, Embers värme)\n` +
+      `             följer med — men nivån är gemensam och mätt. Accentfärger hör inte hit.`
     );
   }
 }

@@ -6,6 +6,28 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.87.0 — 2026-08-14
+**Textkontrast: en mätt skala i stället för ännu ett snäpp på måfå.**
+
+Niklas 2026-08-14: *"synbarheten av texter rent generellt är väldigt låg. Gråaktig färg mot mörk bakgrund funkar inte."* Och, förutseende: *"vi har gjort tydlighetsåtgärder tidigare, och det har knappt blivit någon skillnad. Oftast har vi gått från mycket mörk till lite mindre mycket mörk."*
+
+**Varför de tidigare rundorna inte syntes.** Kontrast är inte linjär. I den mörka tredjedelen av sRGB-kurvan flyttar man sig knappt trots att hex-talet ser ut att hoppa: `#555` = 2,7:1, `#666` = 3,5:1, `#777` = 4,9:1, `#888` = 5,6:1. Historiskt har vi flyttat ett snäpp åt gången, på den komponent skärmdumpen råkade visa. Aldrig på golvet under alla.
+
+**Semantisk textskala.** Fyra nivåer — `--text-strong` / `-body` / `-muted` / `-faint` — uttryckta som `color-mix` mellan `--white` och `--black` i stället för fasta gråtoner. Skälet är att båda tokens redan är korrekt inverterade i de ljusa temana, så polariteten följer med gratis: en ny nivå kan aldrig ge ljusgrå text på ljus botten. Teman med tonad vit (Cosmics mint, Embers värme) får tonade grå på köpet.
+
+Konkret, de rader Niklas pekade på i Cosmic Horror: arbetssetten `#aaa` (8,5:1) → 12,7:1. Uppvärmningsraderna `#666` (**3,5:1**) → 6,5:1. Beskrivningar och `Last (Xd ago)` `#888` (5,6:1) → 8,6:1.
+
+**Full Moon (punkt 2)** får en brantare skala — basblandningen landar där 3.85.0 redan låg, och den var fortfarande för ljus. Fixat på textsidan, inte genom att höja panelernas opacitet: frostat glas är låg opacitet + blur, och opacitetsskruvande i det temat har skapat ljusläckor förr (3.79.x).
+
+**Två nya checkar, och de behövdes båda.**
+
+- **CHECK 6** mäter skalan mot varje temas panel. Den underkände direkt mina första nivåer i fem teman. Rätt slutsats var att *skalan* låg för lågt, inte att fem teman behövde varsin lapp — de ljus-polära temana (Arctic, Undertow, Overgrowth) har ett `--black` som är nästan vitt och tappar därför kontrast fortare. Exakt den sortens systematiska fel ögonmått aldrig hittar.
+- **CHECK 7** fångar teman som kringgår skalan med en egen hårdkodad grå på samma komponent. **Sju av elva gjorde det.** Utan den hade hela den här versionen höjt basvärden som Cosmic Horror, Full Moon, Obsidian, Undertow, Overgrowth, Arctic och Nanosuit aldrig läser — och resultatet hade blivit precis den icke-skillnad Niklas beskrev innan jag började. 19 fynd, alla konverterade till skalan.
+
+**Ärlig begränsning:** panelerna är frostat glas och Cosmics ådror ligger bakom. Checken räknar på panelens komposierade färg, inte på en ådra som råkar korsa just den textraden. Där finns ett golv man inte kommer under utan att röra frostningen — avvisat 2026-08-02, och sakligt rätt.
+
+---
+
 ## 3.86.1 — 2026-08-14
 **Tre komponenter hade aldrig fått någon yta — temat lyste rakt igenom dem.**
 
