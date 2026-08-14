@@ -49,18 +49,41 @@
      se Full Moon.
 
      Nivåerna sattes först till 88/72/62/50 efter räkning mot Irons yta — och
-     CHECK 6 underkände då fem teman (Arctic, Undertow, Overgrowth, Obsidian,
-     Ember). Rätt slutsats var att SKALAN låg för lågt, inte att fem teman
-     behövde varsin lapp: teman med tonad vit (Cosmic mint, Undertow slate) och
-     ljusare paneler tappar några tiondelar som Irons nästan svarta yta döljer.
-     Jämna steg om 12/10/10 nu, och golvet håller i alla elva utan undantag.
-     Det är precis den sortens systematiska fel ögonmått aldrig hittar.
+     CHECK 6 underkände då fem teman. Rätt slutsats var att SKALAN låg för lågt,
+     inte att fem teman behövde varsin lapp. Höjdes till 90/78/68/58.
 
-     Golv (Niklas 2026-08-14): datatext 7:1, etiketter 4,5:1, dekor 3:1. */
-  --text-strong:color-mix(in srgb,var(--white) 90%,var(--black));  /* set-historik, övningsrad — ska LÄSAS */
-  --text-body:color-mix(in srgb,var(--white) 78%,var(--black));    /* brödtext, beskrivningar, sekundära knappar */
-  --text-muted:color-mix(in srgb,var(--white) 68%,var(--black));   /* avsiktligt dämpat men läsbart: uppvärmning, enheter */
-  --text-faint:color-mix(in srgb,var(--white) 58%,var(--black));   /* etiketter, status, tomma tillstånd */
+     ── 3.88.0: SKALAN VÄND FÖR DE MÖRKA TEMANA ───────────────────────────────
+     Niklas 2026-08-14, efter att ha testat 3.87.0 på gymmet: "på ljusa teman har
+     vi valt en mörk/svart text mot ljus bakgrund. Hur bra som helst. Men av
+     någon anledning har vi valt mörk font mot mörka bakgrunder på alla mörka
+     teman. Klart som fan att det blir otydligt. Framförallt när man är på
+     gymmet, kanske lite halvsuspekt belysning."
+
+     Han har rätt, och det är en RIKTNINGSFRÅGA, inte en nivåfråga: på ett ljust
+     tema dämpar man genom att gå från svart mot ljusare — kvar finns massor av
+     kontrast. På ett mörkt tema hade vi speglat samma tänk åt fel håll och
+     dämpat genom att gå mot mörkare, alltså rakt in i bakgrunden, och just där
+     är sRGB-kurvan hoptryckt. "Lite mörkare" blir "borta".
+
+     Dämpning på mörka teman går nu FRÅN VITT MOT MELLANGRÅTT, aldrig ner mot
+     bakgrunden. Irons nyanser: #e9e5dd / #d6d2cb / #c4c0b9 / #afaba5 — ljusgrått
+     rakt igenom. Ingen nivå hamnar under 6,7:1 i något mörkt tema.
+
+     De FYRA ljus-polära temana (Arctic, Undertow, Overgrowth, Full Moon) är
+     medvetet UNDANTAGNA — Niklas: "inget problem alls på ljusa teman". De pinnar
+     därför sina egna värden i sina temablock så den höjda basen inte läcker in.
+
+     Niklas: "behöver kanske inte gå full bore och göra samtlig text till
+     skrikande vitt och förstöra allt. Men definitivt, gör läsbarheten synligare.
+     Och blir det för mycket får vi backa." Därför 95/87/79/70 och inte 97/90/
+     82/72 — och därför ligger hela skalan som fyra tal HÄR, så en återgång är
+     en rad, inte en refaktor.
+
+     Golv: brödtext 10:1, dämpat 7:1, svagast 6:1 (check_themes.js CHECK 6). */
+  --text-strong:color-mix(in srgb,var(--white) 95%,var(--black));  /* set-historik, övningsrad — ska LÄSAS */
+  --text-body:color-mix(in srgb,var(--white) 87%,var(--black));    /* brödtext, beskrivningar, sekundära knappar */
+  --text-muted:color-mix(in srgb,var(--white) 79%,var(--black));   /* dämpat men läsbart: uppvärmning, enheter */
+  --text-faint:color-mix(in srgb,var(--white) 70%,var(--black));   /* etiketter, status, tomma tillstånd */
   --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Bebas Neue',sans-serif;
   --ui-mono:'IBM Plex Mono',monospace; /* 3.59.4 — LÅST hörn-font (Cosmic-standard), frikopplad från titel-fonten --display. Teman ska INTE override:a (sätt aldrig egen font-family/font-size på header-user/sync/logout/btn-chain-edit/am-pill). */
   /* ── PM22: Semantic surface variables (3.32.0). Default = mörka värden.
@@ -415,7 +438,13 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .set-input::-webkit-outer-spin-button,.set-input::-webkit-inner-spin-button{-webkit-appearance:none;}
 .set-input:focus{outline:none;border-color:var(--red);}
 .set-input:disabled{opacity:.2;cursor:not-allowed;}
-.set-input.warmup{border-color:#181818;color:#3a3a3a;}
+/* 3.88.0 — `#3a3a3a` mot `--surface-input` mätte 1,66:1. Det är inte "dämpat",
+   det är osynligt: Niklas skärmdump 2026-08-14 av en förifylld uppvärmning
+   ("68") som inte gick att läsa. Skillnaden mot ett TYPAT work-set (16,8:1)
+   bars nästan helt av ljusstyrka; nu bärs den av skalans steg i stället —
+   uppvärmningen ligger på --text-muted (≈10,7:1 i Iron), det typade värdet på
+   --white. Fortfarande tydligt olika, men båda läsbara i gymbelysning. */
+.set-input.warmup{border-color:#181818;color:var(--text-muted);}
 .set-input.work-set{border-color:#1a2a1a;}
 .set-input.forced{border-color:#2a1a2a;color:#9a6a9a;}
 .set-input.timed{border-color:#1a2a3a;color:#7ab;}
@@ -1059,8 +1088,14 @@ body.theme-arctic{
      alltså nästan vitt, så basskalans blandning drar texten mot bakgrunden
      mycket fortare än på ett mörkt tema. CHECK 6 underkände --text-body (6,88)
      och --text-faint (3,83) på basvärdena. Samma justering i Undertow och
-     Overgrowth, som har samma polaritet. */
+     Overgrowth, som har samma polaritet.
+     3.88.0 — ALLA FYRA nivåer pinnas nu, inte bara två. Basskalan höjdes för de
+     mörka temana (se :root), och Niklas var uttrycklig: "inget problem alls på
+     ljusa teman". Utan pinning hade höjningen läckt in här och gjort texten
+     onödigt tung mot den ljusa bakgrunden. Värdena nedan = exakt 3.87.0:s. */
+  --text-strong:color-mix(in srgb,var(--white) 90%,var(--black));
   --text-body:color-mix(in srgb,var(--white) 84%,var(--black));
+  --text-muted:color-mix(in srgb,var(--white) 68%,var(--black));
   --text-faint:color-mix(in srgb,var(--white) 70%,var(--black));
   --display:'Rajdhani',sans-serif;
   --sans:'Rajdhani',sans-serif;
@@ -1180,10 +1215,10 @@ body.theme-arctic .ex-btn-edit{border-color:rgba(0,168,216,0.3);color:#1a2e3a;}
 
 /* Set-input variants */
 body.theme-arctic .set-input.work-set{border-color:rgba(0,168,216,0.3);}
-body.theme-arctic .set-input.warmup{border-color:rgba(0,168,216,0.15);color:#7a96a4;}
+body.theme-arctic .set-input.warmup{border-color:rgba(0,168,216,0.15);color:var(--text-muted);}
 body.theme-arctic .set-unit{color:var(--red);font-weight:600;}
 body.theme-arctic .set-num{color:var(--red);font-weight:700;}
-body.theme-arctic .sets-group-label{color:#5a7a88;border-top:1px dashed rgba(0,168,216,0.2);font-weight:600;}
+body.theme-arctic .sets-group-label{color:var(--text-muted);border-top:1px dashed rgba(0,168,216,0.2);font-weight:600;}
 body.theme-arctic .sets-group-label.work-group{color:var(--red);}
 
 /* Exercise name + meta */
@@ -1803,8 +1838,8 @@ body.theme-nanosuit .set-input:focus{
   outline:none;
 }
 body.theme-nanosuit .set-input.work-set{border-color:#1a3040;}
-body.theme-nanosuit .set-input.warmup{border-color:#0a1520;color:#2a4a5a;}
-body.theme-nanosuit .set-unit{color:#4a7a99;font-family:'JetBrains Mono',monospace;font-weight:500;}
+body.theme-nanosuit .set-input.warmup{border-color:#0a1520;color:var(--text-muted);}
+body.theme-nanosuit .set-unit{color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-weight:500;}
 body.theme-nanosuit .set-num{color:#5a8899;font-family:'Orbitron',sans-serif;font-weight:700;}
 body.theme-nanosuit .sets-group-label{
   color:var(--red);
@@ -1813,7 +1848,7 @@ body.theme-nanosuit .sets-group-label{
   letter-spacing:.12em;
   border-top:1px solid #1a3040;
 }
-body.theme-nanosuit .sets-group-label.warmup-group{color:#4a7a99;}
+body.theme-nanosuit .sets-group-label.warmup-group{color:var(--text-muted);}
 body.theme-nanosuit .sets-group-label.work-group{color:var(--red);}
 
 /* Exercise tags */
@@ -2571,7 +2606,11 @@ body.theme-undertow{
   --black:#e9f3f7; --white:#102430; --red:#163763;
   --green-bright:#0d6b7a; --gold:#97702a;
   --gray-light:#33505c; --gray-mid:#496673;
-  --text-faint:color-mix(in srgb,var(--white) 66%,var(--black)); /* ljus-polärt, se Arctic */
+  /* Ljus-polärt — alla fyra pinnade på 3.87.0:s värden, se Arctic (3.88.0). */
+  --text-strong:color-mix(in srgb,var(--white) 90%,var(--black));
+  --text-body:color-mix(in srgb,var(--white) 78%,var(--black));
+  --text-muted:color-mix(in srgb,var(--white) 68%,var(--black));
+  --text-faint:color-mix(in srgb,var(--white) 66%,var(--black));
   --display:'Archivo',system-ui,sans-serif; --mono:'DM Mono',monospace;
   --surface-base:rgba(255,255,255,0.52); --surface-elevated:rgba(255,255,255,0.65);
   --surface-input:rgba(255,255,255,0.55); --surface-saved:rgba(230,242,248,0.72);
@@ -2679,7 +2718,11 @@ body.theme-understory{
   --black:#e9f2db;--white:#143018;--red:#1f4226;
   --green-bright:#2f7a4a;--gold:#8a6a26;
   --gray-light:#6f8a69;--gray-mid:#8aa47e;
-  --text-faint:color-mix(in srgb,var(--white) 68%,var(--black)); /* ljus-polärt, se Arctic */
+  /* Ljus-polärt — alla fyra pinnade på 3.87.0:s värden, se Arctic (3.88.0). */
+  --text-strong:color-mix(in srgb,var(--white) 90%,var(--black));
+  --text-body:color-mix(in srgb,var(--white) 78%,var(--black));
+  --text-muted:color-mix(in srgb,var(--white) 68%,var(--black));
+  --text-faint:color-mix(in srgb,var(--white) 68%,var(--black));
   --display:'Bricolage Grotesque',system-ui,sans-serif;--mono:'Spline Sans Mono',monospace;
   --surface-base:rgba(252,255,247,0.78);--surface-elevated:rgba(252,255,247,0.88);
   --surface-input:rgba(255,255,255,0.5);--surface-saved:rgba(238,250,230,0.72);
@@ -3471,11 +3514,11 @@ body.theme-obsidian .ex-btn-edit{background:linear-gradient(180deg,rgba(50,35,14
 /* Set inputs */
 body.theme-obsidian .set-input{background:rgba(15,10,4,0.6);border:1px solid #4a3818;color:#f0d99c;font-family:'Cinzel',serif;font-weight:600;}
 body.theme-obsidian .set-input:focus{border-color:#c9a35a;box-shadow:0 0 8px rgba(201,163,90,0.4);}
-body.theme-obsidian .set-input.warmup{color:#5a4a28;}
+body.theme-obsidian .set-input.warmup{color:var(--text-muted);}
 body.theme-obsidian .set-unit{color:#c9a35a;font-family:'Cinzel',serif;font-weight:600;letter-spacing:.18em;}
 body.theme-obsidian .set-num{color:#a8442e;font-family:'Cinzel',serif;font-weight:600;letter-spacing:.32em;font-variant-numeric:tabular-nums;}
 body.theme-obsidian .set-input{font-family:'IBM Plex Mono',monospace;}
-body.theme-obsidian .sets-group-label{color:#5a4a28;font-family:'Cinzel',serif;letter-spacing:.32em;font-weight:600;border-top:1px dashed #2a2010;}
+body.theme-obsidian .sets-group-label{color:var(--text-muted);font-family:'Cinzel',serif;letter-spacing:.32em;font-weight:600;border-top:1px dashed #2a2010;}
 body.theme-obsidian .sets-group-label.work-group{color:#a8442e;}
 
 /* Log button — gold breath + shimmer sweep (3.32.1: glow dämpad eftersom 3+ Log-knappar samtidigt blev för intensivt) */
@@ -3767,10 +3810,10 @@ body.theme-cosmic-horror .ex-btn-edit{background:linear-gradient(180deg,rgba(20,
 /* Set-inputs — asymmetric blob radii */
 body.theme-cosmic-horror .set-input{background:rgba(4,14,16,0.65);border:1px solid rgba(127,200,180,0.34);color:#e6f0ea;font-family:'IBM Plex Mono',monospace;font-weight:400;border-radius:8px 2px 8px 2px;}
 body.theme-cosmic-horror .set-input:focus{border-color:#7fc8b4;box-shadow:0 0 8px rgba(127,200,180,0.32);}
-body.theme-cosmic-horror .set-input.warmup{color:#2a3a36;}
-body.theme-cosmic-horror .set-unit{color:#2a4a44;font-family:'IBM Plex Mono',monospace;font-weight:500;letter-spacing:.18em;}
+body.theme-cosmic-horror .set-input.warmup{color:var(--text-muted);}
+body.theme-cosmic-horror .set-unit{color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-weight:500;letter-spacing:.18em;}
 body.theme-cosmic-horror .set-num{color:#a8424c;font-family:'IBM Plex Mono',monospace;font-weight:500;letter-spacing:.2em;}
-body.theme-cosmic-horror .sets-group-label{color:#4f6a64;font-family:'IBM Plex Mono',monospace;letter-spacing:.2em;font-weight:400;border-top:1px dashed rgba(127,200,180,0.15);text-transform:uppercase;}
+body.theme-cosmic-horror .sets-group-label{color:var(--text-muted);font-family:'IBM Plex Mono',monospace;letter-spacing:.2em;font-weight:400;border-top:1px dashed rgba(127,200,180,0.15);text-transform:uppercase;}
 body.theme-cosmic-horror .sets-group-label.work-group{color:#a8424c;}
 
 /* LOG button — STATIC teal blob, INGEN glow (designens explicit val: no breathing) */
@@ -4939,7 +4982,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.87.1';
+const APP_VERSION = '3.88.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

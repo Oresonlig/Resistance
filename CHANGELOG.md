@@ -6,6 +6,35 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.88.0 — 2026-08-14
+**De mörka temana dämpade texten åt fel håll — mot bakgrunden i stället för från vitt.**
+
+Niklas efter att ha testat 3.87.0: *"på ljusa teman har vi valt en mörk/svart text mot ljus bakgrund. Hur bra som helst. Men av någon anledning har vi valt mörk font mot mörka bakgrunder på alla mörka teman. Klart som fan att det blir otydligt. Framförallt när man är på gymmet, kanske lite halvsuspekt belysning."*
+
+Det är en **riktningsfråga, inte en nivåfråga**, och den är rätt. På ett ljust tema dämpar man genom att gå från svart mot ljusare — det finns massor av kontrast kvar. På de mörka temana hade vi speglat samma tänk åt fel håll: dämpning gick mot mörkare, alltså rakt in i bakgrunden, och just där är sRGB-kurvan hoptryckt. "Lite mörkare" blir "borta".
+
+**Skalan är vänd för de sju mörka temana.** Dämpning går nu från vitt mot mellangrått, aldrig ner mot bakgrunden. Irons nyanser: `#e9e5dd` / `#d6d2cb` / `#c4c0b9` / `#afaba5`. Ingen nivå hamnar under 6,7:1 i något mörkt tema.
+
+| Tema | brödtext | dämpat (KG/REPS, uppvärmning) | svagast |
+|---|---|---|---|
+| Iron | 10,4 → **12,9** | 8,1 → **10,7** | 6,1 → **8,5** |
+| Cosmic Horror | 10,0 → **12,4** | 7,7 → **10,2** | 5,8 → **8,1** |
+| Obsidian | 8,1 → **10,0** | 6,3 → **8,3** | 4,8 → **6,7** |
+
+**De fyra ljusa temana är orörda** (Arctic, Undertow, Overgrowth, Full Moon) — Niklas: *"inget problem alls på ljusa teman"*. De pinnar sina egna värden så höjningen inte läcker in.
+
+**Inmatningslagret, som 3.87.0 missade.** Niklas skärmdump: en förifylld uppvärmningsvikt ("68") som inte gick att läsa. Mätt låg den på **1,64:1** i Cosmic Horror och **1,66:1** i bas-CSS:en — det är inte dämpat, det är osynligt. `KG` / `REPS` / `+F` låg på **1,86:1**. Skillnaden mellan "förifyllt förslag" och "det jag just skrev in" bars nästan enbart av ljusstyrka (1,6 mot 16,8); nu bärs den av skalans steg i stället, och båda går att läsa.
+
+`check_themes.js` CHECK 7 utökad med inmatningslagret — `.set-input` mäts mot `--surface-input`, `.set-unit`/`.sets-group-label` mot `--surface-base`. Hade listan varit rätt i 3.87.0 hade checken pekat ut de här raderna före pushen. 8 nya fynd, alla konverterade.
+
+**Golven är polaritetsmedvetna** (CHECK 6): 10/10/7/6 för mörka teman, 3.87.0:s 7/7/4,5/4,5 för ljusa. Ett gemensamt högt golv hade underkänt fyra teman som bevisligen fungerar och tvingat fram en ändring ingen bett om. Golvet höjs där felet fanns.
+
+Accentfärger hålls utanför: `.sets-group-label.work-group` (Cosmic `#a8424c`, Obsidian `#a8442e`) är emfas, inte gråton — samma resonemang som för `.set-num`.
+
+**Avvägningen, uttalad:** Niklas — *"coolhet och känsla är nice, MEN funktionalitet och läsbarhet ska komma först. Nu har det inte alltid blivit så."* De mörka temana blir därmed något mindre dunkla i uttrycket. *"Behöver kanske inte gå full bore... och blir det för mycket får vi backa"* — därför 95/87/79/70 och inte 97/90/82/72, och därför ligger hela skalan som fyra tal på ett ställe: en återgång är en rad, inte en refaktor.
+
+---
+
 ## 3.87.1 — 2026-08-14
 **Dead Hang kan logga vikt igen — BW + extra vikt + tid.**
 

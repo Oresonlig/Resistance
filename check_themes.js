@@ -771,12 +771,23 @@ for (const r of flat) {
 // panelerna är frostat glas, det finns ett golv man inte kommer under utan att
 // röra frostningen (avvisat av Niklas 2026-08-02, och sakligt rätt).
 {
-  const FLOORS = {
-    '--text-strong': 7,   // set-historik, övningsrad — datatext
-    '--text-body': 7,     // brödtext, beskrivningar
-    '--text-muted': 4.5,  // avsiktligt dämpat
-    '--text-faint': 4.5,  // etiketter, status
-  };
+  // 3.88.0 — golven höjda i takt med att skalan vändes för de mörka temana.
+  // Poängen är att en framtida version inte ska kunna smyga tillbaka nedåt mot
+  // bakgrunden: det var precis den rörelsen som gjorde texten oläslig från
+  // början, och den syns inte på skärmen förrän man står i gymbelysning.
+  // 3.88.0 — golven är POLARITETSMEDVETNA, och det är en avsiktlig asymmetri.
+  //
+  // Problemet 3.88.0 löser fanns bara på de mörka temana: där dämpade vi genom
+  // att gå MOT bakgrunden, in i sRGB-kurvans hoptryckta del, tills texten
+  // försvann. På de ljusa temana gick dämpningen från svart mot ljusare, vilket
+  // lämnar gott om kontrast kvar — Niklas 2026-08-14: "inget problem alls på
+  // ljusa teman... hur bra som helst."
+  //
+  // Ett gemensamt högt golv hade därför underkänt fyra teman som bevisligen
+  // fungerar, och tvingat fram en ändring ingen bett om. Golvet höjs där felet
+  // fanns; de ljusa behåller 3.87.0:s nivåer.
+  const FLOORS_DARK  = { '--text-strong': 10, '--text-body': 10, '--text-muted': 7,   '--text-faint': 6   };
+  const FLOORS_LIGHT = { '--text-strong': 7,  '--text-body': 7,  '--text-muted': 4.5, '--text-faint': 4.5 };
 
   /** Deklarationer i `:root{}` respektive `body.theme-X{}` (utan efterföljande selektor). */
   function tokenScope(theme) {
@@ -840,6 +851,12 @@ for (const r of flat) {
     const panel = surf ? over(surf, backdrop) : backdrop;
     if (!panel) continue;
 
+    // Ljus-polärt = temats "vita" är mörkare än dess "svarta" (Arctic, Undertow,
+    // Overgrowth, Full Moon inverterar tokens och sätter mörk text på ljus yta).
+    const white = resolve(scope.get('--white'), scope);
+    const lightPolar = white && backdrop && luminance(white) < luminance(backdrop);
+    const FLOORS = lightPolar ? FLOORS_LIGHT : FLOORS_DARK;
+
     for (const [tok, floor] of Object.entries(FLOORS)) {
       const raw = scope.get(tok);
       if (!raw) continue; // temat ärver :root — testas där
@@ -889,17 +906,30 @@ for (const r of flat) {
   // golv på 4,5 hade godkänt Cosmic Horrors `.ex-detail` (#7a948c, 4,6:1) —
   // alltså exakt raden "HIT → 1 set failure" i Niklas skärmdump — trots att
   // basen lägger den på --text-strong, som mäter 7:1.
+  // 3.88.0 — INMATNINGSLAGRET tillagt. 3.87.0 tog med lästexten men inte
+  // fälten man skriver i, och det var precis där Niklas nästa rapport landade:
+  // `.set-input.warmup` (den förifyllda vikten) mätte 1,64:1 i Cosmic Horror och
+  // 1,66:1 i bas-CSS:en, `.set-unit` (KG/REPS/+F) 1,86:1. Hade listan varit rätt
+  // från början hade checken pekat ut dem före pushen.
   const TEXT_COMPONENTS = new Map([
     ['ex-detail', 7], ['ex-prev', 7], ['ex-prev-history-set', 7],
     ['rest-content', 7], ['section-sub', 7], ['edit-card-desc', 7],
-    ['edit-sub', 7], ['edit-section-sub', 7],
+    ['edit-sub', 7], ['edit-section-sub', 7], ['set-input', 7],
     ['ex-tip', 4.5], ['hist-set', 4.5], ['empty-state', 4.5], ['set-lbl', 4.5],
+    ['set-unit', 4.5], ['sets-group-label', 4.5],
   ]);
+  // `.set-input` ligger på sin EGEN yta (`--surface-input`), inte på kortet.
+  const INPUT_SURFACE = /\.set-input\b/;
   // Dämpade varianter mäts mot det lägre golvet även på en strong-komponent.
   const MUTED_VARIANT = /\.(warmup|done)\b/;
+  // `.work-group` är gruppetikettens EMFAS-variant och bärs av temats accentfärg
+  // (Cosmic #a8424c, Obsidian #a8442e) — samma resonemang som för `.set-num`:
+  // accentfärger är designval och ska inte tvingas in i gråskalan. `.warmup-group`
+  // är däremot en dämpad gråton och stannar kvar i checken.
+  const ACCENT_VARIANT = /\.work-group\b/;
 
   // Panelfärg per tema — samma härledning som CHECK 6.
-  function panelOf(theme) {
+  function panelOf(theme, token = '--surface-base') {
     let surfRaw = null, black = null;
     for (const r of flat) {
       const t = themeOf(r.sel);
@@ -907,7 +937,7 @@ for (const r of flat) {
       const isThemeRoot = t === theme && stripThemeAnchor(r.sel) === '';
       if (!isRoot && !isThemeRoot) continue;
       for (const d of r.decls) {
-        if (d.prop === '--surface-base') surfRaw = d.value;
+        if (d.prop === token) surfRaw = d.value;
         if (d.prop === '--black') black = d.value;
       }
     }
@@ -937,13 +967,18 @@ for (const r of flat) {
     const cls = [...leaf.matchAll(/\.([\w-]+)/g)].map((m) => m[1]);
     const hit = cls.find((c) => TEXT_COMPONENTS.has(c));
     if (!hit) continue;
+    if (ACCENT_VARIANT.test(leaf)) continue;
     const floor = MUTED_VARIANT.test(leaf) ? 4.5 : TEXT_COMPONENTS.get(hit);
     const colorDecl = r.decls.find((d) => d.prop === 'color');
     if (!colorDecl) continue;
     const c = parseColor(colorDecl.value); // bara literala hex/rgb — var() är redan rätt
     if (!c || (c.a ?? 1) < 0.9) continue;
-    if (!panels.has(theme)) panels.set(theme, panelOf(theme));
-    const panel = panels.get(theme);
+    // Ett tema kan ge `.set-input` en egen bakgrund (Cosmic, Obsidian, Arctic…);
+    // den vinner över tokenet. Annars `--surface-input` resp. `--surface-base`.
+    const surfToken = INPUT_SURFACE.test(leaf) ? '--surface-input' : '--surface-base';
+    const key = theme + '|' + surfToken;
+    if (!panels.has(key)) panels.set(key, panelOf(theme, surfToken));
+    const panel = panels.get(key);
     if (!panel) continue;
     const ratio = contrast(c, panel);
     if (ratio >= floor) continue;
