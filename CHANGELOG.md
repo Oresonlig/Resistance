@@ -6,6 +6,24 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.88.3 — 2026-08-20
+**Session-slidern hade inget skydd mot bakgrunden i nio av elva teman — Full Moon råkade få det av ett annat skäl.**
+
+Niklas jämförde Nanosuit mot Full Moon efter 3.88.2: på FM ser man direkt vilka pass som är gjorda; på Nanosuit väntar man tills hex-väven passerat under en läsbar del av mönstret. *"De svarta skyddar lite så man faktiskt ser vilka pass som är gjorda och vilka är kvar."*
+
+Grävde i CSS:en: `.chain-strip-outer` (session-slidern) har ingen bakgrund alls i bas-CSS — den sitter direkt ovanpå ambient-lagret i alla teman. FM:s skydd är en bieffekt av blodmotivet (3.81.0), inte en avsiktlig läsbarhetsåtgärd. Samtidigt visade det sig att fem teman redan tyst löst halva problemet: Nanosuit, Obsidian och Cosmic Horror ger `.chain-intro` (raden ovanför slidern) ett frostat skydd — men förlängde det aldrig ner till själva strippen. Arctic har samma skydd men är statiskt (ingen rörlig bakgrund) och lämnas orört på Niklas beslut.
+
+- **Nanosuit, Obsidian, Cosmic Horror** — samma material som redan fanns på `.chain-intro` förlängt till `.chain-strip-outer` och `.pass-ex-header` (passnamn/"Next up"-raden).
+- **Undertow, Overgrowth** — hade INGET skydd alls trots rörlig ambient (bubblor respektive rankor). Nya regler byggda av samma kort-material som deras `.ex-block`/`.panel` — Overgrowth får barktexturen på köpet.
+- **Iron, Void, Ember, Night City, Arctic lämnade orörda** — ingen JS-mountad rörlig bakgrund, skyddet löser inget problem som finns där (Niklas bekräftat).
+- `.pass-ex-header` saknade horisontell padding i bas-CSS (till skillnad från de andra två) — utan tillägg hade passnamnet klistrat mot kortkanten på de fyra temana med helram. Tillagd per tema.
+
+**Ny regel i CLAUDE.md §5:** nytt tema med rörlig ambient (canvas/SVG) ska alltid ge `.chain-strip-outer` + `.pass-ex-header` samma yta som sina kort — statiska teman inte. `check_themes.js` CHECK 8 varnar mekaniskt för en ram utan yta, men bedömningen "rörlig eller inte" görs fortfarande manuellt per tema.
+
+`npm run check` grön: Syntax OK, 0 error / 0 warn, 204 tester.
+
+---
+
 ## 3.88.2 — 2026-08-20
 **Edit Program hade ramar men ingen yta — man läste sitt program mot fullmånen.**
 

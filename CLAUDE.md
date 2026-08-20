@@ -86,6 +86,11 @@ finns i memory-filerna som länkas per punkt. Bryter något mot detta: fråga f�
   panel behöver eget lyft") var fel diagnos och är borttagen.
 - Sätt aldrig egen `font-family`/`font-size` på header-hörnet (`--ui-mono` är låst)
   eller på `.set-num`.
+- **Nytt tema med rörlig ambient (canvas/SVG-animation) ⇒ `.chain-strip-outer` +
+  `.pass-ex-header` MÅSTE få en yta**, samma "hylla"-material som temats
+  `.ex-block`/`.panel`. Statiska teman (ingen JS-mountad bakgrund) behöver den
+  inte och ska lämnas orörda. `check_themes.js` CHECK 8 varnar för ram-utan-yta
+  men avgör inte AVSIKT — bedömningen "rörlig eller inte" görs manuellt per tema.
 
 → Detaljer och incidenthistorik: `feedback_teman_arkitektur`, `feedback_rest_day_label`,
 `feedback_light_themes`, `feedback_css_variabler`.
