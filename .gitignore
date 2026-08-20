@@ -1,2 +1,7 @@
 node_modules/
 .commit_msg.txt
+
+# Capacitor — www/ är en ren spegling av index.html/sw.js/manifest/icons
+# (se scripts/cap-sync.js), regenereras alltid med `npm run cap:sync`.
+# index.html i repo-roten är sanningen, inte www/.
+www/

@@ -6,6 +6,22 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.88.9 — 2026-08-20
+**START på Android-appen: Capacitor-scaffold + riktigt manifest.**
+
+Niklas beslut: Capacitor (inte TWA), sideloadad APK (inte Play Store initialt — han har inte 20 testare), Android före iOS eftersom det är gratis att bygga och bevisar hela kedjan. Ingen synlig ändring för webbanvändare, ren infrastruktur.
+
+- `manifest.webmanifest` — riktig fil, ersätter `<head>`s gamla `data:`-URI (Capacitor/butiksverktyg kräver en fysisk fil). CSP `manifest-src` `data:` → `'self'`. Ikonerna pekar fortfarande på samma inline "TC"-SVG — väntar på riktig källbild.
+- `capacitor.config.json` — `appId:'com.oresonlig.thechain'` (godtycklig, ändringsbar tills första riktiga APK:n skickas ut), `webDir:'www'`.
+- `android/` — genererat native Capacitor/Android-projekt (`npm exec cap add android`, `npx` funkar inte direkt i denna miljös PowerShell-gate men fungerar wrappat i ett npm-script). Keystore-filer (`*.jks`/`*.keystore`) explicit gitignorerade — den mallens default hade dem AV, nu på, eftersom en läckt signeringsnyckel inte går att återkalla.
+- `scripts/cap-sync.js` + `npm run cap:sync` — kopierar index.html/sw.js/manifest/icons → `www/` (gitignorerad, ren spegling) → in i det native projektet. `index.html` i repo-roten förblir sanningen, samma princip som `src/*.js`-speglingarna.
+
+Kvar innan en riktig APK kan byggas: app-ikon (väntar på källbild), nedladdningssida (väntar på hosting-svar), "ny version finns"-banner i appen, GitHub Actions-bygge, signeringsnyckel (Niklas kör hemifrån).
+
+`npm run check` grön: Syntax OK, 0 error / 0 warn, 204 tester.
+
+---
+
 ## 3.88.8 — 2026-08-20
 **Input-siffran var svagare på SEC/+F än på resten av fälten — hela vägen sedan 3.34.11.**
 

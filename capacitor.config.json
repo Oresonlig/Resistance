@@ -1,0 +1,8 @@
+{
+  "appId": "com.oresonlig.thechain",
+  "appName": "The Chain",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  }
+}

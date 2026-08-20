@@ -97,6 +97,26 @@
 2. State-init (`appVersion:APP_VERSION`) + header läser konstanten dynamiskt
 3. `CHANGELOG.md` entry överst
 
+## Android / Capacitor (3.88.9, START på Play Store-projektet)
+- **`index.html` i repo-roten är FORTFARANDE sanningen** — `www/` är en ren
+  spegling (gitignored, aldrig redigerad direkt) via `scripts/cap-sync.js`.
+  Kör `npm run cap:sync` efter varje `index.html`-ändring som ska in i appen:
+  kopierar index.html/sw.js/manifest.webmanifest/icons/ → `www/` → native
+  Android-projektet (`npx cap copy android`, körs internt av scriptet).
+- `capacitor.config.json` — `appId:'com.oresonlig.thechain'`, `webDir:'www'`.
+- `android/` — genererat native-projekt (Capacitor-mall). **RÖR INTE manuellt**
+  om det går att undvika; regenereras med `npm exec cap add android` vid behov.
+  `android/.gitignore` exkluderar `*.jks`/`*.keystore` explicit (avkommenterat
+  från Capacitor-mallens default — signeringsnyckeln får ALDRIG in i git).
+- `manifest.webmanifest` — riktig fil, ersätter den gamla `data:`-URI:n i
+  `<head>`. Ikonerna pekar fortfarande på inline-SVG:n "TC" tills riktiga
+  PNG:er finns (Play/Capacitor-ikon väntar på källbild från Niklas).
+- **`npx` funkar INTE direkt i ps-gaten** (bara git/npm/node whitelistat) —
+  men `npx ...` fungerar när det körs INIFRÅN ett `npm run`-script (se
+  `cap:sync` i `package.json`). Wrappa alla Capacitor-CLI-anrop så.
+- Scope-beslut 2026-08-20: Android FÖRST (sideload, inte Play Store initialt —
+  Niklas har inte 20 testare), iOS som fas 2. Se `project_appstore.md`-minnet.
+
 ## Verktygsval
 - Bash är förbjudet. Endast PowerShell.
 - Sökning: ALLTID Grep/Read/Glob. ALDRIG Select-String/Get-Content.

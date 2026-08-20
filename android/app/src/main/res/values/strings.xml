@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">The Chain</string>
+    <string name="title_activity_main">The Chain</string>
+    <string name="package_name">com.oresonlig.thechain</string>
+    <string name="custom_url_scheme">com.oresonlig.thechain</string>
+</resources>

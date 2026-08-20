@@ -7,7 +7,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "check:themes": "node check_themes.js",
-    "check": "node check_syntax.js && node check_themes.js && vitest run"
+    "check": "node check_syntax.js && node check_themes.js && vitest run",
+    "cap:sync": "node scripts/cap-sync.js && npx cap copy android"
   },
   "repository": {
     "type": "git",
@@ -22,7 +23,12 @@
   },
   "homepage": "https://github.com/Oresonlig/Resistance#readme",
   "devDependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/cli": "^8.5.0",
     "jsdom": "^29.1.1",
     "vitest": "^4.1.7"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.5.0"
   }
 }
