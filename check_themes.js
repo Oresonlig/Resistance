@@ -1010,6 +1010,83 @@ for (const r of flat) {
   }
 }
 
+// ── CHECK 8 — inline-styles i markup ──────────────────────────────
+//
+// CHECK 6 och 7 läser CSS. Det gör att de är blinda för appens ANDRA
+// stilar-lager: `style="..."` som byggs i JS-template-strängar. Där bodde
+// hela Edit Programs utseende, och där gick 3.87.0:s textskala och PM22:s
+// ytor spårlöst förbi — raderna hade `border:1px solid #2a2a2a` och ingen
+// background alls, så de stod som ramar mot temats bakgrund (Full Moon:
+// rakt ovanpå fullmånen, Niklas skärmdumpar 2026-08-20).
+//
+// Det var fjärde gången samma buggklass hittades av ett öga i stället för av
+// ett verktyg (3.81.0, 3.84.1, 3.86.1, 3.88.2). Frågan som alla fyra
+// gångerna hade avslöjat den direkt: VILKET LAGER bor värdet i, och tittar
+// checken på det lagret? Nu gör den det.
+//
+//   8a  rå hex i en inline-style        → error (kringgår tokens helt)
+//   8b  container med border/padding men utan background → warn ("yta saknas")
+{
+  // Kommentarer bort först: både CSS- och JS-blockkommentarer citerar gammal
+  // markup ordagrant (t.ex. 3.85.2:s `style="color:#446"`) och de ska inte
+  // rapporteras som levande kod.
+  const markup = html.replace(/\/\*[\s\S]*?\*\//g, '');
+
+  // Medvetna undantag. Håll listan kort och motiverad — den är en ventil,
+  // inte en soptunna.
+  const ALLOW = [
+    // Cosmic Horrors ådre-SVG: glöden är temats egen ambient-färg, inte
+    // UI-krom, och lagret ritas i JS där ingen CSS-variabel är i scope.
+    /drop-shadow\(/,
+  ];
+
+  const rawHex = [];
+  const noSurface = [];
+  const lineAt = (idx) => markup.slice(0, idx).split('\n').length;
+
+  const STYLE_RE = /style="([^"]*)"/g;
+  for (let m; (m = STYLE_RE.exec(markup)); ) {
+    const decl = m[1];
+    if (ALLOW.some((re) => re.test(decl))) continue;
+    if (/#[0-9a-fA-F]{3,8}\b/.test(decl)) {
+      rawHex.push(`rad ${lineAt(m.index)}:  ${decl.length > 96 ? decl.slice(0, 96) + '…' : decl}`);
+    }
+  }
+
+  // 8b — en container med hel ram (inte bara border-top/-bottom som avdelare)
+  // och ingen background är nästan alltid en panel någon glömt ge en yta.
+  const TAG_RE = /<(div|button)\b([^>]*)>/g;
+  const PANEL_CLASS = /\b(panel|settings-panel|edit-card|ex-block|hist-entry|pass-card|pr-card|stat-box|data-btn|reorder-item)\b/;
+  for (let m; (m = TAG_RE.exec(markup)); ) {
+    const attrs = m[2];
+    const style = attrs.match(/style="([^"]*)"/)?.[1] ?? '';
+    if (!/(^|;)\s*border\s*:/.test(style)) continue;
+    if (/background/.test(style)) continue;
+    if (PANEL_CLASS.test(attrs.match(/class="([^"]*)"/)?.[1] ?? '')) continue;
+    noSurface.push(`rad ${lineAt(m.index)}:  <${m[1]} ${style.length > 80 ? style.slice(0, 80) + '…' : style}>`);
+  }
+
+  if (rawHex.length) {
+    errors.push(
+      `[inline-style] ${rawHex.length} rå hex-färg${rawHex.length === 1 ? '' : 'er'} i style-attribut.\n` +
+      rawHex.map((x) => `               ${x}`).join('\n') + '\n' +
+      `             Inline-style vinner över ALL tema-CSS, så ett hårdkodat värde här kan\n` +
+      `             inte override:as av något tema — det följer varken textskalan\n` +
+      `             (--text-strong/-body/-muted/-faint) eller ytorna (--surface-*/--border-*).\n` +
+      `             Polariteten vänder inte heller i de fyra ljusa temana.`
+    );
+  }
+  if (noSurface.length) {
+    warns.push(
+      `[yta saknas] ${noSurface.length} container med ram men ingen bakgrund.\n` +
+      noSurface.map((x) => `               ${x}`).join('\n') + '\n' +
+      `             En ram utan yta är inte en panel — den är ett fönster rakt ned i\n` +
+      `             temats bakgrund (ambient-canvas, månen, rankorna). Sätt klassen\n` +
+      `             \`panel\`, som varje tema mappar till sitt eget kort-material.`
+    );
+  }
+}
+
 // ── rapport ───────────────────────────────────────────────────────
 const themeCount = new Set([...byTheme.keys()]).size;
 console.log(`check_themes — ${rules.length} CSS-regler, ${themeCount} teman med egna block\n`);

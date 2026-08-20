@@ -27,6 +27,24 @@
      Deliberately NOT var(--gold) — some themes repurpose --gold as a non-gold
      accent (Night City magenta, Nanosuit cyan), which would break the gold look. */
   --rest-gold:#c9a35a;
+  /* ── 3.88.2: SEMANTISKA ACCENT-TOKENS (danger/success) ──────────────────────
+     Remove/Delete-knappar bar `#884444`/`#c06060` och Add/Restore `#4a8a4a`
+     hårdkodat i markupen. Det gick inte att skicka via --red/--green-bright:
+     BÅDA är omtolkade per tema (Full Moons --red är obsidian-svart, Voids är
+     vit, Night Citys --gold är magenta) — en Remove-knapp som blir svart eller
+     vit har tappat sitt enda jobb, att signalera fara.
+
+     Lösningen är samma trick som textskalan: blanda en FAST fara-röd mot
+     --white, som redan är korrekt inverterad i de fyra ljusa temana. Mörkt tema
+     → ljusare röd mot svart botten. Ljust tema → mörkare röd mot ljus botten.
+     Kanten blandas mot --black av samma skäl. En definition, noll per-tema-
+     overrides, kan aldrig ge ljusröd text på ljus botten.
+     --success bygger på temats --green-bright så den följer temats gröna. */
+  --danger-base:#c0392b;
+  --danger:color-mix(in srgb,var(--danger-base) 62%,var(--white));
+  --danger-border:color-mix(in srgb,var(--danger-base) 50%,var(--black));
+  --success:color-mix(in srgb,var(--green-bright) 62%,var(--white));
+  --success-border:color-mix(in srgb,var(--green-bright) 50%,var(--black));
   --gray-mid:#666;--gray-light:#999;
   /* ── 3.87.0: SEMANTISK TEXTSKALA (PM22-mönstret, fast för text) ──────────────
      Bakgrund: ~45 bas-regler bar Irons gråskala hårdkodad (#bbb/#aaa/#888/#777/
@@ -547,7 +565,7 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 @media(min-width:600px){
   .ob-next{min-width:200px;padding:14px 40px;font-size:.9rem;}
 }
-.drag-handle{display:flex;align-items:center;padding:0 10px;cursor:grab;color:#444;font-size:1.1rem;line-height:1;touch-action:none;user-select:none;}
+.drag-handle{display:flex;align-items:center;padding:0 10px;cursor:grab;color:var(--text-faint);font-size:1.1rem;line-height:1;touch-action:none;user-select:none;}
 .drag-handle:active{cursor:grabbing;}
 .sortable-ghost{opacity:.35;}
 .ob-path-list{display:flex;flex-direction:column;gap:10px;width:100%;margin-top:8px;}
@@ -567,8 +585,11 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
    vilket på Full Moon betyder rakt ovanpå fullmånen och de fallande kedjorna —
    se Niklas skärmdumpar 2026-08-14. En panel är en panel i alla elva teman. */
 .edit-card{background:var(--surface-base);border:1px solid var(--border-subtle);padding:20px 18px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
-.edit-card::after{content:'→';position:absolute;right:18px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:1.2rem;color:#444;transition:all .2s;}
-.edit-card:hover{border-color:var(--red);background:var(--surface-overlay);}
+.edit-card::after{content:'→';position:absolute;right:18px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:1.2rem;color:var(--text-faint);transition:all .2s;}
+/* 3.88.2 — `.edit-card.panel:hover` (0,3,0) och inte `.edit-card:hover` (0,2,0):
+   temats `body.theme-X .panel` väger (0,2,1) och ligger SENARE i filen, så den
+   hade annars ätit hover-ytan i de sju teman som nu har ett eget kort-material. */
+.edit-card.panel:hover{border-color:var(--red);background:var(--surface-overlay);}
 .edit-card:hover::after{color:var(--red);right:14px;}
 .edit-card-icon{font-size:1.8rem;margin-bottom:8px;}
 .edit-card-title{font-family:var(--display);font-size:1.4rem;letter-spacing:.06em;margin-bottom:4px;}
@@ -648,6 +669,20 @@ body{--chart-highlight:var(--gold);}
 .data-btn.danger:hover{border-color:var(--red);color:var(--red);}
 .empty-state{text-align:center;padding:44px 16px;font-family:var(--mono);font-size:.6rem;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em;line-height:2.2;}
 .settings-panel{background:var(--surface-base);border:1px solid var(--border-subtle);}
+/* ── 3.88.2: `.panel` — EN yta för allt som byggs med inline-styles ────────────
+   Bakgrund: Edit Program bygger sina rader i JS-template-strängar. De fick
+   `border:1px solid #2a2a2a` men ALDRIG någon background, så de stod som ramar
+   mot temats bakgrund — på Full Moon rakt ovanpå fullmånen och de fallande
+   kedjorna (Niklas skärmdumpar 2026-08-20). Exakt samma buggklass som 3.86.1
+   (.rest-content/.edit-card/.btn-ghost); den rundan täckte hubbens kort men
+   inte undersidorna, eftersom listan drogs efter CSS-klasser och undersidornas
+   ytor bor i markupen.
+
+   `.panel` löser det generellt: varje tema med ett eget kort-material listar
+   den bredvid sin `.ex-block`-regel nedan, så en panel ser ut som ett
+   övningskort i alla elva teman — Niklas: "Kan Edit program inte vara minst
+   lika frostad som övningar?". Nya inline-byggda ytor sätter bara klassen. */
+.panel{background:var(--surface-base);border:1px solid var(--border-subtle);}
 .help-body p{margin:0 0 10px;}
 .help-body p:last-child{margin-bottom:0;}
 .help-body strong{color:var(--white);font-weight:600;}
@@ -1174,7 +1209,7 @@ body.theme-arctic .btn-primary{
 body.theme-arctic .btn-primary:hover{background:linear-gradient(135deg,#00c8e8 0%,#0099c8 100%);}
 body.theme-arctic .btn-primary:disabled{background:#c8dde5;color:#8aacb8;cursor:not-allowed;box-shadow:none;}
 
-body.theme-arctic .ex-block{background:rgba(255,255,255,0.55);border:1px solid rgba(0,168,216,0.1);}body.theme-arctic .set-input{background:rgba(255,255,255,0.75);border-color:rgba(0,168,216,0.45);color:#1a2e3a;}
+body.theme-arctic .ex-block,body.theme-arctic .panel{background:rgba(255,255,255,0.55);border:1px solid rgba(0,168,216,0.1);}body.theme-arctic .set-input{background:rgba(255,255,255,0.75);border-color:rgba(0,168,216,0.45);color:#1a2e3a;}
 body.theme-arctic .set-input:focus{border-color:var(--red);box-shadow:0 0 8px rgba(0,168,216,0.32);}body.theme-arctic .section-title{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.1em;color:#1a2e3a;}
 body.theme-arctic .draft-notice{color:#1a8a8a;border-color:rgba(0,168,216,0.3);background:rgba(255,255,255,0.4);}
 body.theme-arctic .ex-note-banner{color:#6a4800;background:rgba(150,100,0,0.1);border-color:#7a5500;}
@@ -1891,7 +1926,7 @@ body.theme-nanosuit .ex-tag{
    note above the header rule explains the opacity range). Denser text than the
    header (set numbers, tags) so kept on the higher end of the working 10-55%
    band rather than matching header's lighter 18-42%. */
-body.theme-nanosuit .ex-block{
+body.theme-nanosuit .ex-block,body.theme-nanosuit .panel{
   background:linear-gradient(180deg,rgba(12,24,40,0.66) 0%,rgba(12,24,40,0.5) 100%);
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
@@ -2659,7 +2694,7 @@ body.theme-undertow .btn-secondary{border-color:rgba(18,48,90,0.22);color:#2b445
 body.theme-undertow .btn-secondary:hover{border-color:#163763;color:#163763;}
 body.theme-undertow .btn-chain-edit{border-color:rgba(22,55,99,0.30);color:#102430;}
 body.theme-undertow .btn-chain-edit:hover{border-color:#163763;color:#163763;}
-body.theme-undertow .ex-block{background:rgba(255,255,255,0.78);border:1px solid rgba(18,48,90,0.14);box-shadow:0 10px 30px -16px rgba(22,55,99,0.35),inset 0 1px 0 rgba(255,255,255,0.7);}
+body.theme-undertow .ex-block,body.theme-undertow .panel{background:rgba(255,255,255,0.78);border:1px solid rgba(18,48,90,0.14);box-shadow:0 10px 30px -16px rgba(22,55,99,0.35),inset 0 1px 0 rgba(255,255,255,0.7);}
 body.theme-undertow .ex-name{color:#102430;}
 body.theme-undertow .ex-detail{color:#324d59;}
 body.theme-undertow .ex-prev{color:#2c4651;}
@@ -2781,7 +2816,7 @@ body.theme-understory .btn-secondary{border-color:rgba(31,66,38,0.22);color:#2b4
 body.theme-understory .btn-secondary:hover{border-color:#1f4226;color:#1f4226;}
 body.theme-understory .btn-chain-edit{border-color:rgba(31,66,38,0.30);color:#143018;}
 body.theme-understory .btn-chain-edit:hover{border-color:#1f4226;color:#1f4226;}
-body.theme-understory .ex-block{background:rgba(252,255,247,0.78);border:1px solid rgba(31,66,38,0.14);box-shadow:0 10px 30px -16px rgba(28,60,34,0.35),inset 0 1px 0 rgba(255,255,255,0.6);}
+body.theme-understory .ex-block,body.theme-understory .panel{background:rgba(252,255,247,0.78);border:1px solid rgba(31,66,38,0.14);box-shadow:0 10px 30px -16px rgba(28,60,34,0.35),inset 0 1px 0 rgba(255,255,255,0.6);}
 body.theme-understory .ex-name{color:#143018;}
 body.theme-understory .ex-detail{color:var(--text-strong);}
 body.theme-understory .ex-prev{color:var(--text-body);}
@@ -2835,7 +2870,7 @@ body.theme-understory .add-ex-confirm{color:#f3f8ea;}
    gradients (no SVG filter / no blend) so it's mobile-safe and cheap. Kept light
    and warm so the card still reads bright and text stays legible. The app body
    keeps its pale "look-up-at-the-sky" green — only the cards turn to bark/wood. */
-body.theme-understory .ex-block{background-color:rgba(235,239,217,0.84);background-image:var(--us-bark);}body.theme-understory .ex-block.saved{background-color:rgba(229,241,212,0.86);background-image:var(--us-bark);}
+body.theme-understory .ex-block,body.theme-understory .panel{background-color:rgba(235,239,217,0.84);background-image:var(--us-bark);}body.theme-understory .ex-block.saved{background-color:rgba(229,241,212,0.86);background-image:var(--us-bark);}
 /* canopy drifting sun-flecks (CSS animation, screen blend) */
 body.theme-understory .us-fleck{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,252,232,0.85),rgba(247,250,224,0.35) 45%,transparent 70%);mix-blend-mode:screen;filter:blur(2px);}
 body.theme-understory .us-fleck.f1{width:130px;height:130px;left:8%;top:6%;animation:us-drift1 19s ease-in-out infinite;}
@@ -3131,7 +3166,7 @@ body.theme-fullmoon .chain-tab.active.rest-day .chain-tab-name-full{
 }
 body.theme-fullmoon .chain-tab-name-full{font-family:'Cinzel',serif;font-weight:700;letter-spacing:.05em;color:#191b21;background:none;}
 /* ---------- exercise cards ---------- */
-body.theme-fullmoon .ex-block{background:linear-gradient(158deg,rgba(232,235,240,0.62) 0%,rgba(198,203,214,0.52) 100%);border:1px solid rgba(146,153,168,0.5);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 8px 20px rgba(20,22,28,0.12);backdrop-filter:blur(3px) saturate(110%);-webkit-backdrop-filter:blur(3px) saturate(110%);}
+body.theme-fullmoon .ex-block,body.theme-fullmoon .panel{background:linear-gradient(158deg,rgba(232,235,240,0.62) 0%,rgba(198,203,214,0.52) 100%);border:1px solid rgba(146,153,168,0.5);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 8px 20px rgba(20,22,28,0.12);backdrop-filter:blur(3px) saturate(110%);-webkit-backdrop-filter:blur(3px) saturate(110%);}
 body.theme-fullmoon .ex-block.saved{background:var(--surface-saved);border-color:rgba(63,90,82,0.4);}
 body.theme-fullmoon .ex-name{color:#0c0d11;}
 body.theme-fullmoon .ex-detail{color:var(--text-strong);}
@@ -3499,7 +3534,7 @@ body.theme-obsidian .pass-ex-name{
   font-weight:600;
 }
 /* Exercise blocks */
-body.theme-obsidian .ex-block{
+body.theme-obsidian .ex-block,body.theme-obsidian .panel{
   background:radial-gradient(ellipse 80% 60% at 20% 0%, rgba(120,60,20,0.12), transparent 70%),
              linear-gradient(180deg, rgba(40,28,12,0.55), rgba(15,10,4,0.55));
   border:1px solid #2a2010;
@@ -3794,7 +3829,7 @@ body.theme-cosmic-horror .chain-tab-name-short{color:#7a948c;background:rgba(20,
 /* Section header (pass-ex-header) */
 body.theme-cosmic-horror .pass-ex-letter{font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:#7fc8b4;letter-spacing:.22em;}
 body.theme-cosmic-horror .pass-ex-name{font-family:'IBM Plex Mono',monospace;color:#aedcd0;letter-spacing:.22em;font-weight:500;text-transform:uppercase;}
-body.theme-cosmic-horror .ex-block{
+body.theme-cosmic-horror .ex-block,body.theme-cosmic-horror .panel{
   background:radial-gradient(ellipse 80% 60% at 70% 0%, rgba(60,120,110,0.12), transparent 70%),
              linear-gradient(180deg,rgba(10,30,28,0.7),rgba(4,14,16,0.7));
   border:1px solid rgba(127,200,180,0.22);
@@ -4995,7 +5030,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.88.1';
+const APP_VERSION = '3.88.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -6084,12 +6119,12 @@ async function checkCloudVersion(){
       if(el){
         const match = cv === APP_VERSION;
         // escapeHTML: appVersion kommer ur cloud-blobben — lita aldrig på molninnehåll i innerHTML
-        el.innerHTML = `Cloud version: <span style="color:${match?'#aaa':'var(--gold)'};">${escapeHTML(cv)}${match?'':' (different)'}</span>`;
+        el.innerHTML = `Cloud version: <span style="color:${match?'var(--text-muted)':'var(--gold)'};">${escapeHTML(cv)}${match?'':' (different)'}</span>`;
       }
     }
   }catch(e){
     const el = document.getElementById('sync-cloud-version');
-    if(el) el.innerHTML = 'Cloud version: <span style="color:#666;">offline</span>';
+    if(el) el.innerHTML = 'Cloud version: <span style="color:var(--text-muted);">offline</span>';
   }
 }
 
@@ -6300,11 +6335,11 @@ function buildRemovedSection(passId){
   const baseEx=BASE_SESSIONS.find(p=>p.id===passId)?.exercises||[];
   const removedItems=removedIds.map(id=>baseEx.find(e=>e.id===id)).filter(Boolean).filter(ex=>!hidden.includes(ex.id));
   if(!removedItems.length)return'';
-  let h=`<div style="padding:10px 14px 4px;margin-top:6px;border-top:1px dashed #2a2a2a;font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;">Removed</div>`;
+  let h=`<div style="padding:10px 14px 4px;margin-top:6px;border-top:1px dashed var(--border-subtle);font-family:var(--mono);font-size:.5rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase;">Removed</div>`;
   removedItems.forEach(ex=>{
     // 3.62.3 — samma permanentSwaps-oversight som Edit Program-listan (gymnotes 2026-07-02)
     const name=escapeHTML(state.permanentSwaps?.[ex.id]||state.exerciseOverrides?.[ex.id]||ex.name);
-    h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;font-family:var(--sans);gap:6px;"><span style="color:#666;font-size:.78rem;text-decoration:line-through;flex:1;">${name}</span><div style="display:flex;gap:6px;"><button onclick="permanentlyDeleteRemoved('${ex.id}','${passId}')" style="background:none;border:1px solid #6a2a2a;color:#c06060;font-family:var(--mono);font-size:.5rem;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">✕ Delete</button><button onclick="restoreExerciseToSession('${ex.id}','${passId}')" style="background:none;border:1px solid #3a3a3a;color:#888;font-family:var(--mono);font-size:.5rem;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">+ Restore</button></div></div>`;
+    h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;font-family:var(--sans);gap:6px;"><span style="color:var(--text-faint);font-size:.78rem;text-decoration:line-through;flex:1;">${name}</span><div style="display:flex;gap:6px;"><button onclick="permanentlyDeleteRemoved('${ex.id}','${passId}')" style="background:none;border:1px solid var(--danger-border);color:var(--danger);font-family:var(--mono);font-size:.5rem;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">✕ Delete</button><button onclick="restoreExerciseToSession('${ex.id}','${passId}')" style="background:none;border:1px solid var(--border-strong);color:var(--text-muted);font-family:var(--mono);font-size:.5rem;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;">+ Restore</button></div></div>`;
   });
   return h;
 }
@@ -6528,7 +6563,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
             html+=`<span class="ex-saved-badge">✓ Done</span>
               <button class="ex-btn-edit" onclick="unsaveExercise('${passId}','${ex.id}')">
                 <svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit ▾</button>`;
-            if(ex.extra) html+=`<button class="ex-btn-edit" onclick="saveExtraToProgram('${passId}','${ex.id}')" style="color:#4a7a4a;border-color:#2a3a2a;">+ Program</button>`;
+            if(ex.extra) html+=`<button class="ex-btn-edit" onclick="saveExtraToProgram('${passId}','${ex.id}')" style="color:var(--success);border-color:var(--success-border);">+ Program</button>`;
           }else if(ex.extra){
             // Extras: Skip + Edit▾(Tags / + Program / Remove). Ingen swap — man valde övningen fritt.
             html+=`<button class="ex-btn-skip" onclick="skipExercise('${passId}','${ex.id}')">Skip</button>`;
@@ -6537,8 +6572,8 @@ function buildPassBodyHTML(pass,cycle,nextId){
                 <svg width="13" height="11" viewBox="0 0 13 11" fill="none" style="margin-right:4px;vertical-align:middle;"><line x1="1" y1="2" x2="12" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="9" x2="12" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="4" cy="2" r="1.5" fill="currentColor"/><circle cx="9" cy="5.5" r="1.5" fill="currentColor"/><circle cx="5" cy="9" r="1.5" fill="currentColor"/></svg>Edit</button>
               <div class="ex-edit-menu" id="editmenu-${ex.id}">
                 <button onclick="toggleTagEditor('${ex.id}');closeEditMenu('${ex.id}')">🏷 Tags</button>
-                <button onclick="saveExtraToProgram('${passId}','${ex.id}');closeEditMenu('${ex.id}')" style="color:#4a7a4a">+ Program</button>
-                <button onclick="removeExtra('${passId}','${ex.id}');closeEditMenu('${ex.id}')" style="color:#c06060">Remove</button>
+                <button onclick="saveExtraToProgram('${passId}','${ex.id}');closeEditMenu('${ex.id}')" style="color:var(--success)">+ Program</button>
+                <button onclick="removeExtra('${passId}','${ex.id}');closeEditMenu('${ex.id}')" style="color:var(--danger)">Remove</button>
               </div>
             </div>`;
           }else{
@@ -6550,14 +6585,14 @@ function buildPassBodyHTML(pass,cycle,nextId){
                 <button onclick="toggleSwap('${ex.id}','${passId}','temp');closeEditMenu('${ex.id}')">Swap (session)</button>
                 <button onclick="toggleSwap('${ex.id}','${passId}','perm');closeEditMenu('${ex.id}')">Swap (always)</button>
                 <button onclick="toggleTagEditor('${ex.id}');closeEditMenu('${ex.id}')">🏷 Tags</button>
-                <button onclick="removeExerciseFromSession('${ex.id}','${passId}');closeEditMenu('${ex.id}')" style="color:#c06060">Remove</button>
+                <button onclick="removeExerciseFromSession('${ex.id}','${passId}');closeEditMenu('${ex.id}')" style="color:var(--danger)">Remove</button>
               </div>
             </div>`;
           }
           html+=`</div>`;
         }else if(!isDone&&isSkipped){
           html+=`<div class="ex-mini-btns">
-            <span style="font-family:var(--mono);font-size:.44rem;color:#5a3a00;">Skipped</span>
+            <span style="font-family:var(--mono);font-size:.44rem;color:var(--text-faint);">Skipped</span>
             <button class="ex-btn-edit" onclick="unskipExercise('${passId}','${ex.id}')">↩ Undo</button>
           </div>`;
         }
@@ -6591,7 +6626,7 @@ function buildPassBodyHTML(pass,cycle,nextId){
               });
               optsHtml += `</optgroup>`;
             });
-            html+=`<div id="swapwrap-${ex.id}" style="display:none"><div style="font-family:var(--mono);font-size:.48rem;color:#555;padding:4px 0 2px;text-transform:uppercase;letter-spacing:.08em" id="swaplabel-${ex.id}"></div><select class="swap-select" id="swap-${ex.id}" onchange="doSwap('${ex.id}',this.value,'${passId}')"><option value="">— Select exercise —</option>${optsHtml}<option value="__CUSTOM__">+ Add custom exercise...</option></select></div>`;
+            html+=`<div id="swapwrap-${ex.id}" style="display:none"><div style="font-family:var(--mono);font-size:.48rem;color:var(--text-faint);padding:4px 0 2px;text-transform:uppercase;letter-spacing:.08em" id="swaplabel-${ex.id}"></div><select class="swap-select" id="swap-${ex.id}" onchange="doSwap('${ex.id}',this.value,'${passId}')"><option value="">— Select exercise —</option>${optsHtml}<option value="__CUSTOM__">+ Add custom exercise...</option></select></div>`;
           }
         }
 
@@ -6612,12 +6647,12 @@ function buildPassBodyHTML(pass,cycle,nextId){
           html+=`<div class="sets-table">`;
           // Column header for unilateral exercises
           if(isUni){
-            html+=`<div class="set-row uni-set" style="margin-bottom:6px;border-bottom:1px solid #222;padding-bottom:4px;">
+            html+=`<div class="set-row uni-set" style="margin-bottom:6px;border-bottom:1px solid var(--border-subtle);padding-bottom:4px;">
               <div></div>
-              <div class="set-unit" style="color:#666;font-size:.42rem;">${unitLabel()}</div>
-              <div class="set-unit" style="color:#666;font-size:.42rem;">reps</div>
+              <div class="set-unit" style="color:var(--text-muted);font-size:.42rem;">${unitLabel()}</div>
+              <div class="set-unit" style="color:var(--text-muted);font-size:.42rem;">reps</div>
               <div class="set-unit forced-unit" style="font-size:.42rem;">+f</div>
-              <div class="set-unit" style="color:#c89030;font-size:.42rem;">side</div>
+              <div class="set-unit" style="color:var(--tag-uni-color);font-size:.42rem;">side</div>
               <div></div>
             </div>`;
           }
@@ -6679,7 +6714,11 @@ function buildPassBodyHTML(pass,cycle,nextId){
           }
           if(!isDone&&!isSaved){
             if(!isRampEx){
-              html+=`<button class="add-set-btn" style="border-color:#1a1400;color:#3a2a00" onclick="addWarmupSet('${ex.id}','${passId}')">+ Warm-up</button>`;
+              // 3.88.2 — låg på `#3a2a00`/`#1a1400`, alltså mörkbrunt på nästan
+              // svart (~1,9:1 i Iron). Avsikten var "dämpad bärnsten, svagare än
+              // + Work Set" — den bär nu ramp-taggens tokens, som varje tema
+              // redan har ett läsbart värde för.
+              html+=`<button class="add-set-btn" style="border-color:var(--tag-ramp-border);color:var(--tag-ramp-color)" onclick="addWarmupSet('${ex.id}','${passId}')">+ Warm-up</button>`;
             }
             html+=`<button class="add-set-btn" onclick="addWorkSet('${ex.id}','${passId}')">+ Work Set</button>`;
             // Wide primary Done CTA — below sets, full width, unmissable
@@ -7219,17 +7258,17 @@ function showEditPage(){
       </div>
       <div class="edit-sub">Configure your training cycle</div>
       <div class="edit-cards">
-        <div class="edit-card" onclick="showEditSort()">
+        <div class="edit-card panel" onclick="showEditSort()">
           <div class="edit-card-icon">⟺</div>
           <div class="edit-card-title">Sort</div>
           <div class="edit-card-desc">Reorder your training sessions.<br>Drag and drop to rearrange.</div>
         </div>
-        <div class="edit-card" onclick="showEditAddRemove()">
+        <div class="edit-card panel" onclick="showEditAddRemove()">
           <div class="edit-card-icon">＋</div>
           <div class="edit-card-title">Add / Remove</div>
           <div class="edit-card-desc">Add or remove sessions, rename them, manage exercises and forced rest days.</div>
         </div>
-        <div class="edit-card" onclick="startRebuildChain()">
+        <div class="edit-card panel" onclick="startRebuildChain()">
           <div class="edit-card-icon">↺</div>
           <div class="edit-card-title">Rebuild Chain</div>
           <div class="edit-card-desc">Answer a few questions to generate a new training cycle. Logs and custom exercises are kept.</div>
@@ -7281,17 +7320,17 @@ function showEditSort(){
     if(!p)return;
     const letter='ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i]||pid;
     const name=escapeHTML(state.sessionNameOverrides?.[pid]||p.name);
-    html+=`<div class="reorder-item" data-id="${pid}" draggable="true"
+    html+=`<div class="reorder-item panel" data-id="${pid}" draggable="true"
         ondragstart="dragStart(event,'${pid}')"
         ondragover="dragOver(event)"
         ondrop="dropPassAndRefreshSort(event,'${pid}')"
         ontouchstart="touchStart(event,'${pid}')"
         ontouchmove="touchMove(event)"
         ontouchend="touchEndAndRefreshSort(event,'${pid}')"
-        style="display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--border-strong);margin-bottom:6px;cursor:grab;background:var(--surface-input);touch-action:none;-webkit-user-select:none;user-select:none;">
+        style="display:flex;align-items:center;gap:12px;padding:14px 16px;margin-bottom:6px;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;">
       <span style="font-family:var(--display);font-size:1.4rem;color:var(--red);min-width:22px;">${letter}</span>
       <span style="font-family:var(--sans);font-size:.9rem;flex:1;color:var(--white);">${name}</span>
-      <span style="color:#555;font-size:1.2rem;letter-spacing:2px;">⠿</span>
+      <span style="color:var(--text-faint);font-size:1.2rem;letter-spacing:2px;">⠿</span>
     </div>`;
   });
   html+=`</div></div>`;
@@ -7325,11 +7364,11 @@ function showEditAddRemove(){
     const count=restSlots.filter(s=>s===pos).length;
     const letter='ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i]||pid;
     const name=escapeHTML(state.sessionNameOverrides?.[pid]||p.name);
-    html+=`<div style="border:1px solid #2a2a2a;margin-bottom:8px;">
+    html+=`<div class="panel" style="margin-bottom:8px;">
       <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;">
         <span style="font-family:var(--display);font-size:1.4rem;color:var(--red);min-width:22px;">${letter}</span>
         <span style="font-family:var(--sans);font-size:.9rem;flex:1;color:var(--white);">${name}</span>
-        ${passOrder.length>1?`<button onclick="removeSessionFromChain('${pid}')" style="background:none;border:1px solid #3a1a1a;color:#884444;font-family:var(--mono);font-size:.48rem;padding:6px 12px;cursor:pointer;text-transform:uppercase;letter-spacing:.05em;">Remove</button>`:''}
+        ${passOrder.length>1?`<button onclick="removeSessionFromChain('${pid}')" style="background:none;border:1px solid var(--danger-border);color:var(--danger);font-family:var(--mono);font-size:.48rem;padding:6px 12px;cursor:pointer;text-transform:uppercase;letter-spacing:.05em;">Remove</button>`:''}
       </div>
       <div id="passrenamewrap-${pid}" style="display:none;padding:0 14px 12px;">
         <div style="display:flex;gap:6px;">
@@ -7338,27 +7377,27 @@ function showEditAddRemove(){
           <button class="add-ex-confirm" style="background:var(--surface-elevated);" onclick="toggleSessionRename('${pid}')">✕</button>
         </div>
       </div>
-      <div style="display:flex;gap:5px;padding:5px;background:var(--black);border-top:1px solid #1a1a1a;">
-        <button onclick="toggleSessionRename('${pid}')" style="flex:1;padding:11px 0;background:var(--gray-mid);border:1px solid #333;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.07em;cursor:pointer;">✎ Rename</button>
-        <button onclick="showEditExercises('${pid}')" style="flex:1;padding:11px 0;background:var(--gray-mid);border:1px solid #333;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.07em;cursor:pointer;">Exercises →</button>
+      <div style="display:flex;gap:5px;padding:5px;background:var(--surface-deep);border-top:1px solid var(--border-subtle);">
+        <button onclick="toggleSessionRename('${pid}')" style="flex:1;padding:11px 0;background:var(--surface-input);border:1px solid var(--border-subtle);color:var(--text-body);font-family:var(--mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.07em;cursor:pointer;">✎ Rename</button>
+        <button onclick="showEditExercises('${pid}')" style="flex:1;padding:11px 0;background:var(--surface-input);border:1px solid var(--border-subtle);color:var(--text-body);font-family:var(--mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.07em;cursor:pointer;">Exercises →</button>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid #1a1a1a;">
-        <span style="font-family:var(--mono);font-size:.48rem;color:#666;text-transform:uppercase;letter-spacing:.06em;">Forced rest after</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--border-subtle);">
+        <span style="font-family:var(--mono);font-size:.48rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Forced rest after</span>
         <div style="display:flex;align-items:center;">
-          <button onclick="removeRestSlot(${pos});showEditAddRemove();" style="background:none;border:1px solid #2a2a2a;color:${count>0?'#aaa':'#333'};font-family:var(--mono);font-size:.9rem;width:32px;height:32px;cursor:pointer;line-height:1;" ${count===0?'disabled':''}>−</button>
-          <span style="font-family:var(--mono);font-size:.7rem;min-width:32px;text-align:center;color:${count>0?'var(--white)':'#444'};">${count}</span>
-          <button onclick="addRestSlot(${pos});showEditAddRemove();" style="background:none;border:1px solid #2a2a2a;color:#aaa;font-family:var(--mono);font-size:.9rem;width:32px;height:32px;cursor:pointer;line-height:1;">+</button>
+          <button onclick="removeRestSlot(${pos});showEditAddRemove();" style="background:none;border:1px solid var(--border-subtle);color:${count>0?'var(--text-body)':'var(--text-faint)'};font-family:var(--mono);font-size:.9rem;width:32px;height:32px;cursor:pointer;line-height:1;" ${count===0?'disabled':''}>−</button>
+          <span style="font-family:var(--mono);font-size:.7rem;min-width:32px;text-align:center;color:${count>0?'var(--white)':'var(--text-faint)'};">${count}</span>
+          <button onclick="addRestSlot(${pos});showEditAddRemove();" style="background:none;border:1px solid var(--border-subtle);color:var(--text-body);font-family:var(--mono);font-size:.9rem;width:32px;height:32px;cursor:pointer;line-height:1;">+</button>
         </div>
       </div>
     </div>`;
   });
 
   if(available.length>0){
-    html+=`<div style="font-family:var(--mono);font-size:.54rem;color:#aaa;text-transform:uppercase;letter-spacing:.08em;margin:20px 0 10px;">Add a session:</div>`;
+    html+=`<div style="font-family:var(--mono);font-size:.54rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin:20px 0 10px;">Add a session:</div>`;
     available.forEach(t=>{
-      html+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #1a1a1a;">
-        <div style="font-family:var(--sans);font-size:.84rem;color:#aaa;">${t.name}</div>
-        <button onclick="addSessionToChain('${t.id}');showEditAddRemove();" style="background:none;border:1px solid #1a4a1a;color:#4a8a4a;font-family:var(--mono);font-size:.5rem;padding:6px 14px;cursor:pointer;text-transform:uppercase;">+ Add</button>
+      html+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border-subtle);">
+        <div style="font-family:var(--sans);font-size:.84rem;color:var(--text-body);">${t.name}</div>
+        <button onclick="addSessionToChain('${t.id}');showEditAddRemove();" style="background:none;border:1px solid var(--success-border);color:var(--success);font-family:var(--mono);font-size:.5rem;padding:6px 14px;cursor:pointer;text-transform:uppercase;">+ Add</button>
       </div>`;
     });
   }
@@ -7477,14 +7516,14 @@ function showEditExercises(passId){
     const removeFn = isAdded
       ? `removeAddedExercise('${ex.id}','${passId}');showEditExercises('${passId}');`
       : `removeExerciseFromEditPage('${ex.id}','${passId}');`;
-    html += `<div data-exid="${ex.id}" style="border:1px solid #2a2a2a;margin-bottom:6px;">
+    html += `<div class="panel" data-exid="${ex.id}" style="margin-bottom:6px;">
       <div style="display:flex;align-items:center;">
         <span class="drag-handle">⠿</span>
         <div style="flex:1;display:flex;align-items:center;justify-content:space-between;padding:10px 14px 10px 0;cursor:pointer;" onclick="toggleTagEditor('${ex.id}')">
           <span style="font-family:var(--sans);font-size:.84rem;color:var(--white);">${escapeHTML(name)}</span>
           <div style="display:flex;align-items:center;gap:10px;">
-            <span style="color:#555;font-size:1rem;">›</span>
-            <button onclick="event.stopPropagation();${removeFn}" style="background:none;border:1px solid #3a1a1a;color:#884444;font-family:var(--mono);font-size:.48rem;padding:5px 10px;cursor:pointer;text-transform:uppercase;">Remove</button>
+            <span style="color:var(--text-faint);font-size:1rem;">›</span>
+            <button onclick="event.stopPropagation();${removeFn}" style="background:none;border:1px solid var(--danger-border);color:var(--danger);font-family:var(--mono);font-size:.48rem;padding:5px 10px;cursor:pointer;text-transform:uppercase;">Remove</button>
           </div>
         </div>
       </div>
@@ -7495,18 +7534,23 @@ function showEditExercises(passId){
   html += `</div>`;
 
   if(removedExs.length > 0){
-    html += `<div style="font-family:var(--mono);font-size:.48rem;color:#555;text-transform:uppercase;letter-spacing:.08em;padding:10px 0 6px;border-top:1px dashed #2a2a2a;margin-top:8px;">Removed:</div>`;
+    html += `<div style="font-family:var(--mono);font-size:.48rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;padding:10px 0 6px;border-top:1px dashed var(--border-subtle);margin-top:8px;">Removed:</div>`;
     removedExs.forEach(ex => {
       const name = state.permanentSwaps?.[ex.id] || state.exerciseOverrides?.[ex.id] || ex.name;
-      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid #1a1a1a;margin-bottom:6px;opacity:.5;">
-        <span style="font-family:var(--sans);font-size:.84rem;color:#666;text-decoration:line-through;">${escapeHTML(name)}</span>
-        <button onclick="restoreExerciseToSession('${ex.id}','${passId}');showEditExercises('${passId}');" style="background:none;border:1px solid #2a3a2a;color:#4a7a4a;font-family:var(--mono);font-size:.48rem;padding:5px 10px;cursor:pointer;text-transform:uppercase;">Restore</button>
+      // 3.88.2 — `opacity:.5` borttagen. Den satt på en rad UTAN yta, så den
+      // tunnade ut ram och text mot temats bakgrund i stället för mot en panel
+      // (Full Moon: "External Rotator Cuff" nästan borta mot månen). Raden är
+      // en panel som alla andra nu; att den är borttagen bärs av genomstruken
+      // text + --text-faint, alltså av färgkanalen — inte av genomskinlighet.
+      html += `<div class="panel" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;margin-bottom:6px;">
+        <span style="font-family:var(--sans);font-size:.84rem;color:var(--text-faint);text-decoration:line-through;">${escapeHTML(name)}</span>
+        <button onclick="restoreExerciseToSession('${ex.id}','${passId}');showEditExercises('${passId}');" style="background:none;border:1px solid var(--success-border);color:var(--success);font-family:var(--mono);font-size:.48rem;padding:5px 10px;cursor:pointer;text-transform:uppercase;">Restore</button>
       </div>`;
     });
   }
 
-  html += `<div style="margin-top:16px;padding-top:16px;border-top:1px solid #2a2a2a;">
-    <div style="font-family:var(--mono);font-size:.5rem;color:#aaa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Add exercise permanently:</div>
+  html += `<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-subtle);">
+    <div style="font-family:var(--mono);font-size:.5rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Add exercise permanently:</div>
     <div style="display:flex;gap:6px;">
       <select class="add-ex-input" id="addperm-select-${passId}" style="flex:1;">${addOptsHtml}</select>
       <button class="add-ex-confirm" onclick="confirmAddPermEx('${passId}')">+</button>
@@ -7608,7 +7652,9 @@ function touchMove(e){
   const target = el?.closest('.reorder-item');
   if(target && target.dataset.id && target.dataset.id !== touchDragId){
     // highlight drop target
-    document.querySelectorAll('.reorder-item').forEach(i=>i.style.borderColor='#3a3a3a');
+    // 3.88.2 — tom sträng, inte ett fast värde: raden får tillbaka temats EGEN
+  // panel-kant (`.panel` per tema) i stället för Irons grå.
+  document.querySelectorAll('.reorder-item').forEach(i=>i.style.borderColor='');
     target.style.borderColor = 'var(--red)';
   }
 }
@@ -7618,7 +7664,9 @@ function touchEnd(e, id){
   const el = document.elementFromPoint(touch.clientX, touch.clientY);
   const target = el?.closest('.reorder-item');
   if(touchDragEl) touchDragEl.style.opacity = '1';
-  document.querySelectorAll('.reorder-item').forEach(i=>i.style.borderColor='#3a3a3a');
+  // 3.88.2 — tom sträng, inte ett fast värde: raden får tillbaka temats EGEN
+  // panel-kant (`.panel` per tema) i stället för Irons grå.
+  document.querySelectorAll('.reorder-item').forEach(i=>i.style.borderColor='');
   if(target && target.dataset.id && target.dataset.id !== touchDragId){
     const fromId = touchDragId;
     const toId = target.dataset.id;
@@ -7713,7 +7761,7 @@ function buildTagEditorHTML(ex, passId){
   const legendHtml = TAGS.map(function(t){
     return ['<div style="display:flex;gap:6px;align-items:baseline;font-family:var(--mono);font-size:.5rem;line-height:1.4;">',
       '<span style="color:',t.color,';min-width:64px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;">',t.label,'</span>',
-      '<span style="color:#888;">',t.desc,'</span>',
+      '<span style="color:var(--text-muted);">',t.desc,'</span>',
       '</div>'].join('');
   }).join('');
   // 3.56.0 — Mätsätt (measure): single-select, nyckel = kanoniskt exId (följer rörelsen).
@@ -7721,14 +7769,14 @@ function buildTagEditorHTML(ex, passId){
   const curMeasure = getMeasure(canonId, getEffectiveEx(ex)); // 3.77.0 — swap-medveten
   const MEASURE_OPTS=[['weight','Weight × reps'],['bw','Bodyweight + load'],['bwreps','Reps only'],['timed','Timed (sec)'],['cardio','Cardio (time + km)'],['cardiosprint','Cardio sprints (time + km + count)'],['run','Running (time + km, PR = pace)'],['runsprint','Running w/ sprints (time + km + count, PR = pace)'],['carry','Loaded carry (kg + m)'],['inclinecardio','Incline cardio (grade + time + km)'],['sauna','Sauna (temp + time)']];
   const measureSel='<select onchange="setExerciseMeasure(\''+eid+'\',\''+pid+'\',this.value)" style="font-family:var(--mono);font-size:.5rem;padding:4px 6px;background:var(--surface-input);color:var(--white);border:1px solid var(--border-subtle);">'+MEASURE_OPTS.map(function(o){return '<option value="'+o[0]+'"'+(o[0]===curMeasure?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>';
-  const measureBlock='<div style="margin-bottom:10px;padding-top:8px;border-top:1px solid var(--border-subtle);"><div style="font-family:var(--mono);font-size:.48rem;color:#7ab;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Logged as</div>'+measureSel+'</div>';
+  const measureBlock='<div style="margin-bottom:10px;padding-top:8px;border-top:1px solid var(--border-subtle);"><div style="font-family:var(--mono);font-size:.48rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Logged as</div>'+measureSel+'</div>';
   const user=escapeHTML(currentUser?.name||'you');
   return ['<div id="tagwrap-',eid,'" style="display:none;margin:6px 0;padding:8px;border:1px solid var(--border-subtle);background:var(--surface-elevated);">',
-    '<div style="font-family:var(--mono);font-size:.48rem;color:#7ab;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Exercise Tags</div>',
+    '<div style="font-family:var(--mono);font-size:.48rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Exercise Tags</div>',
     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">',btnHtml,'</div>',
     '<div style="display:flex;flex-direction:column;gap:4px;padding:8px;background:var(--surface-deep);border:1px solid var(--border-subtle);margin-bottom:8px;">',legendHtml,'</div>',
     measureBlock,
-    '<div style="font-family:var(--mono);font-size:.44rem;color:#444;">Changes apply for ',user,' only.</div>',
+    '<div style="font-family:var(--mono);font-size:.44rem;color:var(--text-faint);">Changes apply for ',user,' only.</div>',
     '</div>'].join('');
 }
 // 3.56.0 — sätt mätsätt-override (kanoniskt exId) + reset fräsch övnings sets så ny form/antal slår.
@@ -9313,7 +9361,7 @@ function renderProgress(){
       html+=`<div class="hist-entry rest-hist"><div class="hist-header"><div><div class="hist-date">${escapeHTML(item.snap.date||fmtDate(item.ts))}</div><div class="hist-pass">Forced Rest</div></div><span class="rest-hist-badge">✓ Rest</span></div></div>`;
       return;
     }
-    const entry=item.entry, idx=item.idx;const cnt=(entry.exercises||[]).filter(e=>!e.skipped).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:#666">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button><button onclick="event.stopPropagation();deleteLogEntry(${idx})" title="Delete session" aria-label="Delete session" style="background:none;border:1px solid #444;color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 10px;cursor:pointer;white-space:nowrap;">✕</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:#2a2a2a">Skipped</span></div></div>`;let _hw=0,_hs=0;const sh=(ex.sets||[]).map(s=>{const _lbl=s.warmup?'W'+(++_hw):'S'+(++_hs);return `<div class="hist-set">${_lbl}: ${escapeHTML(formatSetLine(s,unitLabel(),ex.measure))}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;}).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
+    const entry=item.entry, idx=item.idx;const cnt=(entry.exercises||[]).filter(e=>!e.skipped).length;html+=`<div class="hist-entry" id="h${idx}"><div class="hist-header" onclick="document.getElementById('h${idx}').classList.toggle('open')"><div><div class="hist-date">${fmtDate(entry.timestamp)}</div><div class="hist-pass">Session ${escapeHTML(entry.passId)} — ${escapeHTML(entry.passName)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:var(--mono);font-size:.5rem;color:var(--text-muted)">${cnt} ex</span><button onclick="event.stopPropagation();copyLogEntryToClipboard(${idx})" style="background:none;border:1px solid var(--border-strong);color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 12px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">⎘ Copy to clipboard</button><button onclick="event.stopPropagation();deleteLogEntry(${idx})" title="Delete session" aria-label="Delete session" style="background:none;border:1px solid var(--border-strong);color:var(--gray-light);font-family:var(--mono);font-size:.5rem;padding:6px 10px;cursor:pointer;white-space:nowrap;">✕</button></div></div><div class="hist-body">${!(entry.exercises||[]).length?'<div class="hist-ex"><div class="hist-ex-header"><span>Forced Rest</span></div></div>':(entry.exercises||[]).map(ex=>{if(ex.skipped)return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}</strong><span style="color:var(--text-faint)">Skipped</span></div></div>`;let _hw=0,_hs=0;const sh=(ex.sets||[]).map(s=>{const _lbl=s.warmup?'W'+(++_hw):'S'+(++_hs);return `<div class="hist-set">${_lbl}: ${escapeHTML(formatSetLine(s,unitLabel(),ex.measure))}${s.fail?'<span class="set-fail-mark"> ✗</span>':''}</div>`;}).join('');return`<div class="hist-ex"><div class="hist-ex-header"><strong>${escapeHTML(ex.name)}${ex.extra?' +':''}</strong><span>${(ex.sets||[]).length} sets</span></div>${sh}</div>`;}).join('')}</div></div>`;});
   el.innerHTML=html;
   // 3.78.0 — containerdiven måste finnas i DOM:en innan drawPRChart kan injicera SVG:n i den
   // (samma mönster som drawChart i renderWeight; behöver container.offsetWidth för bredden).
@@ -10894,8 +10942,8 @@ function renderData(){
   const selBg = isVoid ? '#fff' : 'var(--red)';
   const selFg = isVoid ? '#000' : isUndertow ? '#eaf2fb' : isUnderstory ? '#f3f8ea' : isFullMoon ? '#f4f5f8' : 'var(--white)';
   const selBorder = isVoid ? '#888' : 'var(--red)';
-  const unitBtn=(u)=>`<button onclick="state.unit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.unit===u?selBg:'none'};border:1px solid ${state.unit===u?selBorder:'#2a2a2a'};color:${state.unit===u?selFg:'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u.toUpperCase()}</button>`;
-  const tempBtn=(u)=>`<button onclick="state.tempUnit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.tempUnit===u?selBg:'none'};border:1px solid ${state.tempUnit===u?selBorder:'#2a2a2a'};color:${state.tempUnit===u?selFg:'#666'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u==='c'?'°C':'°F'}</button>`;
+  const unitBtn=(u)=>`<button onclick="state.unit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.unit===u?selBg:'none'};border:1px solid ${state.unit===u?selBorder:'var(--border-subtle)'};color:${state.unit===u?selFg:'var(--text-muted)'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u.toUpperCase()}</button>`;
+  const tempBtn=(u)=>`<button onclick="state.tempUnit='${u}';save();renderData();renderChain();" style="flex:1;background:${state.tempUnit===u?selBg:'none'};border:1px solid ${state.tempUnit===u?selBorder:'var(--border-subtle)'};color:${state.tempUnit===u?selFg:'var(--text-muted)'};font-family:var(--mono);font-size:.54rem;letter-spacing:.07em;text-transform:uppercase;padding:8px;cursor:pointer;">${u==='c'?'°C':'°F'}</button>`;
   // 3.67.1 — samma Done-huvud som Edit Program (btn-primary = temastylad i alla teman).
   // 3.67.2 — edit-title, INTE section-title: section-title har extrema tema-overrides
   // (Obsidian: Cinzel + .32em + uppercase → "APPEARANCE" tryckte Done utanför skärmen).
@@ -10917,7 +10965,7 @@ function renderData(){
     <button onclick="state.timerEnabled=!state.timerEnabled;save();renderData();" style="background:${state.timerEnabled?'var(--green-bright)':'var(--gray-mid)'};border:1px solid ${state.timerEnabled?'var(--green-bright)':'var(--gray-mid)'};color:${state.timerEnabled?'var(--black)':'var(--gray-light)'};font-family:var(--mono);font-size:.54rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:all .2s;">${state.timerEnabled?'ON':'OFF'}</button>
   </div>
   <div style="font-family:var(--mono);font-size:.52rem;color:var(--gray-light);margin-bottom:8px;">Rest duration</div>
-  <div class="settings-panel" style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;">${[60,90,120,180,240,300].map(s=>`<button onclick="state.timerDefault=${s};save();renderData();" style="background:${state.timerDefault===s?selBg:'none'};border:1px solid ${state.timerDefault===s?selBorder:'#444'};color:${state.timerDefault===s?selFg:'#888'};font-family:var(--mono);font-size:.5rem;padding:6px 10px;cursor:pointer;transition:all .15s;">${s<60?s+'s':Math.floor(s/60)+(s%60?':'+String(s%60).padStart(2,'0'):'')+' min'}</button>`).join('')}</div>
+  <div class="settings-panel" style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;">${[60,90,120,180,240,300].map(s=>`<button onclick="state.timerDefault=${s};save();renderData();" style="background:${state.timerDefault===s?selBg:'none'};border:1px solid ${state.timerDefault===s?selBorder:'var(--border-strong)'};color:${state.timerDefault===s?selFg:'var(--text-muted)'};font-family:var(--mono);font-size:.5rem;padding:6px 10px;cursor:pointer;transition:all .15s;">${s<60?s+'s':Math.floor(s/60)+(s%60?':'+String(s%60).padStart(2,'0'):'')+' min'}</button>`).join('')}</div>
   <div class="section-sub">Weight Goal</div>
   <div class="settings-panel" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--gray-mid);margin-bottom:${state.weightGoalEnabled?'10px':'18px'};">
     <div>
@@ -10940,23 +10988,25 @@ function renderData(){
   <div class="settings-panel" style="display:flex;gap:6px;margin-bottom:18px">${tempBtn('c')}${tempBtn('f')}</div>
   <div class="section-sub">Custom Exercises</div>
   ${(state.customExercises||[]).length===0
-    ? `<div style="font-family:var(--mono);font-size:.52rem;color:#666;margin-bottom:16px;">No custom exercises yet. Create one via any exercise's Edit ▾ → Swap → + Custom.</div>`
+    ? `<div style="font-family:var(--mono);font-size:.52rem;color:var(--text-muted);margin-bottom:16px;">No custom exercises yet. Create one via any exercise's Edit ▾ → Swap → + Custom.</div>`
     : `<div style="margin-bottom:16px;">${state.customExercises.map(c=>`
-        <div class="settings-panel" style="border:1px solid #2a2a2a;padding:10px 12px;margin-bottom:6px;">
+        <div class="settings-panel" style="padding:10px 12px;margin-bottom:6px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
             <input type="text" value="${escapeHTML(c.name)}" id="custName-${c.id}"
               style="flex:1;background:var(--surface-input);border:1px solid var(--border-strong);color:var(--white);font-family:var(--sans);font-size:.82rem;padding:5px 8px;"
               onblur="updateCustomExercise('${c.id}',{name:this.value});renderData();">
             <button onclick="confirmDeleteCustomEx('${c.id}',${escapeHTML(JSON.stringify(c.name))})"
-              style="background:none;border:1px solid #3a1a1a;color:#884444;font-family:var(--mono);font-size:.44rem;padding:4px 8px;cursor:pointer;text-transform:uppercase;">Delete</button>
+              style="background:none;border:1px solid var(--danger-border);color:var(--danger);font-family:var(--mono);font-size:.44rem;padding:4px 8px;cursor:pointer;text-transform:uppercase;">Delete</button>
           </div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;">
             ${['ramp','bw','uni','timed','singles'].map(tag=>{
               const on=!!c[tag];
-              const colors={ramp:'#d4a030',bw:'#5aaa5a',uni:'#c89030',timed:'#6090c0',singles:'#c07060'};
+              // 3.88.2 — tag-färgerna låg duplicerade som hex här, en andra
+              // sanning vid sidan av tokensen från 3.34.11. Nu samma källa.
+              const colors={ramp:'var(--tag-ramp-color)',bw:'var(--tag-bw-color)',uni:'var(--tag-uni-color)',timed:'var(--tag-timed-color)',singles:'var(--tag-singles-color)'};
               const labels={ramp:'Ramp',bw:'BW+',uni:'Unilateral',timed:'Timed',singles:'Singles'};
               return `<button onclick="updateCustomExercise('${c.id}',{${tag}:${!on}});renderData();"
-                style="background:${on?'#1a1a0d':'none'};border:1px solid ${on?colors[tag]:'#333'};color:${on?colors[tag]:'#555'};font-family:var(--mono);font-size:.44rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;cursor:pointer;">${labels[tag]}</button>`;
+                style="background:${on?'var(--surface-input)':'none'};border:1px solid ${on?colors[tag]:'var(--border-subtle)'};color:${on?colors[tag]:'var(--text-faint)'};font-family:var(--mono);font-size:.44rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;cursor:pointer;">${labels[tag]}</button>`;
             }).join('')}
           </div>
         </div>`).join('')}
@@ -10967,7 +11017,7 @@ function renderData(){
   if(_settingsPage==='appearance'){
     el.innerHTML=`${subHead('Appearance')}
   <div class="section-sub">Theme</div>
-  <div style="font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Dark</div>
+  <div style="font-family:var(--mono);font-size:.5rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Dark</div>
   <div class="settings-panel" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
     ${THEMES.filter(t=>t.cat==='dark').map(t=>{
       const active = (state.theme||'iron')===t.id;
@@ -10981,7 +11031,7 @@ function renderData(){
       </button>`;
     }).join('')}
   </div>
-  <div style="font-family:var(--mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Light</div>
+  <div style="font-family:var(--mono);font-size:.5rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Light</div>
   <div class="settings-panel" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;">
     ${THEMES.filter(t=>t.cat==='light').map(t=>{
       const active = (state.theme||'iron')===t.id;
@@ -11041,7 +11091,7 @@ function renderData(){
     return `<div class="settings-panel" style="border:1px solid var(--gray-mid);margin-bottom:8px;">
       <button onclick="toggleHelpTopic('${t.id}')" style="display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:none;padding:14px;cursor:pointer;text-align:left;">
         <span style="font-family:var(--sans);font-size:.86rem;color:var(--white);">${t.title}</span>
-        <span style="color:#555;font-size:.7rem;flex-shrink:0;margin-left:10px;">${open?'▾':'▸'}</span>
+        <span style="color:var(--text-faint);font-size:.7rem;flex-shrink:0;margin-left:10px;">${open?'▾':'▸'}</span>
       </button>
       ${open?`<div class="help-body" style="padding:0 14px 14px;font-family:var(--sans);font-size:.74rem;color:var(--gray-light);line-height:1.65;">${t.body}</div>`:''}
     </div>`;
@@ -11087,8 +11137,8 @@ function renderData(){
           <div style="font-family:var(--sans);font-size:.82rem;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(u.name||u.email||'—')}</div>
           <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);flex-shrink:0;white-space:nowrap;">${u.sessions||0} sess · ${u.sessions_30d||0}/30d</div>
         </div>
-        ${u.email?`<div style="font-family:var(--mono);font-size:.5rem;color:#666;margin-top:3px;letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(u.email)}</div>`:''}
-        <div style="font-family:var(--mono);font-size:.5rem;color:#666;margin-top:2px;line-height:1.6;">active ${fmtDT(u.last_active)}${ago(u.last_active)?' · '+ago(u.last_active):''} · last workout ${fmtDT(u.last_workout)} · v${escapeHTML(String(u.app_version||'?'))}${u.theme?' · '+escapeHTML(String(u.theme)):''}</div>
+        ${u.email?`<div style="font-family:var(--mono);font-size:.5rem;color:var(--text-muted);margin-top:3px;letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(u.email)}</div>`:''}
+        <div style="font-family:var(--mono);font-size:.5rem;color:var(--text-muted);margin-top:2px;line-height:1.6;">active ${fmtDT(u.last_active)}${ago(u.last_active)?' · '+ago(u.last_active):''} · last workout ${fmtDT(u.last_workout)} · v${escapeHTML(String(u.app_version||'?'))}${u.theme?' · '+escapeHTML(String(u.theme)):''}</div>
       </div>`).join('')}`;
     }
     el.innerHTML=`${subHead('Admin · Analytics')}
@@ -11104,11 +11154,11 @@ function renderData(){
       <div style="font-family:var(--sans);font-size:.9rem;color:var(--white);margin-bottom:3px;">${label}</div>
       <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);letter-spacing:.04em;line-height:1.5;">${desc}</div>
     </div>
-    <span style="color:#555;font-size:1.15rem;flex-shrink:0;margin-left:10px;">›</span>
+    <span style="color:var(--text-faint);font-size:1.15rem;flex-shrink:0;margin-left:10px;">›</span>
   </button>`;
   el.innerHTML=`<div class="section-title">Settings</div>
-  <div style="font-family:var(--mono);font-size:.58rem;color:#444;margin-bottom:10px">Supabase · ${escapeHTML(currentUser?.name||'')} · ${size} KB · ${state.log.length} sessions</div>
-  <div onclick="openSettingsPage('data')" style="cursor:pointer;font-family:var(--mono);font-size:.6rem;margin-bottom:18px;color:${_lastSyncError?'var(--red)':'var(--green-bright)'};">${_lastSyncError?('⚠ '+escapeHTML(_lastSyncError)):'✓ All changes synced'} <span style="color:#555;">· v${APP_VERSION} ›</span></div>
+  <div style="font-family:var(--mono);font-size:.58rem;color:var(--text-faint);margin-bottom:10px">Supabase · ${escapeHTML(currentUser?.name||'')} · ${size} KB · ${state.log.length} sessions</div>
+  <div onclick="openSettingsPage('data')" style="cursor:pointer;font-family:var(--mono);font-size:.6rem;margin-bottom:18px;color:${_lastSyncError?'var(--red)':'var(--green-bright)'};">${_lastSyncError?('⚠ '+escapeHTML(_lastSyncError)):'✓ All changes synced'} <span style="color:var(--text-faint);">· v${APP_VERSION} ›</span></div>
   ${row('training','Training','Rest timer · weight goal · units · custom exercises')}
   ${row('appearance','Appearance','Themes · ambient effects')}
   ${row('data','Data & Sync','Sync status · program sharing · backup · reset')}

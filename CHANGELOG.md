@@ -6,6 +6,24 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.88.2 — 2026-08-20
+**Edit Program hade ramar men ingen yta — man läste sitt program mot fullmånen.**
+
+Niklas ville flytta övningar mellan pass på gymmet och såg knappt vad raderna sa. Skärmdumpar från Full Moon: månen och de fallande kedjorna syns rakt igenom Edit Programs listor. Hans fråga: *"Kan Edit program inte vara minst lika frostad som övningar?"*
+
+Det var inte ett Full Moon-fel och inte ett stacking-läckage. `Sort Sessions` hade `background:var(--surface-input)` och såg korrekt ut; `Add / Remove` och `Exercises` hade bara `border:1px solid #2a2a2a` och ingen bakgrund alls. Samma vy, samma tema, olika utfall — alltså saknad yta, inte ett lager som lyser förbi.
+
+Det är fjärde gången samma buggklass rapporteras av ett öga (3.81.0, 3.84.1, 3.86.1, nu). 3.86.1 hette till och med *"hela Edit Chain-skärmen"* men nådde bara hubbens `.edit-card` — undersidornas ytor bor i markupen, inte i CSS:en, och komponentlistan drogs efter CSS-klasser.
+
+- **`.panel`** — en klass för allt som byggs med inline-styles. Varje tema med ett eget kortmaterial listar den bredvid sin `.ex-block`-regel, så en panel ser ut som ett övningskort i alla elva teman: Full Moons frostade slab, Overgrowths barkådring, Cosmic Horrors organiska radie. Ny inline-byggd yta sätter bara klassen.
+- **`--danger` / `--success`** — Remove/Delete/Restore/Add bar `#884444`, `#c06060`, `#4a8a4a` hårdkodat. De kunde inte gå via `--red`/`--green-bright`: båda är omtolkade per tema (Full Moons `--red` är obsidiansvart, Voids är vit). En Remove-knapp som blir svart eller vit har tappat sitt enda jobb. Tokens blandar därför en fast fara-röd mot `--white`, som redan är inverterad i de ljusa temana — en definition, noll per-tema-overrides.
+- **Svepet: 59 rå hex-färger** ur inline-styles i Chain, Edit Program, tag-editorn, History och Settings. Fångade tre osynliga texter på köpet: `Skipped` i historiken låg på `#2a2a2a` (1,2:1 mot Irons yta), `Skipped`-märket i sessionen på `#5a3a00`, och `+ Warm-up` på `#3a2a00` — det sistnämnda bär nu ramp-taggens tokens, som varje tema redan har ett läsbart värde för.
+- **`opacity:.5` bort från Removed-raderna.** Den satt på en rad utan yta och tunnade ut ram och text mot bakgrunden i stället för mot en panel. Att en övning är borttagen bärs nu av genomstruken text i `--text-faint`, alltså av färgkanalen.
+
+**`check_themes.js` CHECK 8** stänger klassen. CHECK 6 och 7 läser CSS och var därför blinda för appens andra stilar-lager: `style="..."` i JS-template-strängar. Den nya checken felar på rå hex i ett style-attribut och varnar för en container med hel ram men ingen bakgrund. Verifierad mot det röda fallet — 3.88.1:s egen markup — inte bara mot grönt.
+
+---
+
 ## 3.88.1 — 2026-08-14
 **Taggarna blev kortets svagaste element när allt annat lyftes.**
 
