@@ -376,14 +376,19 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
 .ex-block.collapsed.saved .ex-collapsed-summary{background:var(--surface-saved);}
 .ex-block.collapsed.done .ex-collapsed-summary{cursor:default;}
 .ex-block.collapsed.done .ex-collapsed-summary:hover{background:transparent;}
-/* #2 — separator mellan kollapsade rader för tydligare gruppering.
+/* #2 — separator mellan övningar för tydligare gruppering.
    3.88.6 — bara en 1px hårlinje, ingen luft, Niklas: "lite grötigt och något
    otydligt vad som är separata övningar". `margin-top` istf `border-top`: en
    riktig lucka ger samma effekt som chain-strip↔passnamn-gapet (3.88.5) men i
    listskala (9px, inte 28px — annars blir varje session en lång scroll av
    isolerade öar istf en scanbar lista). Ingen linje behövs längre; gapet ensamt
-   + varje rads egen panel-bakgrund (tema-block) räcker för att skilja dem åt. */
-.ex-block.collapsed + .ex-block.collapsed{margin-top:9px;}
+   + varje rads egen panel-bakgrund (tema-block) räcker för att skilja dem åt.
+   3.88.7 — selektorn krävde `.collapsed` på BÅDA sidor, så exakt det par som
+   används mest (aktiv/expanderad övning ↔ nästa kollapsade) fick aldrig
+   gapet — Niklas skärmdump av Nanosuit: "den aktiva övningen är alltid
+   sammansatt med nästkommande." Gäller nu alla par av övningsblock, inte bara
+   kollapsat-mot-kollapsat. */
+.ex-block + .ex-block{margin-top:9px;}
 .ex-collapsed-name{font-family:var(--mono);font-size:.95rem;font-weight:500;letter-spacing:.05em;color:var(--white);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ex-collapsed-name .ex-tag{margin-left:6px;}
 .ex-collapsed-status{font-family:var(--mono);font-size:.78rem;color:var(--gray-light);letter-spacing:.04em;flex-shrink:0;}
@@ -5106,7 +5111,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.88.6';
+const APP_VERSION = '3.88.7';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

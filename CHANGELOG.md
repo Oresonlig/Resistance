@@ -6,6 +6,17 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.88.7 — 2026-08-20
+**Den aktiva övningen satt fast klistrad mot nästa — gapet gällde bara kollapsat-mot-kollapsat.**
+
+3.88.6:s gap-selektor krävde `.collapsed` på BÅDA sidor (`.ex-block.collapsed + .ex-block.collapsed`). Exakt det par som syns hela tiden — den expanderade övningen man faktiskt loggar mot nästa kollapsade rad — matchade aldrig, eftersom den aktiva raden inte har `.collapsed`. Niklas skickade Nanosuit-skärmdumpar: "av någon anledning så är alltid den aktiva övningen sammansatt med nästkommande övning. Resten av övningarna är det luft emellan." Bekräftade samtidigt att 9px var rätt storlek: "blev för övrigt väldigt bra med luft emellan."
+
+`.ex-block.collapsed + .ex-block.collapsed` → `.ex-block + .ex-block`. Gäller nu alla par av övningsblock, oavsett kollapsat eller expanderat.
+
+`npm run check` grön: Syntax OK, 0 error / 0 warn, 204 tester.
+
+---
+
 ## 3.88.6 — 2026-08-20
 **Kollapsade övningsrader satt klistrade mot varandra — 9px luft istället.**
 
