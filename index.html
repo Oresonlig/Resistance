@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://esm.sh; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://qjmjqideqrgozexudaqr.supabase.co; manifest-src 'self'; worker-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://esm.sh; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://qjmjqideqrgozexudaqr.supabase.co https://api.github.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-src 'none'">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -4496,6 +4496,9 @@ async function handleSession(session){
     const hv=document.getElementById('headerVersion');if(hv)hv.textContent=APP_VERSION;
     // PM12: varna om Private Browsing efter app-shell renderats
     if(detectStorageQuotaIssue()) showPrivateModeBanner();
+    // 3.88.10 — no-op i webbläsaren (checkAndroidAppUpdate returnerar direkt
+    // om window.Capacitor saknas), fire-and-forget i den native appen.
+    checkAndroidAppUpdate();
     refreshAmPill();
     requestNotificationPermission && requestNotificationPermission();
     _onboardingActive = false; // 3.71.0 — stale flagga från övergiven wizard får inte blockera renderChain
@@ -5128,7 +5131,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.88.9';
+const APP_VERSION = '3.88.10';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -12012,6 +12015,55 @@ function autoReloadForNewVersion(cloudVersion){
   setTimeout(()=>{
     location.href = location.pathname + '?v=' + Date.now();
   }, 1500);
+}
+
+// ── ANDROID APP-UPPDATERING (Capacitor) ─────────────────────────
+// 3.88.10 — `autoReloadForNewVersion` ovan löser INTE detta: den laddar om
+// sidan, men en native Capacitor-app kör kod BUNTAD vid build-tillfället
+// (se scripts/cap-sync.js) — `location.reload()` laddar om exakt samma gamla
+// kod, ingen nätverksväg finns tillbaka till "senaste index.html". Enda vägen
+// framåt är en ny APK. GitHub Releases används som gratis, redan-existerande
+// hosting (CI:t i .github/workflows/build-android.yml publicerar dit vid
+// varje release-bygge) tills Niklas bestämt en egen nedladdningssida — byt då
+// bara GITHUB_RELEASES_API, resten av flödet är oberoende av var filen bor.
+// Native-detektion: `window.Capacitor.isNativePlatform()` — Capacitor
+// injicerar bryggan automatiskt i WebView:n, `window.Capacitor` finns aldrig
+// i en vanlig webbläsare, så detta är ett no-op på thechain.training.
+const GITHUB_RELEASES_API = 'https://api.github.com/repos/Oresonlig/Resistance/releases/latest';
+let _androidUpdateChecked = false;
+async function checkAndroidAppUpdate(){
+  if(_androidUpdateChecked) return;
+  if(!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform())) return;
+  _androidUpdateChecked = true;
+  try{
+    const res = await fetch(GITHUB_RELEASES_API);
+    if(!res.ok) return;
+    const rel = await res.json();
+    // Taggformat satt av CI: `android-v3.88.10` — se build-android.yml.
+    const remoteVersion = String(rel.tag_name || '').replace(/^android-v/, '');
+    if(!remoteVersion || compareVersions(remoteVersion, APP_VERSION) <= 0) return;
+    const asset = (rel.assets || []).find(a => a.name === 'thechain.apk');
+    showAndroidUpdateBanner(remoteVersion, asset ? asset.browser_download_url : rel.html_url);
+  }catch(e){
+    // Offline eller GitHub-rate-limit (60/h per IP, ovanligt för fem användare)
+    // — inte kritiskt, appen fungerar identiskt utan svaret. Tyst fail.
+  }
+}
+function showAndroidUpdateBanner(newVersion, downloadUrl){
+  if(document.getElementById('android-update-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'android-update-banner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:var(--surface-elevated);color:var(--white);font-family:var(--mono);font-size:.6rem;text-align:center;padding:10px 12px;z-index:9999;letter-spacing:.05em;line-height:1.6;border-bottom:1px solid var(--gold);display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;';
+  // .btn-primary återanvänds för Download-länken avsiktligt: den är redan
+  // temastylad i alla elva teman (Log/Finish/Done-vokabulären, se
+  // feedback_teman_arkitektur-minnet) och löser "vilken textfärg läses mot
+  // var(--red)"-problemet gratis — Void/Full Moon/Undertow/Overgrowth har
+  // alla EGEN mörk/ljus text-på-accent-lösning redan byggd in i klassen.
+  // Bara layout (flex/padding/storlek) sätts inline här, aldrig färg.
+  banner.innerHTML = '<span><strong>v' + escapeHTML(newVersion) + '</strong> is available (you’re on v' + escapeHTML(APP_VERSION) + ')</span>'
+    + '<a href="' + escapeHTML(downloadUrl) + '" target="_blank" rel="noopener" class="btn-primary" style="flex:0 0 auto;display:inline-block;padding:6px 16px;font-size:.65rem;text-decoration:none;">Download</a>'
+    + '<button onclick="document.getElementById(\'android-update-banner\').remove()" style="background:none;border:1px solid var(--border-strong);color:var(--gray-light);padding:5px 10px;border-radius:6px;cursor:pointer;font-family:var(--mono);font-size:.6rem;">Later</button>';
+  document.body.appendChild(banner);
 }
 
 // PM12: Detektera iOS Safari Private Browsing (eller annan localStorage-blockering).

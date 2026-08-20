@@ -1,0 +1,126 @@
+name: Build Android APK
+
+# 3.88.10 — START på Android-appen (Capacitor). Manuell trigger med avsikt:
+# index.html ändras flera gånger per session (rena CSS/text-fixar) och skulle
+# spamma GitHub Releases med en APK per commit om detta körde på push. Niklas
+# trycker "Run workflow" i Actions-fliken när han faktiskt vill ha en ny APK
+# — samma modell som release-cykler normalt fungerar, till skillnad från
+# webbens push-och-det-är-live.
+#
+# Två lägen, automatiskt valda beroende på om signeringshemligheterna finns:
+#   INGA secrets satta  → bygger en DEBUG-APK (Gradles inbyggda debug-nyckel,
+#                          alltid tillgänglig, noll konfiguration). Laddas ner
+#                          som ett workflow-artifact på körningens sida — bra
+#                          nog för Niklas egen sideload-testning, men skapar
+#                          INGEN GitHub Release (en debug-signerad build ska
+#                          inte se ut som "den officiella" nedladdningen).
+#   Secrets satta       → bygger en riktig signerad RELEASE-APK och publicerar
+#                          den som en GitHub Release (`android-vX.Y.Z`).
+#                          `checkAndroidAppUpdate()` i index.html pollar just
+#                          den — se kommentaren ovanför funktionen.
+#
+# Krävda secrets (Settings → Secrets and variables → Actions), satta av
+# Niklas hemifrån när keystoren är genererad — se CODEMAP.md:
+#   ANDROID_KEYSTORE_BASE64   — `base64 -w0 keystore.jks` (eller motsvarande)
+#   ANDROID_KEYSTORE_PASSWORD
+#   ANDROID_KEY_ALIAS
+#   ANDROID_KEY_PASSWORD
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write   # krävs för att skapa en GitHub Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync web assets into the Android project
+        run: npm run cap:sync
+
+      - name: Read app version from index.html
+        id: appver
+        run: |
+          VERSION=$(grep -oP "const APP_VERSION = '\K[^']+" index.html)
+          echo "App version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check for release signing secrets
+        id: signing
+        run: |
+          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "has_keystore=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_keystore=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Decode release keystore
+        if: steps.signing.outputs.has_keystore == 'true'
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.keystore"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x android/gradlew
+
+      - name: Build debug APK (no signing secrets yet)
+        if: steps.signing.outputs.has_keystore != 'true'
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Build signed release APK
+        if: steps.signing.outputs.has_keystore == 'true'
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew assembleRelease
+
+      - name: Collect the built APK
+        id: apk
+        run: |
+          if [ "${{ steps.signing.outputs.has_keystore }}" = "true" ]; then
+            SRC="android/app/build/outputs/apk/release/app-release.apk"
+          else
+            SRC="android/app/build/outputs/apk/debug/app-debug.apk"
+          fi
+          cp "$SRC" thechain.apk
+          echo "APK: $SRC -> thechain.apk"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: thechain-apk-v${{ steps.appver.outputs.version }}
+          path: thechain.apk
+          retention-days: 30
+
+      - name: Create GitHub Release (release builds only)
+        if: steps.signing.outputs.has_keystore == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-v${{ steps.appver.outputs.version }}
+          name: Android v${{ steps.appver.outputs.version }}
+          files: thechain.apk
+          body: |
+            Automatiskt byggd + signerad APK för The Chain, version ${{ steps.appver.outputs.version }}.
+
+            **Installation (sideload):** ladda ner `thechain.apk`, tillåt "installera okända appar"
+            för webbläsaren/filhanteraren när Android frågar, öppna filen.

@@ -6,6 +6,21 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.88.10 — 2026-08-20
+**Uppdateringsbanner för den native appen + GitHub Actions-bygge. Ingen synlig ändring på webben.**
+
+Fortsättning på 3.88.9. Niklas: "börja bygga det du kan" medan han väntar på att komma hem för ikon/hosting/keystore.
+
+- **`checkAndroidAppUpdate()` + `showAndroidUpdateBanner()`** — motsvarigheten till `autoReloadForNewVersion` för den native appen. En Capacitor-app kan inte `location.reload()` sig till ny kod (koden är buntad vid build-tillfället) — enda vägen är en ny APK. No-op i vanlig webbläsare (`window.Capacitor` finns bara inuti det native skalet). Pollar GitHub Releases API, visar en dismiss-bar banner med nedladdningslänk om en nyare version finns. Återanvänder `.btn-primary` för knappen istället för en egen färg — löser gratis "vilken textfärg läses mot `var(--red)`"-problemet som annars kräver per-tema-specialfall (Void/Full Moon/Undertow/Overgrowth).
+- CSP `connect-src` utökad med `https://api.github.com`.
+- **`.github/workflows/build-android.yml`** — manuell trigger (inte push, skulle spamma en release per commit). Bygger en debug-APK (Gradles inbyggda nyckel, funkar utan en enda hemlighet — laddas ner som artifact, bra nog för Niklas egen sideload-test redan nu) tills signerings-secrets finns, då byter den automatiskt till signerad release + GitHub Release.
+- `android/app/build.gradle` — `signingConfigs.release` tillagd, läser miljövariabler (aldrig hårdkodade lösenord i en incheckad fil).
+- **Bifynd:** `check_themes.js` CHECK 8 (byggd 3.88.2) fångade ett eget färskt fel — en `var(--on-accent, #fff)`-fallback i bannerns första utkast hade brutit exakt dark/dark-fällan (feedback_teman_arkitektur punkt 8) i minst fyra teman. Fångad innan push, inte efter.
+
+`npm run check` grön: Syntax OK, 0 error / 0 warn, 204 tester.
+
+---
+
 ## 3.88.9 — 2026-08-20
 **START på Android-appen: Capacitor-scaffold + riktigt manifest.**
 

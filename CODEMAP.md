@@ -116,6 +116,23 @@
   `cap:sync` i `package.json`). Wrappa alla Capacitor-CLI-anrop så.
 - Scope-beslut 2026-08-20: Android FÖRST (sideload, inte Play Store initialt —
   Niklas har inte 20 testare), iOS som fas 2. Se `project_appstore.md`-minnet.
+- **`checkAndroidAppUpdate()`/`showAndroidUpdateBanner()`** (nära
+  `autoReloadForNewVersion`, grep `ANDROID APP-UPPDATERING`) — native-appen kan
+  INTE `location.reload()` sig till ny kod (buntad vid build-tillfället), så
+  den får en egen väg: no-op om `window.Capacitor` saknas (= vanlig
+  webbläsare), annars poll mot GitHub Releases API, banner med länk om nyare
+  finns. `GITHUB_RELEASES_API`-konstanten är den enda raden att ändra den dag
+  Niklas väljer egen hosting.
+- **`.github/workflows/build-android.yml`** — manuell trigger (`workflow_dispatch`,
+  INTE på push — index.html ändras flera ggr/session, skulle spamma Releases).
+  Bygger DEBUG-APK (Gradles inbyggda nyckel, alltid tillgänglig) om inga
+  signerings-secrets finns, annars signerad RELEASE-APK + GitHub Release
+  taggad `android-vX.Y.Z`. Krävda secrets: `ANDROID_KEYSTORE_BASE64`,
+  `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`.
+- `android/app/build.gradle` — `signingConfigs.release` läser
+  `System.getenv("ANDROID_KEYSTORE_PATH")` m.fl. Osatt = ingen signeringsconfig
+  alls (mallens default oförändrat). Filen checkas in i git, därför ALDRIG
+  hårdkodade lösenord/sökvägar här — bara env-var-namn.
 
 ## Verktygsval
 - Bash är förbjudet. Endast PowerShell.

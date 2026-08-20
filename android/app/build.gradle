@@ -1,5 +1,14 @@
 apply plugin: 'com.android.application'
 
+// 3.88.10 — signering via miljövariabler, inte hårdkodade sökvägar/lösenord i
+// filen (den checkas in i git). Osatt = ingen signeringsconfig alls, precis
+// som mallens default — `assembleDebug` (Gradles egen alltid-tillgängliga
+// debug-nyckel) fungerar oförändrat för lokal/tidig testning utan en enda
+// hemlighet. `assembleRelease` blir bara körbart MED en riktig signeringsnyckel
+// den dagen Niklas genererat en (se CODEMAP.md, CI:t i
+// .github/workflows/build-android.yml sätter dessa från GitHub Secrets).
+def hasReleaseSigning = System.getenv("ANDROID_KEYSTORE_PATH") != null
+
 android {
     namespace = "com.oresonlig.thechain"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,10 +25,23 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                storeFile file(System.getenv("ANDROID_KEYSTORE_PATH"))
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
