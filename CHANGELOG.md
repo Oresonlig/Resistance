@@ -6,6 +6,17 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.88.5 — 2026-08-20
+**Andrum mellan session-slidern och passnamnet — som standard i alla elva teman.**
+
+Uppföljning till 3.88.4. Niklas: går det att flytta ner övningarna och passnamnet så det blir ett utrymme man ser bakgrunden genom, "inte massivt... kanske precis lika stort som Övningsnamnet"? `.chain-ex-area` hade `padding-top:0` — passnamnet landade direkt mot chain-strip-outerens nedre kant utan luft, i alla teman.
+
+Fråga till Niklas var om det bara skulle gälla de fem "hylla"-temana (som fick shield i 3.88.3) eller alla elva. Svar: alla, som standard. `padding-top` 0→28px (≈ en textrad) i `.chain-ex-area`, ett enda ställe i bas-CSS.
+
+`npm run check` grön: Syntax OK, 0 error / 0 warn, 204 tester.
+
+---
+
 ## 3.88.4 — 2026-08-20
 **Passnamn-chippet svepte in tomt utrymme det inte behövde.**
 

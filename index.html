@@ -342,7 +342,14 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
   .chain-tab-letter{width:38px;font-size:1.16rem;}
   .chain-tab{height:40px;}
 }
-.chain-ex-area{padding:0 11px 90px;}
+/* 3.88.5 — padding-top 0→28px, standard i ALLA teman (Niklas beslut). Innan
+   satt passnamnet direkt mot chain-strip-outerens nedre kant, noll luft. I de
+   fem "hylla"-temana (3.88.3) låg två opaka paneler klistrade mot varandra;
+   i övriga fanns ingen anledning att de skulle sitta hopklämda heller.
+   ~28px ≈ en textrad — "utrymmet behöver inte vara massivt... kanske precis
+   lika stort som Övningsnamnet" (Niklas). Bakgrunden får synas som en tunn
+   remsa mellan stripen och passnamnet innan nästa panel tar vid. */
+.chain-ex-area{padding:28px 11px 90px;}
 .pass-ex-header{display:flex;align-items:center;gap:8px;padding:14px 0 10px;border-bottom:1px solid #1c1c1c;margin-bottom:8px;}
 .pass-ex-letter{font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--red);}
 .pass-ex-name{font-family:var(--mono);font-size:.7rem;color:var(--white);text-transform:uppercase;letter-spacing:.04em;}
@@ -5093,7 +5100,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.88.4';
+const APP_VERSION = '3.88.5';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
