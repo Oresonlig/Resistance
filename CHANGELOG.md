@@ -6,6 +6,21 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.88.8 — 2026-08-20
+**Input-siffran var svagare på SEC/+F än på resten av fälten — hela vägen sedan 3.34.11.**
+
+Niklas märkte det på Full Moon (grå, kom inte ihåg exakt vilken övning) och dubbelkollade sen på Dead Hang (`bwtimed`): BW-fältet vitt, SEC-fältet synligt svagare. *"Jag vill inte ha det så. Jag vill ha samma styrka på bägge. Se över så detta blir fixat på samtliga."*
+
+Rotorsak: `.set-input.timed{color:#7ab}` och `.set-input.forced{color:#9a6a9a}` — två hårdkodade textfärger på just de fälten, medan vikt/reps/km/sprints/temp/incline alla ärver `var(--white)` från bas-`.set-input`. Åtta av elva teman satte en egen `.set-input{color:...}` som (av samma specificitet + senare i cascaden) råkade övertrumfa båda och därmed dölja buggen av misstag. **Iron, Void och Full Moon hade ingen sådan täckande regel** — där stod avvikelsen fullt synlig. Full Moon värst: `#7ab`/`#9a6a9a` är båda ljusa nyanser, mot FMs ljusa yta blev siffran "mer grå" i stället för mörk, precis Niklas iakttagelse.
+
+Fix: `color` bort från båda reglerna, bara `border-color` (fältens accentkant, inte siffrans läsbarhet) kvar. Alla fält ärver nu samma vita styrka i alla elva teman. `.set-unit.forced-unit`/`.time-unit` (etiketten "sec"/"+f" under fältet) är avsiktligt dämpad liksom övriga fält-etiketter — orörd, det var värdet han pekade på, inte labeln.
+
+**Bifynd samma runda:** Assault Bike (`cardiosprint`) hade fältordning SEC→KM→SPRINTS. Niklas: "SEC, SPRINTS, KM. Blir mer korrekt då." Bytt — ren render-ordning, `MEASURES.cardiosprint.fields` och capture/save läser via DOM-id (`dom('spr')`/`dom('dist')`), inte position, så ingen datamigrering behövs.
+
+`npm run check` grön: Syntax OK, 0 error / 0 warn, 204 tester.
+
+---
+
 ## 3.88.7 — 2026-08-20
 **Den aktiva övningen satt fast klistrad mot nästa — gapet gällde bara kollapsat-mot-kollapsat.**
 

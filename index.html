@@ -491,8 +491,21 @@ nav button:hover:not(.active){color:var(--white);background:var(--surface-overla
    --white. Fortfarande tydligt olika, men båda läsbara i gymbelysning. */
 .set-input.warmup{border-color:#181818;color:var(--text-muted);}
 .set-input.work-set{border-color:#1a2a1a;}
-.set-input.forced{border-color:#2a1a2a;color:#9a6a9a;}
-.set-input.timed{border-color:#1a2a3a;color:#7ab;}
+/* 3.88.8 — `.forced`/`.timed` hade en egen hårdkodad textfärg (#9a6a9a/#7ab),
+   avsedd som fält-accent men i praktiken den enda platsen ett INPUT-VÄRDE fick
+   annan styrka än sina syskon på samma rad. Niklas, Dead Hang (bwtimed:
+   BW-fältet vitt, SEC-fältet #7ab): "styrkan på inputssiffran svagare på SEC
+   än KG... jag vill ha samma styrka på bägge." Värst i Full Moon (ingen egen
+   `.set-input`-färg där → basvärdena vann rakt av): #7ab/#9a6a9a är BÅDA ljusa
+   nyanser, mot FM:s ljusa yta blev de "mer grå" (Niklas) i stället för mörka.
+   Border-color (fältets accentkant) är oförändrad — det är en ram, inte
+   siffrans läsbarhet, och skiljer fälten åt precis som avsett. Bara `color`
+   bort: nu ärver båda `var(--white)` från bas-`.set-input`, som alla andra
+   mätsätts fält (vikt/reps/km/sprints/temp/incline) redan gjorde.
+   `.set-unit.forced-unit`/`.time-unit` (ETIKETTEN "sec"/"+f" UNDER fältet) är
+   avsiktligt dämpad liksom alla andra `.set-unit`-etiketter — rörs inte. */
+.set-input.forced{border-color:#2a1a2a;}
+.set-input.timed{border-color:#1a2a3a;}
 .set-unit{font-family:var(--mono);font-size:.82rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;text-align:center;margin-top:3px;letter-spacing:.04em;}
 .set-unit.forced-unit{color:#5a3a5a;}
 .set-unit.time-unit{color:#3a5a5a;}
@@ -5111,7 +5124,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.88.7';
+const APP_VERSION = '3.88.8';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -8416,7 +8429,10 @@ function measureCells(measure, exId, sid, savedSet, bufVal, dis, wCls, unitL){
     // sprintar). secsCell (rå sekunder) hålls kvar, INTE cardioTimeCell (minuter) —
     // befintligt sparat sprint-secs-data är redan i rå sekunder, ett minut-fält skulle
     // visa gamla värden 60x för litet.
-    case 'cardiosprint': return secsCell+distCell+sprintsCell;
+    // 3.88.8 — fältordning SEC→KM→SPRINTS bytt till SEC→SPRINTS→KM (Niklas,
+    // Assault Bike: "blir mer korrekt då"). Bara render-ordningen — `fields`
+    // i MEASURES (rad ~5264) och capture/save läser via namn, inte position.
+    case 'cardiosprint': return secsCell+sprintsCell+distCell;
     // 3.84.0 — löpning: cardioTimeCell (MINUTER), till skillnad från cardiosprint ovan
     // som behåller råa sekunder eftersom dess secs är per-sprint-tid, inte totaltid.
     case 'run':          return cardioTimeCell+distCell;
