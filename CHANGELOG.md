@@ -6,6 +6,19 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.88.6 — 2026-08-20
+**Kollapsade övningsrader satt klistrade mot varandra — 9px luft istället.**
+
+Uppföljning till 3.88.5, samma tråd men i listskala. Niklas skickade skärmdumpar av Nanosuit och Chest+Tri: kollapsade rader (Hack Squat/Seated Calf Raise/Ab Wheel) separerades bara av en 1px hårlinje (`#303030`) — "lite grötigt och något otydligt vad som är separata övningar".
+
+Föreslog 8-10px snarare än att återanvända 28px-gapet från 3.88.5: det gapet skiljer två STRUKTURELLT olika regioner (slider vs. innehåll), en repeterande lista med samma storlek hade gjort en 8-övningars session till en lång scroll av isolerade öar i stället för en scanbar lista. Niklas: "Testa din 8-10 först."
+
+`.ex-block.collapsed + .ex-block.collapsed{border-top:1px solid #303030}` → `margin-top:9px`. Linjen borttagen helt — gapet plus varje rads egen panel-bakgrund (tema-blocken) räcker för att skilja raderna åt utan en extra accentlinje.
+
+`npm run check` grön: Syntax OK, 0 error / 0 warn, 204 tester.
+
+---
+
 ## 3.88.5 — 2026-08-20
 **Andrum mellan session-slidern och passnamnet — som standard i alla elva teman.**
 
