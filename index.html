@@ -1959,16 +1959,53 @@ body.theme-nanosuit .ex-prev .last-val{color:#00b8a0;}
    bakgrunden har passerat" på Nanosuit, olikt FM där man ser direkt vilka pass
    som är gjorda. Se CLAUDE.md §5 "rörlig ambient ⇒ hylla" — regeln gäller varje
    NYTT tema med canvas/SVG-ambient, inte bara de fem som fick den här. */
-body.theme-nanosuit .chain-intro,body.theme-nanosuit .chain-strip-outer,body.theme-nanosuit .pass-ex-header{
+body.theme-nanosuit .chain-intro,body.theme-nanosuit .chain-strip-outer{
   background:linear-gradient(180deg,rgba(8,22,36,0.56) 0%,rgba(8,22,36,0.3) 100%);
   backdrop-filter:blur(18px);
   -webkit-backdrop-filter:blur(18px);
   border-bottom:1px solid rgba(0,212,255,0.14);
 }
-/* `.pass-ex-header` har 0 horisontell padding i bas-CSS (till skillnad från
-   `.chain-intro`/`.chain-strip-outer`, som redan har egen) — utan detta ligger
-   passnamnet klistrat mot kortkanten på de fyra temana med helram nedan. */
-body.theme-nanosuit .pass-ex-header,body.theme-obsidian .pass-ex-header,body.theme-cosmic-horror .pass-ex-header,body.theme-undertow .pass-ex-header,body.theme-understory .pass-ex-header{padding:14px 12px 10px;}
+/* 3.88.4 — `.pass-ex-header` fick FÖRST samma bredd/material som chain-intro/
+   chain-strip-outer (3.88.3). Niklas skickade en Overgrowth-skärmdump: "blev
+   alldeles för stort och heltäckande... sveper in en stor del som inte ens
+   används och täcker för en, som regel, cool bakgrund." Skillnaden mot de två
+   andra: chain-intro/chain-strip-outer FYLLER sin rad (statistikrad resp.
+   scrollande flikrad), medan pass-ex-header bara är "D CHEST PT. 2" — en
+   handfull ord i vänsterkant följt av massor av tomt utrymme som ändå målades
+   över. `display:flex` på en `<div>` är block-level (100% bredd) trots att
+   INNEHÅLLET bara tar en bråkdel — precis den space-utan-innehåll-fällan.
+
+   Fix: `inline-flex` + `width:fit-content` — chippet krymper till bokstav+
+   namn+badge, resten av raden lämnas åt bakgrunden. Egen mindre padding
+   (kompakt badge, inte en header-band) och EGEN border/radie per tema
+   (halva chain-intros — en stor rundning som var proportionerad mot en bred
+   band-rad ser bulbös ut på en smal chip). */
+body.theme-nanosuit .pass-ex-header{
+  display:inline-flex;width:fit-content;max-width:100%;padding:7px 12px;border-radius:6px;
+  background:linear-gradient(180deg,rgba(8,22,36,0.56) 0%,rgba(8,22,36,0.3) 100%);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid rgba(0,212,255,0.14);
+}
+body.theme-obsidian .pass-ex-header{
+  display:inline-flex;width:fit-content;max-width:100%;padding:7px 12px;
+  background:rgba(40,28,12,0.4);border:1px solid #2a2010;
+}
+body.theme-cosmic-horror .pass-ex-header{
+  display:inline-flex;width:fit-content;max-width:100%;padding:7px 12px;
+  background:rgba(10,30,28,0.4);border:1px solid rgba(127,200,180,0.15);
+  border-radius:12px 4px 14px 4px / 8px 10px 6px 12px;
+}
+body.theme-undertow .pass-ex-header{
+  display:inline-flex;width:fit-content;max-width:100%;padding:7px 12px;
+  background:rgba(255,255,255,0.78);border:1px solid rgba(18,48,90,0.14);
+  box-shadow:0 10px 30px -16px rgba(22,55,99,0.35),inset 0 1px 0 rgba(255,255,255,0.7);
+}
+body.theme-understory .pass-ex-header{
+  display:inline-flex;width:fit-content;max-width:100%;padding:7px 12px;
+  background-color:rgba(235,239,217,0.84);background-image:var(--us-bark);
+  border:1px solid rgba(31,66,38,0.14);
+  box-shadow:0 10px 30px -16px rgba(28,60,34,0.35),inset 0 1px 0 rgba(255,255,255,0.6);
+}
 
 /* Section titles */
 body.theme-nanosuit .section-title{
@@ -2711,7 +2748,7 @@ body.theme-undertow .ex-block,body.theme-undertow .panel{background:rgba(255,255
    `.chain-intro`. Undertow har rörliga bubblor (mountUndertowBg) precis som de,
    men saknade skyddet helt. Samma kort-material som ex-block/panel ovan — se
    Nanosuit-kommentaren (rad ~1953) för bakgrunden till varför. */
-body.theme-undertow .chain-intro,body.theme-undertow .chain-strip-outer,body.theme-undertow .pass-ex-header{background:rgba(255,255,255,0.78);border:1px solid rgba(18,48,90,0.14);box-shadow:0 10px 30px -16px rgba(22,55,99,0.35),inset 0 1px 0 rgba(255,255,255,0.7);}
+body.theme-undertow .chain-intro,body.theme-undertow .chain-strip-outer{background:rgba(255,255,255,0.78);border:1px solid rgba(18,48,90,0.14);box-shadow:0 10px 30px -16px rgba(22,55,99,0.35),inset 0 1px 0 rgba(255,255,255,0.7);}
 body.theme-undertow .ex-name{color:#102430;}
 body.theme-undertow .ex-detail{color:#324d59;}
 body.theme-undertow .ex-prev{color:#2c4651;}
@@ -2838,7 +2875,7 @@ body.theme-understory .ex-block,body.theme-understory .panel{background:rgba(252
    rörliga rankor (mountUnderstoryBg). Bark-bakgrunden kommer från den andra
    .ex-block,.panel-regeln längre ner (background-image:var(--us-bark)) — den
    selektorn utökas parallellt med denna. */
-body.theme-understory .chain-intro,body.theme-understory .chain-strip-outer,body.theme-understory .pass-ex-header{background:rgba(252,255,247,0.78);border:1px solid rgba(31,66,38,0.14);box-shadow:0 10px 30px -16px rgba(28,60,34,0.35),inset 0 1px 0 rgba(255,255,255,0.6);}
+body.theme-understory .chain-intro,body.theme-understory .chain-strip-outer{background:rgba(252,255,247,0.78);border:1px solid rgba(31,66,38,0.14);box-shadow:0 10px 30px -16px rgba(28,60,34,0.35),inset 0 1px 0 rgba(255,255,255,0.6);}
 body.theme-understory .ex-name{color:#143018;}
 body.theme-understory .ex-detail{color:var(--text-strong);}
 body.theme-understory .ex-prev{color:var(--text-body);}
@@ -2892,7 +2929,7 @@ body.theme-understory .add-ex-confirm{color:#f3f8ea;}
    gradients (no SVG filter / no blend) so it's mobile-safe and cheap. Kept light
    and warm so the card still reads bright and text stays legible. The app body
    keeps its pale "look-up-at-the-sky" green — only the cards turn to bark/wood. */
-body.theme-understory .ex-block,body.theme-understory .panel,body.theme-understory .chain-intro,body.theme-understory .chain-strip-outer,body.theme-understory .pass-ex-header{background-color:rgba(235,239,217,0.84);background-image:var(--us-bark);}body.theme-understory .ex-block.saved{background-color:rgba(229,241,212,0.86);background-image:var(--us-bark);}
+body.theme-understory .ex-block,body.theme-understory .panel,body.theme-understory .chain-intro,body.theme-understory .chain-strip-outer{background-color:rgba(235,239,217,0.84);background-image:var(--us-bark);}body.theme-understory .ex-block.saved{background-color:rgba(229,241,212,0.86);background-image:var(--us-bark);}
 /* canopy drifting sun-flecks (CSS animation, screen blend) */
 body.theme-understory .us-fleck{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,252,232,0.85),rgba(247,250,224,0.35) 45%,transparent 70%);mix-blend-mode:screen;filter:blur(2px);}
 body.theme-understory .us-fleck.f1{width:130px;height:130px;left:8%;top:6%;animation:us-drift1 19s ease-in-out infinite;}
@@ -3453,7 +3490,7 @@ body.theme-obsidian .sync-dot.ok{background:#c9a35a;box-shadow:0 0 6px #c9a35a;a
 /* Chain intro — gold shimmer title.
    3.88.3 — samma "hylla" förlängd till session-slidern + passnamn-raden, se
    Nanosuit-kommentaren ovan (rad ~1953) för bakgrunden. */
-body.theme-obsidian .chain-intro,body.theme-obsidian .chain-strip-outer,body.theme-obsidian .pass-ex-header{background:rgba(40,28,12,0.4);border:1px solid #2a2010;}@keyframes obShimmer{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+body.theme-obsidian .chain-intro,body.theme-obsidian .chain-strip-outer{background:rgba(40,28,12,0.4);border:1px solid #2a2010;}@keyframes obShimmer{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
 body.theme-obsidian .chain-intro-sub{font-family:'Cardo',serif;font-style:italic;color:#7a6a48;letter-spacing:.04em;}
 body.theme-obsidian .section-title{font-family:'Cinzel',serif;font-weight:600;letter-spacing:.32em;color:#c9a35a;text-transform:uppercase;}
 body.theme-obsidian .section-sub{font-family:'Cinzel',serif;color:var(--text-body);letter-spacing:.18em;font-weight:600;text-transform:uppercase;}
@@ -3791,7 +3828,7 @@ body.theme-cosmic-horror .sync-dot.ok{background:#7fc8b4;box-shadow:0 0 6px #7fc
 /* Chain intro — italic Cormorant rubrik.
    3.88.3 — samma "hylla" förlängd till session-slidern + passnamn-raden, se
    Nanosuit-kommentaren (rad ~1953). */
-body.theme-cosmic-horror .chain-intro,body.theme-cosmic-horror .chain-strip-outer,body.theme-cosmic-horror .pass-ex-header{background:rgba(10,30,28,0.4);border:1px solid rgba(127,200,180,0.15);border-radius:24px 6px 28px 8px / 16px 22px 12px 24px;}body.theme-cosmic-horror .chain-intro-sub{font-family:'IBM Plex Mono',monospace;color:var(--text-body);letter-spacing:.14em;text-transform:uppercase;}
+body.theme-cosmic-horror .chain-intro,body.theme-cosmic-horror .chain-strip-outer{background:rgba(10,30,28,0.4);border:1px solid rgba(127,200,180,0.15);border-radius:24px 6px 28px 8px / 16px 22px 12px 24px;}body.theme-cosmic-horror .chain-intro-sub{font-family:'IBM Plex Mono',monospace;color:var(--text-body);letter-spacing:.14em;text-transform:uppercase;}
 body.theme-cosmic-horror .section-title{font-family:'Cormorant SC',serif;font-weight:500;letter-spacing:.22em;color:#aedcd0;text-transform:uppercase;}
 body.theme-cosmic-horror .section-sub{font-family:'IBM Plex Mono',monospace;color:var(--text-body);letter-spacing:.2em;font-weight:400;text-transform:uppercase;}
 
@@ -5056,7 +5093,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.88.3';
+const APP_VERSION = '3.88.4';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

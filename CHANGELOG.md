@@ -6,6 +6,19 @@ Format: `MAJOR.MINOR.PATCH` — patch = bugfix/små tillägg, minor = ny feature
 
 ---
 
+## 3.88.4 — 2026-08-20
+**Passnamn-chippet svepte in tomt utrymme det inte behövde.**
+
+Niklas skickade en Overgrowth-skärmdump direkt efter 3.88.3: *"blev alldeles för stort och heltäckande... sveper in en stor del som inte ens används och täcker för en, som regel, cool bakgrund."*
+
+Rotorsaken: `.pass-ex-header{display:flex}` på en `<div>` är block-level — 100% radbredd — trots att innehållet ("D CHEST PT. 2") bara tar en bråkdel av den. `.chain-intro` och `.chain-strip-outer` (samma runda) FYLLER faktiskt sin rad (statistikraden respektive den scrollande flikraden), så samma material var rätt val där. Passnamnet är annat djur — en handfull ord i vänsterkant, inte en rad som ska fyllas.
+
+Fix i de fem berörda temana (Nanosuit, Obsidian, Cosmic Horror, Undertow, Overgrowth): `display:inline-flex;width:fit-content` — chippet krymper till bokstav+namn+badge, resten av raden lämnas åt bakgrunden. Egen kompakt padding och halverad hörnradie (Cosmic Horrors organiska rundning var proportionerad mot en bred band-rad; på en smal chip blev den bulbös). `.chain-intro`/`.chain-strip-outer` orörda — det var aldrig dem han klagade på.
+
+`npm run check` grön: Syntax OK, 0 error / 0 warn, 204 tester.
+
+---
+
 ## 3.88.3 — 2026-08-20
 **Session-slidern hade inget skydd mot bakgrunden i nio av elva teman — Full Moon råkade få det av ett annat skäl.**
 
