@@ -1,0 +1,153 @@
+name: Build Android APK
+
+# 3.88.10 — START på Android-appen (Capacitor). Manuell trigger med avsikt:
+# index.html ändras flera gånger per session (rena CSS/text-fixar) och skulle
+# spamma GitHub Releases med en APK per commit om detta körde på push. Niklas
+# trycker "Run workflow" i Actions-fliken när han faktiskt vill ha en ny APK
+# — samma modell som release-cykler normalt fungerar, till skillnad från
+# webbens push-och-det-är-live.
+#
+# Två lägen, automatiskt valda beroende på om signeringshemligheterna finns:
+#   INGA secrets satta  → bygger en DEBUG-APK (Gradles inbyggda debug-nyckel,
+#                          alltid tillgänglig, noll konfiguration). Laddas ner
+#                          som ett workflow-artifact på körningens sida — bra
+#                          nog för Niklas egen sideload-testning, men skapar
+#                          INGEN GitHub Release (en debug-signerad build ska
+#                          inte se ut som "den officiella" nedladdningen).
+#   Secrets satta       → bygger en riktig signerad RELEASE-APK och publicerar
+#                          den som en GitHub Release (`android-vX.Y.Z`).
+#                          `checkAndroidAppUpdate()` i index.html pollar just
+#                          den — se kommentaren ovanför funktionen.
+#
+# Krävda secrets (Settings → Secrets and variables → Actions), satta av
+# Niklas hemifrån när keystoren är genererad — se CODEMAP.md:
+#   ANDROID_KEYSTORE_BASE64   — `base64 -w0 keystore.jks` (eller motsvarande)
+#   ANDROID_KEYSTORE_PASSWORD
+#   ANDROID_KEY_ALIAS
+#   ANDROID_KEY_PASSWORD
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write   # krävs för att skapa en GitHub Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # Capacitor 8: android/app/capacitor.build.gradle kräver Java 21
+      # (sourceCompatibility VERSION_21) och @capacitor/cli kräver Node >=22.
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync web assets into the Android project
+        run: npm run cap:sync
+
+      # APK:n versioneras på APPENS egen version (appendUserAgent
+      # "TheChainShell/x.y.z" i capacitor.config.json), skild från hemsidans
+      # APP_VERSION. Bumpa den när en ny app-version ska ut — bannern i appen
+      # (getShellVersion) jämför release-taggen mot den.
+      - name: Read shell version from capacitor.config.json
+        id: appver
+        run: |
+          VERSION=$(node -p "require('./capacitor.config.json').appendUserAgent.split('/')[1]")
+          echo "Shell version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check for release signing secrets
+        id: signing
+        run: |
+          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "has_keystore=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_keystore=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Decode release keystore
+        if: steps.signing.outputs.has_keystore == 'true'
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.keystore"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x android/gradlew
+
+      - name: Build debug APK (no signing secrets yet)
+        if: steps.signing.outputs.has_keystore != 'true'
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Build signed release APK
+        if: steps.signing.outputs.has_keystore == 'true'
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew assembleRelease
+
+      - name: Collect the built APK
+        id: apk
+        run: |
+          if [ "${{ steps.signing.outputs.has_keystore }}" = "true" ]; then
+            SRC="android/app/build/outputs/apk/release/app-release.apk"
+          else
+            SRC="android/app/build/outputs/apk/debug/app-debug.apk"
+          fi
+          cp "$SRC" thechain.apk
+          echo "APK: $SRC -> thechain.apk"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: thechain-apk-v${{ steps.appver.outputs.version }}
+          path: thechain.apk
+          retention-days: 30
+
+      # 3.91.0 — debug-byggen publiceras också, som prerelease med FAST tagg
+      # `android-debug` (skrivs över varje körning). Ger nedladdningslänken på
+      # hemsidan (ANDROID_APK_URL) en stabil adress utan zip eller GitHub-login.
+      # Prerelease → räknas inte av /releases/latest, så uppdateringsbannern i
+      # appen reagerar bara på riktiga signerade releaser.
+      # Release-stegen använder `gh` (förinstallerat på runnern) i stället för
+      # softprops/action-gh-release — den actionen körde Node 20 (deprecation-varning).
+      # Debug: radera + återskapa så taggen alltid pekar på aktuell commit.
+      - name: Publish debug APK as prerelease (no signing secrets)
+        if: steps.signing.outputs.has_keystore != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-debug --yes --cleanup-tag || true
+          gh release create android-debug thechain.apk \
+            --prerelease --latest=false --target "${{ github.sha }}" \
+            --title "Android debug build (unsigned test build)" \
+            --notes "Debug-bygge av appen för test, skalversion ${{ steps.appver.outputs.version }}, commit ${{ github.sha }}. Signerad med en tillfällig nyckel - avinstallera föregående version innan du installerar."
+
+      - name: Create GitHub Release (release builds only)
+        if: steps.signing.outputs.has_keystore == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="android-v${{ steps.appver.outputs.version }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            # Samma skalversion byggd igen → ersätt bara filen
+            gh release upload "$TAG" thechain.apk --clobber
+          else
+            gh release create "$TAG" thechain.apk --latest --target "${{ github.sha }}" \
+              --title "Android v${{ steps.appver.outputs.version }}" \
+              --notes "Automatiskt byggd + signerad APK för The Chain, skalversion ${{ steps.appver.outputs.version }}. Installation (sideload): ladda ner thechain.apk, tillåt 'installera okända appar' när Android frågar, öppna filen."
+          fi
