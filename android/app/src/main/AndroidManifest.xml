@@ -38,4 +38,9 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- App 1.2.0 — AppUpdaterPlugin: appen installerar sin egen uppdatering.
+         UPDATE_PACKAGES_WITHOUT_USER_ACTION = vanlig behörighet (beviljas
+         automatiskt), krävs för tyst självuppdatering på Android 13+. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
 </manifest>

@@ -5234,7 +5234,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.92.3';
+const APP_VERSION = '3.93.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -12249,10 +12249,49 @@ function showAndroidUpdateBanner(newVersion, downloadUrl){
   // var(--red)"-problemet gratis — Void/Full Moon/Undertow/Overgrowth har
   // alla EGEN mörk/ljus text-på-accent-lösning redan byggd in i klassen.
   // Bara layout (flex/padding/storlek) sätts inline här, aldrig färg.
-  banner.innerHTML = '<span>App update <strong>v' + escapeHTML(newVersion) + '</strong> is available (you’re on v' + escapeHTML(getShellVersion() || 'old') + ')</span>'
-    + '<a href="' + escapeHTML(downloadUrl) + '" target="_blank" rel="noopener" class="btn-primary" style="flex:0 0 auto;display:inline-block;padding:6px 16px;font-size:.65rem;text-decoration:none;">Download</a>'
+  banner.innerHTML = '<span id="android-update-msg">App update <strong>v' + escapeHTML(newVersion) + '</strong> is available (you’re on v' + escapeHTML(getShellVersion() || 'old') + ')</span>'
+    + '<a id="android-update-dl" href="' + escapeHTML(downloadUrl) + '" target="_blank" rel="noopener" class="btn-primary" style="flex:0 0 auto;display:inline-block;padding:6px 16px;font-size:.65rem;text-decoration:none;">Download</a>'
     + '<button onclick="document.getElementById(\'android-update-banner\').remove()" style="background:none;border:1px solid var(--border-strong);color:var(--gray-light);padding:5px 10px;border-radius:6px;cursor:pointer;font-family:var(--mono);font-size:.6rem;">Later</button>';
   document.body.appendChild(banner);
+  // App 1.2.0 — skal med AppUpdater-pluginet installerar själv (ingen webbläsare).
+  // Äldre skal saknar pluginet → länken ovan fungerar som förut.
+  if(hasAppUpdaterPlugin()){
+    document.getElementById('android-update-dl').addEventListener('click', e => {
+      e.preventDefault();
+      startAppSelfUpdate(downloadUrl);
+    });
+  }
+}
+function hasAppUpdaterPlugin(){
+  const h = isNativeApp() && window.Capacitor.PluginHeaders;
+  return !!(h && h.some(p => p.name === 'AppUpdater'));
+}
+let _appUpdaterListening = false;
+function startAppSelfUpdate(url){
+  const msg = document.getElementById('android-update-msg');
+  const dl = document.getElementById('android-update-dl');
+  const setMsg = t => { if(msg) msg.textContent = t; };
+  if(!_appUpdaterListening){
+    _appUpdaterListening = true;
+    window.Capacitor.addListener('AppUpdater', 'status', d => {
+      if(!d) return;
+      if(d.state === 'permission') setMsg('Allow The Chain to install apps, then come back');
+      else if(d.state === 'downloading') setMsg('Downloading update… ' + (d.percent || 0) + '%');
+      else if(d.state === 'installing') setMsg('Installing…');
+      else if(d.state === 'error'){
+        setMsg('Update failed: ' + (d.message || 'unknown error'));
+        if(dl) dl.style.display = '';
+      }
+    });
+  }
+  if(dl) dl.style.display = 'none';
+  setMsg('Starting update…');
+  window.Capacitor.nativePromise('AppUpdater', 'install', { url }).catch(e => {
+    // Pluginet nekade (t.ex. URL) → fall tillbaka på webbläsaren som förut.
+    setMsg('Update failed: ' + ((e && e.message) || 'unknown error'));
+    if(dl) dl.style.display = '';
+    window.open(url, '_blank');
+  });
 }
 
 // PM12: Detektera iOS Safari Private Browsing (eller annan localStorage-blockering).
