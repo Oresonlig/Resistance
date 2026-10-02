@@ -2,7 +2,7 @@
   "appId": "com.oresonlig.thechain",
   "appName": "The Chain",
   "webDir": "www",
-  "appendUserAgent": "TheChainShell/1.2.1",
+  "appendUserAgent": "TheChainShell/1.2.2",
   "android": {
     "allowMixedContent": false
   }

@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://qjmjqideqrgozexudaqr.supabase.co https://api.github.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://qjmjqideqrgozexudaqr.supabase.co https://api.github.com https://thechain.training; manifest-src 'self'; worker-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-src 'none'">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -5234,7 +5234,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.93.0';
+const APP_VERSION = '3.93.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -11447,6 +11447,8 @@ function copyDebugState(){
     lastSyncRead: (typeof lastSyncRead!=='undefined')?lastSyncRead:null,
     lastSyncWrite: (typeof lastSyncWrite!=='undefined')?lastSyncWrite:null,
     lastSyncedCloudTime: state.lastSyncedCloudTime || null,
+    // 3.93.1 — appens uppdateringsflöde (bara i appen)
+    appUpdate: isNativeApp() ? _appUpdateDiag : null,
   };
   writeClipboard(JSON.stringify(dump,null,2));
   showToast(`Copied · ${incidents.length} incident(s)`);
@@ -12216,27 +12218,57 @@ function showAndroidDownload(ua){
   return /Android/i.test(String(ua || navigator.userAgent)) && !isNativeApp();
 }
 const GITHUB_RELEASES_API = 'https://api.github.com/repos/Oresonlig/Resistance/releases/latest';
+// 3.93.1 — senaste skalversion läses från HEMSIDAN (capacitor.config.json ligger
+// redan publikt där, appendUserAgent = skalversionen) i stället för GitHubs API
+// (kvot 60/h per IP, blockerat på vissa nät). GitHub-API:t = reserv.
+const APP_VERSION_SOURCE = 'https://thechain.training/capacitor.config.json';
+const apkUrlFor = v => 'https://github.com/Oresonlig/Resistance/releases/download/android-v' + v + '/thechain.apk';
+// Diagnostik för uppdateringsflödet — följer med i Settings → Support → Copy draft state.
+const _appUpdateDiag = { events: [] };
+function appUpdateLog(ev){
+  _appUpdateDiag.events.push(new Date().toISOString().slice(11, 19) + ' ' + ev);
+  if(_appUpdateDiag.events.length > 40) _appUpdateDiag.events.shift();
+}
 let _androidUpdateChecked = false;
 async function checkAndroidAppUpdate(){
   if(_androidUpdateChecked) return;
   if(!isNativeApp()) return;
   _androidUpdateChecked = true;
+  const shellVersion = getShellVersion() || '0';
+  _appUpdateDiag.shell = shellVersion;
+  _appUpdateDiag.plugins = ((window.Capacitor && window.Capacitor.PluginHeaders) || []).map(p => p.name);
+  let remoteVersion = null, downloadUrl = null;
   try{
-    const res = await fetch(GITHUB_RELEASES_API);
-    if(!res.ok) return;
-    const rel = await res.json();
-    // Taggformat satt av CI: `android-v<skalversion>` — se build-android.yml.
-    // 3.90.0: jämför mot SKALETS version. Hemsidans kod uppdateras live i
-    // appen; en ny APK behövs bara när skalet ändrats (ikon, behörigheter…).
-    const remoteVersion = String(rel.tag_name || '').replace(/^android-v/, '');
-    const shellVersion = getShellVersion() || '0';
-    if(!remoteVersion || compareVersions(remoteVersion, shellVersion) <= 0) return;
-    const asset = (rel.assets || []).find(a => a.name === 'thechain.apk');
-    showAndroidUpdateBanner(remoteVersion, asset ? asset.browser_download_url : rel.html_url);
-  }catch(e){
-    // Offline eller GitHub-rate-limit (60/h per IP, ovanligt för fem användare)
-    // — inte kritiskt, appen fungerar identiskt utan svaret. Tyst fail.
+    const res = await fetch(APP_VERSION_SOURCE + '?t=' + Date.now(), { cache: 'no-store' });
+    appUpdateLog('site HTTP ' + res.status);
+    if(res.ok){
+      const cfg = await res.json();
+      remoteVersion = String(cfg.appendUserAgent || '').split('/')[1] || null;
+      if(remoteVersion) downloadUrl = apkUrlFor(remoteVersion);
+    }
+  }catch(e){ appUpdateLog('site error: ' + (e && e.message)); }
+  if(!remoteVersion){
+    try{
+      const res = await fetch(GITHUB_RELEASES_API);
+      appUpdateLog('github HTTP ' + res.status);
+      if(res.ok){
+        const rel = await res.json();
+        // Taggformat satt av CI: `android-v<skalversion>` — se build-android.yml.
+        remoteVersion = String(rel.tag_name || '').replace(/^android-v/, '') || null;
+        const asset = (rel.assets || []).find(a => a.name === 'thechain.apk');
+        downloadUrl = asset ? asset.browser_download_url : rel.html_url;
+      }
+    }catch(e){ appUpdateLog('github error: ' + (e && e.message)); }
   }
+  _appUpdateDiag.remote = remoteVersion;
+  // 3.90.0: jämför mot SKALETS version — en ny APK behövs bara när skalet ändrats.
+  if(!remoteVersion || compareVersions(remoteVersion, shellVersion) <= 0){
+    appUpdateLog('no banner (remote ' + remoteVersion + ', shell ' + shellVersion + ')');
+    return;
+  }
+  appUpdateLog('banner v' + remoteVersion);
+  try{ showAndroidUpdateBanner(remoteVersion, downloadUrl); }
+  catch(e){ appUpdateLog('banner error: ' + (e && e.message)); }
 }
 function showAndroidUpdateBanner(newVersion, downloadUrl){
   if(document.getElementById('android-update-banner')) return;
@@ -12255,10 +12287,18 @@ function showAndroidUpdateBanner(newVersion, downloadUrl){
   document.body.appendChild(banner);
   // App 1.2.0 — skal med AppUpdater-pluginet installerar själv (ingen webbläsare).
   // Äldre skal saknar pluginet → länken ovan fungerar som förut.
-  if(hasAppUpdaterPlugin()){
+  const usePlugin = hasAppUpdaterPlugin();
+  appUpdateLog('plugin ' + (usePlugin ? 'yes' : 'no'));
+  if(usePlugin){
     document.getElementById('android-update-dl').addEventListener('click', e => {
       e.preventDefault();
-      startAppSelfUpdate(downloadUrl);
+      appUpdateLog('download tapped');
+      try{ startAppSelfUpdate(downloadUrl); }
+      catch(err){
+        appUpdateLog('start error: ' + (err && err.message));
+        const m = document.getElementById('android-update-msg');
+        if(m) m.textContent = 'Update failed: ' + ((err && err.message) || 'unknown error');
+      }
     });
   }
 }
@@ -12275,18 +12315,21 @@ function startAppSelfUpdate(url){
     _appUpdaterListening = true;
     window.Capacitor.addListener('AppUpdater', 'status', d => {
       if(!d) return;
+      if(d.state !== 'downloading') appUpdateLog('status ' + d.state + (d.message ? ': ' + d.message : ''));
       if(d.state === 'permission') setMsg('Allow The Chain to install apps, then come back');
       else if(d.state === 'downloading') setMsg('Downloading update… ' + (d.percent || 0) + '%');
       else if(d.state === 'installing') setMsg('Installing…');
       else if(d.state === 'error'){
-        setMsg('Update failed: ' + (d.message || 'unknown error'));
+        // CI bygger ~2 min efter skalbumpen — release-filen finns inte än.
+        setMsg(/HTTP 404/.test(d.message || '') ? 'Update is still building, try again in a few minutes' : 'Update failed: ' + (d.message || 'unknown error'));
         if(dl) dl.style.display = '';
       }
     });
   }
   if(dl) dl.style.display = 'none';
   setMsg('Starting update…');
-  window.Capacitor.nativePromise('AppUpdater', 'install', { url }).catch(e => {
+  window.Capacitor.nativePromise('AppUpdater', 'install', { url }).then(r => appUpdateLog('install → ' + (r && r.status))).catch(e => {
+    appUpdateLog('install rejected: ' + (e && e.message));
     // Pluginet nekade (t.ex. URL) → fall tillbaka på webbläsaren som förut.
     setMsg('Update failed: ' + ((e && e.message) || 'unknown error'));
     if(dl) dl.style.display = '';
