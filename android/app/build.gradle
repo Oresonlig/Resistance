@@ -9,6 +9,15 @@ apply plugin: 'com.android.application'
 // .github/workflows/build-android.yml sätter dessa från GitHub Secrets).
 def hasReleaseSigning = System.getenv("ANDROID_KEYSTORE_PATH") != null
 
+// 3.92.3 — appversionen har EN källa: `appendUserAgent "TheChainShell/x.y.z"`
+// i capacitor.config.json (samma som CI-taggen + uppdateringsbannern läser).
+// versionName = x.y.z (syns i Androids appinfo), versionCode = x*10000+y*100+z
+// (måste öka för att en uppdatering ska gå att installera ovanpå).
+def capConfig = new groovy.json.JsonSlurper().parse(rootProject.file('../capacitor.config.json'))
+def shellVersion = capConfig.appendUserAgent.split('/')[1]
+def shellParts = shellVersion.tokenize('.').collect { it as int }
+def shellVersionCode = shellParts[0] * 10000 + shellParts[1] * 100 + shellParts[2]
+
 android {
     namespace = "com.oresonlig.thechain"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,8 +25,8 @@ android {
         applicationId "com.oresonlig.thechain"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode shellVersionCode
+        versionName shellVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
