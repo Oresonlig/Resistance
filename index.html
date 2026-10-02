@@ -5234,7 +5234,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.92.1';
+const APP_VERSION = '3.92.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -12206,11 +12206,11 @@ function getShellVersion(ua){
   const m = String(ua || navigator.userAgent).match(/TheChainShell\/(\d+(?:\.\d+)*)/);
   return m ? m[1] : null;
 }
-// 3.91.0 — nedladdningslänk för appen (login-skärmen + Settings). Pekar tills
-// signeringsnyckeln finns på CI:ns debug-prerelease `android-debug` (skrivs
-// över vid varje bygge). Byt till '/releases/latest/download/thechain.apk' när
-// signerade release-byggen publiceras — då följer länken alltid senaste versionen.
-const ANDROID_APK_URL = 'https://github.com/Oresonlig/Resistance/releases/download/android-debug/thechain.apk';
+// 3.91.0 — nedladdningslänk för appen (login-skärmen + Settings).
+// 3.92.2 — pekar på senaste SIGNERADE release (`android-vX.Y.Z`). Prereleaser
+// (gamla `android-debug`) räknas inte av /latest, så länken följer alltid den
+// officiella versionen utan att ändras vid nästa skalbump.
+const ANDROID_APK_URL = 'https://github.com/Oresonlig/Resistance/releases/latest/download/thechain.apk';
 // Visas bara på hemsidan i en Android-webbläsare — inte i appen, inte på iPhone/dator.
 function showAndroidDownload(ua){
   return /Android/i.test(String(ua || navigator.userAgent)) && !isNativeApp();
