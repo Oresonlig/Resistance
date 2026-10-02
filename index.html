@@ -4596,6 +4596,7 @@ async function handleSession(session){
     stopAuthThemeDemo();
     initTheme();
     const hv=document.getElementById('headerVersion');if(hv)hv.textContent=APP_VERSION+appShellSuffix();
+    markClientSeen();
     // PM12: varna om Private Browsing efter app-shell renderats
     if(detectStorageQuotaIssue()) showPrivateModeBanner();
     // 3.88.10 — no-op i webbläsaren (checkAndroidAppUpdate returnerar direkt
@@ -4772,6 +4773,7 @@ function ensureStateDefaults(){
   if(typeof state.schemaVersion !== 'number') state.schemaVersion = 0;
   if(typeof state.lastSyncedCloudTime !== 'number') state.lastSyncedCloudTime = 0;
   if(state.lastSyncedCloudISO === undefined) state.lastSyncedCloudISO = null;
+  if(!state.clientSeen || typeof state.clientSeen !== 'object') state.clientSeen = {}; // 3.95.0
   // Template-sessioner (G–N): BASE_SESSIONS.push skedde bara i den session där
   // passet lades till (addSessionToChain/finishOnboarding/onboarding-import).
   // Efter reload saknades passet i BASE_SESSIONS → buildEffectiveChain droppade
@@ -4843,6 +4845,7 @@ function freshState(){
     migrations:{},
     weightGoalEnabled:false, weightGoal:null,
     lastSyncedCloudTime:0, lastSyncedCloudISO:null,
+    clientSeen:{}, // 3.95.0 — {app|webMobile|webDesktop: ms}, senast sedd per klientsort
     schemaVersion: SCHEMA_VERSION,
     deletions: { customExercises:{}, exerciseNotes:{}, log:{}, weightLog:{} }
   };
@@ -5234,7 +5237,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.94.1';
+const APP_VERSION = '3.95.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -6059,6 +6062,14 @@ function mergeKeyedMap(local, cloud, tombstones){
   }
   return merged;
 }
+// 3.95.0 — {nyckel: ms}-karta där senaste tidsstämpeln vinner (clientSeen).
+function mergeMaxTimes(local, cloud){
+  const merged = {...(local||{})};
+  for(const [k, v] of Object.entries(cloud||{})){
+    if(typeof v === 'number' && !(merged[k] >= v)) merged[k] = v;
+  }
+  return merged;
+}
 function mergeArrayUnion(local, cloud){
   const s = new Set();
   for(const v of local||[]) s.add(v);
@@ -6185,6 +6196,8 @@ async function _syncFromCloudInner(userId){
         state.importedPRs = mergeArrayUnion(_local.importedPRs, state.importedPRs);
         state.lastSessionSetCount = mergeKeyedMap(_local.lastSessionSetCount, state.lastSessionSetCount);
         state.lastSessionWarmupCount = mergeKeyedMap(_local.lastSessionWarmupCount, state.lastSessionWarmupCount);
+        // 3.95.0 — senaste tidsstämpeln vinner per klientsort (enheterna skriver olika nycklar)
+        state.clientSeen = mergeMaxTimes(_local.clientSeen, state.clientSeen);
         // SL6: drafts är device-lokala
         state.draft = _local.draft;
         state.drafts = _local.drafts || {};
@@ -11146,6 +11159,7 @@ let _settingsPage = null;
 // hides the tab; the real boundary is the RPC's own guard.
 const ADMIN_EMAIL = 'niklgron@gmail.com';
 let _adminStats=null, _adminLoading=false, _adminError=null;
+let _adminClients=null, _adminClientsError=null; // 3.95.0
 function isAdmin(){ return (currentUser?.email||'').toLowerCase() === ADMIN_EMAIL; }
 function loadAdminStats(force){
   if(_adminLoading) return;
@@ -11160,6 +11174,39 @@ function loadAdminStats(force){
       if(_settingsPage==='admin') renderData();
     })
     .catch(e=>{ _adminLoading=false; _adminError = (e&&e.message)||String(e); if(_settingsPage==='admin') renderData(); });
+  // 3.95.0 — app / hemsida-mobil / hemsida-desktop per användare. Egen RPC
+  // admin_client_stats() (samma e-postvakt) — saknas den visas en notis i stället.
+  _adminClientsError=null;
+  Promise.resolve(window.sb && window.sb.rpc('admin_client_stats'))
+    .then(res=>{
+      if(!res) _adminClientsError='Supabase not ready';
+      else if(res.error) _adminClientsError = res.error.message || String(res.error);
+      else _adminClients = Array.isArray(res.data) ? res.data : [];
+      if(_settingsPage==='admin') renderData();
+    })
+    .catch(e=>{ _adminClientsError=(e&&e.message)||String(e); if(_settingsPage==='admin') renderData(); });
+}
+const CLIENT_LABELS = { app:'App', webMobile:'Web · mobile', webDesktop:'Web · desktop' };
+function adminClientSection(){
+  if(_adminClientsError) return `<div class="section-sub">Clients</div><div style="font-family:var(--mono);font-size:.5rem;color:var(--text-muted);margin-bottom:14px;">Client stats unavailable: ${escapeHTML(_adminClientsError)}</div>`;
+  if(!_adminClients) return '';
+  const cutoff = Date.now() - 30*86400000;
+  const counts = { app:0, webMobile:0, webDesktop:0 };
+  for(const r of _adminClients){
+    const seen = r.client_seen || {};
+    for(const k of Object.keys(counts)) if(typeof seen[k]==='number' && seen[k] >= cutoff) counts[k]++;
+  }
+  const tracked = _adminClients.filter(r => r.client_seen && Object.keys(r.client_seen).length).length;
+  return `<div class="section-sub">Clients · users last 30d</div>
+    <div class="stats-grid">${Object.keys(counts).map(k=>`<div class="stat-box"><div class="stat-num">${counts[k]}</div><div class="stat-desc">${CLIENT_LABELS[k]}</div></div>`).join('')}</div>
+    <div style="font-family:var(--mono);font-size:.5rem;color:var(--text-muted);margin:-6px 0 14px;line-height:1.6;">Tracked since 3.95.0 — ${tracked} of ${_adminClients.length} users have reported so far. A user can count in several columns.</div>`;
+}
+function adminUserClients(email){
+  if(!_adminClients || !email) return '';
+  const r = _adminClients.find(x => (x.email||'').toLowerCase() === email.toLowerCase());
+  const seen = r && r.client_seen ? r.client_seen : {};
+  const kinds = Object.keys(CLIENT_LABELS).filter(k => typeof seen[k]==='number');
+  return kinds.length ? ' · ' + kinds.map(k => CLIENT_LABELS[k]).join(' / ') : '';
 }
 function openSettingsPage(p){ _settingsPage = p; if(p==='admin' && isAdmin()) loadAdminStats(); renderData(); try{ window.scrollTo(0,0); }catch(e){} }
 function closeSettingsPage(){ _settingsPage = null; renderData(); try{ window.scrollTo(0,0); }catch(e){} }
@@ -11374,6 +11421,7 @@ function renderData(){
         <div class="stat-box"><div class="stat-num">${num(s.active_30d)}</div><div class="stat-desc">Active 30d</div></div>
         <div class="stat-box"><div class="stat-num">${num(s.total_sessions)}</div><div class="stat-desc">Total sessions</div></div>
       </div>
+      ${adminClientSection()}
       <div class="section-sub">Users · ${users.length}</div>
       ${users.map(u=>`<div class="hist-entry" style="padding:10px 11px;">
         <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
@@ -11381,7 +11429,7 @@ function renderData(){
           <div style="font-family:var(--mono);font-size:.5rem;color:var(--gray-light);flex-shrink:0;white-space:nowrap;">${u.sessions||0} sess · ${u.sessions_30d||0}/30d</div>
         </div>
         ${u.email?`<div style="font-family:var(--mono);font-size:.5rem;color:var(--text-muted);margin-top:3px;letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(u.email)}</div>`:''}
-        <div style="font-family:var(--mono);font-size:.5rem;color:var(--text-muted);margin-top:2px;line-height:1.6;">active ${fmtDT(u.last_active)}${ago(u.last_active)?' · '+ago(u.last_active):''} · last workout ${fmtDT(u.last_workout)} · v${escapeHTML(String(u.app_version||'?'))}${u.theme?' · '+escapeHTML(String(u.theme)):''}</div>
+        <div style="font-family:var(--mono);font-size:.5rem;color:var(--text-muted);margin-top:2px;line-height:1.6;">active ${fmtDT(u.last_active)}${ago(u.last_active)?' · '+ago(u.last_active):''} · last workout ${fmtDT(u.last_workout)} · v${escapeHTML(String(u.app_version||'?'))}${u.theme?' · '+escapeHTML(String(u.theme)):''}${escapeHTML(adminUserClients(u.email))}</div>
       </div>`).join('')}`;
     }
     el.innerHTML=`${subHead('Admin · Analytics')}
@@ -12213,6 +12261,19 @@ function getShellVersion(ua){
 // MK1-specifikt: i MK2 smälter kod- och appversion ihop → radera då.
 function appShellVersion(){ return isNativeApp() ? getShellVersion() : null; }
 function appShellSuffix(){ const v = appShellVersion(); return v ? ' · app ' + v : ''; }
+// 3.95.0 — mätning inför beslutet om hemsidans framtid (MK2-övergången): varje
+// klient stämplar sin sort i state.clientSeen (synkas), admin-fliken räknar.
+function clientKind(ua){
+  if(isNativeApp()) return 'app';
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(String(ua || navigator.userAgent)) ? 'webMobile' : 'webDesktop';
+}
+function markClientSeen(){
+  if(!state.clientSeen || typeof state.clientSeen !== 'object') state.clientSeen = {};
+  const k = clientKind(), now = Date.now();
+  if(now - (state.clientSeen[k] || 0) < 6 * 3600 * 1000) return; // max en stämpel per 6 h
+  state.clientSeen[k] = now;
+  save();
+}
 // 3.91.0 — nedladdningslänk för appen (login-skärmen + Settings).
 // 3.92.2 — pekar på senaste SIGNERADE release (`android-vX.Y.Z`). Prereleaser
 // (gamla `android-debug`) räknas inte av /latest, så länken följer alltid den
