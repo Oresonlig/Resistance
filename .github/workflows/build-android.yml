@@ -1,5 +1,6 @@
 name: Build Android APK
 
+# OBS 2026-10-02: triggas nu även automatiskt, se `on:` nedan.
 # 3.88.10 — START på Android-appen (Capacitor). Manuell trigger med avsikt:
 # index.html ändras flera gånger per session (rena CSS/text-fixar) och skulle
 # spamma GitHub Releases med en APK per commit om detta körde på push. Niklas
@@ -28,6 +29,14 @@ name: Build Android APK
 
 on:
   workflow_dispatch: {}
+  # 2026-10-02 — bygger SJÄLV när skalversionen bumpas (appendUserAgent i
+  # capacitor.config.json) eller workflow:en ändras. Niklas når inte GitHub
+  # från jobbet; push räcker nu. index.html-ändringar triggar inget.
+  push:
+    branches: [main]
+    paths:
+      - capacitor.config.json
+      - .github/workflows/build-android.yml
 
 permissions:
   contents: write   # krävs för att skapa en GitHub Release
