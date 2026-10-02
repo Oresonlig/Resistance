@@ -11,6 +11,7 @@ import android.os.Build;
 import android.provider.Settings;
 
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.content.IntentCompat;
 
 import com.getcapacitor.JSObject;
@@ -26,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Locale;
 
 /**
  * App 1.2.0 — appen laddar ner och installerar sin egen uppdatering.
@@ -33,9 +35,9 @@ import java.net.URL;
  * Utan detta öppnade uppdateringsbannern bara en länk: webbläsaren laddade
  * ner APK:n och användaren fick ge WEBBLÄSAREN rätt att installera appar.
  * Nu: nedladdning i appen → Androids PackageInstaller. Rätten att installera
- * ges en gång till The Chain själv. På Android 12+ begärs
- * USER_ACTION_NOT_REQUIRED — Android avgör själv om det beviljas (kräver bl.a.
- * att appen är sin egen installerare); annars visas systemdialogen "Update".
+ * ges en gång till The Chain själv. Systemdialogen "Update" visas alltid
+ * (1.2.4 — se installApk). Blockeras sessionen ändå → systemets vanliga
+ * installationsskärm via ACTION_VIEW som andra försök.
  *
  * JS-sidan (index.html, checkAndroidAppUpdate) anropar via
  * Capacitor.nativePromise('AppUpdater','install',{url}) och lyssnar på
@@ -50,6 +52,8 @@ public class AppUpdaterPlugin extends Plugin {
 
     private String pendingUrl = null;   // väntar på "installera okända appar"-rätten
     private boolean busy = false;
+    private File lastApk = null;
+    private boolean fallbackTried = false;
     private BroadcastReceiver receiver;
 
     @Override
@@ -69,6 +73,19 @@ public class AppUpdaterPlugin extends Plugin {
                 } else {
                     busy = false;
                     String msg = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE);
+                    // Blockerad (inte avbruten av användaren) → andra försök via
+                    // systemets vanliga installationsskärm (ACTION_VIEW), en annan
+                    // väg genom Androids/Samsungs spärrar.
+                    if (msg != null && msg.toLowerCase(Locale.ROOT).contains("blocked") && lastApk != null && !fallbackTried) {
+                        fallbackTried = true;
+                        try {
+                            openWithSystemInstaller(lastApk);
+                            emit("installing", null);
+                            return;
+                        } catch (Exception e) {
+                            msg = msg + " / fallback: " + e.getMessage();
+                        }
+                    }
                     emit("error", "Install failed" + (msg != null ? ": " + msg : ""));
                 }
             }
@@ -125,9 +142,11 @@ public class AppUpdaterPlugin extends Plugin {
 
     private void start(String url) {
         busy = true;
+        fallbackTried = false;
         new Thread(() -> {
             try {
                 File apk = download(url);
+                lastApk = apk;
                 emit("installing", null);
                 installApk(apk);
             } catch (Exception e) {
@@ -181,8 +200,13 @@ public class AppUpdaterPlugin extends Plugin {
         PackageInstaller installer = ctx.getPackageManager().getPackageInstaller();
         PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
         params.setAppPackageName(ctx.getPackageName());
+        // App 1.2.4 — begär ALLTID användarbekräftelse. Den tysta vägen
+        // (USER_ACTION_NOT_REQUIRED, 1.2.0–1.2.3) blockeras av Samsungs
+        // Automatisk blockerare ("Blockerar icke officiella programvaruuppdateringar")
+        // med INSTALL_FAILED_ABORTED "Self update is blocked by unknown source
+        // package" — även när The Chain är godkänd. Med dialogen gäller godkännandet.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            params.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED);
+            params.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_REQUIRED);
         }
         int sessionId = installer.createSession(params);
         try (PackageInstaller.Session session = installer.openSession(sessionId)) {
@@ -199,6 +223,15 @@ public class AppUpdaterPlugin extends Plugin {
             PendingIntent pi = PendingIntent.getBroadcast(ctx, sessionId, statusIntent, flags);
             session.commit(pi.getIntentSender());
         }
+    }
+
+    private void openWithSystemInstaller(File apk) {
+        Context ctx = getContext();
+        Uri uri = FileProvider.getUriForFile(ctx, ctx.getPackageName() + ".fileprovider", apk);
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setDataAndType(uri, "application/vnd.android.package-archive");
+        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+        ctx.startActivity(i);
     }
 
     private void emit(String state, String message) {
