@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://qjmjqideqrgozexudaqr.supabase.co https://api.github.com https://thechain.training; manifest-src 'self'; worker-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://qjmjqideqrgozexudaqr.supabase.co https://api.github.com https://raw.githubusercontent.com https://thechain.training; manifest-src 'self'; worker-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-src 'none'">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -5234,7 +5234,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.94.0';
+const APP_VERSION = '3.94.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -12226,7 +12226,12 @@ const GITHUB_RELEASES_API = 'https://api.github.com/repos/Oresonlig/Resistance/r
 // 3.93.1 — senaste skalversion läses från HEMSIDAN (capacitor.config.json ligger
 // redan publikt där, appendUserAgent = skalversionen) i stället för GitHubs API
 // (kvot 60/h per IP, blockerat på vissa nät). GitHub-API:t = reserv.
-const APP_VERSION_SOURCE = 'https://thechain.training/capacitor.config.json';
+// App 1.2.6 — hemsidan svarade "Failed to fetch" i appen (CORS) → raw.githubusercontent
+// (samma fil, tillåter CORS, ingen API-kvot) först, hemsidan andra, API:t sist.
+const APP_VERSION_SOURCES = [
+  'https://raw.githubusercontent.com/Oresonlig/Resistance/main/capacitor.config.json',
+  'https://thechain.training/capacitor.config.json',
+];
 const apkUrlFor = v => 'https://github.com/Oresonlig/Resistance/releases/download/android-v' + v + '/thechain.apk';
 // Diagnostik för uppdateringsflödet — följer med i Settings → Support → Copy draft state.
 const _appUpdateDiag = { events: [] };
@@ -12243,15 +12248,19 @@ async function checkAndroidAppUpdate(){
   _appUpdateDiag.shell = shellVersion;
   _appUpdateDiag.plugins = ((window.Capacitor && window.Capacitor.PluginHeaders) || []).map(p => p.name);
   let remoteVersion = null, downloadUrl = null;
-  try{
-    const res = await fetch(APP_VERSION_SOURCE + '?t=' + Date.now(), { cache: 'no-store' });
-    appUpdateLog('site HTTP ' + res.status);
-    if(res.ok){
-      const cfg = await res.json();
-      remoteVersion = String(cfg.appendUserAgent || '').split('/')[1] || null;
-      if(remoteVersion) downloadUrl = apkUrlFor(remoteVersion);
-    }
-  }catch(e){ appUpdateLog('site error: ' + (e && e.message)); }
+  for(const src of APP_VERSION_SOURCES){
+    if(remoteVersion) break;
+    const tag = new URL(src).hostname;
+    try{
+      const res = await fetch(src + '?t=' + Date.now(), { cache: 'no-store' });
+      appUpdateLog(tag + ' HTTP ' + res.status);
+      if(res.ok){
+        const cfg = await res.json();
+        remoteVersion = String(cfg.appendUserAgent || '').split('/')[1] || null;
+        if(remoteVersion) downloadUrl = apkUrlFor(remoteVersion);
+      }
+    }catch(e){ appUpdateLog(tag + ' error: ' + (e && e.message)); }
+  }
   if(!remoteVersion){
     try{
       const res = await fetch(GITHUB_RELEASES_API);
@@ -12324,6 +12333,11 @@ function startAppSelfUpdate(url){
       if(d.state === 'permission') setMsg('Allow The Chain to install apps, then come back');
       else if(d.state === 'downloading') setMsg('Downloading update… ' + (d.percent || 0) + '%');
       else if(d.state === 'installing') setMsg('Installing…');
+      else if(d.state === 'blocked'){
+        // App 1.2.6 — Samsungs Automatisk blockerare släpper bara Play/Galaxy Store.
+        setMsg('If the install is blocked: turn off Samsung Auto Blocker (Settings › Security and privacy › Auto Blocker), then tap Download again');
+        if(dl) dl.style.display = '';
+      }
       else if(d.state === 'error'){
         // CI bygger ~2 min efter skalbumpen — release-filen finns inte än.
         setMsg(/HTTP 404/.test(d.message || '') ? 'Update is still building, try again in a few minutes' : 'Update failed: ' + (d.message || 'unknown error'));

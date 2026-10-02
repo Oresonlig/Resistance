@@ -80,7 +80,10 @@ public class AppUpdaterPlugin extends Plugin {
                         fallbackTried = true;
                         try {
                             openWithSystemInstaller(lastApk);
-                            emit("installing", null);
+                            // 1.2.6 — på Samsung med Automatisk blockerare stoppas även
+                            // denna väg (systemdialog, ingen callback hit) → JS visar
+                            // instruktion om att stänga av spärren.
+                            emit("blocked", msg);
                             return;
                         } catch (Exception e) {
                             msg = msg + " / fallback: " + e.getMessage();
