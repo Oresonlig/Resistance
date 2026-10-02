@@ -4595,7 +4595,7 @@ async function handleSession(session){
     showAppShell();
     stopAuthThemeDemo();
     initTheme();
-    const hv=document.getElementById('headerVersion');if(hv)hv.textContent=APP_VERSION;
+    const hv=document.getElementById('headerVersion');if(hv)hv.textContent=APP_VERSION+appShellSuffix();
     // PM12: varna om Private Browsing efter app-shell renderats
     if(detectStorageQuotaIssue()) showPrivateModeBanner();
     // 3.88.10 — no-op i webbläsaren (checkAndroidAppUpdate returnerar direkt
@@ -5234,7 +5234,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.93.1';
+const APP_VERSION = '3.94.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -11305,6 +11305,7 @@ function renderData(){
     <div id="sync-health" style="color:${_lastSyncError?'var(--red)':'var(--green-bright)'};font-size:.62rem;margin-bottom:5px;">${_lastSyncError?('⚠ '+escapeHTML(_lastSyncError)):'✓ All changes synced'}</div>
     <div style="color:var(--gray-light);font-size:.5rem;margin-bottom:9px;line-height:1.6;">Your data is saved on this device first. Sync errors never lose data — pushes retry automatically and send once you're back online.</div>
     <div>App version: <span style="color:var(--white);">${APP_VERSION}</span></div>
+    ${appShellVersion()?`<div>Android app: <span style="color:var(--white);">${escapeHTML(appShellVersion())}</span></div>`:''}
     <div id="sync-cloud-version">Cloud version: <span style="color:var(--gray-light);">checking…</span></div>
     <div>Last sync (read): <span id="sync-read-time" style="color:var(--gray-light);">${formatSyncAgo(lastSyncRead)}</span></div>
     <div>Last sync (write): <span id="sync-write-time" style="color:var(--gray-light);">${formatSyncAgo(lastSyncWrite)}</span></div>
@@ -11400,7 +11401,7 @@ function renderData(){
   </button>`;
   el.innerHTML=`<div class="section-title">Settings</div>
   <div style="font-family:var(--mono);font-size:.58rem;color:var(--text-faint);margin-bottom:10px">Supabase · ${escapeHTML(currentUser?.name||'')} · ${size} KB · ${state.log.length} sessions</div>
-  <div onclick="openSettingsPage('data')" style="cursor:pointer;font-family:var(--mono);font-size:.6rem;margin-bottom:18px;color:${_lastSyncError?'var(--red)':'var(--green-bright)'};">${_lastSyncError?('⚠ '+escapeHTML(_lastSyncError)):'✓ All changes synced'} <span style="color:var(--text-faint);">· v${APP_VERSION} ›</span></div>
+  <div onclick="openSettingsPage('data')" style="cursor:pointer;font-family:var(--mono);font-size:.6rem;margin-bottom:18px;color:${_lastSyncError?'var(--red)':'var(--green-bright)'};">${_lastSyncError?('⚠ '+escapeHTML(_lastSyncError)):'✓ All changes synced'} <span style="color:var(--text-faint);">· v${APP_VERSION}${escapeHTML(appShellSuffix())} ›</span></div>
   ${row('training','Training','Rest timer · weight goal · units · custom exercises')}
   ${row('appearance','Appearance','Themes · ambient effects')}
   ${row('data','Data & Sync','Sync status · program sharing · backup · reset')}
@@ -11686,7 +11687,7 @@ Steps to reproduce:
 
 
 ─── Diagnostic info (do not edit) ───
-App version: ${APP_VERSION}
+App version: ${APP_VERSION}${appShellVersion() ? '\nAndroid app: ' + appShellVersion() : ''}
 User ID: ${currentUser?.id || 'not logged in'}
 User: ${currentUser?.name || 'unknown'}
 Theme: ${state?.theme || 'default'}
@@ -11708,7 +11709,7 @@ function sendFeedback(){
 
 
 ─── Context (optional, helpful for prioritization) ───
-App version: ${APP_VERSION}
+App version: ${APP_VERSION}${appShellVersion() ? '\nAndroid app: ' + appShellVersion() : ''}
 User: ${currentUser?.name || 'unknown'}
 `);
   window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
@@ -12208,6 +12209,10 @@ function getShellVersion(ua){
   const m = String(ua || navigator.userAgent).match(/TheChainShell\/(\d+(?:\.\d+)*)/);
   return m ? m[1] : null;
 }
+// 3.94.0 — appens (skalets) version synlig i headern + Settings, bara i appen.
+// MK1-specifikt: i MK2 smälter kod- och appversion ihop → radera då.
+function appShellVersion(){ return isNativeApp() ? getShellVersion() : null; }
+function appShellSuffix(){ const v = appShellVersion(); return v ? ' · app ' + v : ''; }
 // 3.91.0 — nedladdningslänk för appen (login-skärmen + Settings).
 // 3.92.2 — pekar på senaste SIGNERADE release (`android-vX.Y.Z`). Prereleaser
 // (gamla `android-debug`) räknas inte av /latest, så länken följer alltid den
