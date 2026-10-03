@@ -4553,12 +4553,13 @@ async function handleSession(session){
   if(!session){
     currentUser = null;
     _cloudSeenThisSession = false; // 3.62.0 — nästa användare på denna enhet måste läsa molnet innan skrivning
+    _movedToAppState = null;
     showAuthScreen();
     return;
   }
   // 3.62.0 — user-byte (eller första login) nollställer läs-före-skriv-gaten.
   // Token-refresh för samma användare lämnar den orörd.
-  if(!currentUser || currentUser.id !== session.user?.id) _cloudSeenThisSession = false;
+  if(!currentUser || currentUser.id !== session.user?.id){ _cloudSeenThisSession = false; _movedToAppState = null; }
   isLoading = true; // block save() during entire load sequence
   // 3.35.9 - HARD FAILSAFE: 8s timeout paa hela login-sekvensen. Om naagot
   // haenger (profile-fetch, loadStateForUser, etc) tvingas appen att visas
@@ -4585,12 +4586,20 @@ async function handleSession(session){
   try{
     currentUser = await buildCurrentUser(session);
     cleanLegacyLocalStorage();
+    // 3.96.0 — flyttat till appen: logga ut innan något laddas eller synkas
+    if(await checkMovedToApp(currentUser.id) === true){
+      _loginCompleted = true;
+      clearTimeout(_failsafe);
+      await enterMovedToApp();
+      return;
+    }
     // 3.90.0 — synk-grinden har egna gränser (5s nedräkning / 7s + Retry) och
     // får inte köras förbi av failsafen medan användaren väljer Retry. Failsafen
     // pausas under den och armeras om för resten av sekvensen.
     clearTimeout(_failsafe);
     const _loaded = await loadStateForUser();
-    if(_loaded === false){ _loginCompleted = true; return; } // Log out från grinden
+    // Log out från grinden — eller killswitchen slog till under laddningens synk
+    if(_loaded === false || !currentUser){ _loginCompleted = true; return; }
     _failsafe = setTimeout(_runFailsafe, 8000);
     showAppShell();
     stopAuthThemeDemo();
@@ -4625,6 +4634,33 @@ async function handleSession(session){
   if(!currentUser) return;
   startPeriodicSync && startPeriodicSync();
   syncFromCloud && syncFromCloud(currentUser.id);
+}
+
+// 3.96.0 — Killswitch: ett konto som flyttat till The Chain-appen (MK2) har en
+// rad i mk2_migration. Hemsidan släpper då inte in det — ingen laddning, ingen
+// synk, ingen skrivning — och app_state-raden blir en fryst backup.
+// true = flyttat, false = inte flyttat, null = okänt (nätfel/timeout: kollas
+// igen vid nästa synk, så en offline-start inte släpper igenom skrivningar).
+let _movedToAppState = null;
+async function checkMovedToApp(userId){
+  try{
+    const rows = await Promise.race([
+      sbGet('mk2_migration','user_id=eq.'+userId+'&select=migrated_at'),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000))
+    ]);
+    _movedToAppState = Array.isArray(rows) && rows.length > 0;
+  }catch(e){
+    _movedToAppState = null;
+  }
+  return _movedToAppState;
+}
+async function enterMovedToApp(){
+  currentUser = null;
+  _cloudSeenThisSession = false;
+  // scope:'local' — loggar bara ut den här enheten, kräver inget svar från servern
+  try{ await window.sb.auth.signOut({ scope:'local' }); }catch(e){}
+  showAuthScreen();
+  authMsg('This account has moved to The Chain app. Log in there to keep training.', 'error');
 }
 
 // Clean up old localStorage keys from before auth migration
@@ -5237,7 +5273,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.95.0';
+const APP_VERSION = '3.96.0';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
@@ -6109,6 +6145,12 @@ function syncFromCloud(userId){
   return _syncPromise;
 }
 async function _syncFromCloudInner(userId){
+  // 3.96.0 — killswitch-kollen misslyckades vid inloggningen (offline): kolla
+  // igen innan något läses eller skrivs. pushState går alltid via denna pull.
+  if(_movedToAppState === null && await checkMovedToApp(userId) === true){
+    await enterMovedToApp();
+    return;
+  }
   setSyncDot('syncing');
   const _dbgSyncBefore = _dbgDraftSig(); // DEBUG: draft-set-antal före ev. merge
   try{
@@ -6295,6 +6337,7 @@ async function sbGet(table,query=''){
 // atomärt server-side; direkt INSERT/UPDATE på app_state är indraget för
 // authenticated (se SYNC_CAS_SERVER_SPEC.md) så den vägen ger 403 oavsett innehåll.
 async function sbWriteStateCas(expectedISO, data){
+  if(_movedToAppState === true) throw new Error('account moved to the app'); // 3.96.0 — fryst backup
   const headers = await getAuthHeaders();
   // Samma 12s abort-timeout som sbGet — en hängd skrivning får inte frysa pushState
   const ctrl = new AbortController();
@@ -12463,7 +12506,7 @@ function startPeriodicSync(){
 // fetch med keepalive:true överlever page close och kan skicka auth-headers
 // (sendBeacon kan inte sätta headers, så Supabase rejectade tyst).
 function keepaliveCloudPush(){
-  if(!currentUser) return;
+  if(!currentUser || _movedToAppState === true) return;
   if(isFreshState(state)) return;
   // 3.62.0 — Läs-före-skriv-gate + CAS även här. Förr pushade keepalive hela
   // lokala state OVILLKORLIGT vid pagehide — en mobil som öppnats med gammal
