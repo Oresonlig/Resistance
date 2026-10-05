@@ -28,15 +28,12 @@ name: Build Android APK
 #   ANDROID_KEY_PASSWORD
 
 on:
+  # 2026-10-05 — BARA för hand. MK1-appen ersätts av MK2 (TheChain-MK2,
+  # release-stable.yml): MK2:s bro skriver capacitor.config.json (TheChainShell/
+  # 2.0.N) och lägger upp MK2-APK:n som android-v2.0.N. En automatisk start här
+  # skulle bygga en egen MK1 "2.0.N" och skriva över MK2-filen.
+  # (2026-10-02–05 byggde den själv vid ändring av capacitor.config.json.)
   workflow_dispatch: {}
-  # 2026-10-02 — bygger SJÄLV när skalversionen bumpas (appendUserAgent i
-  # capacitor.config.json) eller workflow:en ändras. Niklas når inte GitHub
-  # från jobbet; push räcker nu. index.html-ändringar triggar inget.
-  push:
-    branches: [main]
-    paths:
-      - capacitor.config.json
-      - .github/workflows/build-android.yml
 
 permissions:
   contents: write   # krävs för att skapa en GitHub Release
