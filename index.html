@@ -4551,6 +4551,14 @@ function authMsg(text, kind){
 // EvoSuite (EON-appen) för spelgruppens gemensamma konto. Filen ligger i en privat
 // Supabase-bucket där bara det kontot får läsa, så kontrollen här styr bara visningen.
 const EVOSUITE_ACCOUNT = 'eongamer@gaming.com';
+// Signerad adress i stället för download(): Supabases cache kan annars ge en äldre version av filen.
+async function fetchEvoSuiteFile(name){
+  const { data, error } = await window.sb.storage.from('evosuite').createSignedUrl(name, 60);
+  if(error) throw error;
+  const response = await fetch(data.signedUrl, { cache: 'no-store' });
+  if(!response.ok) throw new Error('HTTP ' + response.status);
+  return response.blob();
+}
 function showEvoSuite(){
   if(document.getElementById('evosuite-root')) return;
   const root = document.createElement('div');
@@ -4558,21 +4566,49 @@ function showEvoSuite(){
   root.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#111;color:#eee;font-family:sans-serif;';
   const signOut = document.createElement('button');
   signOut.textContent = 'Logga ut';
-  // Egen list under appen, så att knappen inte hamnar ovanpå EvoSuites slagknapp på mobil.
-  signOut.style.cssText = 'position:absolute;left:0;right:0;bottom:0;height:calc(30px + env(safe-area-inset-bottom));padding:0 0 env(safe-area-inset-bottom);border:0;background:#222;color:#bbb;font-size:12px;cursor:pointer;';
+  // Egen list under appen, så att knapparna inte hamnar ovanpå EvoSuites slagknapp på mobil.
+  const barButton = 'flex:1;border:0;background:#222;color:#bbb;font-size:12px;cursor:pointer;';
+  signOut.style.cssText = barButton;
+  const bar = document.createElement('div');
+  bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;display:flex;gap:1px;height:calc(30px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:#222;';
+  // Knappen visas bara på Windows. Själva åtkomsten styrs av den privata bucketen.
+  if(/Windows NT/.test(navigator.userAgent)){
+    const download = document.createElement('button');
+    download.textContent = 'Ladda ner för Windows';
+    download.style.cssText = barButton;
+    download.onclick = async () => {
+      download.disabled = true;
+      download.textContent = 'Hämtar…';
+      try {
+        const data = await fetchEvoSuiteFile('EvoSuite.exe');
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([data], { type: 'application/octet-stream' }));
+        link.download = 'EvoSuite.exe';
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 60000);
+        download.textContent = 'Ladda ner för Windows';
+      } catch(e) {
+        console.error('[evosuite] kunde inte hämta exe-filen:', e);
+        download.textContent = 'Kunde inte hämta filen';
+      } finally {
+        download.disabled = false;
+      }
+    };
+    bar.append(download);
+  }
+  bar.append(signOut);
   signOut.onclick = async () => {
     try { await window.sb.auth.signOut(); } finally { location.reload(); }
   };
   const status = document.createElement('div');
   status.style.cssText = 'padding:24px;';
   status.textContent = 'Laddar EvoSuite…';
-  root.append(status, signOut);
+  root.append(status, bar);
   document.body.appendChild(root);
   // Körs utanför onAuthStateChange: Supabase-anrop inne i den callbacken kan låsa sig.
   setTimeout(async () => {
     try {
-      const { data, error } = await window.sb.storage.from('evosuite').download('evosuite.html');
-      if(error) throw error;
+      const data = await fetchEvoSuiteFile('evosuite.html');
       const html = new Blob([await data.text()], { type: 'text/html' });
       const frame = document.createElement('iframe');
       frame.title = 'EvoSuite';
