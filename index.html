@@ -4565,7 +4565,24 @@ function showEvoSuite(){
   root.id = 'evosuite-root';
   root.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#111;color:#eee;font-family:sans-serif;';
   const signOut = document.createElement('button');
-  signOut.textContent = 'Logga ut';
+  // Listen ligger utanför appen. Språket läses från appens egen inställning, och storage-händelsen
+  // kommer när det byts inne i appens iframe.
+  const texts = {
+    sv: { download:'Ladda ner för Windows', fetching:'Hämtar…', failed:'Kunde inte hämta filen', signOut:'Logga ut', loading:'Laddar EvoSuite…', loadFailed:'EvoSuite kunde inte laddas. Prova att ladda om sidan.' },
+    en: { download:'Download for Windows', fetching:'Downloading…', failed:'Could not get the file', signOut:'Log out', loading:'Loading EvoSuite…', loadFailed:'EvoSuite could not be loaded. Try reloading the page.' },
+  };
+  const text = () => texts[localStorage.getItem('evosuite-lang') === 'en' ? 'en' : 'sv'];
+  let download = null;
+  let downloadState = 'download';
+  let statusState = 'loading';
+  const paintTexts = () => {
+    const t = text();
+    signOut.textContent = t.signOut;
+    if(download) download.textContent = t[downloadState];
+    status.textContent = t[statusState];
+  };
+  window.addEventListener('storage', (e) => { if(e.key === 'evosuite-lang') paintTexts(); });
+  const setDownloadState = (state) => { downloadState = state; paintTexts(); };
   // Egen list under appen, så att knapparna inte hamnar ovanpå EvoSuites slagknapp på mobil.
   const barButton = 'flex:1;border:0;background:#222;color:#bbb;font-size:12px;cursor:pointer;';
   signOut.style.cssText = barButton;
@@ -4573,12 +4590,11 @@ function showEvoSuite(){
   bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;display:flex;gap:1px;height:calc(30px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:#222;';
   // Knappen visas bara på Windows. Själva åtkomsten styrs av den privata bucketen.
   if(/Windows NT/.test(navigator.userAgent)){
-    const download = document.createElement('button');
-    download.textContent = 'Ladda ner för Windows';
+    download = document.createElement('button');
     download.style.cssText = barButton;
     download.onclick = async () => {
       download.disabled = true;
-      download.textContent = 'Hämtar…';
+      setDownloadState('fetching');
       try {
         const data = await fetchEvoSuiteFile('EvoSuite.exe');
         const link = document.createElement('a');
@@ -4586,10 +4602,10 @@ function showEvoSuite(){
         link.download = 'EvoSuite.exe';
         link.click();
         setTimeout(() => URL.revokeObjectURL(link.href), 60000);
-        download.textContent = 'Ladda ner för Windows';
+        setDownloadState('download');
       } catch(e) {
         console.error('[evosuite] kunde inte hämta exe-filen:', e);
-        download.textContent = 'Kunde inte hämta filen';
+        setDownloadState('failed');
       } finally {
         download.disabled = false;
       }
@@ -4602,7 +4618,7 @@ function showEvoSuite(){
   };
   const status = document.createElement('div');
   status.style.cssText = 'padding:24px;';
-  status.textContent = 'Laddar EvoSuite…';
+  paintTexts();
   root.append(status, bar);
   document.body.appendChild(root);
   // Körs utanför onAuthStateChange: Supabase-anrop inne i den callbacken kan låsa sig.
@@ -4618,7 +4634,8 @@ function showEvoSuite(){
       root.prepend(frame);
     } catch(e) {
       console.error('[evosuite] kunde inte hämta appen:', e);
-      status.textContent = 'EvoSuite kunde inte laddas. Prova att ladda om sidan.';
+      statusState = 'loadFailed';
+      paintTexts();
     }
   }, 0);
 }
