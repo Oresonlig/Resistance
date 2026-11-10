@@ -4558,7 +4558,8 @@ function showEvoSuite(){
   root.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#111;color:#eee;font-family:sans-serif;';
   const signOut = document.createElement('button');
   signOut.textContent = 'Logga ut';
-  signOut.style.cssText = 'position:absolute;right:8px;bottom:8px;z-index:1;padding:4px 10px;font-size:12px;opacity:.7;cursor:pointer;';
+  // Egen list under appen, så att knappen inte hamnar ovanpå EvoSuites slagknapp på mobil.
+  signOut.style.cssText = 'position:absolute;left:0;right:0;bottom:0;height:calc(30px + env(safe-area-inset-bottom));padding:0 0 env(safe-area-inset-bottom);border:0;background:#222;color:#bbb;font-size:12px;cursor:pointer;';
   signOut.onclick = async () => {
     try { await window.sb.auth.signOut(); } finally { location.reload(); }
   };
@@ -4576,7 +4577,7 @@ function showEvoSuite(){
       const frame = document.createElement('iframe');
       frame.title = 'EvoSuite';
       frame.src = URL.createObjectURL(html);
-      frame.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;';
+      frame.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:calc(100% - 30px - env(safe-area-inset-bottom));border:0;';
       status.remove();
       root.prepend(frame);
     } catch(e) {
