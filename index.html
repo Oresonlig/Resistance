@@ -4588,8 +4588,11 @@ function showEvoSuite(){
   signOut.style.cssText = barButton;
   const bar = document.createElement('div');
   bar.style.cssText = 'position:absolute;left:0;right:0;bottom:0;display:flex;gap:1px;height:calc(30px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:#222;';
+  // Nedladdningen är avstängd i väntan på svar från Helmgast, och exe-filen är borttagen ur bucketen.
+  // För att öppna igen: ladda upp EvoSuite.exe och sätt flaggan till true.
+  const EVOSUITE_DOWNLOAD_OPEN = false;
   // Knappen visas bara på Windows. Själva åtkomsten styrs av den privata bucketen.
-  if(/Windows NT/.test(navigator.userAgent)){
+  if(EVOSUITE_DOWNLOAD_OPEN && /Windows NT/.test(navigator.userAgent)){
     download = document.createElement('button');
     download.style.cssText = barButton;
     download.onclick = async () => {
