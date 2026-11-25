@@ -42,6 +42,13 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // 3.98.3 — GitHub (APK-nedladdningar, release-assets, versionskollar) går ALDRIG via SW:n.
+  // En 17 MB APK som strömmas genom respondWith + tee:ad cache.put fastnade på 99 % i
+  // Androids nedladdning (/misc/ BossmanConnect), och versionskollar ska aldrig vara SWR-gamla.
+  if(url.hostname === 'github.com' || url.hostname.endsWith('.github.com') || url.hostname.endsWith('.githubusercontent.com')){
+    return;
+  }
+
   // 3.62.1 — Network-first för navigations-requests (HTML-shellen). Detta var
   // rotorsaken till "måste refresha två gånger": SWR serverade ALLTID cachad
   // (gammal) index.html direkt på refresh #1, vilket betyder att sidan som

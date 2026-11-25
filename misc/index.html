@@ -13,11 +13,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@1,500&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="/landing.css?v=3.98.2">
+<link rel="stylesheet" href="/landing.css?v=3.98.3">
 <link rel="stylesheet" href="/misc/misc.css?v=1">
 <script defer src="/vendor/supabase.js"></script>
-<script defer src="/site.js?v=3.98.2"></script>
-<script defer src="/section.js?v=3.98.2"></script>
+<script defer src="/site.js?v=3.98.3"></script>
+<script defer src="/section.js?v=3.98.3"></script>
 </head>
 <body>
 <div class="tc" id="tc" data-screen="section" data-auth="in" data-section="misc" data-checking>
@@ -41,10 +41,12 @@
 
       <!-- Rutnätet. Ny app = kopiera en <a class="mx-tile">.
            data-kind="open": href till appen, ingen download-attribut.
-           data-kind="download": href till filen + download. -->
+           data-kind="download": href till filen, INGET download-attribut (3.98.3: med det
+           fastnade APK:n på 99 % på Android; GitHub skickar ändå Content-Disposition: attachment,
+           samma som MK2-länken i /training/ som fungerar). -->
       <nav class="mx-grid" aria-label="Apps">
         <a class="mx-tile" data-kind="download"
-           href="https://github.com/Oresonlig/BossmanConnect/releases/download/app-latest/bossmanconnect.apk" download>
+           href="https://github.com/Oresonlig/BossmanConnect/releases/download/app-latest/bossmanconnect.apk">
           <span class="mx-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="8" height="12" rx="4"/><circle cx="6.5" cy="12" r="1.6"/><rect x="13.5" y="6" width="8" height="12" rx="4"/><circle cx="17.5" cy="12" r="1.6"/></svg>
           </span>
