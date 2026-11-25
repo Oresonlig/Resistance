@@ -228,6 +228,28 @@
     if (state.status === 'pw' || state.status === 'net' || (state.msg && state.msg.kind === 'err')) set({ status: 'idle', msg: null });
   }));
 
+  // ---------- 3.98.2: mobil — tangentbordet får inte täcka fälten ----------
+  // .tc är låst till skärmhöjden (overflow hidden) med kortet nedtryckt. Om tangentbordet
+  // bara läggs ovanpå (Chrome: resizes-visual, iOS) finns inget att scrolla. Därför följer
+  // höjden det SYNLIGA området (--vvh, se landing.css) och fältet scrollas in i gate-inner.
+  // interactive-widget=resizes-content i viewport-meta gör samma sak i Chrome på egen hand.
+  const vv = window.visualViewport;
+  if (vv) {
+    // iOS Safari panorerar dokumentet när tangentbordet öppnas (offsetTop > 0) och lämnar
+    // ibland kvar förskjutningen när det stängs. Höjden = synliga ytan → nollställ panoreringen,
+    // så att .tc ligger exakt i det synliga fönstret (fältet scrollas in i gate-inner nedan).
+    const fit = () => {
+      root.style.setProperty('--vvh', `${Math.round(vv.height)}px`);
+      if (mqMobile.matches && (window.scrollY || vv.offsetTop)) window.scrollTo(0, 0);
+    };
+    vv.addEventListener('resize', fit);
+    fit();
+  }
+  form.addEventListener('focusin', (e) => {
+    if (!mqMobile.matches || !e.target.matches('.tc-field')) return;
+    setTimeout(() => e.target.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
+  });
+
   // ---------- boot ----------
   (async () => {
     const user = await Auth.getUser();

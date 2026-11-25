@@ -259,7 +259,7 @@ a.tc-back { display: inline-flex; align-items: center; }   /* 3.97.0: länk-vari
 
 /* ---------- mobile: stacked bands that expand vertically ---------- */
 @media (max-width: 760px) {
-  .tc { --gap: 8px; padding: var(--gap); }
+  .tc { --gap: 8px; padding: var(--gap); height: var(--vvh, 100dvh); min-height: 0; }   /* 3.98.2: följer synliga ytan när tangentbordet är uppe */
   .tc-head { padding: 0 10px; }
   .tc-email, .tc-tagline { display: none; }
   .tc-landing { flex-direction: column; }
