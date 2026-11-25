@@ -41,7 +41,7 @@
     diet:     { name: 'Diet', kicker: '02', href: '/diet/', signup: true,
       desc: 'Shop good groceries at good prices, and find recipes to cook with them.' },
     // 3.98.0: EvoSuite = egen sektion (spelgruppens konto + inbjudna). Ingen registrering.
-    evosuite: { name: 'EvoSuite', kicker: '03', href: '/evosuite/', signup: false,
+    evosuite: { name: 'Games', kicker: '03', href: '/evosuite/', signup: false,
       desc: 'The game group\'s companion app for Eon.' },
     misc:     { name: 'Misc', kicker: '04', href: '/misc/', signup: false,
       desc: 'General workshop projects.' },
