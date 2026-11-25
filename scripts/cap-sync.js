@@ -15,9 +15,11 @@ const WWW = join(ROOT, 'www');
 
 if (!existsSync(WWW)) mkdirSync(WWW, { recursive: true });
 
-const FILES = ['index.html', 'sw.js', 'manifest.webmanifest'];
-for (const f of FILES) {
-  const src = join(ROOT, f);
+// 3.97.0 — träningsappen bor i training/index.html (roten = landningssidan);
+// i www/ blir den fortfarande index.html.
+const FILES = { 'index.html': 'training/index.html', 'sw.js': 'sw.js', 'manifest.webmanifest': 'manifest.webmanifest' };
+for (const [f, from] of Object.entries(FILES)) {
+  const src = join(ROOT, from);
   if (existsSync(src)) {
     copyFileSync(src, join(WWW, f));
     console.log(`kopierad: ${f}`);

@@ -1,0 +1,288 @@
+/* =========================================================================
+   The Chain — landing (Triptych) + section sign-in gate
+   Plain CSS. Every section-specific value is a token on [data-section].
+   Källa: Claude Design-handoff 2026-11-25. 3.97.0-tillägg (Claude, Niklas ok):
+   registreringsläge, "check your email"-kort, neutral/fel-rad i kortet,
+   sektionssidor (Coming soon). Markerade med "3.97.0".
+   ========================================================================= */
+
+/* ---------- shared tokens ---------- */
+.tc {
+  --ink:        #050505;   /* page ground behind the panels */
+  --text:       #f2efe8;
+  --text-2:     #dedad1;   /* descriptions on panel scenes */
+  --text-3:     #cfcac0;   /* secondary UI text */
+  --mute:       #9a958c;   /* labels, dividers' text (≥4.5:1 on all scenes) */
+  --card:       rgba(8,8,8,.62);
+  --card-line:  rgba(255,255,255,.10);
+  --field-bg:   rgba(0,0,0,.40);
+  --field-line: rgba(255,255,255,.14);
+  --err:        #ffab9c;   /* inline error text */
+  --err-line:   #ff8a7a;   /* errored field border */
+  --warn-text:  #f3dcb4;   /* network banner */
+  --warn-bg:    rgba(240,180,90,.10);
+  --warn-line:  rgba(240,180,90,.35);
+
+  --font-display: 'Archivo', system-ui, sans-serif;
+  --font-serif:   'Cormorant Garamond', Georgia, serif;
+  --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
+
+  --ease-panel: cubic-bezier(.7,0,.2,1);
+  --t-panel:    .75s;
+  --radius-panel: 22px;
+  --gap: 12px;
+  --strip: 84px;           /* collapsed strip width (desktop) */
+  --band: 68px;            /* collapsed band height (mobile) */
+}
+
+/* ---------- section worlds (dark interpretations of the app themes) ---------- */
+[data-section="training"] {            /* Void — embers rising from a forge */
+  --accent: #e0502f; --on-accent: #ffffff;
+  --glow-soft: rgba(224,80,47,.22); --rim: rgba(255,120,80,.16);
+  --scene:
+    radial-gradient(ellipse 110% 60% at 50% 115%, rgba(224,80,47,.40), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 20% 0%, rgba(120,30,15,.25), transparent 70%),
+    #0c0706;
+}
+[data-section="diet"] {                /* Understory — sap-green floor, sun-flecks above, spores rising */
+  --accent: #a6d47a; --on-accent: #0d1a07;
+  --glow-soft: rgba(166,212,122,.22); --rim: rgba(170,220,120,.15);
+  --scene:
+    radial-gradient(ellipse 60% 40% at 72% 0%, rgba(232,217,138,.16), transparent 70%),
+    radial-gradient(ellipse 40% 30% at 30% 8%, rgba(232,217,138,.10), transparent 70%),
+    radial-gradient(ellipse 120% 60% at 40% 112%, rgba(49,77,34,.75), transparent 62%),
+    #08100a;
+}
+[data-section="misc"] {                /* Undertow — abyss navy, light from the surface, bubbles rising */
+  --accent: #8cc0e8; --on-accent: #071426;
+  --glow-soft: rgba(140,192,232,.22); --rim: rgba(140,190,240,.15);
+  --scene:
+    radial-gradient(ellipse 90% 45% at 50% -8%, rgba(233,243,247,.20), transparent 62%),
+    linear-gradient(180deg, #163763 0%, #0a1a30 45%, #040a14 100%);
+}
+
+/* ---------- base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; background: #050505; }
+.tc {
+  min-height: 100vh; min-height: 100dvh; height: 100dvh;
+  padding: var(--gap); padding-bottom: max(var(--gap), env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: var(--gap);
+  background: var(--ink); color: var(--text);
+  font-family: var(--font-display); -webkit-font-smoothing: antialiased; overflow: hidden;
+}
+.tc button { font: inherit; color: inherit; cursor: pointer; }
+.tc a { color: var(--text-3); text-decoration: none; }
+.tc a:hover { color: #fff; }
+.tc svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.tc :focus-visible { outline: 2px solid var(--accent, #fff); outline-offset: 3px; }
+
+/* ---------- header ---------- */
+.tc-head { flex: 0 0 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
+.tc-mark { font-weight: 800; font-size: 15px; letter-spacing: .22em; color: var(--text) !important; }
+.tc-tagline { font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--mute); }
+.tc-acct { display: none; align-items: center; gap: 10px; height: 36px; padding: 0 6px; border-radius: 999px; background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); font-size: 13px; color: var(--text-3); }
+.tc-avatar { width: 26px; height: 26px; border-radius: 50%; background: #2a2724; display: grid; place-items: center; font-weight: 700; font-size: 12px; color: var(--text); }
+.tc-link { border: 0; background: none; padding: 0 8px; height: 36px; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; color: var(--text-3); }
+.tc[data-auth="in"] .tc-acct { display: flex; }
+.tc[data-auth="in"] .tc-tagline { display: none; }
+
+/* ---------- screens ---------- */
+.tc[data-screen="landing"] .tc-gate { display: none; }
+.tc[data-screen="gate"] .tc-landing { display: none; }
+
+/* ---------- landing panels ---------- */
+.tc-landing { flex: 1 1 auto; min-height: 0; display: flex; gap: var(--gap); }
+.tc-panel {
+  position: relative; overflow: hidden; min-width: 0; min-height: 0;
+  flex: 1 1 0%; border-radius: var(--radius-panel);
+  background: var(--scene); box-shadow: inset 0 0 0 1px var(--rim);
+  transition: flex var(--t-panel) var(--ease-panel);
+}
+.tc-panel[data-state="collapsed"] { flex: 0 0 var(--strip); }
+
+/* strip button: full-panel hit area in equal + collapsed states */
+.tc-strip {
+  position: absolute; inset: 0; z-index: 3; width: 100%; border: 0; background: transparent;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 0;
+}
+.tc-num { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--accent); display: grid; place-items: center; font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
+.tc-strip-name { writing-mode: vertical-rl; transform: rotate(180deg); font-weight: 700; font-size: 18px; letter-spacing: .3em; text-transform: uppercase; }
+.tc-strip-short { display: none; }
+.tc-lock { width: 16px; height: 16px; color: var(--mute); display: none; }
+.tc-panel[data-locked] .tc-lock { display: block; }
+/* in equal + open, the strip's own label is hidden; equal keeps it as an invisible click target */
+.tc-panel[data-state="equal"] .tc-strip > * { display: none; }
+.tc-panel[data-state="open"] .tc-strip { display: none; }
+
+/* body */
+.tc-body {
+  position: relative; z-index: 2; height: 100%;
+  display: flex; flex-direction: column; justify-content: flex-end; gap: 12px; padding: 40px;
+}
+.tc-panel[data-state="collapsed"] .tc-body { display: none; }
+.tc-panel[data-state="equal"] .tc-line,
+.tc-panel[data-state="equal"] .tc-actions { display: none; }
+.tc-panel[data-state="open"] .tc-body { padding: 56px; gap: 20px; max-width: 760px; animation: tcIn .5s .35s both; }
+
+.tc-kicker { margin: 0; font-family: var(--font-mono); font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: var(--accent); }
+.tc-name { margin: 0; font-weight: 800; font-size: 52px; line-height: 1; }
+.tc-panel[data-state="open"] .tc-name { font-size: clamp(64px, 8vw, 112px); line-height: .9; }
+.tc-desc { margin: 0; font-size: 16px; line-height: 1.45; color: var(--text-2); max-width: 30ch; }
+.tc-panel[data-state="open"] .tc-desc { font-size: 20px; line-height: 1.5; max-width: 34ch; }
+.tc-line { margin: 0; font-family: var(--font-serif); font-style: italic; font-size: 26px; color: var(--text-3); }
+
+.tc-actions { margin-top: 14px; }
+.tc-enter {
+  height: 56px; padding: 0 30px; border: 0; border-radius: 999px;
+  background: var(--accent); color: var(--on-accent) !important; font-size: 16px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 12px;
+  box-shadow: 0 12px 36px -12px var(--accent); transition: filter .18s, transform .06s;
+}
+.tc-enter:hover { filter: brightness(1.08); }
+.tc-enter:active { transform: translateY(1px); }
+.tc-locked { display: none; align-items: center; gap: 16px; flex-wrap: wrap; }
+.tc-locked p { margin: 0; display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--text-2); }
+.tc-locked svg { width: 18px; height: 18px; }
+.tc-panel[data-locked] .tc-enter { display: none; }
+.tc-panel[data-locked] .tc-locked { display: flex; }
+.tc-ghost {
+  height: 48px; padding: 0 22px; border: 0; border-radius: 999px;
+  background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.22); font-size: 15px; font-weight: 600;
+}
+
+/* ---------- gate (sign-in / no access) ---------- */
+.tc-gate {
+  position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; border-radius: var(--radius-panel);
+  background: var(--scene); box-shadow: inset 0 0 0 1px var(--rim);
+  --g: var(--glow-soft);
+}
+.tc-gate-inner {
+  position: relative; z-index: 2; height: 100%; overflow-y: auto;
+  padding: 48px 56px; display: flex; align-items: center; justify-content: space-between; gap: 56px;
+  animation: tcIn .45s both;
+}
+.tc-gate-copy { max-width: 520px; display: flex; flex-direction: column; gap: 18px; }
+.tc-gate .tc-name { font-size: clamp(56px, 7vw, 104px); line-height: .9; }
+.tc-gate .tc-desc { font-size: 19px; line-height: 1.5; max-width: 32ch; }
+.tc-back { align-self: flex-start; margin-bottom: 20px; height: 40px; padding: 0 16px; border: 0; border-radius: 999px; background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px var(--rim); font-size: 13px; color: var(--text-3) !important; }
+a.tc-back { display: inline-flex; align-items: center; }   /* 3.97.0: länk-variant på sektionssidorna */
+
+.tc-card {
+  width: 400px; flex: 0 0 400px; padding: 32px; border-radius: 20px;
+  background: var(--card); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: inset 0 0 0 1px var(--card-line), 0 30px 80px -30px rgba(0,0,0,.85);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.tc-card-title { margin: 0; font-weight: 700; font-size: 22px; line-height: 1.25; }
+.tc-card-sub { margin: 0 0 8px; font-size: 14px; line-height: 1.45; color: #b9b4aa; }
+/* 3.97.0: tre kort (signin / noaccess / checkmail) — bara gate-lägets kort syns */
+.tc-gate:not([data-gate="signin"]) .tc-signin,
+.tc-gate:not([data-gate="noaccess"]) .tc-noaccess,
+.tc-gate:not([data-gate="checkmail"]) .tc-checkmail { display: none; }
+
+.tc-google { height: 48px; border: 0; border-radius: 12px; background: var(--text); color: #141414 !important; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 12px; }
+.tc-google svg { width: 18px; height: 18px; stroke: none; }
+.tc-or { display: flex; align-items: center; gap: 12px; margin: 6px 0; font-size: 13px; color: var(--mute); }
+.tc-or::before, .tc-or::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,.1); }
+.tc-signin label { font-size: 13px; font-weight: 500; color: var(--text-3); }
+.tc-row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px; }
+.tc-row a { font-size: 13px; }
+.tc-field {
+  height: 48px; border: 1px solid var(--field-line); border-radius: 12px; background: var(--field-bg);
+  color: var(--text); font: 15px var(--font-display); padding: 0 14px;
+  transition: border-color .18s, box-shadow .18s;
+}
+.tc-field::placeholder { color: #7d786f; }
+.tc-field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--g); }
+.tc-submit {
+  margin-top: 10px; height: 50px; border: 0; border-radius: 12px;
+  background: var(--accent); color: var(--on-accent) !important; font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.tc-wide { width: 100%; border-radius: 12px; height: 50px; }
+.tc-badge { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,.07); display: grid; place-items: center; color: var(--accent); }
+.tc-badge svg { width: 20px; height: 20px; }
+.tc-sent { display: none; color: var(--accent); }
+.tc-noaccess[data-sent] .tc-sent { display: block; }
+
+/* 3.97.0: registreringsläge — samma kort, mode styr vilka delar som syns */
+.tc-gate[data-mode="signin"] .tc-only-signup,
+.tc-gate[data-mode="signup"] .tc-only-signin { display: none; }
+.tc-gate[data-signup="off"] .tc-switch { display: none; }
+.tc-switch { margin: 8px 0 0; font-size: 13px; text-align: center; color: var(--mute); }
+.tc-switch a { color: var(--text-3); text-decoration: underline; text-underline-offset: 3px; }
+/* 3.97.0: neutral rad (t.ex. "reset link sent") eller fel (t.ex. signup-fel) i kortet */
+.tc-msg { display: none; margin: 0; font-size: 13px; line-height: 1.4; color: var(--text-3); }
+.tc-msg[data-kind] { display: block; }
+.tc-msg[data-kind="err"] { color: var(--err); }
+
+/* status states */
+.tc-banner { display: none; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; background: var(--warn-bg); box-shadow: inset 0 0 0 1px var(--warn-line); font-size: 14px; line-height: 1.4; color: var(--warn-text); }
+.tc-banner svg { flex: 0 0 18px; width: 18px; height: 18px; margin-top: 1px; }
+.tc-err { display: none; margin: 0; font-size: 13px; line-height: 1.4; color: var(--err); }
+.tc-spin { display: none; width: 16px; height: 16px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: tcSpin .8s linear infinite; }
+.tc-gate[data-status="net"] .tc-banner { display: flex; }
+.tc-gate[data-status="pw"] .tc-err { display: block; }
+.tc-gate[data-status="pw"] #f-pw { border-color: var(--err-line); }
+.tc-gate[data-status="loading"] .tc-spin { display: inline-block; }
+.tc-gate[data-status="loading"] .tc-signin :is(input, button) { opacity: .6; pointer-events: none; }
+
+/* ---------- ambient particles (all rise; personality per section) ---------- */
+.tc-fx { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.tc-p { position: absolute; bottom: -16px; border-radius: 50%; width: var(--s); height: var(--s); left: var(--x);
+  animation: tcRise var(--d) linear var(--dl) infinite; opacity: 0; }
+[data-section="training"] .tc-p { background: #ffb070; box-shadow: 0 0 9px #ff6a3d; }
+[data-section="diet"] .tc-p     { background: #d9e8a0; box-shadow: 0 0 10px rgba(166,212,122,.8); }
+[data-section="misc"] .tc-p     { border: 1px solid rgba(190,220,245,.6); background: rgba(190,220,245,.06); }
+
+@keyframes tcRise {
+  0%   { transform: translate(0,0); opacity: 0; }
+  15%  { opacity: 1; }
+  55%  { transform: translate(14px,-45vh); }
+  100% { transform: translate(-8px,-92vh); opacity: 0; }
+}
+@keyframes tcIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes tcSpin { to { transform: rotate(360deg); } }
+
+/* 3.97.0: sektionssida (Coming soon) — döljs tills åtkomsten är bekräftad */
+.tc[data-screen="section"][data-checking] .tc-gate { visibility: hidden; }
+
+/* ---------- mobile: stacked bands that expand vertically ---------- */
+@media (max-width: 760px) {
+  .tc { --gap: 8px; padding: var(--gap); }
+  .tc-head { padding: 0 10px; }
+  .tc-email, .tc-tagline { display: none; }
+  .tc-landing { flex-direction: column; }
+  .tc-panel[data-state="collapsed"] { flex: 0 0 var(--band); }
+  .tc-panel { border-radius: 18px; }
+  .tc-strip { flex-direction: row; justify-content: flex-start; gap: 14px; padding: 0 18px; }
+  .tc-num { width: 30px; height: 30px; font-size: 10px; }
+  .tc-strip-name { writing-mode: horizontal-tb; transform: none; letter-spacing: .2em; }
+  .tc-strip-short { display: inline; margin-left: auto; font-size: 12px; color: #b9b4aa; }
+  .tc-panel[data-state="open"] .tc-body { padding: 24px 22px; gap: 12px; }
+  .tc-panel[data-state="open"] .tc-name { font-size: 56px; }
+  .tc-panel[data-state="open"] .tc-desc { font-size: 16px; }
+  .tc-line { display: none; }
+  .tc-enter { width: 100%; justify-content: center; height: 54px; }
+  .tc-locked { flex-direction: column; align-items: stretch; }
+  .tc-gate { border-radius: 18px; }
+  .tc-gate-inner { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 14px; padding: 16px 18px 20px; }
+  .tc-back { margin-bottom: 0; }
+  .tc-gate .tc-name { font-size: 40px; }
+  .tc-gate .tc-desc { display: none; }
+  .tc-card { width: auto; flex: 0 0 auto; margin-top: auto; padding: 20px; border-radius: 18px; gap: 8px; }
+  .tc-card-title { font-size: 20px; }
+  .tc-field { font-size: 16px; }   /* ≥16px stops iOS Safari auto-zoom */
+  /* 3.97.0: sektionssidan har ingen kort-kolumn → beskrivningen får synas */
+  .tc[data-screen="section"] .tc-gate .tc-desc { display: block; font-size: 16px; }
+  .tc[data-screen="section"] .tc-line { display: block; font-size: 22px; }
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .tc-panel { transition: none; }
+  .tc-p { display: none; }
+  .tc-panel[data-state="open"] .tc-body, .tc-gate-inner { animation: none; }
+  .tc-spin { animation-duration: 2s; }
+}

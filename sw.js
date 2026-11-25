@@ -7,7 +7,8 @@
 // single-source-of-truth. Browsern ser olika URL per version → installerar ny SW.
 const APP_VERSION = new URL(self.location).searchParams.get('v') || 'unknown';
 const CACHE_NAME = `thechain-cache-v${APP_VERSION}`;
-const CORE_ASSETS = ['./', './index.html'];
+// 3.97.0 — roten = landningssidan, träningsappen bor i /training/.
+const CORE_ASSETS = ['./', './training/'];
 
 self.addEventListener('install', event => {
   event.waitUntil(
