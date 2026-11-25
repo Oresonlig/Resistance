@@ -1,0 +1,68 @@
+/* =========================================================================
+   The Chain — /misc/: rutnät med appar (BossmanConnect-projektet).
+   Bygger på landing.css (tokens, Undertow-scenen, bubblorna i .tc-fx) och
+   ändrar den inte. Ny app = en ny <a class="mx-tile"> i misc/index.html.
+     data-kind="open"     → tar dig in i appen (vanlig länk)
+     data-kind="download" → startar en nedladdning (APK)
+   ========================================================================= */
+
+/* Sidan: rubrik överst, rutnätet under (i stället för landningens kopia+kort sida vid sida). */
+.tc-gate-inner.mx {
+  flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 32px;
+}
+.mx .tc-gate-copy { max-width: none; gap: 12px; }
+.mx .tc-back { margin-bottom: 8px; }
+.tc-gate .mx .tc-name { font-size: clamp(48px, 5.5vw, 80px); }
+
+/* ---------- rutnätet ---------- */
+.mx-grid {
+  display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.mx-tile {
+  position: relative; min-height: 220px; padding: 26px; border-radius: 20px;
+  display: flex; flex-direction: column; gap: 10px;
+  background: var(--card); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: inset 0 0 0 1px var(--card-line), 0 30px 80px -30px rgba(0,0,0,.85);
+  color: var(--text) !important;
+  transition: box-shadow .2s, transform .12s;
+  animation: tcIn .45s both;
+}
+.mx-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 0 1px var(--accent), 0 0 0 4px var(--glow-soft), 0 30px 80px -30px rgba(0,0,0,.85);
+}
+.mx-tile:active { transform: translateY(0); }
+
+.mx-icon {
+  width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center;
+  background: rgba(140,192,232,.10); box-shadow: inset 0 0 0 1px var(--rim); color: var(--accent);
+}
+.mx-icon svg { width: 28px; height: 28px; }
+
+.mx-name { margin: 6px 0 0; font-weight: 700; font-size: 22px; line-height: 1.2; }
+.mx-desc { margin: 0; font-size: 14px; line-height: 1.45; color: var(--text-3); }
+.mx-note { margin: 0; font-size: 12px; line-height: 1.4; color: var(--mute); }
+
+/* Åtgärden längst ned: stor, tydlig, i sektionens accentfärg. */
+.mx-go {
+  margin-top: auto; align-self: flex-start; height: 48px; padding: 0 24px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--accent); color: var(--on-accent); font-size: 15px; font-weight: 700;
+  box-shadow: 0 12px 36px -12px var(--accent);
+}
+.mx-tile:hover .mx-go { filter: brightness(1.08); }
+
+/* ---------- mobil ---------- */
+@media (max-width: 760px) {
+  .tc-gate-inner.mx { gap: 18px; }
+  .tc-gate .mx .tc-name { font-size: 40px; }
+  .mx-grid { grid-template-columns: 1fr; gap: 12px; }
+  .mx-tile { min-height: 0; padding: 20px; border-radius: 18px; }
+  .mx-go { align-self: stretch; justify-content: center; height: 54px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-tile { animation: none; transition: none; }
+}
