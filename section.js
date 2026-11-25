@@ -1,5 +1,5 @@
 /* =========================================================================
-   The Chain — sektionssida (/diet/, /misc/). 3.97.0.
+   The Chain — sektionssida (/diet/, /evosuite/, /misc/). 3.97.0.
    Spärren gäller HÄR också, inte bara på landningssidan: utloggad eller utan
    åtkomst → tillbaka till landningssidan med ?enter=<sektion>, där inloggning
    eller "no access" visas. Sektionens DATA skyddas av RLS (has_section_access).
@@ -23,6 +23,8 @@
     document.querySelectorAll('[data-bind="desc"]').forEach((el) => { el.textContent = SECTIONS[key].desc; });
     root.removeAttribute('data-checking');
     seedParticles();
+    // 3.98.0: sidans egen kod (t.ex. /evosuite/evosuite.js) startar först när åtkomsten är bekräftad.
+    window.dispatchEvent(new CustomEvent('tc:ready', { detail: { email: user.email } }));
   })();
 
   root.addEventListener('click', async (e) => {

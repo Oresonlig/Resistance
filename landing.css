@@ -53,6 +53,14 @@
     radial-gradient(ellipse 120% 60% at 40% 112%, rgba(49,77,34,.75), transparent 62%),
     #08100a;
 }
+[data-section="evosuite"] {            /* 3.98.0 — Eon: candle-gold over deep plum, gold motes rising */
+  --accent: #e2b75a; --on-accent: #1a1205;
+  --glow-soft: rgba(226,183,90,.22); --rim: rgba(230,190,110,.15);
+  --scene:
+    radial-gradient(ellipse 80% 55% at 25% 110%, rgba(226,183,90,.30), transparent 62%),
+    radial-gradient(ellipse 60% 40% at 85% 0%, rgba(110,60,140,.28), transparent 70%),
+    #0e0911;
+}
 [data-section="misc"] {                /* Undertow — abyss navy, light from the surface, bubbles rising */
   --accent: #8cc0e8; --on-accent: #071426;
   --glow-soft: rgba(140,192,232,.22); --rim: rgba(140,190,240,.15);
@@ -234,6 +242,7 @@ a.tc-back { display: inline-flex; align-items: center; }   /* 3.97.0: länk-vari
   animation: tcRise var(--d) linear var(--dl) infinite; opacity: 0; }
 [data-section="training"] .tc-p { background: #ffb070; box-shadow: 0 0 9px #ff6a3d; }
 [data-section="diet"] .tc-p     { background: #d9e8a0; box-shadow: 0 0 10px rgba(166,212,122,.8); }
+[data-section="evosuite"] .tc-p { background: #f3d68f; box-shadow: 0 0 8px rgba(226,183,90,.85); }
 [data-section="misc"] .tc-p     { border: 1px solid rgba(190,220,245,.6); background: rgba(190,220,245,.06); }
 
 @keyframes tcRise {

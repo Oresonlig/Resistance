@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- 3.98.0 — EvoSuite som egen sektion (tidigare nödlösning inne i /training/).
+     Spärren: /section.js + sektionen 'evosuite' + privat storage-bucket med policy
+     has_section_access('evosuite'). Appen laddas av evosuite.js efter 'tc:ready'.
+     CSP: appen körs i en blob-iframe som ÄRVER sidans CSP → 'unsafe-inline' + frame-src blob:
+     (samma som /training/ hade). Ingen manifest-länk: hemskärmsikonen ska peka HIT. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://qjmjqideqrgozexudaqr.supabase.co; base-uri 'self'; object-src 'none'; form-action 'self'; frame-src blob:">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#111111">
+<title>EvoSuite — The Chain</title>
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@1,500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/landing.css?v=3.98.0">
+<script defer src="/vendor/supabase.js"></script>
+<script defer src="/site.js?v=3.98.0"></script>
+<script defer src="/section.js?v=3.98.0"></script>
+<script defer src="/evosuite/evosuite.js?v=3.98.0"></script>
+</head>
+<body>
+<div class="tc" id="tc" data-screen="section" data-auth="in" data-section="evosuite" data-checking>
+  <header class="tc-head">
+    <a class="tc-mark" href="/">THE CHAIN</a>
+    <div class="tc-acct">
+      <span class="tc-avatar" aria-hidden="true" data-bind="initial"></span>
+      <span class="tc-email" data-bind="email"></span>
+      <button type="button" class="tc-link" data-action="sign-out">Sign out</button>
+    </div>
+  </header>
+  <main class="tc-gate" data-section="evosuite" aria-labelledby="g-name">
+    <div class="tc-fx" aria-hidden="true"></div>
+    <div class="tc-gate-inner">
+      <div class="tc-gate-copy">
+        <a class="tc-back" href="/">← All sections</a>
+        <p class="tc-kicker">03</p>
+        <h1 class="tc-name" id="g-name">EvoSuite</h1>
+        <p class="tc-desc" data-bind="desc"></p>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -1,5 +1,5 @@
 /* =========================================================================
-   The Chain — delad kod för landningssidan (/) och sektionssidorna (/diet/, /misc/).
+   The Chain — delad kod för landningssidan (/) och sektionssidorna (/diet/, /evosuite/, /misc/).
    3.97.0. Träningsappen (/training/) har sin egen klient men SAMMA Supabase-projekt
    och samma localStorage-nyckel (supabase-js default) → en inloggning gäller alla.
 
@@ -40,7 +40,10 @@
       desc: 'Log sets and rounds, run rest timers, and build your chain of exercises one session at a time.' },
     diet:     { name: 'Diet', kicker: '02', href: '/diet/', signup: true,
       desc: 'Shop good groceries at good prices, and find recipes to cook with them.' },
-    misc:     { name: 'Misc', kicker: '03', href: '/misc/', signup: false,
+    // 3.98.0: EvoSuite = egen sektion (spelgruppens konto + inbjudna). Ingen registrering.
+    evosuite: { name: 'EvoSuite', kicker: '03', href: '/evosuite/', signup: false,
+      desc: 'The game group\'s companion app for Eon.' },
+    misc:     { name: 'Misc', kicker: '04', href: '/misc/', signup: false,
       desc: 'General workshop projects.' },
   };
 
@@ -134,8 +137,8 @@
       for (let i = 0; i < n; i++) {
         const p = document.createElement('span');
         p.className = 'tc-p';
-        const size = kind === 'training' ? 2 + (i % 3) : kind === 'diet' ? 3 + (i % 4) : 5 + (i * 3) % 10;
-        const base = kind === 'training' ? 8 : kind === 'diet' ? 13 : 11;   // sekunder att stiga
+        const size = kind === 'training' ? 2 + (i % 3) : kind === 'diet' ? 3 + (i % 4) : kind === 'evosuite' ? 2 + (i % 2) : 5 + (i * 3) % 10;
+        const base = kind === 'training' ? 8 : kind === 'diet' ? 13 : kind === 'evosuite' ? 15 : 11;   // sekunder att stiga
         p.style.setProperty('--x', `${8 + (84 / n) * i + ((i * 7) % 9)}%`);
         p.style.setProperty('--s', `${size}px`);
         p.style.setProperty('--d', `${base + (i % 5)}s`);
