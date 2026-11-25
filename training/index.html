@@ -172,6 +172,7 @@ header{border-bottom:1px solid #1e1e1e;padding:11px 14px;display:flex;align-item
 .header-sync{font-family:var(--ui-mono);font-size:.5rem;color:#666;letter-spacing:.08em;text-transform:uppercase;text-align:right;}
 .header-sync-row{display:flex;align-items:center;justify-content:flex-end;gap:4px;white-space:nowrap;}
 .header-bottom-row{display:flex;align-items:center;gap:8px;}
+.header-btn-row{display:flex;align-items:center;gap:6px;} /* 3.97.2 — Return to main + Log out */
 /* AM-pill — morning weight i header */
 .am-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 12px;border:1px solid var(--border-subtle);border-radius:8px;background:var(--surface-base);font-family:var(--ui-mono);font-size:.7rem;color:var(--gray-light);cursor:pointer;transition:border-color .15s,color .15s,background .15s;letter-spacing:.04em;}
 .am-pill:hover{border-color:var(--gray-light);color:var(--white);}
@@ -2374,6 +2375,9 @@ body[class*="theme-"] .cl-aura-hex{ display:none; }
 .cl-masthead .est{color:var(--text-2);}
 .cl-masthead .est b{color:var(--accent-2);font-weight:400;}
 .cl-masthead .dot{color:var(--accent);}
+/* 3.97.2 — väg tillbaka till startsidan från inloggningen */
+.cl-masthead .cl-home{color:var(--text-2);text-decoration:none;}
+.cl-masthead .cl-home:hover{color:var(--accent-2);}
 
 /* ---------- content column ---------- */
 .cl-grid{
@@ -4256,6 +4260,7 @@ body.theme-cosmic-horror .set-logged-indicator{
     <canvas class="cl-ember cl-fade-layer" data-density="72" data-heat="0.9" data-hue="24"></canvas>
 
     <div class="cl-masthead cl-fade-layer">
+      <a class="cl-home" href="/">← All sections</a>
       <span class="brand-min">The Chain</span>
       <span class="est"><span class="long">Resistance Training&nbsp;&nbsp;·&nbsp;&nbsp;</span><b>Est. in the basement</b></span>
       <span><span class="dot">●</span>&nbsp; V<span id="authVersionLabel">—</span> · Sync</span>
@@ -4350,7 +4355,10 @@ body.theme-cosmic-horror .set-logged-indicator{
     <div class="logo">THE <span>CHAIN</span></div>
     <div class="header-right">
       <div class="header-user">Training as <strong id="headerUser"></strong></div>
-      <button class="header-logout" onclick="logoutUser()">Log out</button>
+      <div class="header-btn-row">
+        <button class="header-logout" onclick="returnToMain()">Return to main</button>
+        <button class="header-logout" onclick="logoutUser()">Log out</button>
+      </div>
       <div class="header-sync" title="Tap for sync details" style="cursor:pointer;" onclick="_settingsPage='data';showView('data', document.querySelector('nav button:nth-child(4)'));">
         <div class="header-version">v<span id="headerVersion">—</span></div>
         <div class="header-sync-row">Sync <span class="sync-dot" id="syncDot"></span></div>
@@ -5111,8 +5119,19 @@ async function logoutUser(){
   if(!window.sb) return;
   const ok = await askModalConfirm('Log out?', 'You will be signed out of this device.', {confirmLabel:'Log out'});
   if(!ok) return;
-  await window.sb.auth.signOut();
-  // onAuthStateChange will fire and handleSession(null) will show auth screen
+  // 3.97.2 — Niklas: utloggningen tog bort sessionen men skärmen stod kvar (syntes
+  // först efter omstart). Lita inte på onAuthStateChange för att rita om: vänta
+  // (max 4 s) på signOut och ladda startsidan. Den ser då en färsk, utloggad sida.
+  try{
+    await Promise.race([window.sb.auth.signOut(), new Promise(r => setTimeout(r, 4000))]);
+  }catch(e){ console.warn('[auth] signOut:', e); }
+  location.replace('/');
+}
+
+// 3.97.2 — tillbaka till startsidan (Training · Diet · Misc) UTAN att logga ut.
+function returnToMain(){
+  try{ captureAllDraftInputs(); save(); }catch(e){ console.warn('[nav] save före Return to main:', e); }
+  location.href = '/';
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -5374,7 +5393,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.97.0';
+const APP_VERSION = '3.97.2';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;
