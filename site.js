@@ -37,12 +37,12 @@
   const ACCESS_REQUEST_TO = '';
 
   const SECTIONS = {
-    training: { name: 'Training', kicker: '01 · Void', href: '/training/', signup: true,
+    training: { name: 'Training', kicker: '01', href: '/training/', signup: true,
       desc: 'Log sets and rounds, run rest timers, and build your chain of exercises one session at a time.' },
-    diet:     { name: 'Diet', kicker: '02 · Understory', href: '/diet/', signup: true,
+    diet:     { name: 'Diet', kicker: '02', href: '/diet/', signup: true,
       desc: 'Shop good groceries at good prices, and find recipes to cook with them.' },
-    misc:     { name: 'Misc', kicker: '03 · Undertow', href: '/misc/', signup: false,
-      desc: 'Hobby projects from the workshop, starting with a controller for the home audio system.' },
+    misc:     { name: 'Misc', kicker: '03', href: '/misc/', signup: false,
+      desc: 'General workshop projects.' },
   };
 
   /** Fel → 'invalid_credentials' | 'email_not_confirmed' | 'network' | 'other' */
