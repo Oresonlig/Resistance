@@ -3,7 +3,7 @@
    där den var en nödlösning kopplad till spelgruppens konto.
    section.js kollar inloggning + åtkomst och skickar 'tc:ready'. Först då hämtas
    appen ur den privata bucketen 'evosuite' (policy: has_section_access('evosuite'))
-   och visas i helskärm. Listen under appen: [Download for Windows] [All sections] [Log out].
+   och visas i helskärm. Listen under appen: [Download for Windows] [Back to main] [Log out].
    ========================================================================= */
 (() => {
   'use strict';
@@ -25,8 +25,8 @@
 
   // Listans språk följer appens egen inställning; storage-händelsen kommer när det byts i iframen.
   const TEXTS = {
-    sv: { download: 'Ladda ner för Windows', fetching: 'Hämtar…', failed: 'Kunde inte hämta filen', home: 'Alla sektioner', signOut: 'Logga ut', loading: 'Laddar EvoSuite…', loadFailed: 'EvoSuite kunde inte laddas. Prova att ladda om sidan.' },
-    en: { download: 'Download for Windows', fetching: 'Downloading…', failed: 'Could not get the file', home: 'All sections', signOut: 'Log out', loading: 'Loading EvoSuite…', loadFailed: 'EvoSuite could not be loaded. Try reloading the page.' },
+    sv: { download: 'Ladda ner för Windows', fetching: 'Hämtar…', failed: 'Kunde inte hämta filen', home: 'Back to main', signOut: 'Logga ut', loading: 'Laddar EvoSuite…', loadFailed: 'EvoSuite kunde inte laddas. Prova att ladda om sidan.' },
+    en: { download: 'Download for Windows', fetching: 'Downloading…', failed: 'Could not get the file', home: 'Back to main', signOut: 'Log out', loading: 'Loading EvoSuite…', loadFailed: 'EvoSuite could not be loaded. Try reloading the page.' },
   };
   const text = () => TEXTS[localStorage.getItem('evosuite-lang') === 'en' ? 'en' : 'sv'];
 
