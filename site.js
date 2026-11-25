@@ -32,9 +32,8 @@
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
   });
 
-  // Mottagare för "Request access"-mejlet. TOM = mejlprogrammet öppnas med ämne och
-  // text ifyllda men utan mottagare. Niklas fyller i adressen själv.
-  const ACCESS_REQUEST_TO = '';
+  // Mottagare för "Request access"-mejlet (Niklas valde adressen 2026-11-25).
+  const ACCESS_REQUEST_TO = 'oresonlig@proton.me';
 
   const SECTIONS = {
     training: { name: 'Training', kicker: '01', href: '/training/', signup: true,
