@@ -95,9 +95,9 @@ html, body { margin: 0; background: #050505; }
 /* 3.100.0: Demo-länken (bara admin-kontot, se landing.js). Diskret vid vänsterkanten: syns, men knappt. */
 .tc-demo:not([hidden]) {
   position: fixed; left: 0; top: 50%; z-index: 10; transform: translateY(-50%);
-  writing-mode: vertical-rl; rotate: 180deg; padding: 14px 3px;
-  font-family: var(--font-mono); font-size: 10px; letter-spacing: .3em; text-transform: uppercase;
-  color: var(--mute) !important; opacity: .35; transition: opacity .2s;
+  writing-mode: vertical-rl; rotate: 180deg; padding: 16px 2px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .35em; text-transform: uppercase;
+  color: var(--text-3) !important; opacity: .6; transition: opacity .2s;   /* 3.100.1: .35 + --mute syntes knappt (dump6) */
 }
 .tc-demo:hover, .tc-demo:focus-visible { opacity: 1; }
 .tc[data-auth="in"] .tc-acct { display: flex; }
