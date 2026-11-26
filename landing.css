@@ -92,14 +92,15 @@ html, body { margin: 0; background: #050505; }
 .tc-acct { display: none; align-items: center; gap: 10px; height: 36px; padding: 0 6px; border-radius: 999px; background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); font-size: 13px; color: var(--text-3); }
 .tc-avatar { width: 26px; height: 26px; border-radius: 50%; background: #2a2724; display: grid; place-items: center; font-weight: 700; font-size: 12px; color: var(--text); }
 .tc-link { border: 0; background: none; padding: 0 8px; height: 36px; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; color: var(--text-3); }
-/* 3.100.0: Demo-länken (bara admin-kontot, se landing.js). Diskret vid vänsterkanten: syns, men knappt. */
+/* 3.100.0: Demo-länken (bara admin-kontot, se landing.js). 3.100.2 (Niklas): under "THE CHAIN",
+   så mörk att den nästan inte syns — han vet var den ligger. Hover/fokus = synlig. */
 .tc-demo:not([hidden]) {
-  position: fixed; left: 0; top: 50%; z-index: 10; transform: translateY(-50%);
-  writing-mode: vertical-rl; rotate: 180deg; padding: 16px 2px;
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: .35em; text-transform: uppercase;
-  color: var(--text-3) !important; opacity: .6; transition: opacity .2s;   /* 3.100.1: .35 + --mute syntes knappt (dump6) */
+  position: fixed; left: 26px; top: 44px; z-index: 10; padding: 2px 0;
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .3em; text-transform: uppercase;
+  color: rgba(255,255,255,.1) !important; transition: color .2s;
 }
-.tc-demo:hover, .tc-demo:focus-visible { opacity: 1; }
+.tc-demo:hover, .tc-demo:focus-visible { color: var(--text-3) !important; }
+@media (max-width: 760px) { .tc-demo:not([hidden]) { left: 18px; top: 40px; } }
 .tc[data-auth="in"] .tc-acct { display: flex; }
 .tc[data-auth="in"] .tc-tagline { display: none; }
 
