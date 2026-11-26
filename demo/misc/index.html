@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- 3.100.0 — Demo: Misc-rutnätet + en ATTRAPP av BossmanConnect i telefonram.
+     Enhetsnamn och värden påhittade. Ingen nedladdning, ingen Supabase (connect-src 'none'). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; base-uri 'self'; object-src 'none'; form-action 'none'; frame-src 'none'">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#050505">
+<title>Misc — The Chain (demo)</title>
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@1,500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/landing.css?v=3.100.0">
+<link rel="stylesheet" href="/misc/misc.css?v=1">
+<link rel="stylesheet" href="/demo/demo.css?v=3.100.0">
+<link rel="stylesheet" href="/demo/misc/misc-demo.css?v=3.100.0">
+<script defer src="/demo/demo.js?v=3.100.0"></script>
+<script defer src="/demo/misc/misc-demo.js?v=3.100.0"></script>
+</head>
+<body>
+<div class="tc" id="tc-misc" data-screen="section" data-auth="out" data-section="misc">
+  <header class="tc-head">
+    <a class="tc-mark" href="/demo/">THE CHAIN</a>
+    <div class="dm-head-right"><span class="dm-badge">Demo · view only</span><a class="dm-exit" href="/">Exit demo</a></div>
+  </header>
+  <main class="tc-gate" data-section="misc" aria-labelledby="g-name">
+    <div class="tc-fx" aria-hidden="true"></div>
+    <div class="tc-gate-inner mx">
+      <div class="tc-gate-copy">
+        <a class="tc-back" href="/demo/">← Back to demo</a>
+        <p class="tc-kicker">04</p>
+        <h1 class="tc-name" id="g-name">Misc</h1>
+        <p class="tc-desc">General workshop projects.</p>
+      </div>
+
+      <div class="mx-grid dm-misc">
+        <div class="mx-tile">
+          <span class="mx-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="8" height="12" rx="4"/><circle cx="6.5" cy="12" r="1.6"/><rect x="13.5" y="6" width="8" height="12" rx="4"/><circle cx="17.5" cy="12" r="1.6"/></svg>
+          </span>
+          <h2 class="mx-name">BossmanConnect</h2>
+          <p class="mx-desc">One button that links two Bluetooth speakers in party mode, and shows their battery.</p>
+          <p class="mx-note">Android app. Talks to the speakers' own control protocol, reverse-engineered from a Bluetooth capture.</p>
+          <span class="mx-go" data-demo-lock>Download APK <span aria-hidden="true">↓</span></span>
+        </div>
+
+        <!-- Attrapp av appen (BossmanConnects palett och komponenter) -->
+        <div class="bc-phone" aria-label="BossmanConnect preview">
+          <div class="bc-screen">
+            <div class="bc-top">
+              <span class="bc-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="7" height="12" rx="3.5"/><rect x="14" y="6" width="7" height="12" rx="3.5"/></svg></span>
+              <div><b>BossmanConnect</b><small>Speakers · battery · party mode</small></div>
+            </div>
+
+            <div class="bc-card">
+              <div class="bc-card-h">SPEAKER</div>
+              <div class="bc-row">
+                <svg class="bc-ring" viewBox="0 0 64 64" aria-hidden="true"><circle class="trk" cx="32" cy="32" r="26"/><circle class="arc" id="bc-arc" cx="32" cy="32" r="26"/></svg>
+                <span class="bc-ring-txt" id="bc-pct">0%</span>
+                <div class="bc-info"><b>Speaker One</b><small>Firmware 1.0.4</small><span class="bc-pill ok">Connected</span></div>
+              </div>
+            </div>
+
+            <div class="bc-card">
+              <div class="bc-card-h">PARTY MODE <span class="bc-pill ok" id="bc-linked">Linked · Speaker Two</span></div>
+              <div class="bc-select">Speaker Two <span>linked</span></div>
+              <button type="button" class="bc-party" data-demo-lock><span class="bc-glow" aria-hidden="true"></span>PARTY</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<div class="dm-bar">
+  <a href="/demo/">← Demo home</a>
+  <span>Demo · view only</span>
+  <a href="/">Exit demo</a>
+</div>
+</body>
+</html>

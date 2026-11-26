@@ -1,0 +1,46 @@
+/* =========================================================================
+   The Chain — /demo/misc/ (3.100.0). Telefonramen med BossmanConnect-attrappen.
+   Palett ur BossmanConnect (bygge 6+): bakgrund #0E1122→#070810, kort #171B31,
+   dämpad #8A90B0, teal #3DD9D6, PARTY #7B5CFF→#E8508F, status #4ADE80/#FBBF24.
+   ========================================================================= */
+.dm-misc { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); align-items: start; }
+.mx-go[data-demo-lock] { opacity: .55; }
+
+.bc-phone {
+  justify-self: center; width: 300px; padding: 12px; border-radius: 40px;
+  background: #0b0c12; box-shadow: inset 0 0 0 2px #23263a, 0 40px 90px -30px rgba(0,0,0,.9);
+  animation: tcIn .55s .1s both;
+}
+.bc-screen {
+  min-height: 520px; padding: 22px 16px; border-radius: 30px; display: flex; flex-direction: column; gap: 14px;
+  background: linear-gradient(180deg, #0E1122 0%, #070810 100%); color: #fff; font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+.bc-top { display: flex; align-items: center; gap: 12px; }
+.bc-top b { display: block; font-size: 18px; font-weight: 800; letter-spacing: .02em; }
+.bc-top small { font-size: 12px; color: #8A90B0; }
+.bc-logo { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(90deg, #7B5CFF, #E8508F); box-shadow: 0 0 16px rgba(123,92,255,.35); }
+.bc-logo svg { width: 22px; height: 22px; stroke: #fff; }
+.bc-card { padding: 14px; border-radius: 22px; background: #171B31; border: 1px solid #262b47; }
+.bc-card-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 11px; font-weight: 700; letter-spacing: .14em; color: #8A90B0; }
+.bc-row { position: relative; display: flex; align-items: center; gap: 14px; }
+.bc-ring { width: 64px; height: 64px; transform: rotate(-90deg); flex: 0 0 64px; }
+.bc-ring circle { fill: none; stroke-width: 6; }
+.bc-ring .trk { stroke: #262b47; }
+.bc-ring .arc { stroke: #4ADE80; stroke-linecap: round; }
+.bc-ring-txt { position: absolute; left: 0; width: 64px; text-align: center; font-size: 13px; font-weight: 700; color: #4ADE80; }
+.bc-info { display: flex; flex-direction: column; gap: 3px; }
+.bc-info b { font-size: 16px; }
+.bc-info small { font-size: 12px; color: #8A90B0; }
+.bc-pill { align-self: flex-start; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0; }
+.bc-pill.ok { color: #4ADE80; background: rgba(74,222,128,.12); }
+.bc-select { padding: 12px; border-radius: 14px; background: rgba(255,255,255,.04); border: 1px solid #262b47; font-size: 14px; display: flex; justify-content: space-between; }
+.bc-select span { color: #4ADE80; font-size: 12px; }
+.bc-party {
+  position: relative; margin-top: 14px; width: 100%; height: 64px; border: 0; border-radius: 20px; overflow: hidden;
+  background: linear-gradient(90deg, #7B5CFF, #E8508F); color: #fff !important; font-weight: 800; font-size: 18px; letter-spacing: .3em;
+  box-shadow: 0 10px 30px -8px rgba(232,80,143,.6);
+}
+.bc-glow { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(255,255,255,.35), transparent 60%); animation: bcPulse 2.2s ease-in-out infinite; }
+@keyframes bcPulse { 0%,100% { opacity: .2; transform: scale(.8); } 50% { opacity: .7; transform: scale(1.2); } }
+
+@media (prefers-reduced-motion: reduce) { .bc-phone, .bc-glow { animation: none; } }

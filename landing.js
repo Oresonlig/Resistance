@@ -16,6 +16,7 @@
   const DEFAULT_OPEN = null;              // desktop: null = three equal panels; or 'training'
   const MOBILE_DEFAULT_OPEN = 'training'; // phone: one band open so the Enter button is visible without a tap
   const HOVER_PREVIEW = false;            // desktop hover-to-open; click always works on its own
+  const DEMO_EMAIL = 'niklgron@gmail.com'; // 3.100.0: vem som ser Demo-länken
 
   // ?enter=<sektion>: sektionssidan skickade hit (utloggad eller utan åtkomst).
   const q = new URLSearchParams(location.search);
@@ -57,6 +58,8 @@
       bind('email', state.user.email);
       bind('initial', state.user.email.charAt(0).toUpperCase());
     }
+    // 3.100.0: Demo-länken (/demo/) bara för admin-kontot. Samma adress som ADMIN_EMAIL i /training/.
+    $('.tc-demo').hidden = !(signedIn && state.user.email.toLowerCase() === DEMO_EMAIL);
 
     panels.forEach((p) => {
       const key = p.dataset.section;

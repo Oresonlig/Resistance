@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- 3.100.0 — Demo: Basketly-ATTRAPP (härmar utseendet, inget ur Basketly-projektet).
+     Recept, priser och besparingar är PÅHITTADE. Ingen Supabase (connect-src 'none'). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; base-uri 'self'; object-src 'none'; form-action 'none'; frame-src 'none'">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#f6f1e6">
+<title>Basketly — Diet (demo)</title>
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Space+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="/demo/demo.css?v=3.100.0">
+<link rel="stylesheet" href="/demo/diet/diet.css?v=3.100.0">
+<script defer src="/demo/demo.js?v=3.100.0"></script>
+<script defer src="/demo/diet/diet.js?v=3.100.0"></script>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <span class="brand">basketly<i>.</i></span>
+    <nav class="tabs" aria-label="Pages">
+      <a aria-current="page" href="#">This week</a>
+      <a href="#" data-demo-lock>Plan</a>
+      <a href="#" data-demo-lock>Recipes</a>
+      <a href="#" data-demo-lock>List</a>
+    </nav>
+    <div class="nav-r"><span class="store">Demo store · Downtown</span><button type="button" class="chip-btn" data-demo-lock>SV / EN</button></div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-pts" aria-hidden="true" id="pts"></div>
+  <div class="wrap">
+    <div class="hero-l">
+      <div class="eyebrow">Sample week · Mon – Sun · Flex · 3½ portions</div>
+      <div class="hero-kicker">You save this week</div>
+      <div class="big"><span id="save-num">0</span><small> kr</small></div>
+      <div class="hero-sub">The week costs about <b>612 kr</b> · Cheapest week</div>
+      <div class="hero-actions">
+        <button type="button" class="btn btn-cta" data-demo-lock>Open shopping list</button>
+        <button type="button" class="btn btn-ghost" data-demo-lock>Suggest again</button>
+      </div>
+    </div>
+    <figure class="chart">
+      <figcaption><span>Saving per dinner</span><span>Flex · 3½ portions</span></figcaption>
+      <div class="bars" id="bars"></div>
+      <div class="bar-labels" id="bar-labels"></div>
+    </figure>
+  </div>
+</section>
+
+<div class="wrap page">
+  <div class="section">
+    <div class="section-h"><h2 class="h2">This week's dinners</h2><span>Built around this week's offers</span></div>
+    <div class="grid-wd" id="cards"></div>
+  </div>
+
+  <aside class="aside" aria-label="Shopping list summary">
+    <h2>Shopping list</h2>
+    <div class="kv"><span>Items</span><b>23</b></div>
+    <div class="kv"><span>On offer</span><b>11</b></div>
+    <div class="kv"><span>At the till</span><b>612 kr</b></div>
+    <div class="kv save"><span>Saved vs. regular price</span><b>−<span id="save-num-2">0</span> kr</b></div>
+    <button type="button" class="aside-cta" data-demo-lock>Copy list</button>
+    <p class="aside-note">Export to store app · soon</p>
+  </aside>
+</div>
+
+<div class="dm-bar">
+  <a href="/demo/">← Demo home</a>
+  <span>Demo · view only</span>
+  <a href="/">Exit demo</a>
+</div>
+</body>
+</html>

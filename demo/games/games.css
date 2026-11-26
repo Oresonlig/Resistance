@@ -1,0 +1,80 @@
+/* =========================================================================
+   The Chain — /demo/games/ (3.100.0). EvoSuites palett (mörk, mässing, Cinzel)
+   på en neutral yta. Inga spelspecifika termer eller grafik.
+   ========================================================================= */
+:root {
+  --bg: #14110e; --panel: #1f1a15; --line: #3b3127; --text: #f1e8d9; --muted: #b3a48d;
+  --brass: #d0ab62; --brass-ink: #1b150d; --hot: #ef6a52; --ok: #8cc07a; --radius: 10px;
+  --display: 'Cinzel', Georgia, serif; --body: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  min-height: 100vh; background: var(--bg); color: var(--text); font-family: var(--body);
+  background-image: radial-gradient(ellipse at 50% -10%, rgba(208,171,98,.12), transparent 60%);
+  padding-bottom: calc(46px + env(safe-area-inset-bottom));
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+
+.gs-head { display: flex; align-items: center; gap: 24px; padding: 14px 22px; border-bottom: 1px solid var(--line); background: rgba(20,17,14,.85); position: sticky; top: 0; z-index: 5; }
+.gs-brand { font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: .08em; color: var(--brass); }
+.gs-tabs { display: flex; gap: 4px; }
+.gs-tabs button { height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); font-weight: 600; font-size: 14px; }
+.gs-tabs button.on { background: var(--brass); color: var(--brass-ink); }
+.gs-lang { margin-left: auto; height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 12px; }
+
+.gs-main { max-width: 1100px; margin: 0 auto; padding: 22px; display: grid; gap: 16px; grid-template-columns: 1.3fr 1fr; grid-template-areas: "dice body" "party log"; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; animation: gsIn .45s both; }
+.panel-h { font-family: var(--display); font-weight: 600; font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+@keyframes gsIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.gs-dice { grid-area: dice; } .gs-body { grid-area: body; } .gs-party { grid-area: party; } .gs-log { grid-area: log; }
+
+/* tärningar */
+.gs-tray { display: flex; justify-content: center; gap: 18px; padding: 26px 0; }
+.die {
+  width: 78px; height: 78px; display: grid; place-items: center; border-radius: 14px;
+  background: linear-gradient(145deg, #2a231c, #17130f); border: 1px solid var(--brass);
+  font-family: var(--display); font-weight: 700; font-size: 34px; color: var(--brass);
+  box-shadow: 0 10px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.die.land { animation: land .5s cubic-bezier(.3,1.6,.5,1); }
+@keyframes land { 0% { transform: scale(1.25) rotate(-12deg); } 100% { transform: none; } }
+.gs-total { display: flex; align-items: baseline; justify-content: center; gap: 12px; color: var(--muted); }
+.gs-total b { font-family: var(--display); font-size: 48px; color: var(--text); }
+.gs-pick { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 18px 0 14px; }
+.gs-pick button { height: 34px; min-width: 48px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-weight: 600; }
+.gs-pick button.on { border-color: var(--brass); color: var(--brass); }
+.gs-roll { display: block; width: 100%; height: 52px; border: 0; border-radius: 10px; background: var(--brass); color: var(--brass-ink); font-family: var(--display); font-weight: 700; font-size: 16px; letter-spacing: .08em; }
+
+/* kroppskarta */
+.gs-figure { display: block; width: 100%; max-height: 260px; }
+.zone > * { fill: rgba(208,171,98,.08); stroke: var(--line); stroke-width: 1.5; transition: fill .3s, stroke .3s; }
+.zone.hit > * { fill: rgba(239,106,82,.35); stroke: var(--hot); animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { fill: rgba(239,106,82,.55); } }
+.gs-hit { display: flex; justify-content: space-between; align-items: baseline; margin-top: 10px; color: var(--muted); }
+.gs-hit b { font-family: var(--display); font-size: 28px; color: var(--hot); }
+
+/* sällskapet */
+.gs-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.gs-list li { display: grid; grid-template-columns: 36px 1fr 1.2fr; align-items: center; gap: 12px; }
+.gs-av { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: #2a231c; border: 1px solid var(--brass); color: var(--brass); font-family: var(--display); font-weight: 700; }
+.gs-n { display: flex; flex-direction: column; font-weight: 600; }
+.gs-n small { font-weight: 400; font-size: 12px; color: var(--muted); }
+.gs-bar { height: 8px; border-radius: 4px; background: #2a231c; overflow: hidden; }
+.gs-bar i { display: block; height: 100%; background: var(--ok); animation: fill 1.2s ease-out both; transform-origin: 0 50%; }
+.gs-bar.warn i { background: var(--hot); }
+@keyframes fill { from { transform: scaleX(0); } }
+
+/* logg */
+.gs-log ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: var(--muted); }
+.gs-log li { animation: gsIn .35s both; }
+.gs-log li:first-child { color: var(--text); }
+.gs-log b { color: var(--brass); font-weight: 600; }
+.gs-log span { font-family: var(--display); font-weight: 700; color: var(--text); }
+
+@media (max-width: 860px) {
+  .gs-main { grid-template-columns: 1fr; grid-template-areas: "dice" "body" "party" "log"; padding: 14px; }
+  .gs-head { gap: 12px; padding: 12px 14px; } .gs-tabs button { padding: 0 10px; }
+  .die { width: 64px; height: 64px; font-size: 28px; }
+}
+@media (prefers-reduced-motion: reduce) { .panel, .die.land, .zone.hit > *, .gs-bar i, .gs-log li { animation: none; } }

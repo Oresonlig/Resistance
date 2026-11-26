@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- 3.100.0 — Demo: NEUTRAL spelgruppsyta i EvoSuites stil. Medvetet inga regelnamn, termer,
+     texter eller grafik ur något kommersiellt spel (EvoSuite delas inte utanför gruppen).
+     Allt påhittat. Ingen Supabase (connect-src 'none'). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; base-uri 'self'; object-src 'none'; form-action 'none'; frame-src 'none'">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#14110e">
+<title>EvoSuite — Games (demo)</title>
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/demo/demo.css?v=3.100.0">
+<link rel="stylesheet" href="/demo/games/games.css?v=3.100.0">
+<script defer src="/demo/demo.js?v=3.100.0"></script>
+<script defer src="/demo/games/games.js?v=3.100.0"></script>
+</head>
+<body>
+<header class="gs-head">
+  <div class="gs-brand">EvoSuite</div>
+  <nav class="gs-tabs" aria-label="Tools">
+    <button type="button" class="on">Dice</button>
+    <button type="button" data-demo-lock>Damage</button>
+    <button type="button" data-demo-lock>Party</button>
+  </nav>
+  <button type="button" class="gs-lang" data-demo-lock>SV / EN</button>
+</header>
+
+<main class="gs-main">
+  <section class="panel gs-dice">
+    <div class="panel-h">Roll</div>
+    <div class="gs-tray" id="tray" aria-live="polite"></div>
+    <div class="gs-total"><span>Total</span><b id="total">—</b></div>
+    <div class="gs-pick">
+      <button type="button" data-demo-lock>d4</button><button type="button" data-demo-lock>d6</button>
+      <button type="button" data-demo-lock>d8</button><button type="button" class="on" data-demo-lock>d10</button>
+      <button type="button" data-demo-lock>d12</button><button type="button" data-demo-lock>d20</button>
+    </div>
+    <button type="button" class="gs-roll" data-demo-lock>Roll 3d10</button>
+  </section>
+
+  <section class="panel gs-body">
+    <div class="panel-h">Hit location</div>
+    <svg viewBox="0 0 120 220" class="gs-figure" aria-label="Body map">
+      <g class="zone" data-z="head"><circle cx="60" cy="24" r="16"/></g>
+      <g class="zone" data-z="torso"><rect x="38" y="44" width="44" height="62" rx="10"/></g>
+      <g class="zone" data-z="larm"><rect x="16" y="48" width="18" height="60" rx="8"/></g>
+      <g class="zone" data-z="rarm"><rect x="86" y="48" width="18" height="60" rx="8"/></g>
+      <g class="zone" data-z="lleg"><rect x="40" y="110" width="18" height="92" rx="8"/></g>
+      <g class="zone" data-z="rleg"><rect x="62" y="110" width="18" height="92" rx="8"/></g>
+    </svg>
+    <div class="gs-hit"><span id="hit-name">Torso</span><b id="hit-val">7</b></div>
+  </section>
+
+  <section class="panel gs-party">
+    <div class="panel-h">Party</div>
+    <ul class="gs-list">
+      <li><span class="gs-av">A</span><span class="gs-n">Ayla<small>Scout</small></span><span class="gs-bar"><i style="width:82%"></i></span></li>
+      <li><span class="gs-av">B</span><span class="gs-n">Brannoc<small>Smith</small></span><span class="gs-bar"><i style="width:55%"></i></span></li>
+      <li><span class="gs-av">C</span><span class="gs-n">Cira<small>Healer</small></span><span class="gs-bar"><i style="width:100%"></i></span></li>
+      <li><span class="gs-av">D</span><span class="gs-n">Dorn<small>Sellsword</small></span><span class="gs-bar warn"><i style="width:28%"></i></span></li>
+    </ul>
+  </section>
+
+  <section class="panel gs-log">
+    <div class="panel-h">Log</div>
+    <ol id="log"></ol>
+  </section>
+</main>
+
+<div class="dm-bar">
+  <a href="/demo/">← Demo home</a>
+  <span>Demo · view only</span>
+  <a href="/">Exit demo</a>
+</div>
+</body>
+</html>

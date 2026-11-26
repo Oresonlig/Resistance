@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- 3.100.0 — Demo/preview för intervjuer. Samma panelvy som startsidan, men ingen inloggning
+     och ingen Supabase: connect-src 'none' + inga Supabase-skript (tests/demo.test.js).
+     All data i /demo/ är PÅHITTAD (Resistance-repot är publikt). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; base-uri 'self'; object-src 'none'; form-action 'none'; frame-src 'none'">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#050505">
+<title>The Chain — Demo</title>
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@1,500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/landing.css?v=3.100.0">
+<link rel="stylesheet" href="/demo/demo.css?v=3.100.0">
+<script defer src="/demo/demo.js?v=3.100.0"></script>
+</head>
+<body>
+<div class="tc" id="tc" data-screen="landing" data-auth="out">
+
+  <header class="tc-head">
+    <a class="tc-mark" href="/demo/">THE CHAIN</a>
+    <div class="dm-head-right">
+      <span class="dm-badge">Demo · view only</span>
+      <a class="dm-exit" href="/">Exit demo</a>
+    </div>
+  </header>
+
+  <main class="tc-landing" id="landing" aria-label="Sections">
+
+    <section class="tc-panel" data-section="training" data-state="equal" aria-labelledby="h-training">
+      <div class="tc-fx" aria-hidden="true"></div>
+      <button type="button" class="tc-strip" data-action="open" aria-controls="b-training" aria-expanded="false" aria-label="Open Training">
+        <span class="tc-num">01</span>
+        <span class="tc-strip-name">Training</span>
+        <span class="tc-strip-short">Sets · timers</span>
+      </button>
+      <div class="tc-body" id="b-training">
+        <p class="tc-kicker">01</p>
+        <h2 class="tc-name" id="h-training">Training</h2>
+        <p class="tc-desc">Log sets and rounds, run rest timers, and build your chain of exercises one session at a time.</p>
+        <p class="tc-line">Forge the next link.</p>
+        <div class="tc-actions"><a class="tc-enter" href="/demo/training/">Enter Training <span aria-hidden="true">→</span></a></div>
+      </div>
+    </section>
+
+    <section class="tc-panel" data-section="diet" data-state="equal" aria-labelledby="h-diet">
+      <div class="tc-fx" aria-hidden="true"></div>
+      <button type="button" class="tc-strip" data-action="open" aria-controls="b-diet" aria-expanded="false" aria-label="Open Diet">
+        <span class="tc-num">02</span>
+        <span class="tc-strip-name">Diet</span>
+        <span class="tc-strip-short">Basketly</span>
+      </button>
+      <div class="tc-body" id="b-diet">
+        <p class="tc-kicker">02</p>
+        <h2 class="tc-name" id="h-diet">Diet</h2>
+        <p class="tc-desc">Basketly: shop good groceries at good prices, and find recipes to cook with them.</p>
+        <p class="tc-line">Shop well. Eat well.</p>
+        <div class="tc-actions"><a class="tc-enter" href="/demo/diet/">Enter Diet <span aria-hidden="true">→</span></a></div>
+      </div>
+    </section>
+
+    <section class="tc-panel" data-section="evosuite" data-state="equal" aria-labelledby="h-evosuite">
+      <div class="tc-fx" aria-hidden="true"></div>
+      <button type="button" class="tc-strip" data-action="open" aria-controls="b-evosuite" aria-expanded="false" aria-label="Open Games">
+        <span class="tc-num">03</span>
+        <span class="tc-strip-name">Games</span>
+        <span class="tc-strip-short">EvoSuite</span>
+      </button>
+      <div class="tc-body" id="b-evosuite">
+        <p class="tc-kicker">03</p>
+        <h2 class="tc-name" id="h-evosuite">Games</h2>
+        <p class="tc-desc">EvoSuite: the game group's companion app for tabletop sessions.</p>
+        <p class="tc-line">Roll for it.</p>
+        <div class="tc-actions"><a class="tc-enter" href="/demo/games/">Enter Games <span aria-hidden="true">→</span></a></div>
+      </div>
+    </section>
+
+    <section class="tc-panel" data-section="misc" data-state="equal" aria-labelledby="h-misc">
+      <div class="tc-fx" aria-hidden="true"></div>
+      <button type="button" class="tc-strip" data-action="open" aria-controls="b-misc" aria-expanded="false" aria-label="Open Misc">
+        <span class="tc-num">04</span>
+        <span class="tc-strip-name">Misc</span>
+        <span class="tc-strip-short">Audio · tools</span>
+      </button>
+      <div class="tc-body" id="b-misc">
+        <p class="tc-kicker">04</p>
+        <h2 class="tc-name" id="h-misc">Misc</h2>
+        <p class="tc-desc">General workshop projects.</p>
+        <p class="tc-line">Deeper water.</p>
+        <div class="tc-actions"><a class="tc-enter" href="/demo/misc/">Enter Misc <span aria-hidden="true">→</span></a></div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>
