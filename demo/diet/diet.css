@@ -106,5 +106,14 @@ button { font: inherit; color: inherit; cursor: pointer; }
   .nav .wrap { gap: 8px; padding-top: 8px; padding-bottom: 8px; }
   .brand { font-size: 24px; } .tabs { order: 3; width: 100%; } .store { display: none; }
   .bars { height: 150px; gap: 6px; } .bar-labels { gap: 6px; }
+  .bars a { font-size: 11px; }
+  .hero .wrap { padding-top: 28px; padding-bottom: 28px; gap: 28px; }
+  .hero-kicker { margin-top: 18px; font-size: 17px; }
+  .hero-sub { font-size: 16px; }
+  .hero-actions .btn { flex: 1 1 auto; }
+  .chart { padding: 16px 14px 12px; }
+  .page { padding-top: 28px; padding-bottom: 40px; gap: 24px; }
+  .h2 { font-size: 26px; }
+  .card-title { font-size: 18px; }
 }
 @media (prefers-reduced-motion: reduce) { .bar, .bob, .card, .pt { animation: none; } }

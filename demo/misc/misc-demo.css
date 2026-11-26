@@ -3,11 +3,13 @@
    Palett ur BossmanConnect (bygge 6+): bakgrund #0E1122→#070810, kort #171B31,
    dämpad #8A90B0, teal #3DD9D6, PARTY #7B5CFF→#E8508F, status #4ADE80/#FBBF24.
    ========================================================================= */
-.dm-misc { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); align-items: start; }
+.dm-misc { grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); align-items: start; }
 .mx-go[data-demo-lock] { opacity: .55; }
+/* listen längst ned (30 px) får inte täcka sidans nederkant */
+#tc-misc { height: calc(var(--vvh, 100dvh) - 30px - env(safe-area-inset-bottom)); }
 
 .bc-phone {
-  justify-self: center; width: 300px; padding: 12px; border-radius: 40px;
+  justify-self: center; width: min(300px, 100%); padding: 12px; border-radius: 40px;
   background: #0b0c12; box-shadow: inset 0 0 0 2px #23263a, 0 40px 90px -30px rgba(0,0,0,.9);
   animation: tcIn .55s .1s both;
 }

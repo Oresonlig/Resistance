@@ -95,7 +95,7 @@ html, body { margin: 0; background: #050505; }
 /* 3.100.0: Demo-länken (bara admin-kontot, se landing.js). 3.100.2 (Niklas): under "THE CHAIN",
    så mörk att den nästan inte syns — han vet var den ligger. Hover/fokus = synlig. */
 .tc-demo:not([hidden]) {
-  position: fixed; left: 26px; top: 44px; z-index: 10; padding: 2px 0;
+  position: fixed; left: 28px; top: 46px; z-index: 10; padding: 2px 0;   /* = .tc-padding + .tc-head-padding; under märket, ovanför panelerna */
   font-family: var(--font-mono); font-size: 9px; letter-spacing: .3em; text-transform: uppercase;
   color: rgba(255,255,255,.1) !important; transition: color .2s;
 }

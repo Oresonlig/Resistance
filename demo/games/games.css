@@ -74,7 +74,14 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
 @media (max-width: 860px) {
   .gs-main { grid-template-columns: 1fr; grid-template-areas: "dice" "body" "party" "log"; padding: 14px; }
-  .gs-head { gap: 12px; padding: 12px 14px; } .gs-tabs button { padding: 0 10px; }
+  .gs-head { gap: 10px; padding: 12px 14px; }
+  .gs-brand { font-size: 18px; }
+  .gs-tabs button { height: 34px; padding: 0 10px; font-size: 13px; }
+  .gs-lang { display: none; }
+  .panel { padding: 16px; }
+  .gs-tray { gap: 12px; padding: 18px 0; }
   .die { width: 64px; height: 64px; font-size: 28px; }
+  .gs-total b { font-size: 40px; }
+  .gs-figure { max-height: 200px; }
 }
 @media (prefers-reduced-motion: reduce) { .panel, .die.land, .zone.hit > *, .gs-bar i, .gs-log li { animation: none; } }

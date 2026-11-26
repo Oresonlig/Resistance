@@ -55,13 +55,16 @@
   function setRow(s, i, ex) {
     const warm = s[2] === 1;
     const num = warm ? 'W' : String(i + 1 - ex.sets.filter((x, j) => j < i && x[2] === 1).length);
+    // Fälten är <span>, inte <input>: på mobil skulle ett fokuserat fält zooma sidan och
+    // öppna tangentbordet. Tomt fält = svag platshållare.
+    const cell = (v, ph, cls) => `<span class="set-input${cls}${v ? '' : ' empty'}" data-demo-lock>${v || ph}</span>`;
+    const kind = warm ? ' warmup' : ' work-set';
     if (ex.timed) {
-      return `<div class="set-row"><span class="set-num">${num}</span>
-        <input class="set-input wide" readonly data-demo-lock value="${s[0] || ''}" placeholder="m:ss"><span class="set-unit">min</span></div>`;
+      return `<div class="set-row timed"><span class="set-num">${num}</span>${cell(s[0], 'm:ss', ' wide')}<span class="set-unit">min</span></div>`;
     }
     return `<div class="set-row${warm ? ' warm' : ''}"><span class="set-num">${num}</span>
-      <input class="set-input${warm ? ' warmup' : ' work-set'}" readonly data-demo-lock value="${s[0]}" placeholder="kg"><span class="set-unit">${ex.tag === 'bw' ? 'kg+' : 'kg'}</span>
-      <input class="set-input${warm ? ' warmup' : ' work-set'}" readonly data-demo-lock value="${s[1]}" placeholder="reps"><span class="set-unit">reps</span></div>`;
+      ${cell(s[0], 'kg', kind)}<span class="set-unit">${ex.tag === 'bw' ? 'kg+' : 'kg'}</span>
+      ${cell(s[1], 'reps', kind)}<span class="set-unit">reps</span></div>`;
   }
 
   function renderPass() {
