@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <!-- 3.99.0 — Basketly enligt EvoSuite-modellen. Spärren: /section.js + sektionen 'diet' +
      privat bucket 'basketly' (policy has_section_access('diet')). Appen laddas av diet.js efter
-     'tc:ready'; saknas filen står "Coming soon" kvar. CSP = /evosuite/:s: appen körs i en
+     'tc:ready'; under hämtningen "Loading Basketly…" (3.102.0), saknas filen visas "Coming soon". CSP = /evosuite/:s: appen körs i en
      blob-iframe som ÄRVER sidans CSP → 'unsafe-inline' + frame-src blob:. Ny domän = kontraktsändring. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://qjmjqideqrgozexudaqr.supabase.co; base-uri 'self'; object-src 'none'; form-action 'self'; frame-src blob:">
 <meta name="color-scheme" content="dark">
@@ -16,10 +16,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@1,500&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="/landing.css?v=3.100.3">
+<link rel="stylesheet" href="/diet/diet.css?v=3.102.0">
 <script defer src="/vendor/supabase.js"></script>
 <script defer src="/site.js?v=3.100.3"></script>
 <script defer src="/section.js?v=3.100.3"></script>
-<script defer src="/diet/diet.js?v=3.101.1"></script>
+<script defer src="/diet/diet.js?v=3.102.0"></script>
 </head>
 <body>
 <div class="tc" id="tc" data-screen="section" data-auth="in" data-section="diet" data-checking>
