@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <!-- 3.97.x — Misc: rutnät med appar (misc/misc.css). BossmanConnect = APK från
-     Oresonlig/BossmanConnect, release app-latest. Spärren: /section.js + RLS. Ingen egen JS. -->
+     Oresonlig/BossmanConnect, release app-latest. Spärren: /section.js + RLS. 3.101.0: misc.js visar Admin-rutan för admin-kontot. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://qjmjqideqrgozexudaqr.supabase.co; base-uri 'self'; object-src 'none'; form-action 'self'; frame-src 'none'">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#050505">
@@ -14,10 +14,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@1,500&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="/landing.css?v=3.100.3">
-<link rel="stylesheet" href="/misc/misc.css?v=1">
+<link rel="stylesheet" href="/misc/misc.css?v=2">
 <script defer src="/vendor/supabase.js"></script>
 <script defer src="/site.js?v=3.100.3"></script>
 <script defer src="/section.js?v=3.100.3"></script>
+<script defer src="/misc/misc.js?v=3.101.0"></script>
 </head>
 <body>
 <div class="tc" id="tc" data-screen="section" data-auth="in" data-section="misc" data-checking>
@@ -54,6 +55,15 @@
           <p class="mx-desc">One button that links the two Bose Revolve+ speakers, Ninja and Lantern, in party mode.</p>
           <p class="mx-note">Android. First install: allow your browser to install unknown apps. After that, tap Update inside the app.</p>
           <span class="mx-go">Download APK <span aria-hidden="true">↓</span></span>
+        </a>
+        <!-- 3.101.0: bara admin-kontot (misc.js tar bort hidden). Servern spärrar datan. -->
+        <a class="mx-tile" data-kind="open" data-admin hidden href="/misc/admin/">
+          <span class="mx-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+          </span>
+          <h2 class="mx-name">Admin</h2>
+          <p class="mx-desc">Choose which sections each account can open.</p>
+          <span class="mx-go">Open admin <span aria-hidden="true">→</span></span>
         </a>
       </nav>
     </div>

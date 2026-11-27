@@ -1,0 +1,58 @@
+/* =========================================================================
+   The Chain — /misc/admin/ (3.101.0). Bygger på landing.css + misc.css
+   (Undertow-scenen, .tc-gate-inner.mx) och ändrar dem inte.
+   ========================================================================= */
+
+.ad-lead { margin: 0; font-size: 15px; line-height: 1.5; color: var(--text-2); max-width: 60ch; }
+.ad-open { display: block; margin-top: 4px; font-size: 13px; color: var(--mute); }
+
+.ad-msg { margin: 0; font-size: 14px; line-height: 1.4; color: var(--text-3); }
+.ad-msg:empty { display: none; }
+.ad-msg[data-kind="err"] { color: var(--err); }
+.ad-msg[data-kind="ok"] { color: var(--accent); }
+
+/* ---------- kontolistan ---------- */
+.ad-list { display: grid; gap: 10px; }
+
+.ad-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px 24px;
+  padding: 16px 20px; border-radius: 16px;
+  background: var(--card); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: inset 0 0 0 1px var(--card-line), 0 20px 60px -30px rgba(0,0,0,.85);
+  transition: box-shadow .18s;
+}
+.ad-row[data-dirty] { box-shadow: inset 0 0 0 1px var(--accent), 0 0 0 3px var(--glow-soft); }
+
+.ad-who { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.ad-email { font-size: 16px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+.ad-meta { font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; color: var(--mute); }
+
+.ad-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.ad-chip {
+  height: 40px; padding: 0 14px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px var(--rim);
+  font-size: 14px; font-weight: 600; color: var(--text-3);
+  user-select: none;
+}
+.ad-chip input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+.ad-chip:has(input:checked) { background: var(--glow-soft); box-shadow: inset 0 0 0 1px var(--accent); color: var(--text); }
+.ad-chip:has(input:disabled) { cursor: not-allowed; opacity: .6; }
+.ad-chip:has(input:disabled) input { cursor: not-allowed; }
+
+/* ---------- spara-raden: följer med i botten ---------- */
+.ad-bar:not([hidden]) {
+  position: sticky; bottom: 0; z-index: 3;
+  display: flex; align-items: center; justify-content: flex-end; gap: 16px;
+  padding: 14px 16px; border-radius: 16px;
+  background: var(--card); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: inset 0 0 0 1px var(--card-line), 0 -10px 40px -20px rgba(0,0,0,.9);
+}
+.ad-save { margin-top: 0; padding: 0 26px; }
+.ad-save:disabled { opacity: .45; cursor: not-allowed; }
+
+@media (max-width: 760px) {
+  .ad-row { grid-template-columns: 1fr; padding: 14px 16px; }
+  .ad-bar:not([hidden]) { flex-direction: column; align-items: stretch; gap: 10px; }
+  .ad-save { width: 100%; }
+}

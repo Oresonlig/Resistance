@@ -29,6 +29,7 @@
   transition: box-shadow .2s, transform .12s;
   animation: tcIn .45s both;
 }
+.mx-tile[hidden] { display: none; }   /* 3.101.0: Admin-rutan (display:flex ovan vinner annars över hidden) */
 .mx-tile:hover {
   transform: translateY(-2px);
   box-shadow: inset 0 0 0 1px var(--accent), 0 0 0 4px var(--glow-soft), 0 30px 80px -30px rgba(0,0,0,.85);
