@@ -15,7 +15,8 @@
      bilder ligger i dess egen 'basketly-img'). Först list() → objektets eTag/updated_at;
      samma version som i cachen → cachad kopia direkt, annars signerad URL (no-store) + spara.
      INTE Cache API: sw.js raderar alla andra cachar vid activate.
-   - "Log out" i listen raderar cachen (delade datorer).
+   - Varje utloggning på hemsidan raderar cachen (3.102.1: site.js Auth.signOut +
+     clearSiteCaches i /training/). Byter DB-namnet → uppdatera båda listorna.
    ========================================================================= */
 (() => {
   'use strict';
@@ -54,12 +55,6 @@
   }
   const cacheGet = () => idb('readonly', (s) => s.get(FILE)).catch((e) => { console.warn('[basketly] cache read:', e); return null; });
   const cachePut = (v) => idb('readwrite', (s) => s.put(v, FILE)).catch((e) => console.warn('[basketly] cache write:', e));
-  const cacheClear = () => new Promise((resolve) => {
-    try {
-      const req = indexedDB.deleteDatabase(DB);
-      req.onsuccess = req.onerror = req.onblocked = () => resolve();
-    } catch (e) { resolve(); }
-  });
 
   // ---------- hämtning ----------
   /** Objektets version ur bucketen. null = filen finns inte; undefined = gick inte att avgöra. */
@@ -135,7 +130,7 @@
     const signOut = mkButton(TEXT.signOut);
     home.onclick = () => { location.href = '/'; };
     signOut.onclick = async () => {
-      await cacheClear();
+      // Auth.signOut (site.js) raderar 'tc-basketly-cache' före utloggningen.
       try { await Promise.race([Auth.signOut(), new Promise((r) => setTimeout(r, 4000))]); }
       catch (e) { console.warn('[basketly] signOut:', e); }
       location.href = '/';

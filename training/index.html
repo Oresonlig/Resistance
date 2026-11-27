@@ -4668,6 +4668,7 @@ async function enterMovedToApp(){
   currentUser = null;
   _cloudSeenThisSession = false;
   // scope:'local' — loggar bara ut den här enheten, kräver inget svar från servern
+  await clearSiteCaches();
   try{ await window.sb.auth.signOut({ scope:'local' }); }catch(e){}
   showAuthScreen();
   authMsg('This account has moved to The Chain app. Log in there to keep training.', 'error');
@@ -4726,6 +4727,7 @@ async function loadStateForUser(){
       if(res.kind === 'done' && res.value && res.value.ok){ rows = res.value.rows; break; }
       if(await waitForCloudRetry() === 'logout'){
         // scope:'local' — kräver inget nät (vi är per definition offline här).
+        await clearSiteCaches();
         try{ await window.sb.auth.signOut({ scope:'local' }); }catch(e){}
         currentUser = null;
         _cloudSeenThisSession = false;
@@ -5015,11 +5017,23 @@ function bindAuthHandlers(){
   }
 }
 
+// 3.102.1 — sektionernas lokala cachar (Basketly-bundlen i /diet/) raderas vid varje
+// utloggning. Samma lista som LOCAL_CACHES i /site.js — håll dem lika.
+function clearSiteCaches(){
+  return Promise.all(['tc-basketly-cache'].map(name => new Promise(resolve => {
+    try{
+      const req = indexedDB.deleteDatabase(name);
+      req.onsuccess = req.onerror = req.onblocked = () => resolve();
+    }catch(e){ resolve(); }
+  })));
+}
+
 // Logout
 async function logoutUser(){
   if(!window.sb) return;
   const ok = await askModalConfirm('Log out?', 'You will be signed out of this device.', {confirmLabel:'Log out'});
   if(!ok) return;
+  await clearSiteCaches();
   // 3.97.2 — Niklas: utloggningen tog bort sessionen men skärmen stod kvar (syntes
   // först efter omstart). Lita inte på onAuthStateChange för att rita om: vänta
   // (max 4 s) på signOut och ladda startsidan. Den ser då en färsk, utloggad sida.
@@ -5294,7 +5308,7 @@ function getSessionName(passId){
 
 // ── APP VERSION ──────────────────────────────────────────────
 // Bump on substantive changes. Used for debugging + future migrations.
-const APP_VERSION = '3.102.0';
+const APP_VERSION = '3.102.1';
 // Track time when last successful cloud sync completed (read), and
 // time of last successful push (write). Used in Data view sync status.
 let lastSyncRead = 0;

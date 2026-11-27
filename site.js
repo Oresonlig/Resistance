@@ -47,6 +47,19 @@
       desc: 'General workshop projects.' },
   };
 
+  // 3.102.1: IndexedDB-cachar som sektionernas laddare äger (Basketly-bundlen i /diet/).
+  // Raderas vid VARJE utloggning på hemsidan. /training/ har en egen kopia av listan
+  // (clearSiteCaches i training/index.html) — håll dem lika.
+  const LOCAL_CACHES = ['tc-basketly-cache'];
+  function clearLocalCaches() {
+    return Promise.all(LOCAL_CACHES.map((name) => new Promise((resolve) => {
+      try {
+        const req = indexedDB.deleteDatabase(name);
+        req.onsuccess = req.onerror = req.onblocked = () => resolve();
+      } catch (e) { resolve(); }
+    })));
+  }
+
   /** Fel → 'invalid_credentials' | 'email_not_confirmed' | 'network' | 'other' */
   function classify(err) {
     if (!err) return 'other';
@@ -95,7 +108,8 @@
       if (error) fail(error);
     },
 
-    async signOut() { await sb.auth.signOut(); },
+    /** 3.102.1: rensar lokala sektionscachar FÖRE utloggningen (delade datorer). */
+    async signOut() { await clearLocalCaches(); await sb.auth.signOut(); },
 
     /** Sektioner användaren får gå in i. Server-side: my_sections() (security definer,
      *  läser sections.open_to_all + section_access). Fel/saknad funktion → bara Training,
