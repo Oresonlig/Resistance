@@ -23,11 +23,13 @@
   async function fetchApp() {
     const { data, error } = await sb.storage.from(BUCKET).createSignedUrl(FILE, 60);
     if (error) {
+      // 3.101.1: logga alltid — "not found" kan också vara RLS som nekar (Storage skiljer inte på dem).
+      console.warn('[basketly] createSignedUrl:', error.message, error.statusCode || error.status || '');
       if (/not.?found/i.test(error.message || '')) return null;
       throw error;
     }
     const response = await fetch(data.signedUrl, { cache: 'no-store' });
-    if (response.status === 404) return null;
+    if (response.status === 404) { console.warn('[basketly] signed URL gave 404'); return null; }
     if (!response.ok) throw new Error('HTTP ' + response.status);
     return response.text();
   }
